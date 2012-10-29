@@ -45,12 +45,14 @@
   <ItemGroup>
     <Compile Include="Core\IHelloListener.cs" />
     <Compile Include="Core\ILogger.cs" />
+    <Compile Include="Core\IServer.cs" />
     <Compile Include="Core\IService.cs" />
     <Compile Include="Core\HelloListener.cs" />
     <Compile Include="Core\Logger.cs" />
     <Compile Include="Core\Manager.cs" />
     <Compile Include="Core\Peer.cs" />
     <Compile Include="Core\PeerDiscoveredEventArgs.cs" />
+    <Compile Include="Core\Server.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
