@@ -11,7 +11,7 @@ namespace Lucky.Home.Core
     /// <summary>
     /// HELLO UDP service, for discovering devices
     /// </summary>
-    class HelloListener : IHelloListener, IDisposable
+    class HelloListener : ServiceBase, IHelloListener, IDisposable
     {
         private UdpClient _client;
 
@@ -49,14 +49,6 @@ namespace Lucky.Home.Core
 
             // Enqueue again
             _client.BeginReceive(OnReceiveData, null);
-        }
-
-        private ILogger Logger
-        {
-            get
-            {
-                return Manager.GetService<ILogger>();
-            }
         }
 
         private bool DecodeHelloMessage(byte[] bytes, IPEndPoint remoteEndPoint, out Guid guid)

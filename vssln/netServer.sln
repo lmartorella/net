@@ -1,7 +1,8 @@
-
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "netServer", "..\src\netServer.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wpfMock", "..\wpfMock\wpfMock.csproj", "{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +14,10 @@ Global
 		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Debug|x86.Build.0 = Debug|x86
 		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Release|x86.ActiveCfg = Release|x86
 		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Release|x86.Build.0 = Release|x86
+		{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}.Debug|x86.ActiveCfg = Debug|x86
+		{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}.Debug|x86.Build.0 = Debug|x86
+		{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}.Release|x86.ActiveCfg = Release|x86
+		{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
