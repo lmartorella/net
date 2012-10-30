@@ -11,6 +11,7 @@ namespace wpfMock
     public partial class MainWindow : Window
     {
         private HeloSender _heloSender;
+        private HomeReceiver _homeReceiver;
 
         public MainWindow()
         {
@@ -18,6 +19,8 @@ namespace wpfMock
 
             _heloSender = new HeloSender();
             _heloSender.Sent += (o,e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("Helo sent\n")));
+            _homeReceiver = new HomeReceiver();
+            _homeReceiver.HomeFound += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("Found home: " + _homeReceiver.HomeHost + ":" + _homeReceiver.HomePort + "\n")));
         }
     }
 }

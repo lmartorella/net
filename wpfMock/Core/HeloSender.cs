@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Lucky.HomeMock.Core
 {
-    class HeloSender : IDisposable
+    class HeloSender : Task
     {
         private Timer _timer;
 
@@ -17,7 +17,7 @@ namespace Lucky.HomeMock.Core
             _timer = new Timer(HandleTick, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _timer.Dispose();
         }
