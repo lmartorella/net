@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 
 namespace Lucky.Home.Core
@@ -11,14 +12,21 @@ namespace Lucky.Home.Core
         public Guid ID { get; private set; }
 
         /// <summary>
-        /// The HTTP service port of the peer
+        /// The remote end-point address
         /// </summary>
-        public int ServicePort { get; private set; }
+        public IPAddress Address { get; private set; }
 
-        internal Peer(Guid guid, IPAddress address, int servicePort)
+        internal Peer(Guid guid, IPAddress address)
         {
             ID = guid;
-            ServicePort = servicePort;
+            Address = address;
+
+            Sinks = new List<Sink>();
         }
+
+        /// <summary>
+        /// Get an editable collection of sinks
+        /// </summary>
+        public ICollection<Sink> Sinks { get; private set; }
     }
 }

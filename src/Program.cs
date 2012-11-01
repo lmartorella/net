@@ -9,6 +9,10 @@ namespace Lucky.Home
 {
     class Program
     {
+        class TestSink : Sink
+        {
+        }
+
         static void Main(string[] args)
         {
             Manager.Register<HelloListener, IHelloListener>();
@@ -18,8 +22,7 @@ namespace Lucky.Home
             // Start server
             Manager.GetService<IServer>();
 
-            // Start HELLO listener
-            Manager.GetService<IHelloListener>();
+            Sink.RegisterSinkDevice<TestSink>(0);
 
             // Wait for Ctrl+Break
             Console.WriteLine("Press CTRL+C to exit....");

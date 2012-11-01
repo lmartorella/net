@@ -85,15 +85,45 @@ namespace wpfMock
                             {
                                 using (BinaryReader reader = new BinaryReader(stream))
                                 {
-                                    // Write HELLO!
-                                    byte[] msg = ASCIIEncoding.ASCII.GetBytes("HELLO!");
-                                    writer.Write((short)msg.Length);
-                                    writer.Write(msg);
+                                    bool exc = false;
+                                    try
+                                    {
+                                        // Write RGST command header
+                                        writer.Write(ASCIIEncoding.ASCII.GetBytes("RGST"));
+                                        // Num of peers
+                                        writer.Write((short)1);
+
+                                        // Peer device ID
+                                        writer.Write((short)0);
+                                        // Peer device capatibilities
+                                        writer.Write((short)0);
+                                        // PORT
+                                        writer.Write(18000);
+                                    }
+                                    catch (IOException)
+                                    {
+                                        exc = true;
+                                    }
 
                                     // Read response
-                                    int l = reader.ReadInt16();
-                                    byte[] buffer = reader.ReadBytes(l);
-                                    Dispatcher.Invoke((Action)(() => LogBox.AppendText("Received: " + ASCIIEncoding.ASCII.GetString(buffer) + "\n")), null);
+                                    int errCode = 0;
+                                    try
+                                    {
+                                        errCode = reader.ReadInt16();
+                                    }
+                                    catch (IOException)
+                                    { }
+                                    if (errCode == 0 && exc)
+                                    { 
+                                        errCode = -1; 
+                                    }
+                                    Dispatcher.Invoke((Action)(() => LogBox.AppendText("Error code: " + errCode + "\n")), null);
+                                    if (errCode == 2)
+                                    {
+                                        // Assign new GUID!
+                                        Data.DeviceId = new Guid(reader.ReadBytes(16));
+                                        Dispatcher.Invoke((Action)(() => LogBox.AppendText("New GUID: " + Data.DeviceId + "\n")), null);
+                                    }
                                 }
                             }
                         }

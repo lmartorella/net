@@ -52,7 +52,7 @@ namespace Lucky.HomeMock.Core
             {
                 using (BinaryReader reader = new BinaryReader(new MemoryStream(bytes), ASCIIEncoding.ASCII))
                 {
-                    const string HomePreamble = "HOMEHERE0";
+                    const string HomePreamble = "HOMEHERE";
                     string preamble = new string(reader.ReadChars(HomePreamble.Length));
                     if (preamble != HomePreamble)
                     {

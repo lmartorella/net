@@ -29,7 +29,7 @@ namespace Lucky.HomeMock.Core
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 // Write HOMEHELO
-                writer.Write(ASCIIEncoding.ASCII.GetBytes("HOMEHELO0"));
+                writer.Write(ASCIIEncoding.ASCII.GetBytes("HOMEHELO"));
                 writer.Write(Data.DeviceId.ToByteArray());
 
             }

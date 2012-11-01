@@ -43,6 +43,10 @@ namespace Lucky.Home.Core
                 if (validMsg)
                 {
                     Logger.Log("PeerDiscovered", "ID", peerGuid);
+                    if (PeerDiscovered != null)
+                    {
+                        PeerDiscovered(this, new PeerDiscoveredEventArgs(new Peer(peerGuid, remoteEndPoint.Address)));
+                    }
                     ScheduleAckMessage();
                 }
             }
@@ -63,14 +67,7 @@ namespace Lucky.Home.Core
                     {
                         return false;
                     }
-
-                    int ver = reader.ReadChar() - '0';
-
                     guid = new Guid(reader.ReadBytes(GuidLength));
-                    if (ver > 0)
-                    {
-                        Logger.Log("PeerUnsupported", "ID", guid, "ver", ver);
-                    }
 
                     // Good message
                     return true;
@@ -117,7 +114,6 @@ namespace Lucky.Home.Core
                 using (BinaryWriter writer = new BinaryWriter(ms, ASCIIEncoding.ASCII))
                 {
                     writer.Write(ASCIIEncoding.ASCII.GetBytes(AckPreamble));
-                    writer.Write('0');
                     writer.Write(server.HostAddress.GetAddressBytes());
                     writer.Write((short)server.ServicePort);
                 }

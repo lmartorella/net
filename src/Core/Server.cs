@@ -10,7 +10,9 @@ namespace Lucky.Home.Core
 {
     class Server : ServiceBase, IServer, IDisposable
     {
-        private Dictionary<Guid, Peer> _peers = new Dictionary<Guid, Peer>();
+        private Dictionary<Guid, Peer> _peersByGuid = new Dictionary<Guid, Peer>();
+        private Dictionary<IPAddress, Peer> _peersByAddress = new Dictionary<IPAddress, Peer>();
+
         private int DefaultPort = 17008;
         private TcpListener _serviceListener;
 
@@ -36,6 +38,27 @@ namespace Lucky.Home.Core
                     };
             _serviceListener.BeginAcceptTcpClient(handler, null);
             Logger.Log("Opened Server", "host", HostAddress, "Port", ServicePort);
+
+            // Start HELLO listener
+            var listener = Manager.GetService<IHelloListener>();
+            listener.PeerDiscovered += (o, e) => HandleNewPeer(e.Peer);
+        }
+
+        private void HandleNewPeer(Peer peer)
+        {
+            // Store it.
+            // Exists same IP?
+            if (_peersByAddress.ContainsKey(peer.Address))
+            {
+                Logger.Log("DuplicatedAddress", "address", peer.Address);
+            }
+            _peersByAddress[peer.Address] = peer;
+            // Exists same GUID?
+            if (_peersByGuid.ContainsKey(peer.ID))
+            {
+                Logger.Log("DuplicatedID", "guid", peer.ID);
+            }
+            _peersByGuid[peer.ID] = peer;
         }
 
         private TcpListener TryCreateListener()
@@ -81,19 +104,81 @@ namespace Lucky.Home.Core
                 {
                     using (BinaryWriter writer = new BinaryWriter(stream))
                     {
-                        // Read service command
-                        int l = reader.ReadInt16();
-                        byte[] b = reader.ReadBytes(l);
-                        string msg = ASCIIEncoding.ASCII.GetString(b);
+                        IPAddress peerAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
+                        Peer peer;
+                        ServerErrorCode errorCode = ServerErrorCode.Ok;
+                        byte[] response = null;
 
-                        // Write dummy message
-                        byte[] msg2 = ASCIIEncoding.ASCII.GetBytes(msg + "? PUPPA!");
-                        writer.Write((short)msg2.Length);
-                        writer.Write(msg2);
+                        if (!_peersByAddress.TryGetValue(peerAddress, out peer))
+                        {
+                            // Unknown peer!
+                            Logger.Log("UnknownPeerAddress", "address", peerAddress);
+                            errorCode = ServerErrorCode.UnknownAddress;
+                        }
+                        else
+                        {
+                            // Read service command
+                            byte[] msgB = reader.ReadBytes(4);
+                            string msg = ASCIIEncoding.ASCII.GetString(msgB);
+
+                            switch (msg)
+                            {
+                                case "RGST":
+                                    ReadSinkData(peer, reader, ref errorCode, ref response);
+                                    break;
+                                default:
+                                    // ERROR, unknown command
+                                    Logger.Log("UnknownCommand", "cmd", msg);
+                                    errorCode = ServerErrorCode.UnknownMessage;
+                                    break;
+                            }
+                        }
+
+                        // Write errCode
+                        writer.Write((short)errorCode);
+                        if (response != null)
+                        {
+                            writer.Write(response);
+                        }
                     }
                 }
             }
             tcpClient.Close();
+        }
+
+        /// <summary>
+        /// Peer started, says device capatibilities
+        /// </summary>
+        private void ReadSinkData(Peer peer, BinaryReader reader, ref ServerErrorCode errorCode, ref byte[] responseData)
+        {
+            int n = reader.ReadInt16();
+            for (int i = 0; i < n; i++)
+            {
+                int deviceId = reader.ReadInt16();
+                short deviceCaps = reader.ReadInt16();
+                int port = reader.ReadInt16();
+
+                Sink sink = Sink.CreateSink(deviceId);
+                if (sink == null)
+                {
+                    // Device id unknown!
+                    errorCode = ServerErrorCode.UnknownSinkType;
+                    continue;
+                }
+
+                sink.Initialize(deviceCaps, port);
+                peer.Sinks.Add(sink);
+            }
+
+            if (peer.ID == Guid.Empty)
+            {
+                // Assign new GUID
+                errorCode = ServerErrorCode.AssignGuid;
+                Guid guid = Guid.NewGuid();
+                responseData = guid.ToByteArray();
+
+                Logger.Log("AssignedNewID", "id", guid, "address", peer.Address);
+            }
         }
     }
 }
