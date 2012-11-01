@@ -124,7 +124,7 @@ namespace Lucky.Home.Core
 
                 // Send a HERE packet
                 var sender = new UdpClient(AddressFamily.InterNetwork);
-                IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, HomeProtocolPort);
+                IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, HomeProtocolPort + 1);
 
                 // Send HERE packet
                 byte[] bytes = ms.GetBuffer();

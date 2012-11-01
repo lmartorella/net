@@ -12,7 +12,7 @@ namespace Lucky.HomeMock.Core
 
         public HomeReceiver()
         {
-            _client = new UdpClient(17007, AddressFamily.InterNetwork);
+            _client = new UdpClient(17008, AddressFamily.InterNetwork);
             _client.BeginReceive(OnReceiveData, null);
         }
 
