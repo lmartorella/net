@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using Lucky.HomeMock.Core;
+using Lucky.HomeMock.Sinks;
 
 namespace wpfMock
 {
@@ -15,14 +16,18 @@ namespace wpfMock
     {
         private HeloSender _heloSender;
         private HomeReceiver _homeReceiver;
-
         private IPEndPoint _serverEndPoint;
+
+        private const int DisplayPort = 18000;
+        private Display _displayModel;
 
         public MainWindow()
         {
             InitializeComponent();
 
             EnterInitState();
+            _displayModel = new Display(DisplayPort);
+            _displayModel.Data += HandleDisplayData;
         }
 
         private HeloSender HeloSender
@@ -94,11 +99,11 @@ namespace wpfMock
                                         writer.Write((short)1);
 
                                         // Peer device ID
-                                        writer.Write((short)0);
+                                        writer.Write(_displayModel.DeviceID);
                                         // Peer device capatibilities
-                                        writer.Write((short)0);
+                                        writer.Write(_displayModel.DeviceCaps);
                                         // PORT
-                                        writer.Write(18000);
+                                        writer.Write(_displayModel.Port);
                                     }
                                     catch (IOException)
                                     {
@@ -128,6 +133,11 @@ namespace wpfMock
                             }
                         }
                     }, null);
+        }
+
+        private void HandleDisplayData(object sender, DataEventArgs args)
+        {
+            DisplayBox.Text += args.Str + Environment.NewLine;
         }
     }
 }

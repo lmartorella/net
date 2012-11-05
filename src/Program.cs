@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using Lucky.Home.Core;
@@ -9,10 +10,6 @@ namespace Lucky.Home
 {
     class Program
     {
-        class TestSink : Sink
-        {
-        }
-
         static void Main(string[] args)
         {
             Manager.Register<HelloListener, IHelloListener>();
@@ -22,7 +19,7 @@ namespace Lucky.Home
             // Start server
             Manager.GetService<IServer>();
 
-            Sink.RegisterSinkDevice<TestSink>(0);
+            Sink.RegisterAssembly(Assembly.GetExecutingAssembly());
 
             // Wait for Ctrl+Break
             Console.WriteLine("Press CTRL+C to exit....");

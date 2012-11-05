@@ -3,9 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Text="Log" Margin="4"/>
-            <TextBox x:Name="LogBox" Margin="4"/>
-        </StackPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" 
+                   Text="Log" Margin="4"/>
+        <TextBox  Grid.Row="1" 
+                  x:Name="LogBox" Margin="4"/>
+        <TextBlock Grid.Row="2" 
+                   Text="Display" Margin="4"/>
+        <TextBox  Grid.Row="3" 
+                  MaxLines="2"
+                  MinLines="2"
+                  x:Name="DisplayBox" Margin="4" />
     </Grid>
 </Window>

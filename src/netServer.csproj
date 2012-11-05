@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\DeviceIdAttribute.cs" />
     <Compile Include="Core\IHelloListener.cs" />
     <Compile Include="Core\ILogger.cs" />
     <Compile Include="Core\IServer.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="Core\Sink.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sinks\DisplaySink.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
