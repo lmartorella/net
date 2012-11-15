@@ -122,7 +122,7 @@ namespace wpfMock
                                     { 
                                         errCode = -1; 
                                     }
-                                    Dispatcher.Invoke((Action)(() => LogBox.AppendText("Error code: " + errCode + "\n")), null);
+                                    Dispatcher.BeginInvoke((Action)(() => LogBox.AppendText("Error code: " + errCode + "\n")), null);
                                     if (errCode == 2)
                                     {
                                         // Assign new GUID!

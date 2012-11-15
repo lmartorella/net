@@ -158,7 +158,7 @@ namespace Lucky.Home.Core
                 short deviceCaps = reader.ReadInt16();
                 int port = reader.ReadInt16();
 
-                Sink sink = Sink.CreateSink(deviceId);
+                Sink sink = Manager.GetService<SinkManager>().CreateSink(deviceId);
                 if (sink == null)
                 {
                     // Device id unknown!
@@ -166,7 +166,7 @@ namespace Lucky.Home.Core
                     continue;
                 }
 
-                sink.Initialize(deviceCaps, port);
+                sink.Initialize(peer, deviceCaps, port);
                 peer.Sinks.Add(sink);
             }
 

@@ -15,11 +15,12 @@ namespace Lucky.Home
             Manager.Register<HelloListener, IHelloListener>();
             Manager.Register<Logger, ILogger>();
             Manager.Register<Server, IServer>();
+            Manager.Register<SinkManager, SinkManager>();
 
             // Start server
             Manager.GetService<IServer>();
 
-            Sink.RegisterAssembly(Assembly.GetExecutingAssembly());
+            Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
 
             // Wait for Ctrl+Break
             Console.WriteLine("Press CTRL+C to exit....");

@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Lucky.Home.Core
 {
@@ -11,39 +12,13 @@ namespace Lucky.Home.Core
     /// </summary>
     class Sink
     {
-        private static Dictionary<int, Type> s_deviceIds = new Dictionary<int, Type>();
+        private TcpClient _tcpClient;
+        private IPAddress _host;
+        private Stream _clientStream;
 
-        internal static void RegisterSinkDevice<T>(int deviceId) where T : Sink, new()
+        internal void Initialize(Peer peer, short deviceCaps, int servicePort)
         {
-            // Exception if already registered..
-            s_deviceIds.Add(deviceId, typeof(T));
-        }
-
-        internal static void RegisterAssembly(Assembly assembly)
-        {
-            foreach (Type type in assembly.GetTypes().Where(t => typeof(Sink).IsAssignableFrom(t)))
-            {
-                DeviceIdAttribute[] attr = (DeviceIdAttribute[])type.GetCustomAttributes(typeof(DeviceIdAttribute), false);
-                if (attr.Length > 1)
-                {
-                    s_deviceIds.Add(attr[0].DeviceId, type);
-                }
-            }
-        }
-
-        public static Sink CreateSink(int deviceId)
-        {
-            Type type;
-            if (!s_deviceIds.TryGetValue(deviceId, out type))
-            {
-                // Unknown sink type
-                return null;
-            }
-            return (Sink)Activator.CreateInstance(type);
-        }
-
-        internal void Initialize(short deviceCaps, int servicePort)
-        {
+            _host = peer.Address;
             Port = servicePort;
             DeviceCapabilities = deviceCaps;
             OnInitialize();
@@ -61,5 +36,48 @@ namespace Lucky.Home.Core
         /// Get the device Caps flags
         /// </summary>
         protected short DeviceCapabilities { get; private set; }
+
+        /// <summary>
+        /// Open the TCP client connection
+        /// </summary>
+        protected void Open()
+        {
+            if (!IsOpen)
+            {
+                _tcpClient = new TcpClient();
+                _tcpClient.Connect(new IPEndPoint(_host, Port));
+                _clientStream = _tcpClient.GetStream();
+            }
+        }
+
+        /// <summary>
+        /// Close the TCP client connection
+        /// </summary>
+        protected void Close()
+        {
+            if (IsOpen)
+            {
+                _clientStream.Flush();
+                _tcpClient.Close();
+                _tcpClient = null;
+            }
+        }
+
+        protected bool IsOpen
+        {
+            get
+            {
+                return _tcpClient != null;
+            }
+        }
+
+        protected void Send(byte[] buffer, int offset = 0, int count = -1)
+        {
+            if (count == -1)
+            {
+                count = buffer.Length - offset;
+            }
+            _clientStream.Write(buffer, offset, count);
+        }
     }
 }
