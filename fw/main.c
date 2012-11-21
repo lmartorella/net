@@ -1,6 +1,6 @@
 
-#include <p18f87j60.h>
 #include "fuses.h"
+#include "cm1602.h"
 
 // The smallest type capable of representing all values in the enumeration type.
 enum RESET_REASON
@@ -67,6 +67,8 @@ void main()
 {
 	// Analyze RESET reason
 	storeResetReason();
+
+	
 
 	// I'm alive
 	while (1) ClrWdt();
