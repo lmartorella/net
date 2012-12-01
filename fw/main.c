@@ -1,6 +1,7 @@
 
 #include "fuses.h"
 #include "cm1602.h"
+#include "23k256.h"
 
 // The smallest type capable of representing all values in the enumeration type.
 enum RESET_REASON
@@ -63,6 +64,24 @@ static void storeResetReason(void)
 	_reason = RESET_MCLR;
 }
 
+static const rom char* msg1 = "Hello world!";
+
+static void testBank(char bank)
+{
+	cm1602_write(bank + '0');
+	cm1602_write(':');
+	sram_write(0x1234, 0x56);
+	if (sram_read(0x1234) != 0x56)
+	{
+		cm1602_write('N');	
+	}
+	else
+	{
+		cm1602_write('Y');	
+	}
+	cm1602_write(',');
+}
+
 void main()
 {
 	// Analyze RESET reason
@@ -72,6 +91,15 @@ void main()
 	PORTE = 0xff;
 	TRISE = 0;
 	PORTE = 0xff;
+	
+	// Enable CS ram banks
+	PORTC = 0xff;
+	TRISCbits.RC1 = 0;
+	TRISCbits.RC2 = 0;
+	TRISCbits.RC6 = 0;
+	TRISCbits.RC7 = 0;
+	PORTC = 0xff;
+
 	wait30ms();
 
 	// reset display
@@ -81,25 +109,27 @@ void main()
 	cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
 
 	cm1602_setDdramAddr(0);
-	cm1602_write('H');
-	cm1602_write('e');
-	cm1602_write('l');
-	cm1602_write('l');
-	cm1602_write('o');
-	cm1602_write(' ');
-	cm1602_write('w');
-	cm1602_write('o');
-	cm1602_write('r');
-	cm1602_write('l');
-	cm1602_write('d');
-	cm1602_write('.');
+	cm1602_writeStr(msg1);
 
 	cm1602_setDdramAddr(0x40);
-	cm1602_write('O');
-	cm1602_write('K');
-	cm1602_write('.');
+
+	// Enable SPI
+	sram_init();
+
+	// Do some test with banks
+	RAMBANK0_CS = 0;
+	testBank(0);
+	RAMBANK0_CS = 1;
+	RAMBANK1_CS = 0;
+	testBank(1);
+	RAMBANK1_CS = 1;
+	RAMBANK2_CS = 0;
+	testBank(2);
+	RAMBANK2_CS = 1;
+	RAMBANK3_CS = 0;
+	testBank(3);
+	RAMBANK3_CS = 1;
 
 	// I'm alive
 	while (1) ClrWdt();
-	
 }

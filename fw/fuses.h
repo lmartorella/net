@@ -12,6 +12,11 @@
 #define CM1602_LINE_COUNT 	2
 #define CM1602_FONT_HEIGHT 	7
 
+#define RAMBANK0_CS			PORTCbits.RC6
+#define RAMBANK1_CS			PORTCbits.RC2
+#define RAMBANK2_CS			PORTCbits.RC7
+#define RAMBANK3_CS			PORTCbits.RC1
+
 extern void wait2ms(void);
 extern void wait30ms(void);
 extern void wait40us(void);

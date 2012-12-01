@@ -177,3 +177,11 @@ void cm1602_write(byte data)
 	wait40us();
 }
 
+void cm1602_writeStr(const rom char* data)
+{
+	while (*data != 0)
+	{
+		cm1602_write(*data);
+		data++;
+	}
+}

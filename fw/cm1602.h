@@ -1,7 +1,7 @@
 #ifndef _CM1602_H
 #define _CM1602_H
 
-#define byte unsigned char
+typedef unsigned char byte;
 
 // Low-level interface, HW dependent
 // CM1602_IF_MODE should be set to 4 or 8
@@ -59,6 +59,7 @@ void cm1602_shift(enum CM1602_SHIFT data);
 void cm1602_setCgramAddr(byte address);
 void cm1602_setDdramAddr(byte address);
 void cm1602_write(byte data);
+void cm1602_writeStr(const rom char* str);
 
 // Read should be implemented ONLY on port tolerant to 5V 
 
