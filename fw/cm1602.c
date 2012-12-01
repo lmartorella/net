@@ -117,7 +117,7 @@ void cm1602_reset(void)
 #endif
 
 	CM1602_IF_BIT_RW = 0;
-	waitms(30);
+	wait30ms();
 
 #if CM1602_IF_MODE == 4
 	CM1602_IF_BIT_RS = 0;
@@ -126,54 +126,54 @@ void cm1602_reset(void)
 #else
 	writeCmd(cmd);
 #endif
-	waitus(39);
+	wait40us();
 }
 
 void cm1602_clear(void)
 {
 	writeCmd(CMD_CLEAR);
-	waitms(2);
+	wait2ms();
 }
 
 void cm1602_home(void)
 {
 	writeCmd(CMD_HOME);
-	waitms(2);
+	wait2ms();
 }
 
 void cm1602_setEntryMode(enum CM1602_ENTRYMODE mode)
 {
 	writeCmd(CMD_ENTRY | mode);
-	waitus(39);
+	wait40us();
 }
 
 void cm1602_enable(enum CM1602_ENABLE enable)
 {
 	writeCmd(CMD_ENABLE | enable);
-	waitus(39);
+	wait40us();
 }
 
 void cm1602_shift(enum CM1602_SHIFT data)
 {
 	writeCmd(CMD_SHIFT | data);
-	waitus(39);
+	wait40us();
 }
 
 void cm1602_setCgramAddr(byte address)
 {
 	writeCmd(CMD_SETCGRAM | address);
-	waitus(39);
+	wait40us();
 }
 
 void cm1602_setDdramAddr(byte address)
 {
 	writeCmd(CMD_SETDDRAM | address);
-	waitus(39);
+	wait40us();
 }
 
 void cm1602_write(byte data)
 {
 	writeData(data);
-	waitus(43);
+	wait40us();
 }
 

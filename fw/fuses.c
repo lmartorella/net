@@ -1,4 +1,5 @@
 #include "fuses.h"
+#include <delays.h>
 
 // For the list of fuses, run "mcc18.exe --help-config -p=18f87j60"
 
@@ -34,3 +35,24 @@
 
 
 
+// The oscillator works at 25Mhz without PLL, so 1 cycle is 160nS 
+void wait40us(void)
+{	
+	// 40us = ~256 * 160ns
+	// So wait 256 cycles
+	Delay10TCYx(26);
+}
+
+// The oscillator works at 25Mhz without PLL, so 1 cycle is 160nS 
+void wait2ms(void)
+{
+	// 2ms = ~12500 * 160ns
+	Delay1KTCYx(13);
+}
+
+// The oscillator works at 25Mhz without PLL, so 1 cycle is 160nS 
+void wait30ms(void)
+{
+	// 30ms = ~187500 * 160ns
+	Delay1KTCYx(188);
+}

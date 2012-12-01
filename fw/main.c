@@ -68,7 +68,36 @@ void main()
 	// Analyze RESET reason
 	storeResetReason();
 
-	
+	// Enable all PORTE as output
+	PORTE = 0xff;
+	TRISE = 0;
+	PORTE = 0xff;
+	wait30ms();
+
+	// reset display
+	cm1602_reset();
+	cm1602_clear();
+	cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
+	cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
+
+	cm1602_setDdramAddr(0);
+	cm1602_write('H');
+	cm1602_write('e');
+	cm1602_write('l');
+	cm1602_write('l');
+	cm1602_write('o');
+	cm1602_write(' ');
+	cm1602_write('w');
+	cm1602_write('o');
+	cm1602_write('r');
+	cm1602_write('l');
+	cm1602_write('d');
+	cm1602_write('.');
+
+	cm1602_setDdramAddr(0x40);
+	cm1602_write('O');
+	cm1602_write('K');
+	cm1602_write('.');
 
 	// I'm alive
 	while (1) ClrWdt();
