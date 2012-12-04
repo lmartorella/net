@@ -2,6 +2,7 @@
 #include "fuses.h"
 #include "cm1602.h"
 #include "23k256.h"
+#include <TCPIP Stack/TCPIP.h>
 
 // The smallest type capable of representing all values in the enumeration type.
 enum RESET_REASON
@@ -82,15 +83,19 @@ static void testBank(char bank)
 	cm1602_write(',');
 }
 
+void __interrupt INT()
+{
+	TickUpdate();
+}
+
 void main()
 {
 	// Analyze RESET reason
 	storeResetReason();
 
-	// Enable all PORTE as output
+	// Enable all PORTE as output (display)
 	PORTE = 0xff;
 	TRISE = 0;
-	PORTE = 0xff;
 	
 	// Enable CS ram banks
 	PORTC = 0xff;
@@ -98,7 +103,6 @@ void main()
 	TRISCbits.RC2 = 0;
 	TRISCbits.RC6 = 0;
 	TRISCbits.RC7 = 0;
-	PORTC = 0xff;
 
 	wait30ms();
 
@@ -129,6 +133,9 @@ void main()
 	RAMBANK3_CS = 0;
 	testBank(3);
 	RAMBANK3_CS = 1;
+
+	// Init Ticks()
+	TickInit();
 
 	// I'm alive
 	while (1) ClrWdt();
