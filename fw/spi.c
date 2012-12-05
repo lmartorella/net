@@ -11,17 +11,22 @@ void spi_init(enum SPI_INIT value)
 	TRISCbits.RC3 = 0;		// Enable SCK1
 
 	// Cycling SSPEN 1->0->1 will reset SPI
-	SSP1CON1 = value & 0x1F;
-	SSP1CON1bits.SSPEN = 1;
+	SSP1CON1 = value & 0x1F;	// reset WCOL and SSPOV and SSPEN
+	SSP1STAT = value;		// only get 7-6 bits, other are not writable
 
-    //ClearSPIDoneFlag();
-	SSP1STAT = (value & 0xC0);
+	SSP1CON1bits.SSPEN = 1;
 }
 
 // Send/read MSB
 byte spi_shift(byte data)
 {
+	// Clear BF 
+	_asm 
+		movf SSP1BUF, 0, 0
+	_endasm 
+	// now write data to send
 	SSP1BUF = data;
+	// now wait until BF is set (data flushed and received)
 	while (!SSP1STATbits.BF);
 	return SSP1BUF;
 }

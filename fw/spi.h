@@ -33,7 +33,7 @@ enum SPI_INIT
 	// Clock = Fosc/64
 	SPI_SSPM_CLK_F64 = 0x2,
 	// Clock = TMR2/2
-	SPI_SSPM_CLK_TMR2 = 0x3,
+	//SPI_SSPM_CLK_TMR2 = 0x3,
 };
 
 // Init SPI as master
