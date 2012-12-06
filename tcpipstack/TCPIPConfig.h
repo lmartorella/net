@@ -25,9 +25,9 @@
 #define MY_DEFAULT_MAC_BYTE1            (0x00)	// Use the default of 00-04-A3-00-00-00
 #define MY_DEFAULT_MAC_BYTE2            (0x04)	// if using an ENCX24J600, MRF24WB0M, or
 #define MY_DEFAULT_MAC_BYTE3            (0xA3)	// PIC32MX6XX/7XX internal Ethernet 
-#define MY_DEFAULT_MAC_BYTE4            (0x00)	// controller and wish to use the 
-#define MY_DEFAULT_MAC_BYTE5            (0x00)	// internal factory programmed MAC
-#define MY_DEFAULT_MAC_BYTE6            (0x00)	// address instead.
+#define MY_DEFAULT_MAC_BYTE4            (0x01)	// controller and wish to use the 
+#define MY_DEFAULT_MAC_BYTE5            (0x02)	// internal factory programmed MAC
+#define MY_DEFAULT_MAC_BYTE6            (0x03)	// address instead.
 
 #define MY_DEFAULT_IP_ADDR_BYTE1        (169ul)
 #define MY_DEFAULT_IP_ADDR_BYTE2        (254ul)

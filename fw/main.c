@@ -3,6 +3,7 @@
 #include "cm1602.h"
 #include "23k256.h"
 #include <TCPIP Stack/TCPIP.h>
+#include <stdio.h>
 
 // The smallest type capable of representing all values in the enumeration type.
 enum RESET_REASON
@@ -24,6 +25,8 @@ static const rom char* g_reasonMsgs[] = {
 				"WDT",
 				"STK",
 				"RST"  };
+
+APP_CONFIG AppConfig;
 
 // Check RCON and STKPTR register for anormal reset cause
 static void storeResetReason(void)
@@ -171,9 +174,20 @@ void main()
 
 	// Enable SPI
 	sram_init();
+	//checkram();
+
+	memset(&AppConfig, 0, sizeof(AppConfig));
+	AppConfig.Flags.bIsDHCPEnabled = 1;
+	AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
+	AppConfig.MyMACAddr.v[1] = MY_DEFAULT_MAC_BYTE2;
+	AppConfig.MyMACAddr.v[2] = MY_DEFAULT_MAC_BYTE3;
+	AppConfig.MyMACAddr.v[3] = MY_DEFAULT_MAC_BYTE4;
+	AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
+	AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
 	// Init ETH Ticks on timer0 (low prio) module
 	TickInit();
+	StackInit();
 
 	// Install 1-sec timer on timer2 (low prio, to demultiplex)
 	T2CONbits.TOUTPS = 0xF; // 1:16 postscaler
@@ -187,15 +201,18 @@ void main()
 
 	enableInterrupts();
 
+	// Start IP
+	DHCPInit(0);
+	DHCPEnable(0);
+
 	// I'm alive
 	while (1) 
 	{
+		StackTask();
 		if (_tm2elapsed)
 		{
 			int i;
 			_tm2elapsed = 0;
-
-			checkram();
 
 			cm1602_setDdramAddr(0x00);
 			for (i = 0; i < 16; i++)
@@ -206,6 +223,15 @@ void main()
 			cm1602_writeStr("Ping #");
 			cm1602_write('0' + _count);
 			_count = (_count + 1) % 10;
+
+			if (DHCPIsBound(0))
+			{
+				char buf[17];
+				unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
+				cm1602_setDdramAddr(0x40);
+				sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
+				cm1602_writeStrRam(buf);
+			}
 		}
 		ClrWdt();
 	}

@@ -60,6 +60,7 @@ void cm1602_setCgramAddr(byte address);
 void cm1602_setDdramAddr(byte address);
 void cm1602_write(byte data);
 void cm1602_writeStr(const rom char* str);
+void cm1602_writeStrRam(const ram char* str);
 
 // Read should be implemented ONLY on port tolerant to 5V 
 

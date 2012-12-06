@@ -185,3 +185,12 @@ void cm1602_writeStr(const rom char* data)
 		data++;
 	}
 }
+
+void cm1602_writeStrRam(const ram char* data)
+{
+	while (*data != 0)
+	{
+		cm1602_write(*data);
+		data++;
+	}
+}
