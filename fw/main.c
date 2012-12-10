@@ -88,7 +88,6 @@ static void testBank(char bank)
 	cm1602_write(',');
 }
 
-static volatile unsigned char _count = 0;
 static volatile unsigned char _tm2elapsed = 0;
 static volatile unsigned char _tm2Count = 0;
 
@@ -130,18 +129,18 @@ static void checkram(void)
 {
 	cm1602_setDdramAddr(0x40);
 	// Do some test with banks
-	RAMBANK0_CS = 0;
+	MEM_CS0 = 0;
 	testBank(0);
-	RAMBANK0_CS = 1;
-	RAMBANK1_CS = 0;
+	MEM_CS0 = 1;
+	MEM_CS1 = 0;
 	testBank(1);
-	RAMBANK1_CS = 1;
-	RAMBANK2_CS = 0;
+	MEM_CS1 = 1;
+	MEM_CS2 = 0;
 	testBank(2);
-	RAMBANK2_CS = 1;
-	RAMBANK3_CS = 0;
+	MEM_CS2 = 1;
+	MEM_CS3 = 0;
 	testBank(3);
-	RAMBANK3_CS = 1;
+	MEM_CS3 = 1;
 }
 
 void main()
@@ -153,13 +152,6 @@ void main()
 	PORTE = 0xff;
 	TRISE = 0;
 	
-	// Enable CS ram banks
-	PORTC = 0xff;
-	TRISCbits.RC1 = 0;
-	TRISCbits.RC2 = 0;
-	TRISCbits.RC6 = 0;
-	TRISCbits.RC7 = 0;
-
 	wait30ms();
 
 	// reset display
@@ -174,7 +166,7 @@ void main()
 
 	// Enable SPI
 	sram_init();
-	//checkram();
+	checkram();
 
 	memset(&AppConfig, 0, sizeof(AppConfig));
 	AppConfig.Flags.bIsDHCPEnabled = 1;
@@ -217,18 +209,13 @@ void main()
 			cm1602_setDdramAddr(0x00);
 			for (i = 0; i < 16; i++)
 			{
-				cm1602_write(' ');
-			}
-			cm1602_setDdramAddr(0x00);
-			cm1602_writeStr("Ping #");
-			cm1602_write('0' + _count);
-			_count = (_count + 1) % 10;
-
+				cm1602_writeStrRam(' ');
+			}	
 			if (DHCPIsBound(0))
 			{
 				char buf[17];
 				unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
-				cm1602_setDdramAddr(0x40);
+				cm1602_setDdramAddr(0x00);
 				sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
 				cm1602_writeStrRam(buf);
 			}

@@ -34,6 +34,9 @@ file_006=.
 file_007=.
 file_008=.
 file_009=.
+file_010=.
+file_011=.
+file_012=.
 [GENERATED_FILES]
 file_000=no
 file_001=no
@@ -45,6 +48,9 @@ file_006=no
 file_007=no
 file_008=no
 file_009=no
+file_010=no
+file_011=no
+file_012=no
 [OTHER_FILES]
 file_000=no
 file_001=no
@@ -56,25 +62,38 @@ file_006=no
 file_007=no
 file_008=no
 file_009=no
+file_010=no
+file_011=no
+file_012=no
 [FILE_INFO]
 file_000=main.c
 file_001=cm1602.c
 file_002=fuses.c
 file_003=spi.c
 file_004=23k256.c
-file_005=fuses.h
-file_006=cm1602.h
-file_007=23k256.h
+file_005=vs1011e.c
+file_006=fuses.h
+file_007=cm1602.h
 file_008=spi.h
-file_009=C:\Users\Lucky\Projects\netServer\tcpipstack\bin\tcpip.lib
+file_009=23k256.h
+file_010=vs1011e.h
+file_011=utilities.h
+file_012=C:\Users\Lucky\Projects\netServer\tcpipstack\bin\tcpip.lib
 [SUITE_INFO]
 suite_guid={5B7D72DD-9861-47BD-9F60-2BE967BF8416}
 suite_state=extended-mode stack-analysis
 [TOOL_SETTINGS]
 TS{DD2213A8-6310-47B1-8376-9430CDFC013F}=
 TS{BFD27FBA-4A02-4C0E-A5E5-B812F3E7707C}=/m"$(BINDIR_)$(TARGETBASE).map" /o"$(BINDIR_)$(TARGETBASE).cof"
-TS{C2AF05E7-1416-4625-923D-E114DB6E2B96}=-Ou- -Ot- -Ob- -Op- -Or- -Od- -Opa-
+TS{C2AF05E7-1416-4625-923D-E114DB6E2B96}=-mL -Ou- -Ot- -Ob- -Op- -Or- -Od- -Opa-
 TS{ADE93A55-C7C7-4D4D-A4BA-59305F7D0391}=
+TS{DD2213A8-6310-47B1-8376-9430CDFC013F}000=
+TS{BFD27FBA-4A02-4C0E-A5E5-B812F3E7707C}000=/o"$(BINDIR_)$(TARGETBASE).cof" /M"$(BINDIR_)$(TARGETBASE).map" /W
+TS{C2AF05E7-1416-4625-923D-E114DB6E2B96}000=-mL -Ou- -Ot- -Ob- -Op- -Or- -Od- -Opa- -E
+TS{C2AF05E7-1416-4625-923D-E114DB6E2B96}000_alt=yes
+TS{ADE93A55-C7C7-4D4D-A4BA-59305F7D0391}000=
+[ACTIVE_FILE_SETTINGS]
+TS{C2AF05E7-1416-4625-923D-E114DB6E2B96}000_active=yes
 [INSTRUMENTED_TRACE]
 enable=0
 transport=0

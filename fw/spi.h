@@ -11,10 +11,10 @@ enum SPI_INIT
 	// (Master mode): input data sampled at the end of the output time
 	SPI_SMP_END = 0x80,	
 	// (Master mode): input data sampled at middle of the output time
-	SPI_SMP_MIDDLE = 0x00,	
+	SPI_SMP_MIDDLE = 0x00,		// (good for 23k256)
 
 	// Transmit when clock Active -> idle
-	SPI_CKE_IDLE = 0x40,	
+	SPI_CKE_IDLE = 0x40,	// (good for 23k256)	
 	// Transmit when clock idle -> Active
 	SPI_CKE_ACTIVE = 0x00,	
 
@@ -24,10 +24,10 @@ enum SPI_INIT
 	// Clock polarity: idle high
 	SPI_CKP_HIGH = 0x10,
 	// Clock polarity: idle low
-	SPI_CKP_LOW = 0x00,
+	SPI_CKP_LOW = 0x00,   // (good for 23k256)
 
 	// Clock = Fosc/4
-	SPI_SSPM_CLK_F4 = 0x0,
+	SPI_SSPM_CLK_F4 = 0x0,	// (good for 23k256)
 	// Clock = Fosc/16
 	SPI_SSPM_CLK_F16 = 0x1,
 	// Clock = Fosc/64
