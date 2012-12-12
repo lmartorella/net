@@ -3,6 +3,6 @@
 void vs1011_init(void)
 {
 	// enable cs out and deassert
-	PORT(VS1011_PORT).VS1011_CS = 1;
-	TRIS(VS1011_PORT).VS1011_CS = 0;
+	VS1011_PORTBITS.VS1011_CS = 1;
+	VS1011_TRISBITS.VS1011_CS = 0;
 }

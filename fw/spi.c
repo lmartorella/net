@@ -10,8 +10,12 @@ static void ClearSPIDoneFlag(void)
 
 static void WaitForDataByte(void)   
 {
-	while(!SPIRAM_SPI_IF); 
+#ifndef __DEBUG
+	while (!SPIRAM_SPI_IF); 
 	ClearSPIDoneFlag();
+#else
+#warning DEBUG CODE
+#endif
 }
 
 #define SPI_ON_BIT     (SPIRAM_SPICON1bits.SSPEN)
@@ -36,7 +40,7 @@ void spi_init(enum SPI_INIT value)
 }
 
 // Send/read MSB
-byte spi_shift(byte data)
+BYTE spi_shift(BYTE data)
 {
 	// now write data to send
 	SSP1BUF = data;

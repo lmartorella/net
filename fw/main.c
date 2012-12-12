@@ -2,6 +2,8 @@
 #include "fuses.h"
 #include "cm1602.h"
 #include "23k256.h"
+#include "spi.h"
+#include "vs1011e.h"
 #include <TCPIP Stack/TCPIP.h>
 #include <stdio.h>
 
@@ -72,22 +74,6 @@ static void storeResetReason(void)
 	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
 }
 
-static void testBank(char bank)
-{
-	cm1602_write(bank + '0');
-	cm1602_write(':');
-	sram_write(0x1234, 0x56);
-	if (sram_read(0x1234) != 0x56)
-	{
-		cm1602_write('N');	
-	}
-	else
-	{
-		cm1602_write('Y');	
-	}
-	cm1602_write(',');
-}
-
 static volatile unsigned char _tm2elapsed = 0;
 static volatile unsigned char _tm2Count = 0;
 
@@ -127,20 +113,13 @@ static void enableInterrupts(void)
 
 static void checkram(void)
 {
-	cm1602_setDdramAddr(0x40);
-	// Do some test with banks
-	MEM_CS0 = 0;
-	testBank(0);
-	MEM_CS0 = 1;
-	MEM_CS1 = 0;
-	testBank(1);
-	MEM_CS1 = 1;
-	MEM_CS2 = 0;
-	testBank(2);
-	MEM_CS2 = 1;
-	MEM_CS3 = 0;
-	testBank(3);
-	MEM_CS3 = 1;
+	char err = sram_test();
+	if (err >= 0)
+	{
+		cm1602_setDdramAddr(0x40);
+		cm1602_writeStr("bankfail#");
+		cm1602_write(err + '0');
+	}
 }
 
 void main()
@@ -148,10 +127,6 @@ void main()
 	// Analyze RESET reason
 	storeResetReason();
 
-	// Enable all PORTE as output (display)
-	PORTE = 0xff;
-	TRISE = 0;
-	
 	wait30ms();
 
 	// reset display
@@ -164,8 +139,16 @@ void main()
 	cm1602_writeStr(msg1);
 	cm1602_writeStr(g_reasonMsgs[_reason]);
 
-	// Enable SPI
 	sram_init();
+	vs1011_init();
+
+	// Enable SPI
+	// from 23k256 datasheet and figure 20.3 of PIC datasheet
+	// CKP = 0, CKE = 1
+	// Output: data sampled at clock falling.
+	// Input: data sampled at clock falling, at the end of the cycle.
+	spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
+
 	checkram();
 
 	memset(&AppConfig, 0, sizeof(AppConfig));
@@ -209,7 +192,7 @@ void main()
 			cm1602_setDdramAddr(0x00);
 			for (i = 0; i < 16; i++)
 			{
-				cm1602_writeStrRam(' ');
+				cm1602_write(' ');
 			}	
 			if (DHCPIsBound(0))
 			{

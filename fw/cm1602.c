@@ -1,5 +1,6 @@
 #include "cm1602.h"
 #include "fuses.h"
+#include "utilities.h"
 
 #define CMD_CLEAR 		0x1
 #define CMD_HOME 		0x2
@@ -17,8 +18,8 @@
 #define CMD_FUNCSET_FS_11	0x04
 #define CMD_FUNCSET_FS_7	0x00
 
-#ifndef CM1602_IF_PORT
-#error CM1602_IF_PORT not set
+#ifndef CM1602_PORT
+#error CM1602_PORT not set
 #endif
 #ifndef CM1602_IF_BIT_RW
 #error CM1602_IF_BIT_RW not set
@@ -32,10 +33,10 @@
 
 // Clock the control bits in order to push the 4/8 bits to the display.
 // In case of 4-bit, the lower data is sent and the HIGH part should be ZERO
-static void pulsePort(byte data)
+static void pulsePort(BYTE data)
 {
 #if CM1602_IF_MODE == 4
-	byte oldData;
+	BYTE oldData;
 #endif
 
 	CM1602_IF_BIT_EN = 1;
@@ -47,25 +48,25 @@ static void pulsePort(byte data)
 	_endasm
 
 	#if CM1602_IF_NIBBLE == 'low'
-		oldData = (CM1602_IF_PORT & 0xf0);
+		oldData = port(CM1602_PORT) & 0xf0;
 		// Direct write, takes only the low part
 		// 7-4 bits of data should be ZERO
 		CM1602_IF_PORT = data | oldData;
 	#elif CM1602_IF_NIBBLE == 'high'
-		oldData = (CM1602_IF_PORT & 0x0f);
+		oldData = CM1602_PORT & 0x0f;
 		// Direct write, takes only the high part
-		CM1602_IF_PORT = (data << 4) | oldData;
+		CM1602_PORT = (data << 4) | oldData;
 	#else
 		#error CM1602_IF_NIBBLE should be set to 'low' or 'high'
 	#endif
 #else
-	CM1602_IF_PORT = data;
+	CM1602_PORT = data;
 #endif
 	CM1602_IF_BIT_EN = 0;
 }
 
 // write a byte to the port
-static void writeByte(byte data)
+static void writeByte(BYTE data)
 {
 #if CM1602_IF_MODE == 4
 	// 4-bit interface. Send high first
@@ -79,13 +80,13 @@ static void writeByte(byte data)
 #endif
 }
 
-static void writeCmd(byte data)
+static void writeCmd(BYTE data)
 {
 	CM1602_IF_BIT_RS = 0;
 	writeByte(data);
 }
 
-static void writeData(byte data)
+static void writeData(BYTE data)
 {
 	CM1602_IF_BIT_RS = 1;
 	writeByte(data);
@@ -93,7 +94,13 @@ static void writeData(byte data)
 
 void cm1602_reset(void)
 {
-	byte cmd = CMD_FUNCSET | 
+	BYTE cmd;
+	
+	// Enable all PORTE as output (display)
+	CM1602_PORT = 0xff;
+	CM1602_TRIS = 0;
+
+	cmd = CMD_FUNCSET | 
 #if CM1602_LINE_COUNT == 1
 		CMD_FUNCSET_LN_1
 #elif CM1602_LINE_COUNT == 2
@@ -159,19 +166,19 @@ void cm1602_shift(enum CM1602_SHIFT data)
 	wait40us();
 }
 
-void cm1602_setCgramAddr(byte address)
+void cm1602_setCgramAddr(BYTE address)
 {
 	writeCmd(CMD_SETCGRAM | address);
 	wait40us();
 }
 
-void cm1602_setDdramAddr(byte address)
+void cm1602_setDdramAddr(BYTE address)
 {
 	writeCmd(CMD_SETDDRAM | address);
 	wait40us();
 }
 
-void cm1602_write(byte data)
+void cm1602_write(BYTE data)
 {
 	writeData(data);
 	wait40us();

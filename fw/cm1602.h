@@ -1,7 +1,7 @@
 #ifndef _CM1602_H
 #define _CM1602_H
 
-typedef unsigned char byte;
+#include "utilities.h"
 
 // Low-level interface, HW dependent
 // CM1602_IF_MODE should be set to 4 or 8
@@ -56,9 +56,9 @@ void cm1602_home(void);
 void cm1602_setEntryMode(enum CM1602_ENTRYMODE mode);
 void cm1602_enable(enum CM1602_ENABLE enable);
 void cm1602_shift(enum CM1602_SHIFT data);
-void cm1602_setCgramAddr(byte address);
-void cm1602_setDdramAddr(byte address);
-void cm1602_write(byte data);
+void cm1602_setCgramAddr(BYTE address);
+void cm1602_setDdramAddr(BYTE address);
+void cm1602_write(BYTE data);
 void cm1602_writeStr(const rom char* str);
 void cm1602_writeStrRam(const ram char* str);
 

@@ -1,8 +1,6 @@
 #ifndef _SPI_INCLUDE_
 #define _SPI_INCLUDE_
 
-typedef unsigned char byte;
-
 enum SPI_INIT
 {
 	// **** 
@@ -39,6 +37,6 @@ enum SPI_INIT
 // Init SPI as master
 void spi_init(enum SPI_INIT value);
 // Send/read MSB
-byte spi_shift(byte data);
+BYTE spi_shift(BYTE data);
 
 #endif
