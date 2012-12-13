@@ -92,8 +92,11 @@ void Tmr2Update(void)
 }
 
 void low_isr(void);
+
 #pragma code lowVector=0x18
 void LowVector(void){_asm goto low_isr _endasm}
+#pragma code
+
 #pragma interruptlow low_isr
 void low_isr(void)
 {
