@@ -1,9 +1,9 @@
 
-#include "fuses.h"
-#include "cm1602.h"
-#include "23k256.h"
-#include "spi.h"
-#include "vs1011e.h"
+#include "hardware/fuses.h"
+#include "hardware/cm1602.h"
+#include "hardware/23k256.h"
+#include "hardware/spi.h"
+#include "hardware/vs1011e.h"
 #include <TCPIP Stack/TCPIP.h>
 #include <stdio.h>
 
