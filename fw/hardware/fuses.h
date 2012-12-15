@@ -28,6 +28,7 @@
 #define MEM_BANK1_CS RC2
 #define MEM_BANK2_CS RC7
 #define MEM_BANK3_CS RC1
+#define MEM_BANK_CS_MASK 0b11000110
 
 // ******* 
 // MP3
@@ -42,5 +43,11 @@
 #define VS1011_BSYNC 	RB0
 #define VS1011_CS	 	RB1
 
+
+// ******* 
+// MEM & LOADER & FLASH
+// *******
+#define MAX_PROG_MEM	0x20000
+#define ROM_BLOCK_SIZE	256
 
 #endif

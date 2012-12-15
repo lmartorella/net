@@ -2,6 +2,7 @@
 #define _PROGRAMMER_BOOTSTRAP_H_
 
 #include "../fw/utilities.h"
+#include "../fw/fuses.h"
 
 /********************
 
@@ -20,6 +21,8 @@
 
 
 typedef void (*DoFlashHandler)(UINT16 startBlock, UINT16 lastBlock);
+
+#define LOADER_PTR (MAX_PROG_MEM - sizeof(LoaderRecord) - 0x08)
 
 struct LoaderRecord
 {
