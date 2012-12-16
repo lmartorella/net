@@ -3,6 +3,7 @@
 
 typedef unsigned char BYTE;
 typedef unsigned short UINT16;
+typedef unsigned short long UINT24;
 typedef struct 
 {
 	BYTE b[16];

@@ -1,67 +1,71 @@
 
+#include <p18f87j60.h>
 #include "programmer.h"
-#include "../fw/fuses.h"
-#include "../fw/23k256.h"
+#include "../hardware/spiram.h"
 
-#define START_MEM (MAX_PROG_MEM - 256)
+//#define START_MEM (MAX_PROG_MEM - 256)
+#pragma udata my_section_1
+static BYTE s_bitmap[256];
+
+#pragma udata my_section_2
+static BYTE s_newConfiguration[8];
+static LoaderUserData s_newUserData;
 
 static void DoFlash();
 
-#pragma code loaderrec = 0x1ffd8   // LOADER_PTR = MAX_PROG_MEM - 0x28
-static const struct LoaderRecord LREC = 
+#pragma romdata overlay startzone
+static const rom BYTE s_silly;
+
+#pragma romdata loaderrec	// LOADER_PTR = MAX_PROG_MEM - 0xA
+static const rom LoaderRecord LREC = 
 {
-	{0,0,0,0,0,0},
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 	{0,0},
-	{0,0},
-	&DoFlash,
-	(START_MEM / ROM_BLOCK_SIZE)
+	(DoFlashHandler)&DoFlash,
+	(far void*)&s_silly
 };
 
-static BYTE s_bitmap[256];
+#pragma code
 
-/***** 256-bytes in high mem *****/
-#pragma code loadercode = 0x1ff00	// START_MEM = MAX_PROG_MEM - 256
+// Size of block validity bitmap, located at the end of the SPI RAM
+#define BITMAP_SIZE (MAX_PROG_MEM / ROM_BLOCK_SIZE / 8)
 
-static void en0(void) { MEM_CS0 = 0; }
-static void en1(void) { MEM_CS1 = 0; }
-static void en2(void) { MEM_CS2 = 0; }
-static void en3(void) { MEM_CS3 = 0; }
+// Expect SPI ram = PIC ROM
+#define SPIRAM_SIZE MAX_PROG_MEM
 
-typedef void(*action)(void); 
-static action en[] = { en0, en1, en2, en3 };  
+// The bitmap validity address should be located at the end 
+//  (overlays the last 4 blocks, occupied by the loader itself and not useable)
+#define SPIRAM_BITMAP_ADDRESS (SPIRAM_SIZE - BITMAP_SIZE)
 
-/* 
-	Select the right bank of the given bank (0-2047 on a PIC18 with 128K)
-	The last 4 banks (256) are reserved for the bank bitmap
-*/
-static void selectRam(UINT16 block)
-{
-	// Select the right bank from the block number
-	// block count = 11 bits
-	// Check BITs 10/9 for bank selection
-	en[block >> 9]();
-	
-}
+// Then new CONFIGURATION words
+#define SPIRAM_CONF_ADDRESS (SPIRAM_BITMAP_ADDRESS - CONFIGURATION_SIZE)
 
-static void unselectRam()
-{
-	// All 1 to CSs
-	MEM_PORT |= MEM_BANK_CS_MASK;
-}
+// Then new UDATA words
+#define SPIRAM_UDATA_ADDRESS (SPIRAM_CONF_ADDRESS - sizeof(LoaderUserData))
 
-void DoFlash()
+// This is the MAX ADDRESS of SPI-RAM that can be used
+//  The programmer should check this in addition to the startzone
+//  to avoid programmer overwrite
+#define MAX_SPIRAM_USAGE SPIRAM_UDATA_ADDRESS
+
+void DoFlash(void)
 {	
 	// Disable ALL interrupts
-	INTCON.GIEH = 0;	
-	INTCON.GIEL = 0;	
+	INTCONbits.GIEH = 0;	
+	INTCONbits.GIEL = 0;	
 
 	// Read validity bitmap from SPI RAM
+	sram_read(s_bitmap, SPIRAM_BITMAP_ADDRESS, BITMAP_SIZE);
+	// Read new configuration from SPI RAM
+	sram_read(s_newConfiguration, SPIRAM_CONF_ADDRESS, CONFIGURATION_SIZE);
+	// Read new configuration from SPI RAM
+	sram_read(s_newConfiguration, SPIRAM_CONF_ADDRESS, CONFIGURATION_SIZE);
+	// Read new userData from SPI RAM
+	sram_read((void*)&s_newUserData, SPIRAM_UDATA_ADDRESS, sizeof(LoaderUserData));
+
+	// Now cycle ram bitmap validity for banks.
 	
 }
 
 void main()
 {
 }
-
-#pragma code 

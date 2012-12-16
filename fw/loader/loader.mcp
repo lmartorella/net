@@ -8,7 +8,7 @@ dir_src=
 dir_bin=bin
 dir_tmp=obj
 dir_sin=
-dir_inc=.;../fw
+dir_inc=.;../hardware
 dir_lib=
 dir_lkr=
 [CAT_FILTERS]
@@ -26,15 +26,23 @@ subfolder_lkr=
 [FILE_SUBFOLDERS]
 file_000=.
 file_001=.
+file_002=.
+file_003=.
 [GENERATED_FILES]
 file_000=no
 file_001=no
+file_002=no
+file_003=no
 [OTHER_FILES]
 file_000=no
 file_001=no
+file_002=no
+file_003=no
 [FILE_INFO]
 file_000=main.c
 file_001=programmer.h
+file_002=C:\Users\Lucky\Projects\netServer\fw\hardware\bin\hardware.lib
+file_003=loader.lkr
 [SUITE_INFO]
 suite_guid={5B7D72DD-9861-47BD-9F60-2BE967BF8416}
 suite_state=extended-mode generate-absolute-code

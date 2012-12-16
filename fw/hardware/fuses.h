@@ -47,7 +47,7 @@
 // ******* 
 // MEM & LOADER & FLASH
 // *******
-#define MAX_PROG_MEM	0x20000
-#define ROM_BLOCK_SIZE	256
-
+#define MAX_PROG_MEM		0x20000
+#define ROM_BLOCK_SIZE		64
+#define CONFIGURATION_SIZE 	8
 #endif

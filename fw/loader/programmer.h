@@ -1,37 +1,65 @@
 #ifndef _PROGRAMMER_BOOTSTRAP_H_
 #define _PROGRAMMER_BOOTSTRAP_H_
 
-#include "../fw/utilities.h"
-#include "../fw/fuses.h"
+#include "../hardware/utilities.h"
+#include "../hardware/fuses.h"
+
+
+// Pointe to the FLASH utility (that program and reset the device at the end)
+// The LoaderUDataToProgram and ConfigurationToProgram should be loaded with the new
+// data to flash. Pre-load the data with the current content using the loader_loadCurrentUDConf() function.
+typedef far rom void (*DoFlashHandler)(UINT16 startBlock, UINT16 lastBlock);
+
+/********************
+  LOADER RECORD (READ-ONLY)
+********************/
+typedef struct
+{
+		// Read the programmer version (for logs)
+	VERSION programmerVersion;				
+		// Pointe to the FLASH utility (that program and reset the device at the end)
+		// The LoaderUDataToProgram and ConfigurationToProgram should be loaded with the new
+		// data to flash. Pre-load the data with the current content using the loader_loadCurrentUDConf() function.
+    DoFlashHandler flashHandler;			
+  		// Start of loader memory data, this is the max application code programmable.
+		//  (makes programmer code safe). The only memory exclusion are the configuration
+ 		//  words and the LoaderUserData memory.
+	far void* blockFree;					
+} LoaderRecord;
+extern far rom LoaderRecord* LOADER_REC_PTR;
 
 /********************
 
-  LOADER RECORD
-  Start at SZ-0x20:
-
-  0x00:  SZ-0x20:  6b:    free
-  0x06:  SZ-0x1A:  GUID:  application instance ID (used by user code)
-  0x16:  SZ-0x0A:  WORD:  application version
-  0x18:  SZ-0x08:  WORD:  programmer version
-  0x1A:  SZ-0x06:  DWORD: doFlash(word startBlock, word endBlock) pointer
-  0x1E:  SZ-0x02:  WORD:  Program max size in blocks (64-bytes), starting from 0 
-					      (makes programmer code safe). Equals to the block where the
-		                  programmer starts.
+  USER-DATA PART OF LOADER RECORD (PROGRAMMABLE)
+  The record is immediately before the Configuration word, in the higher program memory.
+  (loader do supports changing configuration words)
 */
-
-
-typedef void (*DoFlashHandler)(UINT16 startBlock, UINT16 lastBlock);
-
-#define LOADER_PTR (MAX_PROG_MEM - sizeof(LoaderRecord) - 0x08)
-
-struct LoaderRecord
+typedef struct
 {
-	BYTE free[6];
+  	// GUID:  application instance ID (used by user code)
 	GUID appId;
+  	// WORD:  application version
     VERSION appVersion;
-	VERSION programmerVersion;
-    DoFlashHandler flashHandler;
-	UINT16 blockFree;
-};
+} LoaderUserData;
+extern far rom LoaderUserData* LOADER_UDATA_PTR;
 
+
+// Addition PIC RAM memory, contains the loader user data to write
+extern far ram struct LoaderUserData* LoaderUDataToProgram;
+
+// Addition PIC RAM memory, contains the configuration words to write
+extern far ram BYTE ConfigurationToProgram[8];
+
+// *******
+// Prepare the data to write 
+// *******
+
+// Loads the current USERDATA+CONFIGURATION rom in the relevant ram sections 
+// (LoaderUDataToProgram and ConfigurationToProgram)
+// in order to overwrite it with the new data.
+void loader_loadCurrentUDConf();
+// Clear the SPI RAM bitmap
+void loader_clearBitmap();
+// Load a HEX line in SPI RAM and update the bitmap validity
+void loader_processHexLine(const ram char* line);
 #endif

@@ -1,4 +1,4 @@
-#include "23k256.h"
+#include "spiram.h"
 #include "spi.h"
 #include "fuses.h"
 
@@ -8,17 +8,12 @@
 #define MEM_CSTRIS3	MEM_TRISBITS.MEM_BANK3_CS
 
 static void en0(void) { MEM_CS0 = 0; }
-static void dis0(void) { MEM_CS0 = 1; }
 static void en1(void) { MEM_CS1 = 0; }
-static void dis1(void) { MEM_CS1 = 1; }
 static void en2(void) { MEM_CS2 = 0; }
-static void dis2(void) { MEM_CS2 = 1; }
 static void en3(void) { MEM_CS3 = 0; }
-static void dis3(void) { MEM_CS3 = 1; }
 
 typedef void(*action)(void); 
 static action en[] = { en0, en1, en2, en3 };  
-static action dis[] = { dis0, dis1, dis2, dis3 };  
 
 enum STATUSREG
 {
@@ -37,6 +32,12 @@ enum MSG
 	MSG_WRSR = 0x1,		// Write Status register
 };
 
+static void disableAll(void)
+{	
+	// Set all CS to 1 (disabled)
+	MEM_PORT |= MEM_BANK_CS_MASK;
+}
+
 // This will override the spi_init() call
 void sram_init()
 {
@@ -47,54 +48,98 @@ void sram_init()
 	MEM_CSTRIS2 = 0;
 	MEM_CSTRIS3 = 0;
 
-	for (b = 0; b < 4; b++)
-	{
-		dis[b]();
-	}
-}
+	disableAll();
 
-void sram_write(UINT16 address, BYTE data)
-{
-	// Write 1 byte
-	spi_shift(MSG_WRITE);
-	spi_shift(address >> 8);
-	spi_shift((BYTE)address);
-	spi_shift(data);
-}
-
-BYTE sram_read(UINT16 address)
-{
-	// Write 1 byte
-	spi_shift(MSG_READ);
-	spi_shift(address >> 8);
-	spi_shift((BYTE)address);
-	return spi_shift(0);
-}
-
-// Test all 4 banks, return the number of the failing bank
-// or -1 if no fails
-char sram_test(void)
-{
-	char b;
-	char test;
-
-	// Do some test with banks
 	for (b = 0; b < 4; b++)
 	{
 		en[b]();
 		// Enter full range mode
 		spi_shift(MSG_WRSR);
 		spi_shift(ST_SEQMODE | HOLD_DIS);
-		dis[b]();
+		disableAll();
+	}
+}
 
-		en[b]();
-		sram_write(0x1234, 0x56);
-		dis[b]();
+static UINT16 enableBank(UINT24 addr)
+{
+	// support 4 banks = 128k
+	addr &= 0x1ffff;
+	en[addr >> 15]();
+	return (UINT16)addr;
+}
 
-		en[b]();
-		test = sram_read(0x1234);
-		dis[b]();
-		if (test != 0x56)
+// Write a vector of bytes in RAM.
+// NOTE: do not support SPI cross-bank access
+//  - *dest is in banked PIC RAM
+//  - address is logic SPIRAM address of the first byte to write
+//  - count is the count of byes to write
+void sram_write(BYTE* ram src, UINT24 address, BYTE count)
+{
+	UINT16 raddr;
+	if (count == 0)
+	{
+		return;
+	}
+	spi_shift(MSG_WRITE);
+	raddr = enableBank(address);
+	spi_shift(raddr >> 8);
+	spi_shift((BYTE)raddr);
+	do 
+	{
+		// Write 1 byte
+		spi_shift(*(src++));
+		ClrWdt();
+	}
+	while (--count > 0);
+	disableAll();
+}
+
+// Read a vector of bytes in RAM.
+// NOTE: do not support SPI cross-bank access
+//  - *dest is in banked PIC RAM
+//  - address is logic SPIRAM address of the first byte to read
+//  - count is the count of byes to read
+void sram_read(BYTE* ram dest, UINT24 address, BYTE count)
+{
+	UINT16 raddr;
+	if (count == 0)
+	{
+		return;
+	}
+	spi_shift(MSG_READ);
+	raddr = enableBank(address);
+	spi_shift(raddr >> 8);
+	spi_shift((BYTE)raddr);
+	do 
+	{
+		// Read 1 byte
+		*(dest++) = spi_shift(0);
+		ClrWdt();
+	}
+	while (--count > 0);
+	disableAll();
+}
+
+// Test all 4 banks, return the number of the failing bank
+// or -1 if no fails
+char sram_test(void)
+{
+	// To use a random seq string that spans on all banks
+	// write first, read then
+	BYTE b;
+	BYTE test;
+	UINT24 addr = 0x1234;
+
+	// Do some test with banks
+	for (b = 0; b < 4; b++, addr += 0x8000)
+	{
+		sram_write(&b, addr, 1);
+	}
+	addr = 0x1234;
+	for (b = 0; b < 4; b++, addr += 0x8000)
+	{
+		sram_read(&test, addr, 1);
+		if (test != b)
 		{
 			return b;
 		}
