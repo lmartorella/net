@@ -1,9 +1,10 @@
 
 #include "hardware/fuses.h"
 #include "hardware/cm1602.h"
-#include "hardware/23k256.h"
+#include "hardware/spiram.h"
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
+#include "timers.h"
 #include <TCPIP Stack/TCPIP.h>
 #include <stdio.h>
 
@@ -74,37 +75,6 @@ static void storeResetReason(void)
 	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
 }
 
-static volatile unsigned char _tm2elapsed = 0;
-static volatile unsigned char _tm2Count = 0;
-
-void Tmr2Update(void)
-{
-	if (PIR1bits.TMR2IF)
-	{
-		// Reset interrupt flag
-		PIR1bits.TMR2IF = 0;
-		// Increment internal high tick counter (additional 1:256 postscaler)
-		if (++_tm2Count == 0)
-		{
-			_tm2elapsed = 1;	
-		}
-	}
-}
-
-void low_isr(void);
-
-#pragma code lowVector=0x18
-void LowVector(void){_asm goto low_isr _endasm}
-#pragma code
-
-#pragma interruptlow low_isr
-void low_isr(void)
-{
-	// Update ETH module timers
-	TickUpdate();
-	Tmr2Update();
-}
-
 
 static void enableInterrupts(void)
 {
@@ -123,6 +93,34 @@ static void checkram(void)
 		cm1602_writeStr("bankfail#");
 		cm1602_write(err + '0');
 	}
+}
+
+void timer1s(void);
+void sendHelo(void);
+
+// [Flags]
+typedef enum STATUS_MODE_enum
+{	
+	// Connected to server?
+	MODE_CONNECTED = 1,
+	// Helo UDP socked opened?
+	MODE_HELO_OPENED = 2,
+	// is DHCP ok?
+	MODE_DHCP_OK = 4,
+} STATUS_MODE;
+
+static STATUS_MODE s_mode = 0;
+
+void print(const rom char* str)
+{
+	cm1602_setDdramAddr(0x00);
+	cm1602_writeStr(str);
+}
+
+void error(const rom char* str)
+{
+	print("E:");
+	print(str);
 }
 
 void main()
@@ -163,19 +161,7 @@ void main()
 	AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
 	AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
-	// Init ETH Ticks on timer0 (low prio) module
-	TickInit();
-	StackInit();
-
-	// Install 1-sec timer on timer2 (low prio, to demultiplex)
-	T2CONbits.TOUTPS = 0xF; // 1:16 postscaler
-	T2CONbits.T2CKPS = 0x3; // 1:16 prescaler, so freq = 25Mhz / 16 / 16 = 24.41KHz.
-	PR2 = 95;			// final freq. 256 Hz. that /256 = 1sec
-	T2CONbits.TMR2ON = 1;	// enable timer
-
-	PIR1bits.TMR2IF = 0;
-	IPR1bits.TMR2IP = 0; // low prio
-	PIE1bits.TMR2IE = 1;
+	timers_init();
 
 	enableInterrupts();
 
@@ -183,29 +169,77 @@ void main()
 	DHCPInit(0);
 	DHCPEnable(0);
 
+	print("Waiting..");
+
 	// I'm alive
 	while (1) 
 	{
-		StackTask();
-		if (_tm2elapsed)
+		if (timers_check1s())
 		{
-			int i;
-			_tm2elapsed = 0;
-
-			cm1602_setDdramAddr(0x00);
-			for (i = 0; i < 16; i++)
-			{
-				cm1602_write(' ');
-			}	
-			if (DHCPIsBound(0))
-			{
-				char buf[17];
-				unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
-				cm1602_setDdramAddr(0x00);
-				sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
-				cm1602_writeStrRam(buf);
-			}
+			timer1s();
 		}
 		ClrWdt();
 	}
+}
+
+void timer1s()
+{
+	char buf[17];
+
+	int dhcpOk = DHCPIsBound(0);
+	int dhcpWasOk = (s_mode & MODE_DHCP_OK);
+	if (dhcpOk != dhcpWasOk)
+	{
+		if (dhcpOk)
+		{
+			unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
+			sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
+			cm1602_writeStrRam(buf);
+			s_mode |= MODE_DHCP_OK;
+
+			// send helo
+			if (!(s_mode & MODE_CONNECTED))
+			{
+				sendHelo();
+			}
+		}
+		else
+		{
+			s_mode &= ~MODE_DHCP_OK;
+			error("not bound");
+		}
+	}
+}
+
+static UDP_SOCKET s_heloSocket;
+#define HomeProtocolPort 17007
+
+// Send HELO packet to the helo port
+void sendHelo()
+{
+	int i;
+	if (!(s_mode & MODE_HELO_OPENED))
+	{
+		s_heloSocket = UDPOpenEx(NULL, UDP_OPEN_NODE_INFO, 0, HomeProtocolPort);
+		if (s_heloSocket == INVALID_UDP_SOCKET)
+		{
+			error("HELO.open");
+			return;
+		}
+		s_mode |= MODE_HELO_OPENED;
+	}
+
+	// Socket opened
+	if (UDPIsPutReady(s_heloSocket) < (16 + 8))
+	{
+		error("HELO.rdy");
+		return;
+	}
+
+	UDPPutROMString("HOMEHELO");
+	for (i = 0; i < 16; i++)
+	{
+		UDPPut(0);
+	}
+	UDPFlush();
 }

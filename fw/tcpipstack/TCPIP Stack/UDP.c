@@ -844,7 +844,7 @@ WORD UDPPutArray(BYTE *cData, WORD wDataLen)
 	This function is aliased to UDPPutArray on non-PIC18 platforms.
   ***************************************************************************/
 #if defined(__18CXX)
-WORD UDPPutROMArray(ROM BYTE *cData, WORD wDataLen)
+WORD UDPPutROMArray(ROM BYTE* cData, WORD wDataLen)
 {
 	WORD wTemp;
 
@@ -857,7 +857,7 @@ WORD UDPPutROMArray(ROM BYTE *cData, WORD wDataLen)
 		UDPTxCount = wPutOffset;
 
     // Load application data bytes
-    MACPutROMArray(cData, wDataLen);
+    MACPutROMArray((ROM BYTE*)cData, wDataLen);
 
     return wDataLen;
 }
@@ -922,9 +922,9 @@ BYTE* UDPPutString(BYTE *strData)
 	This function is aliased to UDPPutString on non-PIC18 platforms.
   ***************************************************************************/
 #if defined(__18CXX)
-ROM BYTE* UDPPutROMString(ROM BYTE *strData)
+rom char* UDPPutROMString(rom const char* strData)
 {
-	return strData + UDPPutROMArray(strData, strlenpgm((ROM char*)strData));
+	return strData + UDPPutROMArray((ROM BYTE*)strData, strlenpgm(strData));
 }
 #endif
 

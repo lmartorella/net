@@ -161,7 +161,10 @@ void UDPFlush(void);
 // ROM function variants for PIC18
 #if defined(__18CXX)
 	WORD UDPPutROMArray(ROM BYTE *cData, WORD wDataLen);
+	/* LUCKY
 	ROM BYTE* UDPPutROMString(ROM BYTE *strData);
+	*/
+	rom char* UDPPutROMString(rom const char* strData);
 #else
 	#define UDPPutROMArray(a,b)	UDPPutArray((BYTE*)a,b)
 	#define UDPPutROMString(a)	UDPPutString((BYTE*)a)

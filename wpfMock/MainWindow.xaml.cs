@@ -128,6 +128,11 @@ namespace wpfMock
                                         // Assign new GUID!
                                         Data.DeviceId = new Guid(reader.ReadBytes(16));
                                         Dispatcher.Invoke((Action)(() => LogBox.AppendText("New GUID: " + Data.DeviceId + "\n")), null);
+                                        if (Data.DeviceId != Guid.Empty)
+                                        {
+                                            // Stop HELO packets
+                                            HeloSender = null;
+                                        }
                                     }
                                 }
                             }
