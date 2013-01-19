@@ -13,8 +13,6 @@ void low_isr(void)
 {
 	// Update ETH module timers
 	TickUpdate();
-	// Do ETH stuff
-	StackTask();
 }
 
 void timers_init()
@@ -27,10 +25,10 @@ void timers_init()
 	s_1sec = TickGet();
 }
 
-int timers_check1s()
+BYTE timers_check1s()
 {
 	DWORD now = TickGet();
-	if (now - s_1sec >= TICK_SECOND)
+	if ((now - s_1sec) >= TICK_SECOND)
 	{
 		s_1sec = now;
 		return 1;

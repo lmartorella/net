@@ -113,14 +113,21 @@ static STATUS_MODE s_mode = 0;
 
 void print(const rom char* str)
 {
-	cm1602_setDdramAddr(0x00);
+	char i;
+	cm1602_setDdramAddr(0x40);
+	for (i = 0; i < 16; i++)
+	{
+		cm1602_write(' ');
+	}
+	cm1602_setDdramAddr(0x40);
 	cm1602_writeStr(str);
+	ClrWdt();
 }
 
 void error(const rom char* str)
 {
 	print("E:");
-	print(str);
+	cm1602_writeStr(str);
 }
 
 void main()
@@ -140,8 +147,7 @@ void main()
 	cm1602_writeStr(msg1);
 	cm1602_writeStr(g_reasonMsgs[_reason]);
 
-	sram_init();
-	vs1011_init();
+	print("Spi");
 
 	// Enable SPI
 	// from 23k256 datasheet and figure 20.3 of PIC datasheet
@@ -150,8 +156,13 @@ void main()
 	// Input: data sampled at clock falling, at the end of the cycle.
 	spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
+	sram_init();
+	vs1011_init();
+
+	print("ChkRam");
 	checkram();
 
+	print("IP");
 	memset(&AppConfig, 0, sizeof(AppConfig));
 	AppConfig.Flags.bIsDHCPEnabled = 1;
 	AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
@@ -161,9 +172,10 @@ void main()
 	AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
 	AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
+	enableInterrupts();
 	timers_init();
 
-	enableInterrupts();
+	print("DHCP");
 
 	// Start IP
 	DHCPInit(0);
@@ -174,6 +186,8 @@ void main()
 	// I'm alive
 	while (1) 
 	{
+		// Do ETH stuff
+		StackTask();
 		if (timers_check1s())
 		{
 			timer1s();
@@ -185,28 +199,35 @@ void main()
 void timer1s()
 {
 	char buf[17];
+	int dhcpOk, dhcpWasOk;
+	print("");
 
-	int dhcpOk = DHCPIsBound(0);
-	int dhcpWasOk = (s_mode & MODE_DHCP_OK);
+	dhcpOk = DHCPIsBound(0) != 0;
+	dhcpWasOk = (s_mode & MODE_DHCP_OK) != 0;
+
 	if (dhcpOk != dhcpWasOk)
 	{
 		if (dhcpOk)
 		{
 			unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
 			sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
+			cm1602_setDdramAddr(0x0);
 			cm1602_writeStrRam(buf);
 			s_mode |= MODE_DHCP_OK;
-
-			// send helo
-			if (!(s_mode & MODE_CONNECTED))
-			{
-				sendHelo();
-			}
 		}
 		else
 		{
 			s_mode &= ~MODE_DHCP_OK;
-			error("not bound");
+			error("DHCP.nok");
+		}
+	}
+
+	if (dhcpOk)
+	{
+		// send helo
+		if (!(s_mode & MODE_CONNECTED))
+		{
+			sendHelo();
 		}
 	}
 }

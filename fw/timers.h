@@ -4,6 +4,6 @@
 // Init timers stuff
 void timers_init(void);
 // Check if 1sec timer is elapsed, and reset it if so.
-int timers_check1s(void);
+BYTE timers_check1s(void);
 
 #endif
