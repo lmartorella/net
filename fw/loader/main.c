@@ -9,7 +9,7 @@ static BYTE s_bitmap[256];
 
 #pragma udata my_section_2
 static BYTE s_newConfiguration[8];
-static LoaderUserData s_newUserData;
+//static LoaderUserData s_newUserData;
 
 static void DoFlash();
 
@@ -40,12 +40,13 @@ static const rom LoaderRecord LREC =
 #define SPIRAM_CONF_ADDRESS (SPIRAM_BITMAP_ADDRESS - CONFIGURATION_SIZE)
 
 // Then new UDATA words
-#define SPIRAM_UDATA_ADDRESS (SPIRAM_CONF_ADDRESS - sizeof(LoaderUserData))
+//#define SPIRAM_UDATA_ADDRESS (SPIRAM_CONF_ADDRESS - sizeof(LoaderUserData))
 
 // This is the MAX ADDRESS of SPI-RAM that can be used
 //  The programmer should check this in addition to the startzone
 //  to avoid programmer overwrite
-#define MAX_SPIRAM_USAGE SPIRAM_UDATA_ADDRESS
+//#define MAX_SPIRAM_USAGE SPIRAM_UDATA_ADDRESS
+#define MAX_SPIRAM_USAGE SPIRAM_CONF_ADDRESS
 
 void DoFlash(void)
 {	
@@ -57,10 +58,8 @@ void DoFlash(void)
 	sram_read(s_bitmap, SPIRAM_BITMAP_ADDRESS, BITMAP_SIZE);
 	// Read new configuration from SPI RAM
 	sram_read(s_newConfiguration, SPIRAM_CONF_ADDRESS, CONFIGURATION_SIZE);
-	// Read new configuration from SPI RAM
-	sram_read(s_newConfiguration, SPIRAM_CONF_ADDRESS, CONFIGURATION_SIZE);
 	// Read new userData from SPI RAM
-	sram_read((void*)&s_newUserData, SPIRAM_UDATA_ADDRESS, sizeof(LoaderUserData));
+	//sram_read((void*)&s_newUserData, SPIRAM_UDATA_ADDRESS, sizeof(LoaderUserData));
 
 	// Now cycle ram bitmap validity for banks.
 	

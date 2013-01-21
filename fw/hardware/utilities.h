@@ -3,17 +3,25 @@
 
 typedef unsigned char BYTE;
 typedef unsigned short UINT16;
+typedef unsigned short WORD;
 typedef unsigned short long UINT24;
-typedef struct 
-{
-	BYTE b[16];
-} GUID;
+typedef unsigned long UINT32;
+typedef unsigned long DWORD;
 
 typedef struct 
 {
-	BYTE major;
-	BYTE minor;
-} VERSION;
+	DWORD d1;
+	DWORD d2;
+} QWORD;
+
+typedef struct 
+{
+	DWORD data1;
+	WORD data2;
+	WORD data3;
+	QWORD data4;
+} GUID;
+
 
 extern void wait2ms(void);
 extern void wait30ms(void);

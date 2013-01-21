@@ -35,6 +35,8 @@ file_007=.
 file_008=.
 file_009=.
 file_010=.
+file_011=.
+file_012=.
 [GENERATED_FILES]
 file_000=no
 file_001=no
@@ -47,6 +49,8 @@ file_007=no
 file_008=no
 file_009=no
 file_010=no
+file_011=no
+file_012=no
 [OTHER_FILES]
 file_000=no
 file_001=no
@@ -59,18 +63,22 @@ file_007=no
 file_008=no
 file_009=no
 file_010=no
+file_011=no
+file_012=no
 [FILE_INFO]
 file_000=cm1602.c
 file_001=fuses.c
 file_002=spi.c
 file_003=vs1011e.c
 file_004=spiram.c
-file_005=cm1602.h
-file_006=fuses.h
-file_007=spi.h
-file_008=utilities.h
-file_009=vs1011e.h
-file_010=spiram.h
+file_005=eeprom.c
+file_006=cm1602.h
+file_007=fuses.h
+file_008=spi.h
+file_009=utilities.h
+file_010=vs1011e.h
+file_011=spiram.h
+file_012=eeprom.h
 [SUITE_INFO]
 suite_guid={5B7D72DD-9861-47BD-9F60-2BE967BF8416}
 suite_state=build-library extended-mode

@@ -10,6 +10,12 @@
 // data to flash. Pre-load the data with the current content using the loader_loadCurrentUDConf() function.
 typedef far rom void (*DoFlashHandler)(UINT16 startBlock, UINT16 lastBlock);
 
+typedef struct
+{
+	BYTE major;
+	BYTE minor;
+} VERSION;
+
 /********************
   LOADER RECORD (READ-ONLY)
 ********************/
@@ -28,27 +34,12 @@ typedef struct
 } LoaderRecord;
 extern far rom LoaderRecord* LOADER_REC_PTR;
 
-/********************
-
-  USER-DATA PART OF LOADER RECORD (PROGRAMMABLE)
-  The record is immediately before the Configuration word, in the higher program memory.
-  (loader do supports changing configuration words)
-*/
-typedef struct
-{
-  	// GUID:  application instance ID (used by user code)
-	GUID appId;
-  	// WORD:  application version
-    VERSION appVersion;
-} LoaderUserData;
-extern far rom LoaderUserData* LOADER_UDATA_PTR;
-
 
 // Addition PIC RAM memory, contains the loader user data to write
-extern far ram struct LoaderUserData* LoaderUDataToProgram;
+//extern far ram struct LoaderUserData* LoaderUDataToProgram;
 
 // Addition PIC RAM memory, contains the configuration words to write
-extern far ram BYTE ConfigurationToProgram[8];
+//extern far ram BYTE ConfigurationToProgram[8];
 
 // *******
 // Prepare the data to write 
@@ -57,9 +48,9 @@ extern far ram BYTE ConfigurationToProgram[8];
 // Loads the current USERDATA+CONFIGURATION rom in the relevant ram sections 
 // (LoaderUDataToProgram and ConfigurationToProgram)
 // in order to overwrite it with the new data.
-void loader_loadCurrentUDConf();
+//void loader_loadCurrentUDConf();
 // Clear the SPI RAM bitmap
-void loader_clearBitmap();
+//void loader_clearBitmap();
 // Load a HEX line in SPI RAM and update the bitmap validity
-void loader_processHexLine(const ram char* line);
+//void loader_processHexLine(const ram char* line);
 #endif
