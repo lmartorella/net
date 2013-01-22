@@ -1,5 +1,5 @@
-
 #include "hardware/fuses.h"
+#include "hardware/utilities.h"
 #include "hardware/cm1602.h"
 #include "hardware/spiram.h"
 #include "hardware/spi.h"
@@ -18,7 +18,8 @@ enum RESET_REASON
 	RESET_CONFIGMISMATCH,
 	RESET_WATCHDOG,
 	RESET_STACKFAIL,
-	RESET_MCLR
+	RESET_MCLR,
+	RESET_EXC
 };
 static enum RESET_REASON _reason;
 
@@ -29,9 +30,11 @@ static const rom char* g_reasonMsgs[] = {
 				"CFG",
 				"WDT",
 				"STK",
-				"RST"  };
+				"RST",
+				"EXC:"  };
 
 APP_CONFIG AppConfig;
+static BOOL s_dhcpOk = FALSE;
 
 // Check RCON and STKPTR register for anormal reset cause
 static void storeResetReason(void)
@@ -39,7 +42,9 @@ static void storeResetReason(void)
 	if (!RCONbits.NOT_RI)
 	{
 		RCONbits.NOT_RI = 1;
-		// Software exception. _reset contains SW code.
+		// Software exception. 
+		// Obtain last reason from appio.h 
+		_reason = RESET_EXC;
 	}
 	else if (!RCONbits.NOT_POR)
 	{
@@ -116,6 +121,10 @@ void main()
 	cm1602_setDdramAddr(0);
 	cm1602_writeStr(msg1);
 	cm1602_writeStr(g_reasonMsgs[_reason]);
+	if (_reason == RESET_EXC)
+	{
+		cm1602_writeStrRam(getLastFatal());
+	}
 
 	println("Spi");
 
@@ -156,11 +165,24 @@ void main()
 	// I'm alive
 	while (1) 
 	{
+		BOOL timer1 = timers_check1s();
+
 		// Do ETH stuff
 		StackTask();
-		if (timers_check1s())
+        // This tasks invokes each of the core stack application tasks
+        StackApplications();
+
+		if (timer1)
 		{
 			timer1s();
+		}
+		if (s_dhcpOk)
+		{
+			prot_poll();
+			if (timer1)
+			{
+				prot_slowTimer();
+			}
 		}
 		ClrWdt();
 	}
@@ -173,9 +195,8 @@ void timer1s()
 	println("");
 
 	dhcpOk = DHCPIsBound(0) != 0;
-	dhcpWasOk = (s_protStatus & PROT_DHCP_OK) != 0;
 
-	if (dhcpOk != dhcpWasOk)
+	if (dhcpOk != s_dhcpOk)
 	{
 		if (dhcpOk)
 		{
@@ -183,21 +204,12 @@ void timer1s()
 			sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
 			cm1602_setDdramAddr(0x0);
 			cm1602_writeStrRam(buf);
-			s_protStatus |= PROT_DHCP_OK;
+			s_dhcpOk = TRUE;
 		}
 		else
 		{
-			s_protStatus &= ~PROT_DHCP_OK;
-			error("DHCP.nok");
-		}
-	}
-
-	if (dhcpOk)
-	{
-		// send helo?
-		if (!(s_protStatus & PROT_CONNECTED))
-		{
-			prot_sendHelo();
+			s_dhcpOk = FALSE;
+			fatal("DHCP.nok");
 		}
 	}
 }

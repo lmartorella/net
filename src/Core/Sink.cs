@@ -16,7 +16,7 @@ namespace Lucky.Home.Core
         private IPAddress _host;
         private Stream _clientStream;
 
-        internal void Initialize(Peer peer, short deviceCaps, int servicePort)
+        internal void Initialize(Peer peer, ushort deviceCaps, ushort servicePort)
         {
             _host = peer.Address;
             Port = servicePort;
@@ -35,7 +35,7 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Get the device Caps flags
         /// </summary>
-        protected short DeviceCapabilities { get; private set; }
+        protected ushort DeviceCapabilities { get; private set; }
 
         /// <summary>
         /// Open the TCP client connection

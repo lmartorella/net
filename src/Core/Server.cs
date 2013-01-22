@@ -154,9 +154,9 @@ namespace Lucky.Home.Core
             int n = reader.ReadInt16();
             for (int i = 0; i < n; i++)
             {
-                int deviceId = reader.ReadInt16();
-                short deviceCaps = reader.ReadInt16();
-                int port = reader.ReadInt16();
+                ushort deviceId = reader.ReadUInt16();
+                ushort deviceCaps = reader.ReadUInt16();
+                ushort port = reader.ReadUInt16();
 
                 Sink sink = Manager.GetService<SinkManager>().CreateSink(deviceId);
                 if (sink == null)

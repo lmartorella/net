@@ -1,17 +1,15 @@
 #include "hardware/fuses.h"
-#include "hardware/utilities.h"
 #include "hardware/eeprom.h"
 #include "persistence.h"
 #include <string.h>
 
 // The editable memory area
 #pragma romdata PERSISTENT_SECTION
-far rom const PersistentData g_persistentData = { {0x00000000, 0x0000, 0x0000, { 0x00000000, 0x00000000} } };
+far rom const PersistentData g_persistentData = { {0x00000000, 0x0000, 0x0000, 0x0000000000000000 } };
 
 #pragma code
 
-static int X()
+void boot_updateUserData(const ram PersistentData* newData)
 {
-	rom_write(&g_persistentData, NULL, 16);
-	return 1;
+	rom_write((far rom void*)&g_persistentData, (ram void*)newData, sizeof(PersistentData));
 }

@@ -37,7 +37,6 @@ file_009=.
 file_010=.
 file_011=.
 file_012=.
-file_013=.
 [GENERATED_FILES]
 file_000=no
 file_001=no
@@ -52,7 +51,6 @@ file_009=no
 file_010=no
 file_011=no
 file_012=no
-file_013=no
 [OTHER_FILES]
 file_000=no
 file_001=no
@@ -67,22 +65,20 @@ file_009=no
 file_010=no
 file_011=no
 file_012=no
-file_013=no
 [FILE_INFO]
 file_000=main.c
 file_001=timers.c
 file_002=protocol.c
 file_003=appio.c
 file_004=persistence.c
-file_005=hardware\eeprom.c
-file_006=timers.h
-file_007=protocol.h
-file_008=appio.h
-file_009=persistence.h
-file_010=ver.h
-file_011=tcpipstack\bin\tcpip.lib
-file_012=hardware\bin\hardware.lib
-file_013=app.lkr
+file_005=timers.h
+file_006=protocol.h
+file_007=appio.h
+file_008=persistence.h
+file_009=ver.h
+file_010=tcpipstack\bin\tcpip.lib
+file_011=hardware\bin\hardware.lib
+file_012=app.lkr
 [SUITE_INFO]
 suite_guid={5B7D72DD-9861-47BD-9F60-2BE967BF8416}
 suite_state=extended-mode stack-analysis

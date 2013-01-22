@@ -18,17 +18,17 @@ namespace Lucky.Home.Core
         /// <summary>
         /// The HELLO port cannot be changed and are part of the protocol
         /// </summary>
-        private const int HomeProtocolPort = 17007;
+        private const int HeloProtocolPort = 17007;
+        private const int HomeProtocolPort = 17008;
         private const string HelloPreamble = "HOMEHELO";
         private const string AckPreamble = "HOMEHERE";
         private const int GuidLength = 16;
 
-        private Timer _timer;
         private readonly object _lock = new object();
         
         public HelloListener()
         {
-            _client = new UdpClient(HomeProtocolPort, AddressFamily.InterNetwork);
+            _client = new UdpClient(HeloProtocolPort, AddressFamily.InterNetwork);
             _client.BeginReceive(OnReceiveData, null);
         }
 
@@ -47,7 +47,7 @@ namespace Lucky.Home.Core
                     {
                         PeerDiscovered(this, new PeerDiscoveredEventArgs(new Peer(peerGuid, remoteEndPoint.Address)));
                     }
-                    ScheduleAckMessage();
+                    SendAck(remoteEndPoint.Address);
                 }
             }
 
@@ -89,24 +89,10 @@ namespace Lucky.Home.Core
         /// </summary>
         public event EventHandler<PeerDiscoveredEventArgs> PeerDiscovered;
 
-        private void ScheduleAckMessage()
-        {
-            // If not scheduled yet, starts a 1 sec. timer
-            lock (_lock)
-            {
-                if (_timer == null)
-                {
-                    _timer = new Timer(HandleAckTimer, null, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(-1));
-                }
-            }
-        }
-
-        private void HandleAckTimer(object state)
+        private void SendAck(IPAddress address)
         {
             lock (_lock)
             {
-                _timer = null;
-
                 IServer server = Manager.GetService<IServer>();
 
                 // Forge a HERE packet
@@ -120,7 +106,7 @@ namespace Lucky.Home.Core
 
                 // Send a HERE packet
                 var sender = new UdpClient(AddressFamily.InterNetwork);
-                IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, HomeProtocolPort + 1);
+                IPEndPoint endPoint = new IPEndPoint(address, HomeProtocolPort);
 
                 // Send HERE packet
                 byte[] bytes = ms.GetBuffer();

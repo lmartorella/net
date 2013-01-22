@@ -1,6 +1,8 @@
 #ifndef PERSISTENCE_INCLUDE_
 #define PERSISTENCE_INCLUDE_
 
+#include "hardware/utilities.h"
+
 /********************
   USER-DATA PART OF LOADER RECORD (PROGRAMMABLE)
   The record is immediately before the Configuration word, in the higher program memory.
@@ -15,6 +17,8 @@ typedef struct
 // This can be accessed by the running application in read-only mode
 extern far rom const PersistentData g_persistentData;
 
+// Update my copy of persistence
+void boot_getUserData(ram PersistentData* newData);
 // Program the new content of the UserData
 void boot_updateUserData(const ram PersistentData* newData);
 

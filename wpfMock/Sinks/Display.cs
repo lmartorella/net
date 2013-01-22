@@ -11,7 +11,7 @@ namespace Lucky.HomeMock.Sinks
     {
         private TcpListener _serviceListener;
 
-        public Display(int port)
+        public Display(ushort port)
         {
             Port = port;
             DeviceCaps = 0;
@@ -40,11 +40,11 @@ namespace Lucky.HomeMock.Sinks
             _serviceListener.Stop();
         }
 
-        public int Port { get; private set; }
+        public ushort Port { get; private set; }
 
-        public short DeviceCaps { get; private set; }
+        public ushort DeviceCaps { get; private set; }
 
-        public short DeviceID { get; private set; }
+        public ushort DeviceID { get; private set; }
 
         private void HandleServiceSocketAccepted(TcpClient tcpClient)
         {

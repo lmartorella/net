@@ -5,7 +5,12 @@
 void printlnUp(const rom char* msg);
 // Display a ROM message in the below row
 void println(const rom char* msg);
-// Display a ROM error in the below row
-void error(const rom char* msg);
+// Display a RAM message in the below row
+void printlnr(const ram char* msg);
+
+// Reset the device with fatal error
+void fatal(const rom char* msg);
+// Retrieve last fatal error
+const ram char* getLastFatal(void);
 
 #endif

@@ -9,7 +9,7 @@
 //#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
 #define STACK_USE_DHCP_CLIENT			// Dynamic Host Configuration Protocol client for obtaining IP address and other parameters
 #define STACK_USE_TFTP_CLIENT			// Trivial File Transfer Protocol client
-#define STACK_USE_BERKELEY_API			// Berekely Sockets APIs are available
+//#define STACK_USE_BERKELEY_API			// Berekely Sockets APIs are available
 
 // =======================================================================
 //   Network Addressing Options
@@ -90,8 +90,8 @@
 
 	// Define names of socket types
 	#define TCP_SOCKET_TYPES
-//		#define TCP_PURPOSE_GENERIC_TCP_CLIENT 0
-//		#define TCP_PURPOSE_GENERIC_TCP_SERVER 1
+		#define TCP_PURPOSE_GENERIC_TCP_CLIENT 0
+		#define TCP_PURPOSE_GENERIC_TCP_SERVER 1
 //		#define TCP_PURPOSE_TELNET 2
 //		#define TCP_PURPOSE_FTP_COMMAND 3
 //		#define TCP_PURPOSE_FTP_DATA 4
@@ -100,8 +100,8 @@
 //		#define TCP_PURPOSE_UART_2_TCP_BRIDGE 7
 //		#define TCP_PURPOSE_HTTP_SERVER 8
 //		#define TCP_PURPOSE_DEFAULT 9
-		#define TCP_PURPOSE_BERKELEY_SERVER 10
-		#define TCP_PURPOSE_BERKELEY_CLIENT 11
+//		#define TCP_PURPOSE_BERKELEY_SERVER 10
+//		#define TCP_PURPOSE_BERKELEY_CLIENT 11
 	#define END_OF_TCP_SOCKET_TYPES
 
 	#if defined(__TCP_C)
@@ -126,8 +126,8 @@
 			WORD wRXBufferSize;
 		} TCPSocketInitializer[] =
 		{
-			//{TCP_PURPOSE_GENERIC_TCP_CLIENT, TCP_ETH_RAM, 125, 100},
-			//{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 20, 20},
+			{TCP_PURPOSE_GENERIC_TCP_CLIENT, TCP_ETH_RAM, 125, 100},
+			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 20, 20},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
@@ -139,8 +139,8 @@
 			//{TCP_PURPOSE_HTTP_SERVER, TCP_ETH_RAM, 200, 200},
 			//{TCP_PURPOSE_HTTP_SERVER, TCP_ETH_RAM, 200, 200},
 			//{TCP_PURPOSE_DEFAULT, TCP_ETH_RAM, 200, 200},
-			{TCP_PURPOSE_BERKELEY_SERVER, TCP_ETH_RAM, 25, 20},
-			{TCP_PURPOSE_BERKELEY_CLIENT, TCP_ETH_RAM, 125, 100},
+			//{TCP_PURPOSE_BERKELEY_SERVER, TCP_ETH_RAM, 25, 20},
+			//{TCP_PURPOSE_BERKELEY_CLIENT, TCP_ETH_RAM, 125, 100},
 		};
 		#define END_OF_TCP_CONFIGURATION
 	#endif

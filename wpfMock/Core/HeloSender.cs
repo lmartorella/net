@@ -10,7 +10,7 @@ namespace Lucky.HomeMock.Core
     class HeloSender : Task
     {
         private Timer _timer;
-        private const int HomeProtocolPort = 17007;
+        private const int HeloProtocolPort = 17007;
 
         public HeloSender()
         {
@@ -36,7 +36,7 @@ namespace Lucky.HomeMock.Core
             }
             byte[] dgram = stream.GetBuffer();
             UdpClient client = new UdpClient();
-            client.Send(dgram, dgram.Length, new IPEndPoint(IPAddress.Broadcast, HomeProtocolPort));
+            client.Send(dgram, dgram.Length, new IPEndPoint(IPAddress.Broadcast, HeloProtocolPort));
 
             if (Sent != null)
             {
