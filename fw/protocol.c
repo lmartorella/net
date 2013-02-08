@@ -17,7 +17,9 @@ typedef enum PROTOCOL_STATE_enum
 	// Registering sent, waiting for ACK
 	STATE_REGISTER_ACK,
 	// OK, registered
-	STATE_REGISTERED
+	STATE_REGISTERED,
+	// OK, registered
+	STATE_REGISTERED_NEW_GUID
 } PROTOCOL_STATE;
 
 static PROTOCOL_STATE s_protState = STATE_NOT_INITIALIZED;
@@ -232,9 +234,6 @@ static void waitForRegisterResponse()
 		SERVER_REGISTER_RESPONSE response;
 		TCPGetArray(s_serverSocket, (BYTE*)&response, sizeof(response));
 
-		//sprintf(status, "RES:%d", (int)errCode);
-		s_protState = STATE_REGISTERED;
-
 		if (response.errCode == RGST_ERRCODE_NEWGUID)
 		{
 			// Read the GUID response
@@ -246,6 +245,14 @@ static void waitForRegisterResponse()
 			persistence.deviceId = data.newGuid;
 			// Have new GUID! Program it.
 			boot_updateUserData(&persistence);
+
+			s_protState = STATE_REGISTERED_NEW_GUID;
 		}
+		else
+		{
+			s_protState = STATE_REGISTERED;
+		}
+
+		TCPClose(s_serverSocket);
 	}
 }

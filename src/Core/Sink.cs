@@ -10,7 +10,7 @@ namespace Lucky.Home.Core
     /// <summary>
     /// Base class for sinks
     /// </summary>
-    class Sink
+    class Sink : IEquatable<Sink>
     {
         private TcpClient _tcpClient;
         private IPAddress _host;
@@ -78,6 +78,11 @@ namespace Lucky.Home.Core
                 count = buffer.Length - offset;
             }
             _clientStream.Write(buffer, offset, count);
+        }
+
+        public bool Equals(Sink sink)
+        {
+            return Port == sink.Port && DeviceCapabilities == sink.DeviceCapabilities;
         }
     }
 }

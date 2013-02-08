@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 
 namespace Lucky.Home.Core
 {
-    class Peer
+    class Peer : IEquatable<Peer>
     {
         /// <summary>
         /// The Unique ID of the peer, or empty if not initialized
@@ -28,5 +29,10 @@ namespace Lucky.Home.Core
         /// Get an editable collection of sinks
         /// </summary>
         public ICollection<Sink> Sinks { get; private set; }
+
+        public bool Equals(Peer peer)
+        {
+            return ID == peer.ID && Address.Equals(peer.Address) && Sinks.SequenceEqual(peer.Sinks);
+        }
     }
 }

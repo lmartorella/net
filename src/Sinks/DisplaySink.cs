@@ -5,7 +5,7 @@ using Lucky.Home.Core;
 
 namespace Lucky.Home.Sinks
 {
-    [DeviceId(1)]
+    [DeviceId(DeviceIds.Display)]
     class DisplaySink : Sink
     {
         private Timer _timer;

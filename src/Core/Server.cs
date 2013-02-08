@@ -48,8 +48,13 @@ namespace Lucky.Home.Core
         {
             // Store it.
             // Exists same IP?
-            if (_peersByAddress.ContainsKey(peer.Address))
+            Peer oldPeer;
+            if (_peersByAddress.TryGetValue(peer.Address, out oldPeer))
             {
+                if (oldPeer.Equals(peer))
+                {
+                    return;
+                }
                 Logger.Log("DuplicatedAddress", "address", peer.Address);
             }
             _peersByAddress[peer.Address] = peer;
