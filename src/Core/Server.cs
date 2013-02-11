@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Core
 {
@@ -13,18 +14,18 @@ namespace Lucky.Home.Core
         private Dictionary<Guid, Peer> _peersByGuid = new Dictionary<Guid, Peer>();
         private Dictionary<IPAddress, Peer> _peersByAddress = new Dictionary<IPAddress, Peer>();
 
-        private int DefaultPort = 17008;
+        private ushort DefaultPort = 17008;
         private TcpListener _serviceListener;
 
         public Server()
         {
             // Find the public IP
-            HostAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
-            if (HostAddress == null)
+            Address = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
+            if (Address == null)
             {
                 throw new InvalidOperationException("Cannot find a public IP address of the host");
             }
-            ServicePort = DefaultPort;
+            Port = DefaultPort;
 
             _serviceListener = TryCreateListener();
             _serviceListener.Start();
@@ -37,7 +38,7 @@ namespace Lucky.Home.Core
                         _serviceListener.BeginAcceptTcpClient(handler, null);
                     };
             _serviceListener.BeginAcceptTcpClient(handler, null);
-            Logger.Log("Opened Server", "host", HostAddress, "Port", ServicePort);
+            Logger.Log("Opened Server", "host", Address, "Port", Port);
 
             // Start HELLO listener
             var listener = Manager.GetService<IHelloListener>();
@@ -72,12 +73,12 @@ namespace Lucky.Home.Core
             {
                 try
                 {
-                    return new TcpListener(HostAddress, ServicePort);
+                    return new TcpListener(Address, Port);
                 }
                 catch (SocketException)
                 {
-                    Logger.Log("TCPPortBusy", "port", ServicePort, "trying", ServicePort + 1);
-                    ServicePort++;
+                    Logger.Log("TCPPortBusy", "port", Port, "trying", Port + 1);
+                    Port++;
                 }
             } while (true);
         }
@@ -92,12 +93,12 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Get the public host address
         /// </summary>
-        public IPAddress HostAddress { get; private set; }
+        public IPAddress Address { get; private set; }
 
         /// <summary>
         /// Get the public host service port (TCP)
         /// </summary>
-        public int ServicePort { get; private set; }
+        public ushort Port { get; private set; }
 
         #endregion
 
@@ -107,44 +108,37 @@ namespace Lucky.Home.Core
             {
                 using (BinaryReader reader = new BinaryReader(stream))
                 {
+                    IPAddress peerAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
+                    Peer peer;
+                    ServiceResponse response = new ServiceResponse();
+                    response.ErrCode = ServerErrorCode.Ok;
+
+                    if (!_peersByAddress.TryGetValue(peerAddress, out peer))
+                    {
+                        // Unknown peer!
+                        Logger.Log("UnknownPeerAddress", "address", peerAddress);
+                        response.ErrCode = ServerErrorCode.UnknownAddress;
+                    }
+                    else
+                    {
+                        ServiceCommand cmd = NetSerializer<ServiceCommand>.Read(reader);
+                        switch (cmd.Command)
+                        {
+                            case "RGST":
+                                ReadSinkData(peer, reader, ref response);
+                                break;
+                            default:
+                                // ERROR, unknown command
+                                Logger.Log("UnknownCommand", "cmd", cmd.Command);
+                                response.ErrCode = ServerErrorCode.UnknownMessage;
+                                break;
+                        }
+                    }
+
+                    // Write response
                     using (BinaryWriter writer = new BinaryWriter(stream))
                     {
-                        IPAddress peerAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
-                        Peer peer;
-                        ServerErrorCode errorCode = ServerErrorCode.Ok;
-                        byte[] response = null;
-
-                        if (!_peersByAddress.TryGetValue(peerAddress, out peer))
-                        {
-                            // Unknown peer!
-                            Logger.Log("UnknownPeerAddress", "address", peerAddress);
-                            errorCode = ServerErrorCode.UnknownAddress;
-                        }
-                        else
-                        {
-                            // Read service command
-                            byte[] msgB = reader.ReadBytes(4);
-                            string msg = ASCIIEncoding.ASCII.GetString(msgB);
-
-                            switch (msg)
-                            {
-                                case "RGST":
-                                    ReadSinkData(peer, reader, ref errorCode, ref response);
-                                    break;
-                                default:
-                                    // ERROR, unknown command
-                                    Logger.Log("UnknownCommand", "cmd", msg);
-                                    errorCode = ServerErrorCode.UnknownMessage;
-                                    break;
-                            }
-                        }
-
-                        // Write errCode
-                        writer.Write((short)errorCode);
-                        if (response != null)
-                        {
-                            writer.Write(response);
-                        }
+                        NetSerializer<ServiceResponse>.Write(response, writer);
                     }
                 }
             }
@@ -154,33 +148,29 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Peer started, says device capatibilities
         /// </summary>
-        private void ReadSinkData(Peer peer, BinaryReader reader, ref ServerErrorCode errorCode, ref byte[] responseData)
+        private void ReadSinkData(Peer peer, BinaryReader reader, ref ServiceResponse responseData)
         {
-            int n = reader.ReadInt16();
-            for (int i = 0; i < n; i++)
+            ServiceRegisterCommand cmd = NetSerializer<ServiceRegisterCommand>.Read(reader);
+            foreach (var sinkInfo in cmd.Sinks)
             {
-                ushort deviceId = reader.ReadUInt16();
-                ushort deviceCaps = reader.ReadUInt16();
-                ushort port = reader.ReadUInt16();
-
-                Sink sink = Manager.GetService<SinkManager>().CreateSink(deviceId);
+                Sink sink = Manager.GetService<SinkManager>().CreateSink(sinkInfo.DeviceId);
                 if (sink == null)
                 {
                     // Device id unknown!
-                    errorCode = ServerErrorCode.UnknownSinkType;
+                    responseData.ErrCode = ServerErrorCode.UnknownSinkType;
                     continue;
                 }
 
-                sink.Initialize(peer, deviceCaps, port);
+                sink.Initialize(peer, sinkInfo.DeviceCaps, sinkInfo.Port);
                 peer.Sinks.Add(sink);
             }
 
             if (peer.ID == Guid.Empty)
             {
+                responseData = new ServiceResponseWithGuid();
                 // Assign new GUID
-                errorCode = ServerErrorCode.AssignGuid;
-                Guid guid = Guid.NewGuid();
-                responseData = guid.ToByteArray();
+                responseData.ErrCode = ServerErrorCode.AssignGuid;
+                var guid = ((ServiceResponseWithGuid)responseData).NewGuid = Guid.NewGuid();
 
                 Logger.Log("AssignedNewID", "id", guid, "address", peer.Address);
             }

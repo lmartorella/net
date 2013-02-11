@@ -8,11 +8,11 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Get the public host address
         /// </summary>
-        IPAddress HostAddress { get; }
+        IPAddress Address { get; }
 
         /// <summary>
         /// Get the public host service port (TCP)
         /// </summary>
-        int ServicePort { get; }
+        ushort Port { get; }
     }
 }

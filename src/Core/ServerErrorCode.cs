@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Lucky.Home.Core
 {
-    enum ServerErrorCode
+    enum ServerErrorCode : short
     {
         Ok = 0,
         UnknownMessage = 1,

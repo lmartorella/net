@@ -51,6 +51,11 @@
     <Compile Include="Core\Manager.cs" />
     <Compile Include="Core\Peer.cs" />
     <Compile Include="Core\PeerDiscoveredEventArgs.cs" />
+    <Compile Include="Core\Serialization\HeloMessage.cs" />
+    <Compile Include="Core\Serialization\NetSerializer.cs" />
+    <Compile Include="Core\Serialization\SerializeAsCharArray.cs" />
+    <Compile Include="Core\Serialization\SerializeAsDynArrayAttribute.cs" />
+    <Compile Include="Core\Serialization\ServiceCommand.cs" />
     <Compile Include="Core\ServerErrorCode.cs" />
     <Compile Include="Core\Server.cs" />
     <Compile Include="Core\ServiceBase.cs" />
@@ -58,6 +63,7 @@
     <Compile Include="Core\SinkManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sinks\DeviceIds.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
   </ItemGroup>
   <ItemGroup />
