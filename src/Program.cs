@@ -17,10 +17,10 @@ namespace Lucky.Home
             Manager.Register<Server, IServer>();
             Manager.Register<SinkManager, SinkManager>();
 
+            Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
+
             // Start server
             Manager.GetService<IServer>();
-
-            Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
 
             // Wait for Ctrl+Break
             Console.WriteLine("Press CTRL+C to exit....");

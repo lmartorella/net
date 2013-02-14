@@ -8,10 +8,11 @@ namespace Lucky.Home.Core.Serialization
     class ServiceCommand
     {
         [SerializeAsCharArray(4)]
+        [Selector("RGST", typeof(ServiceRegisterCommand))]
         public string Command;
     }
 
-    class ServiceRegisterCommand
+    class ServiceRegisterCommand : ServiceCommand
     {
         [SerializeAsDynArray]
         public SinkInfo[] Sinks;

@@ -27,7 +27,13 @@ namespace wpfMock
 
             EnterInitState();
             _displayModel = new Display(DisplayPort);
-            _displayModel.Data += HandleDisplayData;
+            _displayModel.Data += (o, args) =>
+                            {
+                                Dispatcher.Invoke((Action)(() =>
+                                {
+                                    DisplayBox.Text += args.Str + Environment.NewLine;
+                                }));
+                            };
         }
 
         private HeloSender HeloSender
@@ -138,11 +144,6 @@ namespace wpfMock
                             }
                         }
                     }, null);
-        }
-
-        private void HandleDisplayData(object sender, DataEventArgs args)
-        {
-            DisplayBox.Text += args.Str + Environment.NewLine;
         }
     }
 }

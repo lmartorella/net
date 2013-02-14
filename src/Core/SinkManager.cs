@@ -20,7 +20,7 @@ namespace Lucky.Home.Core
             foreach (Type type in assembly.GetTypes().Where(t => typeof(Sink).IsAssignableFrom(t)))
             {
                 DeviceIdAttribute[] attr = (DeviceIdAttribute[])type.GetCustomAttributes(typeof(DeviceIdAttribute), false);
-                if (attr.Length > 1)
+                if (attr.Length >= 1)
                 {
                     _deviceIds.Add(attr[0].DeviceId, type);
                 }

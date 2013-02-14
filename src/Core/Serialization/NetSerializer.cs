@@ -14,12 +14,18 @@ namespace Lucky.Home.Core.Serialization
         object Deserialize(BinaryReader reader);
     }
 
+    interface IPartialSerializer
+    {
+        object Deserialize(object firstPart, int fields, BinaryReader reader);
+    }
+
     /// <summary>
     /// Class to serialize/deserialize a complex type
     /// </summary>
-    class NetSerializer<T> : INetSerializer where T : class, new()
+    class NetSerializer<T> : INetSerializer, IPartialSerializer where T : class, new()
     {
-        static readonly Tuple<FieldInfo, INetSerializer>[] s_fields;
+        private static readonly Tuple<FieldInfo, INetSerializer>[] s_fields;
+        private static readonly FieldInfo s_selector;
 
         static NetSerializer()
         {
@@ -27,6 +33,14 @@ namespace Lucky.Home.Core.Serialization
                         .GetFields(BindingFlags.Public | BindingFlags.Instance)
                         .OrderBy(fi => fi.MetadataToken) // undocumented, to have the source definition order
                         .Select(fi => new Tuple<FieldInfo, INetSerializer>(fi, BuildFieldItem(fi, fi.FieldType))).ToArray();
+            var selectors = s_fields.Select(t => t.Item1)
+                         .Where(fi => fi.DeclaringType == typeof(T))
+                         .Where(fi => fi.GetCustomAttributes(typeof(SelectorAttribute), false).Length > 0);
+            if (selectors.Count() > 1)
+            {
+                throw new NotSupportedException("Too many selectors on type " + typeof(T));
+            }
+            s_selector = selectors.FirstOrDefault();
         }
 
         private static INetSerializer BuildFieldItem(ICustomAttributeProvider fieldInfo, Type fieldType)
@@ -213,13 +227,59 @@ namespace Lucky.Home.Core.Serialization
         public static T Read(BinaryReader reader)
         {
             T retValue = new T();
-            foreach (var tuple in s_fields)
+            Read(ref retValue, reader, 0);
+            return retValue;
+        }
+
+        private static void Read(ref T retValue, BinaryReader reader, int firstField)
+        {
+            foreach (var tuple in s_fields.Skip(firstField))
             {
                 FieldInfo fi = tuple.Item1;
                 INetSerializer ser = tuple.Item2;
                 fi.SetValue(retValue, ser.Deserialize(reader));
             }
-            return retValue;
+            if (s_selector != null)
+            {
+                retValue = ProcessSelector(retValue, reader);
+            }
+        }
+
+        private static T ProcessSelector(T value, BinaryReader reader)
+        {
+            object currValue = s_selector.GetValue(value);
+            SelectorAttribute[] attrs = (SelectorAttribute[])s_selector.GetCustomAttributes(typeof(SelectorAttribute), false);
+            foreach (var attr in attrs)
+            {
+                if (attr.SelectorValue.Equals(currValue))
+                {
+                    Type newType = attr.Type;
+                    if (newType.BaseType != typeof(T))
+                    {
+                        throw new NotSupportedException("Type not directly assignable in selector");
+                    }
+
+                    // Create new NetSerializer
+                    IPartialSerializer deser = (IPartialSerializer)Activator.CreateInstance(typeof(NetSerializer<>).MakeGenericType(newType));
+                    value = (T)deser.Deserialize(value, s_fields.Length, reader);
+                }
+            }
+            return value;
+        }
+
+        object IPartialSerializer.Deserialize(object firstPart, int fields, BinaryReader reader)
+        {
+            // Copy all field values of the base type there
+            T newValue = new T();
+            foreach (var fieldInfo in s_fields.Take(fields).Select(t => t.Item1))
+            {
+                object v = fieldInfo.GetValue(firstPart);
+                fieldInfo.SetValue(newValue, v);
+            }
+
+            // Now go on with deserialization
+            Read(ref newValue, reader, fields);
+            return newValue;
         }
 
         object INetSerializer.Deserialize(BinaryReader reader)

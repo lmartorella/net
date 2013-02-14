@@ -122,16 +122,15 @@ namespace Lucky.Home.Core
                     else
                     {
                         ServiceCommand cmd = NetSerializer<ServiceCommand>.Read(reader);
-                        switch (cmd.Command)
+                        if (cmd is ServiceRegisterCommand)
                         {
-                            case "RGST":
-                                ReadSinkData(peer, reader, ref response);
-                                break;
-                            default:
-                                // ERROR, unknown command
-                                Logger.Log("UnknownCommand", "cmd", cmd.Command);
-                                response.ErrCode = ServerErrorCode.UnknownMessage;
-                                break;
+                            ReadSinkData(peer, (ServiceRegisterCommand)cmd, ref response);
+                        }
+                        else
+                        {
+                            // ERROR, unknown command
+                            Logger.Log("UnknownCommand", "cmd", cmd.Command);
+                            response.ErrCode = ServerErrorCode.UnknownMessage;
                         }
                     }
 
@@ -148,9 +147,8 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Peer started, says device capatibilities
         /// </summary>
-        private void ReadSinkData(Peer peer, BinaryReader reader, ref ServiceResponse responseData)
+        private void ReadSinkData(Peer peer, ServiceRegisterCommand cmd, ref ServiceResponse responseData)
         {
-            ServiceRegisterCommand cmd = NetSerializer<ServiceRegisterCommand>.Read(reader);
             foreach (var sinkInfo in cmd.Sinks)
             {
                 Sink sink = Manager.GetService<SinkManager>().CreateSink(sinkInfo.DeviceId);

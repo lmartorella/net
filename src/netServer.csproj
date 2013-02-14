@@ -53,6 +53,7 @@
     <Compile Include="Core\PeerDiscoveredEventArgs.cs" />
     <Compile Include="Core\Serialization\HeloMessage.cs" />
     <Compile Include="Core\Serialization\NetSerializer.cs" />
+    <Compile Include="Core\Serialization\SelectorAttribute.cs" />
     <Compile Include="Core\Serialization\SerializeAsCharArray.cs" />
     <Compile Include="Core\Serialization\SerializeAsDynArrayAttribute.cs" />
     <Compile Include="Core\Serialization\ServiceCommand.cs" />
