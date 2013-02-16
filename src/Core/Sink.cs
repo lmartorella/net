@@ -12,9 +12,7 @@ namespace Lucky.Home.Core
     /// </summary>
     class Sink : IEquatable<Sink>
     {
-        private TcpClient _tcpClient;
         private IPAddress _host;
-        private Stream _clientStream;
 
         internal void Initialize(Peer peer, ushort deviceCaps, ushort servicePort)
         {
@@ -37,47 +35,45 @@ namespace Lucky.Home.Core
         /// </summary>
         protected ushort DeviceCapabilities { get; private set; }
 
+        private class Connection : IConnection
+        {
+            private TcpClient _tcpClient;
+            private Stream _clientStream;
+
+            public BinaryReader Reader { get; private set; }
+            public BinaryWriter Writer { get; private set; }
+
+            public Connection(IPEndPoint endPoint)
+            {
+                _tcpClient = new TcpClient();
+                _tcpClient.Connect(endPoint);
+                _clientStream = _tcpClient.GetStream();
+                Reader = new BinaryReader(_clientStream);
+                Writer = new BinaryWriter(_clientStream);
+            }
+
+            /// <summary>
+            /// Close the TCP client connection
+            /// </summary>
+            public void Dispose()
+            {
+                if (_tcpClient != null)
+                {
+                    _clientStream.Flush();
+                    Reader.Close();
+                    Writer.Close();
+                    _tcpClient.Close();
+                    _tcpClient = null;
+                }
+            }
+        }
+
         /// <summary>
         /// Open the TCP client connection
         /// </summary>
-        protected void Open()
+        protected IConnection Open()
         {
-            if (!IsOpen)
-            {
-                _tcpClient = new TcpClient();
-                _tcpClient.Connect(new IPEndPoint(_host, Port));
-                _clientStream = _tcpClient.GetStream();
-            }
-        }
-
-        /// <summary>
-        /// Close the TCP client connection
-        /// </summary>
-        protected void Close()
-        {
-            if (IsOpen)
-            {
-                _clientStream.Flush();
-                _tcpClient.Close();
-                _tcpClient = null;
-            }
-        }
-
-        protected bool IsOpen
-        {
-            get
-            {
-                return _tcpClient != null;
-            }
-        }
-
-        protected void Send(byte[] buffer, int offset = 0, int count = -1)
-        {
-            if (count == -1)
-            {
-                count = buffer.Length - offset;
-            }
-            _clientStream.Write(buffer, offset, count);
+            return new Connection(new IPEndPoint(_host, Port));
         }
 
         public bool Equals(Sink sink)

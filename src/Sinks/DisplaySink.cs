@@ -5,6 +5,14 @@ using Lucky.Home.Core;
 
 namespace Lucky.Home.Sinks
 {
+    /// <summary>
+    /// Simple display protocol
+    /// </summary>
+    /// <remarks>
+    /// Protocol: TCP_OPEN, 
+    ///          -> [word:lenght] + ASCII
+    ///           TCP_CLOSE
+    /// </remarks>
     [DeviceId(DeviceIds.Display)]
     class DisplaySink : Sink
     {
@@ -17,11 +25,12 @@ namespace Lucky.Home.Sinks
 
         private void SendHi()
         {
-            Open();
-            const string str = "Hello world.";
-            Send(BitConverter.GetBytes((ushort)str.Length));
-            Send(ASCIIEncoding.ASCII.GetBytes(str));
-            Close();
+            using (var connection = Open())
+            {
+                const string str = "Hello world.";
+                connection.Writer.Write(BitConverter.GetBytes((ushort)str.Length));
+                connection.Writer.Write(ASCIIEncoding.ASCII.GetBytes(str));
+            }
         }
     }
 }

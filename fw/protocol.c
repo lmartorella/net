@@ -31,12 +31,19 @@ static UDP_SOCKET s_heloSocket;
 #define HomeProtocolPort 17008
 static UDP_SOCKET s_homeSocket;
 
+#define BASE_SINK_PORT 20000
+
 // The home IP
 static IP_ADDR s_homeIp;
 // The home Port
 static WORD s_homePort;
 // The TCP client socket with home
-TCP_SOCKET s_serverSocket;
+static TCP_SOCKET s_serverSocket;
+
+// Array of all sinks
+static const Sink rom * AllSinks[] = { &g_displaySink }; 
+static const unsigned int rom AllSinksCount = 1; 
+
 
 /*
 	HOME Response packet
@@ -103,6 +110,7 @@ static void waitForRegisterResponse(void);
 */
 void prot_poll()
 {
+	int i;
 	switch (s_protState)
 	{
 	case STATE_NOT_INITIALIZED:
@@ -117,6 +125,12 @@ void prot_poll()
 	case STATE_REGISTER_ACK:
 		waitForRegisterResponse();
 		break;
+	case STATE_REGISTERED:
+	case STATE_REGISTERED_NEW_GUID:
+		for (i = 0; i < AllSinksCount; i++)
+		{
+			AllSinks[i]->pollHandler();
+		}
 	}
 }
 
@@ -208,6 +222,7 @@ static void waitForRegisterConnection()
 {
 	if (TCPIsConnected(s_serverSocket))
 	{
+		int i;
 		// Connected? Then Register.
 		if (TCPIsPutReady(s_serverSocket) < sizeof(SERVER_REGISTER))
 		{
@@ -216,9 +231,25 @@ static void waitForRegisterConnection()
 
 		// Preamble
 		TCPPutROMArray(s_serverSocket, (rom BYTE*)"RGST", 4);
-		// Put device count (0)
-		TCPPut(s_serverSocket, 0);
-		TCPPut(s_serverSocket, 0);
+
+		// Put device count (2, DISPLAY and FLASHER)
+		TCPPutROMArray(s_serverSocket, (BYTE rom*)&AllSinksCount, sizeof(unsigned int));
+
+		for (i = 0; i < AllSinksCount; i++)
+		{
+			const Sink rom* sink = AllSinks[i]; 
+			unsigned int port = BASE_SINK_PORT + sink->deviceId;
+			// Put device ID
+			TCPPutROMArray(s_serverSocket, (BYTE rom*)&sink->deviceId, sizeof(unsigned int));
+			// Put device CAPS
+			TCPPutROMArray(s_serverSocket, (BYTE rom*)&sink->caps, sizeof(unsigned int));
+			// Put device CAPS
+			TCPPutArray(s_serverSocket, (BYTE*)&port, sizeof(unsigned int));
+
+			// start sink
+			sink->createHandler();
+		}
+
 		TCPFlush(s_serverSocket);
 
 		s_protState = STATE_REGISTER_ACK;

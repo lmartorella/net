@@ -126,8 +126,10 @@
 			WORD wRXBufferSize;
 		} TCPSocketInitializer[] =
 		{
+            // server client conn
 			{TCP_PURPOSE_GENERIC_TCP_CLIENT, TCP_ETH_RAM, 125, 100},
-			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 20, 20},
+			// display incoming messages
+			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 0, 100},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
