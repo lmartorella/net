@@ -6,9 +6,9 @@ using System.Text;
 namespace Lucky.Home.Core.Serialization
 {
     [AttributeUsage(AttributeTargets.Field)]
-    class SerializeAsCharArrayAttribute : Attribute
+    class SerializeAsFixedArrayAttribute : Attribute
     {
-        public SerializeAsCharArrayAttribute(int size)
+        public SerializeAsFixedArrayAttribute(int size)
         {
             Size = size;
         }

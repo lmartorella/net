@@ -7,7 +7,7 @@ namespace Lucky.Home.Core.Serialization
 {
     class ServiceCommand
     {
-        [SerializeAsCharArray(4)]
+        [SerializeAsFixedArray(4)]
         [Selector("RGST", typeof(ServiceRegisterCommand))]
         public string Command;
     }

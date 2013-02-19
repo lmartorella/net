@@ -45,31 +45,43 @@ namespace Lucky.Home.Core.Serialization
 
         private static INetSerializer BuildFieldItem(ICustomAttributeProvider fieldInfo, Type fieldType)
         {
-            if (fieldType.IsArray)
+            bool isString = fieldType == typeof(string);
+            if (fieldType.IsArray || isString)
             {
-                if (fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Length >= 1)
+                INetSerializer elSerializer;
+                Type elType;
+                if (isString)
                 {
-                    Type elType = fieldType.GetElementType();
-                    return new ArraySerializer(BuildFieldItem(fieldInfo, elType), elType);
+                    elType = typeof(char);
+                    elSerializer = new AsciiCharSerializer();
                 }
                 else
                 {
-                    throw new NotSupportedException("Array type not annoted: " + fieldInfo);
+                    elType = fieldType.GetElementType();
+                    elSerializer = BuildFieldItem(fieldInfo, elType);
                 }
-            }
-            if (fieldType == typeof(string))
-            {
-                // String!
-                SerializeAsCharArrayAttribute attr = fieldInfo.GetCustomAttributes(typeof(SerializeAsCharArrayAttribute), false).Cast<SerializeAsCharArrayAttribute>().FirstOrDefault();
-                if (attr == null)
+
+                if (fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Length >= 1)
                 {
-                    throw new NotSupportedException("Missing SerializeAsCharArrayAttribute on string");
+                    return new ArraySerializer(elSerializer, elType, isString);
                 }
-                return new FixedAsciiStringFieldItem(attr.Size);
+                else
+                {
+                    SerializeAsFixedArrayAttribute attr = fieldInfo.GetCustomAttributes(typeof(SerializeAsFixedArrayAttribute), false).Cast<SerializeAsFixedArrayAttribute>().FirstOrDefault();
+                    if (attr == null)
+                    {
+                        throw new NotSupportedException("Array type not annoted: " + fieldInfo);
+                    }
+                    return new FixedArrayFieldItem(elSerializer, elType, attr.Size, isString);
+                }
             }
             if (fieldType.IsEnum)
             {
                 fieldType = fieldType.GetEnumUnderlyingType();
+            }
+            if (fieldType == typeof(byte))
+            {
+                return new ByteSerializer();
             }
             if (fieldType == typeof(ushort))
             {
@@ -129,26 +141,42 @@ namespace Lucky.Home.Core.Serialization
             }
         }
 
-        private class FixedAsciiStringFieldItem : INetSerializer
+        private class AsciiCharSerializer : INetSerializer
         {
-            private int Size { get; set; }
-
-            public FixedAsciiStringFieldItem(int size)
-            {
-                Size = size;
-            }
-
             public void Serialize(object source, BinaryWriter writer)
             {
-                string str = (string)source;
-                byte[] chars = ASCIIEncoding.ASCII.GetBytes(str.ToCharArray(), 0, Size);
-                writer.Write(chars);
+                writer.Write(Encoding.ASCII.GetBytes(new[] { (char)source }, 0, 1));
             }
 
             public object Deserialize(BinaryReader reader)
             {
-                byte[] b = reader.ReadBytes(Size);
-                return ASCIIEncoding.ASCII.GetString(b);
+                return Encoding.ASCII.GetChars(new[] { reader.ReadByte() }, 0, 1)[0];
+            }
+        }
+
+        private class ByteSerializer : INetSerializer
+        {
+            public void Serialize(object source, BinaryWriter writer)
+            {
+                writer.Write((byte)source);
+            }
+
+            public object Deserialize(BinaryReader reader)
+            {
+                return reader.ReadByte();
+            }
+        }
+
+        private class FixedArrayFieldItem : ArraySerializer
+        {
+            public FixedArrayFieldItem(INetSerializer elementSerializer, Type elType, int size, bool isString)
+                :base(elementSerializer, elType, isString)
+            {
+                if (size <= 0)
+                {
+                    throw new ArgumentException("size");
+                }
+                ForcedSize = size;
             }
         }
 
@@ -192,35 +220,66 @@ namespace Lucky.Home.Core.Serialization
         {
             private INetSerializer _elementSerializer;
             private Type _elementType;
+            protected int ForcedSize { get; set; }
+            private bool _isString;
 
-            public ArraySerializer(INetSerializer elementSerializer, Type elType)
+            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString)
             {
                 _elementSerializer = elementSerializer;
                 _elementType = elType;
+                _isString = isString;
+                ForcedSize = 0;
             }
 
             public void Serialize(object source, BinaryWriter writer)
             {
-                Array array = (Array)source;
-                // Serialize count as word
-                writer.Write(BitConverter.GetBytes((ushort)array.Length));
-                // Serialize items
-                foreach (object item in array)
+                Array array;
+                if (_isString)
                 {
-                    _elementSerializer.Serialize(item, writer);
+                    array = ((string)source).ToCharArray();
+                }
+                else
+                {
+                    array = (Array)source;
+                }
+
+                int size = ForcedSize;
+                if (size <= 0)
+                {
+                    size = array.Length;
+                    // Serialize count as word
+                    writer.Write(BitConverter.GetBytes((ushort)size));
+                }
+
+                // Serialize items
+                for (int i = 0; i < size; i++)
+                {
+                    _elementSerializer.Serialize(array.GetValue(i), writer);
                 }
             }
 
             public object Deserialize(BinaryReader reader)
             {
-                // Read size
-                int size = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
+                int size = ForcedSize;
+                if (size <= 0)
+                {
+                    // Read size
+                    size = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
+                }
                 Array array = Array.CreateInstance(_elementType, size);
                 for (int i = 0; i < size; i++)
                 {
                     array.SetValue(_elementSerializer.Deserialize(reader), i);
                 }
-                return array;
+
+                if (_isString)
+                {
+                    return new string((char[])array);
+                }
+                else
+                {
+                    return array;
+                }
             }
         }
 

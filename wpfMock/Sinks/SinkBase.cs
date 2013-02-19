@@ -7,15 +7,15 @@ using System.Text;
 
 namespace Lucky.HomeMock.Sinks
 {
-    class Display : IDisposable
+    abstract class SinkBase : IDisposable
     {
         private TcpListener _serviceListener;
 
-        public Display(ushort port)
+        public SinkBase(ushort port, ushort caps, ushort deviceId)
         {
             Port = port;
-            DeviceCaps = 0;
-            DeviceID = 1;
+            DeviceCaps = caps;
+            DeviceID = deviceId;
 
             IPAddress hostAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
             if (hostAddress == null)
@@ -27,17 +27,12 @@ namespace Lucky.HomeMock.Sinks
 
             AsyncCallback handler = null;
             handler = ar =>
-                        {
-                            var tcpClient = _serviceListener.EndAcceptTcpClient(ar);
-                            HandleServiceSocketAccepted(tcpClient);
-                            _serviceListener.BeginAcceptTcpClient(handler, null);
-                        };
+            {
+                var tcpClient = _serviceListener.EndAcceptTcpClient(ar);
+                HandleServiceSocketAccepted(tcpClient);
+                _serviceListener.BeginAcceptTcpClient(handler, null);
+            };
             _serviceListener.BeginAcceptTcpClient(handler, null);
-        }
-
-        public void Dispose()
-        {
-            _serviceListener.Stop();
         }
 
         public ushort Port { get; private set; }
@@ -46,31 +41,19 @@ namespace Lucky.HomeMock.Sinks
 
         public ushort DeviceID { get; private set; }
 
+        public void Dispose()
+        {
+            _serviceListener.Stop();
+        }
+
         private void HandleServiceSocketAccepted(TcpClient tcpClient)
         {
             using (Stream stream = tcpClient.GetStream())
             {
-                using (BinaryReader reader = new BinaryReader(stream))
-                {
-                    int l = reader.ReadInt16();
-                    string str = ASCIIEncoding.ASCII.GetString(reader.ReadBytes(l));
-                    if (Data != null)
-                    {
-                        Data(this, new DataEventArgs(str));
-                    }
-                }
+                OnSocketOpened(stream);
             }
         }
 
-        public event EventHandler<DataEventArgs> Data;
-    }
-
-    public class DataEventArgs : EventArgs
-    {
-        public readonly string Str;
-        public DataEventArgs(string str)
-        {
-            Str = str;
-        }
+        protected abstract void OnSocketOpened(Stream stream);
     }
 }

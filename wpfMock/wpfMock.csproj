@@ -55,7 +55,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Sinks\Display.cs" />
+    <Compile Include="Sinks\DataEventArgs.cs" />
+    <Compile Include="Sinks\DisplaySink.cs" />
+    <Compile Include="Sinks\FlasherSink.cs" />
+    <Compile Include="Sinks\SinkBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

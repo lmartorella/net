@@ -19,21 +19,26 @@ namespace wpfMock
         private IPEndPoint _serverEndPoint;
 
         private const int DisplayPort = 18000;
-        private Display _displayModel;
+        private const int FlasherPort = 18001;
+        private DisplaySink _displaySink;
+        private FlasherSink _flasherSink;
+        private SinkBase[] _sinks;
 
         public MainWindow()
         {
             InitializeComponent();
 
             EnterInitState();
-            _displayModel = new Display(DisplayPort);
-            _displayModel.Data += (o, args) =>
+            _displaySink = new DisplaySink(DisplayPort);
+            _displaySink.Data += (o, args) =>
                             {
                                 Dispatcher.Invoke((Action)(() =>
                                 {
                                     DisplayBox.Text += args.Str + Environment.NewLine;
                                 }));
                             };
+            _flasherSink = new FlasherSink(FlasherPort);
+            _sinks = new SinkBase[] { _displaySink, _flasherSink };
         }
 
         private HeloSender HeloSender
@@ -102,14 +107,17 @@ namespace wpfMock
                                         // Write RGST command header
                                         writer.Write(ASCIIEncoding.ASCII.GetBytes("RGST"));
                                         // Num of peers
-                                        writer.Write((short)1);
+                                        writer.Write((short)_sinks.Length);
 
-                                        // Peer device ID
-                                        writer.Write(_displayModel.DeviceID);
-                                        // Peer device capatibilities
-                                        writer.Write(_displayModel.DeviceCaps);
-                                        // PORT
-                                        writer.Write(_displayModel.Port);
+                                        foreach (SinkBase sink in _sinks)
+                                        {
+                                            // Peer device ID
+                                            writer.Write(sink.DeviceID);
+                                            // Peer device capatibilities
+                                            writer.Write(sink.DeviceCaps);
+                                            // PORT
+                                            writer.Write(sink.Port);
+                                        }
                                     }
                                     catch (IOException)
                                     {

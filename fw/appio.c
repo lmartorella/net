@@ -99,7 +99,7 @@ static void destroyDisplaySink()
 
 static void pollDisplaySink()
 {
-	WORD s;
+	unsigned short s;
 	if (!TCPIsConnected(s_listenerSocket))
 	{
 		return;
@@ -109,8 +109,11 @@ static void pollDisplaySink()
 	if (s > sizeof(unsigned short))
 	{
 		char buffer[16];
+		TCPGetArray(s_listenerSocket, (BYTE*)&s, sizeof(unsigned short));
 		if (s > 15) 
+		{
 			s = 15;
+		}
 		TCPGetArray(s_listenerSocket, (BYTE*)buffer, s);
 		buffer[s] = '\0';
 		TCPDiscard(s_listenerSocket);

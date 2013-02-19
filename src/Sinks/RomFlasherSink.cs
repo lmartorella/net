@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using Lucky.Home.Core;
+using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Sinks
 {
@@ -12,6 +14,7 @@ namespace Lucky.Home.Sinks
     /// <remarks>
     /// Protocol: 
     ///   TCP_OPEN, 
+    ///   -> [2 bytes] 0x00: flash program
     ///   -> [128Kb of raw data]: follow the whole new BIOS, contains also empty blocks
     ///   <- [word:err] (if 0: OK, otherwise error and abort) 
     ///   -> [16 bytes]: follow a validity map for ROM erasures (128Kb / 1024 rows = 128 bits). (*)
@@ -25,18 +28,85 @@ namespace Lucky.Home.Sinks
     [DeviceId(DeviceIds.Flasher)]
     class RomFlasherSink : Sink
     {
-        public void SendProgram(Program program)
+        private Timer _timer;
+
+        public RomFlasherSink()
+        {
+            _timer = new Timer(o => { SendProgram(); }, null, 500, Timeout.Infinite);
+        }
+
+        private enum MessageType : ushort
+        {
+            FlashMainProgram = 0,
+        }
+
+        private class MessageBase
+        {
+            [Selector(MessageType.FlashMainProgram, typeof(MainProgramMessage1))]
+            public MessageType Type;
+        }
+
+        private class MainProgramMessage1 : MessageBase
+        {
+            public MainProgramMessage1()
+            {
+                Type = MessageType.FlashMainProgram;
+            }
+
+            [SerializeAsFixedArray(128 * 1024)]
+            public byte[] RomData;
+        }
+
+        private class MainProgramMessage2
+        {
+            [SerializeAsFixedArray(16)]
+            public byte[] ErasureMap;
+            [SerializeAsFixedArray(256)]
+            public byte[] WritingMap;
+        }
+
+        private class MainProgramMessage3
+        {
+            [SerializeAsFixedArray(2)]
+            public byte[] ControlCode = new byte[] { 0x55, 0xaa };
+        }
+
+        private enum ErrorCode : ushort
+        {
+            Ok = 0
+        }
+
+        private class AckResponse
+        {
+            public ErrorCode ErrCode;
+        }
+
+        public void SendProgram()
         {
             using (IConnection conn = Open())
             {
-                conn.Writer.Write(program.AllData);
-                ushort ack = BitConverter.ToUInt16(conn.Reader.ReadBytes(2), 0);
+                MainProgramMessage1 msg1 = new MainProgramMessage1 { RomData = new byte[128 * 1024] };
+                NetSerializer<MainProgramMessage1>.Write(msg1, conn.Writer);
+
+                ValidateResponse(conn.Reader);
+
+                MainProgramMessage2 msg2 = new MainProgramMessage2 { ErasureMap = new byte[16], WritingMap = new byte[256] };
+                NetSerializer<MainProgramMessage2>.Write(msg2, conn.Writer);
+
+                ValidateResponse(conn.Reader);
+
+                MainProgramMessage3 msg3 = new MainProgramMessage3();
+                NetSerializer<MainProgramMessage3>.Write(msg3, conn.Writer);
             }
         }
-    }
 
-    class Program
-    {
-        public byte[] AllData = new byte[128 * 1024];
+        private void ValidateResponse(BinaryReader reader)
+        {
+            AckResponse response = NetSerializer<AckResponse>.Read(reader);
+            if (response.ErrCode != ErrorCode.Ok)
+            {
+                throw new InvalidOperationException("Error code: " + response.ErrCode);
+            }
+        }
     }
 }

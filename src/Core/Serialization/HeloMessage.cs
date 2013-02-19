@@ -9,7 +9,7 @@ namespace Lucky.Home.Core.Serialization
 {
     class HeloMessage
     {
-        [SerializeAsCharArray(8)]
+        [SerializeAsFixedArray(8)]
         public string Preamble;
 
         public Guid DeviceId;
@@ -19,7 +19,7 @@ namespace Lucky.Home.Core.Serialization
 
     class HeloAckMessage
     {
-        [SerializeAsCharArray(8)]
+        [SerializeAsFixedArray(8)]
         public string Preamble;
 
         public IPAddress ServerAddress;

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Text;
 using Lucky.Home.Core;
+using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Sinks
 {
@@ -23,13 +25,18 @@ namespace Lucky.Home.Sinks
             _timer = new Timer(o => { SendHi(); }, null, 500, Timeout.Infinite);
         }
 
+        private class Message
+        {
+            [SerializeAsDynArray]
+            public string Text;
+        }
+
         private void SendHi()
         {
             using (var connection = Open())
             {
-                const string str = "Hello world.";
-                connection.Writer.Write(BitConverter.GetBytes((ushort)str.Length));
-                connection.Writer.Write(ASCIIEncoding.ASCII.GetBytes(str));
+                Message msg = new Message { Text = "Hello world." };
+                NetSerializer<Message>.Write(msg, connection.Writer);
             }
         }
     }
