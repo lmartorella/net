@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -85,19 +84,19 @@ namespace Lucky.Home.Core.Serialization
             }
             if (fieldType == typeof(ushort))
             {
-                return new BitConverterItem<ushort>(2, v => BitConverter.GetBytes(v), a => BitConverter.ToUInt16(a, 0));
+                return new BitConverterItem<ushort>(2, BitConverter.GetBytes, a => BitConverter.ToUInt16(a, 0));
             }
             if (fieldType == typeof(short))
             {
-                return new BitConverterItem<short>(2, v => BitConverter.GetBytes(v), a => BitConverter.ToInt16(a, 0));
+                return new BitConverterItem<short>(2, BitConverter.GetBytes, a => BitConverter.ToInt16(a, 0));
             }
             if (fieldType == typeof(uint))
             {
-                return new BitConverterItem<uint>(4, v => BitConverter.GetBytes(v), a => BitConverter.ToUInt32(a, 0));
+                return new BitConverterItem<uint>(4, BitConverter.GetBytes, a => BitConverter.ToUInt32(a, 0));
             }
             if (fieldType == typeof(int))
             {
-                return new BitConverterItem<int>(4, v => BitConverter.GetBytes(v), a => BitConverter.ToInt32(a, 0));
+                return new BitConverterItem<int>(4, BitConverter.GetBytes, a => BitConverter.ToInt32(a, 0));
             }
             if (fieldType == typeof(Guid))
             {
@@ -105,7 +104,7 @@ namespace Lucky.Home.Core.Serialization
             }
             if (fieldType == typeof(IPAddress))
             {
-                return new IPAddressFieldItem();
+                return new IpAddressFieldItem();
             }
             if (fieldType.IsClass)
             {
@@ -118,8 +117,8 @@ namespace Lucky.Home.Core.Serialization
 
         private class BitConverterItem<TD> : INetSerializer where TD : struct
         {
-            private Func<TD, byte[]> _ser;
-            private Func<byte[], TD> _deser;
+            private readonly Func<TD, byte[]> _ser;
+            private readonly Func<byte[], TD> _deser;
             private int Size { get; set; }
 
             public BitConverterItem(int size, Func<TD, byte[]> ser, Func<byte[], TD> deser)
@@ -180,7 +179,7 @@ namespace Lucky.Home.Core.Serialization
             }
         }
 
-        private class IPAddressFieldItem : INetSerializer
+        private class IpAddressFieldItem : INetSerializer
         {
             private const int Size = 4;
 
@@ -218,10 +217,10 @@ namespace Lucky.Home.Core.Serialization
 
         private class ArraySerializer : INetSerializer
         {
-            private INetSerializer _elementSerializer;
-            private Type _elementType;
+            private readonly INetSerializer _elementSerializer;
+            private readonly Type _elementType;
             protected int ForcedSize { get; set; }
-            private bool _isString;
+            private readonly bool _isString;
 
             public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString)
             {

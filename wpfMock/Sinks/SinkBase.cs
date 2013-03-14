@@ -3,15 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace Lucky.HomeMock.Sinks
 {
     abstract class SinkBase : IDisposable
     {
-        private TcpListener _serviceListener;
+        private readonly TcpListener _serviceListener;
 
-        public SinkBase(ushort port, ushort caps, ushort deviceId)
+        protected SinkBase(ushort port, ushort caps, ushort deviceId)
         {
             Port = port;
             DeviceCaps = caps;

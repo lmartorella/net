@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Core
 {
     class Server : ServiceBase, IServer, IDisposable
     {
-        private Dictionary<Guid, Peer> _peersByGuid = new Dictionary<Guid, Peer>();
-        private Dictionary<IPAddress, Peer> _peersByAddress = new Dictionary<IPAddress, Peer>();
+        private readonly Dictionary<Guid, Peer> _peersByGuid = new Dictionary<Guid, Peer>();
+        private readonly Dictionary<IPAddress, Peer> _peersByAddress = new Dictionary<IPAddress, Peer>();
 
-        private ushort DefaultPort = 17008;
-        private TcpListener _serviceListener;
+        private const ushort DefaultPort = 17008;
+        private readonly TcpListener _serviceListener;
 
         public Server()
         {

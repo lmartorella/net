@@ -1,10 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Core
@@ -14,7 +11,7 @@ namespace Lucky.Home.Core
     /// </summary>
     class HelloListener : ServiceBase, IHelloListener, IDisposable
     {
-        private UdpClient _client;
+        private readonly UdpClient _client;
 
         /// <summary>
         /// The HELLO port cannot be changed and are part of the protocol
@@ -97,7 +94,7 @@ namespace Lucky.Home.Core
                 HeloAckMessage msg = new HeloAckMessage();
                 msg.Preamble = HeloAckMessage.PreambleValue;
                 msg.ServerAddress = server.Address;
-                msg.ServerPort = (ushort)server.Port;
+                msg.ServerPort = server.Port;
 
                 // Send a HERE packet
                 using (MemoryStream stream = new MemoryStream())

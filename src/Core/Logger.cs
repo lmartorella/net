@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Lucky.Home.Core
 {
-    class Logger : ILogger, IService
+    class Logger : ILogger
     {
         public void Log(string message)
         {
@@ -24,7 +21,7 @@ namespace Lucky.Home.Core
 
         private void LogFormat(string message, params object[] args)
         {
-            Console.WriteLine(string.Format(message, args));
+            Console.WriteLine(message, args);
         }
     }
 }

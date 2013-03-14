@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
@@ -38,7 +36,7 @@ namespace Lucky.Home.Core
         private class Connection : IConnection
         {
             private TcpClient _tcpClient;
-            private Stream _clientStream;
+            private readonly Stream _clientStream;
 
             public BinaryReader Reader { get; private set; }
             public BinaryWriter Writer { get; private set; }

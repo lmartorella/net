@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Lucky.Home.Core
 {
     static class Manager
     {
-        private static Dictionary<Type, Type> s_types = new Dictionary<Type, Type>();
-        private static Dictionary<Type, object> s_instances = new Dictionary<Type, object>();
+        private static readonly Dictionary<Type, Type> s_types = new Dictionary<Type, Type>();
+        private static readonly Dictionary<Type, object> s_instances = new Dictionary<Type, object>();
 
         public static T GetService<T>() where T : IService
         {

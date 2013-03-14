@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
 using Lucky.Home.Core;
 
 namespace Lucky.Home
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             Manager.Register<HelloListener, IHelloListener>();
             Manager.Register<Logger, ILogger>();

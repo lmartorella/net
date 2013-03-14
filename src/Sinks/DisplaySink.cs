@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
-using System.Text;
 using Lucky.Home.Core;
 using Lucky.Home.Core.Serialization;
 
@@ -22,7 +20,7 @@ namespace Lucky.Home.Sinks
 
         public DisplaySink()
         {
-            _timer = new Timer(o => { SendHi(); }, null, 500, Timeout.Infinite);
+            _timer = new Timer(o => SendHi(), null, 500, Timeout.Infinite);
         }
 
         private class Message

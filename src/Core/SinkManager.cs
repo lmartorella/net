@@ -7,7 +7,7 @@ namespace Lucky.Home.Core
 {
     class SinkManager : ServiceBase
     {
-        private Dictionary<int, Type> _deviceIds = new Dictionary<int, Type>();
+        private readonly Dictionary<int, Type> _deviceIds = new Dictionary<int, Type>();
 
         internal void RegisterSinkDevice<T>(int deviceId) where T : Sink, new()
         {

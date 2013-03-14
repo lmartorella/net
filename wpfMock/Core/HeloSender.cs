@@ -9,7 +9,7 @@ namespace Lucky.HomeMock.Core
 {
     class HeloSender : Task
     {
-        private Timer _timer;
+        private readonly Timer _timer;
         private const int HeloProtocolPort = 17007;
 
         public HeloSender()
@@ -30,7 +30,7 @@ namespace Lucky.HomeMock.Core
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 // Write HOMEHELO
-                writer.Write(ASCIIEncoding.ASCII.GetBytes("HOMEHELO"));
+                writer.Write(Encoding.ASCII.GetBytes("HOMEHELO"));
                 writer.Write(Data.DeviceId.ToByteArray());
 
             }

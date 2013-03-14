@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Lucky.Home.Core;
 using Lucky.Home.Core.Serialization;
@@ -32,7 +30,7 @@ namespace Lucky.Home.Sinks
 
         public RomFlasherSink()
         {
-            _timer = new Timer(o => { SendProgram(); }, null, 500, Timeout.Infinite);
+            _timer = new Timer(o => SendProgram(), null, 500, Timeout.Infinite);
         }
 
         private enum MessageType : ushort

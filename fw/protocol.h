@@ -17,7 +17,7 @@ typedef struct SinkStruct
 	// Device caps
 	unsigned int caps; 
 	// Port
-	unsigned int port; 
+	unsigned int port2; 
 	// Pointer to create function
 	Action createHandler;
 	// Pointer to destroy function

@@ -3,16 +3,15 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Windows;
 using Lucky.HomeMock.Core;
 using Lucky.HomeMock.Sinks;
 
-namespace wpfMock
+namespace Lucky.HomeMock
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private HeloSender _heloSender;
         private HomeReceiver _homeReceiver;
@@ -20,9 +19,9 @@ namespace wpfMock
 
         private const int DisplayPort = 18000;
         private const int FlasherPort = 18001;
-        private DisplaySink _displaySink;
-        private FlasherSink _flasherSink;
-        private SinkBase[] _sinks;
+        private readonly DisplaySink _displaySink;
+        private readonly FlasherSink _flasherSink;
+        private readonly SinkBase[] _sinks;
 
         public MainWindow()
         {
@@ -30,13 +29,10 @@ namespace wpfMock
 
             EnterInitState();
             _displaySink = new DisplaySink(DisplayPort);
-            _displaySink.Data += (o, args) =>
-                            {
-                                Dispatcher.Invoke((Action)(() =>
-                                {
-                                    DisplayBox.Text += args.Str + Environment.NewLine;
-                                }));
-                            };
+            _displaySink.Data += (o, args) => Dispatcher.Invoke((Action)(() =>
+                {
+                    DisplayBox.Text += args.Str + Environment.NewLine;
+                }));
             _flasherSink = new FlasherSink(FlasherPort);
             _sinks = new SinkBase[] { _displaySink, _flasherSink };
         }
@@ -78,7 +74,7 @@ namespace wpfMock
             HeloSender = new HeloSender();
             HeloSender.Sent += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("Helo sent\n")));
             HomeReceiver = new HomeReceiver();
-            HomeReceiver.HomeFound += (o, e) => Dispatcher.Invoke((Action)(() => EnterHomeFound()));
+            HomeReceiver.HomeFound += (o, e) => Dispatcher.Invoke((Action)(EnterHomeFound));
         }
 
         private void EnterHomeFound()
@@ -105,7 +101,7 @@ namespace wpfMock
                                     try
                                     {
                                         // Write RGST command header
-                                        writer.Write(ASCIIEncoding.ASCII.GetBytes("RGST"));
+                                        writer.Write(Encoding.ASCII.GetBytes("RGST"));
                                         // Num of peers
                                         writer.Write((short)_sinks.Length);
 
