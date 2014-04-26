@@ -5,4 +5,4 @@
 #define GetInstructionClock() (25000000/4)
 #define GetPeripheralClock() (25000000/4)
 
-#include <TCPIP Stack/ETH97J60.h>
+#include <TCPIPStack/ETH97J60.h>
