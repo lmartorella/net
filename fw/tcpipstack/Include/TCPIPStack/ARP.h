@@ -69,7 +69,7 @@
 
 
 // ARP packet structure
-typedef struct __attribute__((aligned(2), packed))
+__ALIGN2PACK typedef struct
 {
     WORD        HardwareType;   // Link-layer protocol type (Ethernet is 1).
     WORD        Protocol;       // The upper-layer protocol issuing an ARP request (0x0800 for IPv4)..

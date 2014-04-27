@@ -211,7 +211,7 @@ static WORD NextPort __attribute__((persistent));	// Tracking variable for next 
 #define TCP_SOCKET_COUNT	(sizeof(TCPSocketInitializer)/sizeof(TCPSocketInitializer[0]))
 
 
-#if defined(HI_TECH_C)
+#if defined(HI_TECH_C) || defined(__XC__)
 	// The initializer forces this large array out of the bss section
 	// so we can link correctly.
 	#pragma psect bigdata=TCB_uRAM_BIG

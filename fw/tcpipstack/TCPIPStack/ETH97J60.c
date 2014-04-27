@@ -114,7 +114,7 @@ static WORD wTXWatchdog;	// Time of last transmission (high resolution); used fo
 	static WORD wRXPolarityTimer;	// Time of last transmission (long duration); used for determining when a RX polarity swap may be needed
 #endif
 
-#if defined(HI_TECH_C)
+#if defined(HI_TECH_C) || defined(__XC__)
 	// Define a temporary register for passing data to inline assembly
 	// statements.  MPLAB C18 uses PRODL and therefore doesn't need this temp
 	// byte, but the HI-TECH PICC-18 compiler uses PRODL differently and doesn't
@@ -1078,7 +1078,7 @@ BOOL MACIsMemCopyDone(void)
  *****************************************************************************/
 BYTE MACGet()
 {
-	#if defined(HI_TECH_C)
+	#if defined(HI_TECH_C) || defined(__XC__)
 		asm("movff	0xF61, _errataTempL");	// movff EDATA, errataTempL
 		return errataTempL;
 	#else
@@ -1114,7 +1114,7 @@ WORD MACGetArray(BYTE *val, WORD len)
 	{
 	    while(w--)
 	    {
-			#if defined(HI_TECH_C)
+			#if defined(HI_TECH_C) || defined(__XC__)
 				asm("movff	0xF61, _errataTempL");	// movff EDATA, errataTempL
 				*val++ = errataTempL;
 			#else
@@ -1126,7 +1126,7 @@ WORD MACGetArray(BYTE *val, WORD len)
 	{
 		while(w--)
 		{
-			#if defined(HI_TECH_C)
+			#if defined(HI_TECH_C) || defined(__XC__)
 			{
 				asm("movff	0xF61, _errataTempL");	// movff EDATA, errataTempL
 			}
@@ -1163,7 +1163,7 @@ void MACPut(BYTE val)
 	// Note:  Due to a PIC18F97J60 bug, you must use the MOVFF instruction to
 	// write to EDATA or else the read pointer (ERDPT) will inadvertently
 	// increment.
-	#if defined(HI_TECH_C)
+	#if defined(HI_TECH_C) || defined(__XC__)
 		errataTempL = val;
 		asm("movff	_errataTempL, 0xF61");	// movff errataTempL, EDATA
 	#else
@@ -1198,7 +1198,7 @@ void MACPutArray(BYTE *val, WORD len)
 		// Note:  Due to a PIC18F97J60 bug, you must use the MOVFF instruction to
 		// write to EDATA or else the read pointer (ERDPT) will inadvertently
 		// increment.
-		#if defined(HI_TECH_C)
+		#if defined(HI_TECH_C) || defined(__XC__)
 			errataTempL = *val++;
 			asm("movff	_errataTempL, 0xF61");	// movff errataTempL, EDATA
 		#else
@@ -1215,7 +1215,7 @@ void MACPutROMArray(ROM BYTE *val, WORD len)
 		// Note:  Due to a PIC18F97J60 bug, you must use the MOVFF instruction to
 		// write to EDATA or else the read pointer (ERDPT) will inadvertently
 		// increment.
-		#if defined(HI_TECH_C)
+		#if defined(HI_TECH_C) || defined(__XC__)
 			errataTempL = *val++;
 			asm("movff	_errataTempL, 0xF61");	// movff errataTempL, EDATA
 		#else
@@ -1302,7 +1302,7 @@ void WritePHYReg(BYTE Register, WORD Data)
 	// 0xFF4:0xFF3.  These addresses have LSb address bits of 0x14 and 0x13.
 	// Interrupts must be disabled to prevent arbitrary ISR code from accessing
 	// memory with LSb bits of 0x16 and corrupting the MIWRL value.
-	#if defined(HI_TECH_C)
+	#if defined(HI_TECH_C) || defined(__XC__)
 		errataTempL = ((BYTE*)&Data)[0];
 		errataTempH = ((BYTE*)&Data)[1];
 		GIESave = INTCON & 0xC0;		// Save GIEH and GIEL bits

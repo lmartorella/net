@@ -73,7 +73,7 @@
 #endif
 
 // Structure to contain a MAC address
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
     BYTE v[6];
 } MAC_ADDR;
@@ -82,14 +82,14 @@ typedef struct __attribute__((__packed__))
 #define IP_ADDR		DWORD_VAL
 
 // Address structure for a node
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
     IP_ADDR     IPAddr;
     MAC_ADDR    MACAddr;
 } NODE_INFO;
 
 // Application-dependent structure used to contain address information
-typedef struct __attribute__((__packed__)) appConfigStruct 
+__PACK typedef struct appConfigStruct
 {
 	IP_ADDR		MyIPAddr;               // IP address
 	IP_ADDR		MyMask;                 // Subnet mask

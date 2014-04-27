@@ -91,7 +91,7 @@
 #define DHCP_END_OPTION                 (255u)	// DHCP_END_OPTION Type
 
 // DHCP or BOOTP Header structure
-typedef struct __attribute__((aligned(2), packed))
+__ALIGN2PACK typedef struct 
 {
 	BYTE		MessageType;	// Message type for this message
 	BYTE		HardwareType;	// Hardware type for this message

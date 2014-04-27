@@ -95,7 +95,7 @@
 
 // A generic structure representing the Ethernet header starting all Ethernet
 // frames
-typedef struct  __attribute__((aligned(2), packed))
+__ALIGN2PACK typedef struct
 {
 	MAC_ADDR        DestMACAddr;
 	MAC_ADDR        SourceMACAddr;
@@ -307,7 +307,7 @@ void MACFlush(void);
 
 
 // ROM function variants for PIC18
-#if defined(__18CXX)
+#if defined(__18CXX) || defined(__XC8)
 	void MACPutROMArray(ROM BYTE *val, WORD len);
 #else
 	#define MACPutROMArray(a,b)	MACPutArray((BYTE*)a,b)

@@ -69,6 +69,9 @@
 	#endif
     #define COMPILER_HITECH_PICC18
 	#include <htc.h>
+#elif defined(__XC__)
+    #define COMPILER_XC
+    #include <xc.h>
 #elif (defined(_PIC12) || defined(_PIC14) || defined(_PIC14E)) && defined(HI_TECH_C)
 	// PIC10/12/16 processor with (Microchip) HI-TECH PICC compiler
     #define COMPILER_HITECH_PICC
@@ -134,7 +137,7 @@
 #elif defined(COMPILER_MPLAB_C18)
 	#define PTR_BASE		unsigned short
 	#define ROM_PTR_BASE	unsigned short long
-#elif defined(COMPILER_HITECH_PICC18)
+#elif defined(COMPILER_HITECH_PICC18) || defined(COMPILER_XC)
 	#define PTR_BASE		unsigned short
 	#define ROM_PTR_BASE	unsigned long
 #endif
@@ -156,7 +159,25 @@
 
 // Definitions that apply to all 8-bit products
 // (PIC10, PIC12, PIC16, PIC18)
-#if defined(__18CXX) || defined(COMPILER_HITECH_PICC)
+#if defined(COMPILER_XC)
+    // Microchip C18 specific defines
+    #define FAR  far
+    #define ROM  const
+    #define rom
+    #ifndef Nop()
+    #define Nop() NOP();
+    #endif
+    #ifndef ClrWdt()
+    #define ClrWdt()  CLRWDT();
+    #endif
+    #ifndef Reset()
+    #define Reset()   RESET();
+    #endif
+    #ifndef Sleep()
+    #define Sleep()   SLEEP();
+    #endif
+
+#elif defined(__18CXX) || defined(COMPILER_HITECH_PICC)
 	#define	__attribute__(a)
 
     #define FAR                         far
@@ -213,6 +234,14 @@
 	#endif
 #endif
 
+
+#if defined (COMPILER_XC)
+    #define __ALIGN2PACK __pack __align(2)
+    #define __PACK __pack
+#else
+    #define __ALIGN2PACK __attribute__((aligned(2), packed))
+    #define __PACK __attribute__((packed))
+#endif
 
 
 #endif

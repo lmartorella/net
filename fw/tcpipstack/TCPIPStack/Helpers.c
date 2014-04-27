@@ -220,7 +220,7 @@ DWORD GenerateRandomDWORD(void)
 		WORD	w[2];
 	} randomResult;
 
-#if defined __18CXX
+#if defined(__18CXX) || defined(__XC8)
 {
 	BYTE ADCON0Save, ADCON2Save;
 	BYTE T0CONSave, TMR0HSave, TMR0LSave;

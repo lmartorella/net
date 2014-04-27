@@ -113,13 +113,13 @@ struct in_addr
 #define s_lh    S_un.S_un_b.s_b3 // logical host
 }; // in_addr structure
 
-struct __attribute__((__packed__)) sockaddr
+__PACK struct sockaddr
 {
     unsigned short   sa_family;   //address family
     char    sa_data[14];       //up to 14 bytes of direct address
 }; //generic address structure for all address families
 
-struct __attribute__((__packed__)) sockaddr_in
+__PACK struct sockaddr_in
 {
     short   sin_family; //Address family; must be AF_INET.
     WORD    sin_port;  //Internet Protocol (IP) port.

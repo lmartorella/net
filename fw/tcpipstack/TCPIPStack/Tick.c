@@ -93,7 +93,7 @@ static void GetTickCopy(void);
   ***************************************************************************/
 void TickInit(void)
 {
-#if defined(__18CXX)
+#if defined(__18CXX) || defined(__XC8)
 	// Use Timer0 for 8 bit processors
     // Initialize the time
     TMR0H = 0;
@@ -156,7 +156,7 @@ static void GetTickCopy(void)
 {
 	// Perform an Interrupt safe and synchronized read of the 48-bit
 	// tick value
-#if defined(__18CXX)
+#if defined(__18CXX) || defined(__XC8)
 	do
 	{
 		INTCONbits.TMR0IE = 1;		// Enable interrupt
@@ -386,7 +386,7 @@ DWORD TickConvertToMilliseconds(DWORD dwTickValue)
   Returns:
   	None
   ***************************************************************************/
-#if defined(__18CXX)
+#if defined(__18CXX) || defined(__XC8)
 void TickUpdate(void)
 {
     if(INTCONbits.TMR0IF)
