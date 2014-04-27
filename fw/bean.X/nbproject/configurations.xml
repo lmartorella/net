@@ -108,6 +108,11 @@
         <itemPath>../tcpipstack/Include/TCPIPStack/ZeroconfLinkLocal.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/ZeroconfMulticastDNS.h</itemPath>
       </logicalFolder>
+      <itemPath>../appio.h</itemPath>
+      <itemPath>../persistence.h</itemPath>
+      <itemPath>../protocol.h</itemPath>
+      <itemPath>../timers.h</itemPath>
+      <itemPath>../ver.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -139,6 +144,12 @@
         <itemPath>../tcpipstack/TCPIPStack/Tick.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/UDP.c</itemPath>
       </logicalFolder>
+      <itemPath>../appio.c</itemPath>
+      <itemPath>../flasher.c</itemPath>
+      <itemPath>../main.c</itemPath>
+      <itemPath>../persistence.c</itemPath>
+      <itemPath>../protocol.c</itemPath>
+      <itemPath>../timers.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -147,8 +158,7 @@
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
-    <Elem>../tcpipstack</Elem>
-    <Elem>../hardware</Elem>
+    <Elem>..</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -407,7 +417,7 @@
         <property key="codecoverage.outputfile" value=""/>
         <property key="oscillator.auxfrequency" value="120"/>
         <property key="oscillator.auxfrequencyunit" value="Mega"/>
-        <property key="oscillator.frequency" value="1"/>
+        <property key="oscillator.frequency" value="20"/>
         <property key="oscillator.frequencyunit" value="Mega"/>
         <property key="oscillator.rcfrequency" value="250"/>
         <property key="oscillator.rcfrequencyunit" value="Kilo"/>

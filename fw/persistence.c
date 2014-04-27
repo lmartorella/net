@@ -2,19 +2,17 @@
 #include "hardware/eeprom.h"
 #include "persistence.h"
 #include <string.h>
+#include "Compiler.h"
 
 // The editable memory area
-#pragma romdata PERSISTENT_SECTION
-far rom const PersistentData g_persistentData = { {0x00000000, 0x0000, 0x0000, 0x00000000, 0x00000000 } };
+far const PersistentData g_persistentData = { {0x00000000, 0x0000, 0x0000, 0x00000000, 0x00000000 } };
 
-#pragma code
-
-void boot_getUserData(ram PersistentData* newData)
+void boot_getUserData(PersistentData* newData)
 {
 	memcpypgm2ram(newData, &g_persistentData, sizeof(PersistentData));
 }
 
-void boot_updateUserData(const ram PersistentData* newData)
+void boot_updateUserData(PersistentData* newData)
 {
-	rom_write((far rom void*)&g_persistentData, (ram void*)newData, sizeof(PersistentData));
+	rom_write((const void*)&g_persistentData, (void*)newData, sizeof(PersistentData));
 }

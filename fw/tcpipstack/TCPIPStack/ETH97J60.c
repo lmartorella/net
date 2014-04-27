@@ -259,7 +259,8 @@ BOOL MACIsLinked(void)
 	// MACIsLinked(), MACIsLinked() will still return FALSE.  The next
 	// call to MACIsLinked() will return TRUE (unless the link goes down
 	// again).
-	return ReadPHYReg(PHSTAT1).PHSTAT1bits.LLSTAT;
+    PHYREG r = ReadPHYReg(PHSTAT1);
+	return r.PHSTAT1bits.LLSTAT;
 }
 
 

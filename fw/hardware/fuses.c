@@ -21,8 +21,8 @@
 // Two-speed startup disabled (Internal/External Oscillator Switchover)
 #pragma config IESO = OFF
 
-// Enable extended instruction set
-#pragma config XINST = ON
+// Disable extended instruction set (not supported by XC compiler)
+#pragma config XINST = OFF
 
 // FOSC = HS, no pll, INTRC disabled
 #pragma config FOSC = HS, FOSC2 = ON

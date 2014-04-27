@@ -4,17 +4,15 @@
 #include "protocol.h"
 
 // Print the upper row (status)
-void printlnUp(const rom char* msg);
-// Display a ROM message in the below row
-void println(const rom char* msg);
-// Display a RAM message in the below row
-void printlnr(const ram char* msg);
+void printlnUp(char* msg);
+// Display a RAM/ROM message in the below row
+void println(char* msg);
 
 // Reset the device with fatal error
-void fatal(const rom char* msg);
+void fatal(const char* msg);
 // Retrieve last fatal error
-const ram char* getLastFatal(void);
+char* getLastFatal(void);
 
-extern const rom Sink g_displaySink;
+extern const Sink g_displaySink;
 
 #endif

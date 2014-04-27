@@ -3,7 +3,8 @@
 #include "persistence.h"
 #include "hardware/cm1602.h"
 #include "hardware/fuses.h"
-#include <TCPIP Stack/TCPIP.h>
+#include "TCPIPStack/TCPIP.h"
+#include "Compiler.h"
 
 // Protocol Engine State
 typedef enum PROTOCOL_STATE_enum
@@ -41,14 +42,14 @@ static WORD s_homePort;
 static TCP_SOCKET s_serverSocket;
 
 // Array of all sinks
-static const Sink rom * AllSinks[] = { &g_displaySink }; 
-static const unsigned int rom AllSinksCount = 1; 
+static const Sink* AllSinks[] = { &g_displaySink }; 
+static const unsigned int AllSinksCount = 1; 
 
 
 /*
 	HOME Response packet
 */
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
 	char preamble[8];
 	IP_ADDR homeIp;
@@ -58,7 +59,7 @@ typedef struct __attribute__((__packed__))
 /*
 	HOME request
 */
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
 	char preamble[8];
 	GUID device;
@@ -67,7 +68,7 @@ typedef struct __attribute__((__packed__))
 /*
 	Peer descriptor item
 */
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
 	WORD deviceId;
 	WORD deviceCaps;
@@ -77,7 +78,7 @@ typedef struct __attribute__((__packed__))
 /*
 	REGISTER message
 */
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
 	char preamble[4];
 	WORD peerCount;
@@ -90,11 +91,11 @@ typedef UINT16 RGST_ERRCODE;
 /*
 	REGISTER response
 */
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
 	RGST_ERRCODE errCode;
 } SERVER_REGISTER_RESPONSE;
-typedef struct __attribute__((__packed__))
+__PACK typedef struct
 {
 	GUID newGuid;
 } SERVER_REGISTER_NEWGUID_RESPONSE;
@@ -110,7 +111,7 @@ static void waitForRegisterResponse(void);
 */
 void prot_poll()
 {
-	int i;
+	unsigned int i;
 	switch (s_protState)
 	{
 	case STATE_NOT_INITIALIZED:
@@ -149,7 +150,7 @@ void prot_slowTimer()
 	}
 
 	sprintf(buffer, "STA:%x", (int)s_protState);
-	printlnr(buffer);
+	println(buffer);
 }
 
 static void createUdpSockets()
@@ -222,7 +223,7 @@ static void waitForRegisterConnection()
 {
 	if (TCPIsConnected(s_serverSocket))
 	{
-		int i;
+		unsigned int i;
 		// Connected? Then Register.
 		if (TCPIsPutReady(s_serverSocket) < sizeof(SERVER_REGISTER))
 		{

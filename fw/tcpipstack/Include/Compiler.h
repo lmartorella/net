@@ -147,6 +147,7 @@
 #if !defined(COMPILER_MPLAB_C18)
 	#define memcmppgm2ram(a,b,c)	memcmp(a,b,c)
 	#define strcmppgm2ram(a,b)		strcmp(a,b)
+	#define strncmppgm2ram(a,b,c)	strncmp(a,b,c)
 	#define memcpypgm2ram(a,b,c)	memcpy(a,b,c)
 	#define strcpypgm2ram(a,b)		strcpy(a,b)
 	#define strncpypgm2ram(a,b,c)	strncpy(a,b,c)

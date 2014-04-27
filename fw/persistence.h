@@ -15,11 +15,11 @@ typedef struct
 } PersistentData;
 
 // This can be accessed by the running application in read-only mode
-extern far rom const PersistentData g_persistentData;
+extern far const PersistentData g_persistentData;
 
 // Update my copy of persistence
-void boot_getUserData(ram PersistentData* newData);
+void boot_getUserData(PersistentData* newData);
 // Program the new content of the UserData
-void boot_updateUserData(const ram PersistentData* newData);
+void boot_updateUserData(PersistentData* newData);
 
 #endif

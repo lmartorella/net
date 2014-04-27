@@ -7,7 +7,7 @@
 #include "protocol.h"
 #include "timers.h"
 #include "appio.h"
-#include <TCPIP Stack/TCPIP.h>
+#include "TCPIPStack/TCPIP.h"
 #include <stdio.h>
 
 // The smallest type capable of representing all values in the enumeration type.
@@ -93,7 +93,7 @@ static void enableInterrupts(void)
 
 static void checkram(void)
 {
-	char err = sram_test();
+	signed char err = sram_test();
 	if (err >= 0)
 	{
 		cm1602_setDdramAddr(0x40);
@@ -123,7 +123,7 @@ void main()
 	cm1602_writeStr(g_reasonMsgs[_reason]);
 	if (_reason == RESET_EXC)
 	{
-		cm1602_writeStrRam(getLastFatal());
+		cm1602_writeStr(getLastFatal());
 	}
 
 	println("Spi");
@@ -203,7 +203,7 @@ void timer1s()
 			unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
 			sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
 			cm1602_setDdramAddr(0x0);
-			cm1602_writeStrRam(buf);
+			cm1602_writeStr(buf);
 			s_dhcpOk = TRUE;
 		}
 		else

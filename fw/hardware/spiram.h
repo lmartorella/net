@@ -12,7 +12,7 @@
 void sram_init(void);
 // Test all 4 banks, return the number of the failing bank
 // or -1 if no fails
-char sram_test(void);
+signed char sram_test(void);
 
 // Read a vector of bytes in RAM.
 // NOTE: do not support SPI cross-bank access

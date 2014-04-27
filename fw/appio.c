@@ -2,7 +2,7 @@
 #include "appio.h"
 #include "hardware/cm1602.h"
 #include <string.h>
-#include <TCPIP Stack/TCPIP.h>
+#include "TCPIPStack/TCPIP.h"
 
 static char s_lastErr[8];
 
@@ -34,47 +34,30 @@ static void _clr(BYTE addr)
 	cm1602_setDdramAddr(addr);
 }
 
-static void _print(const rom char* str, BYTE addr)
+static void _print(char* str, BYTE addr)
 {
 	_clr(addr);
 	cm1602_writeStr(str);
 	ClrWdt();
 }
 
-static void _printr(const ram char* str, BYTE addr)
-{
-	_clr(addr);
-	cm1602_writeStrRam(str);
-	ClrWdt();
-}
-
-void println(const rom char* str)
+void println(char* str)
 {
 	_print(str, 0x40);	
 }
 
-void printlnr(const ram char* str)
-{
-	_printr(str, 0x40);	
-}
-
-void printlnUp(const rom char* str)
+void printlnUp(char* str)
 {
 	_print(str, 0x00);	
 }
 
-void printlnrUp(const ram char* str)
-{
-	_printr(str, 0x00);	
-}
-
-void fatal(const rom char* str)
+void fatal(const char* str)
 {
 	strncpypgm2ram(s_lastErr, str, sizeof(s_lastErr));
 	Reset();
 }
 
-const ram char* getLastFatal()
+char* getLastFatal()
 {
 	return s_lastErr;
 }
@@ -118,6 +101,6 @@ static void pollDisplaySink()
 		buffer[s] = '\0';
 		TCPDiscard(s_listenerSocket);
 		// Write it
-		printlnrUp(buffer);
+		printlnUp(buffer);
 	}
 }

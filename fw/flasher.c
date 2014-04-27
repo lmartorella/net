@@ -2,7 +2,7 @@
 #include "hardware/spiram.h"
 #include "appio.h"
 #include <string.h>
-#include <TCPIP Stack/TCPIP.h>
+#include "TCPIPStack/TCPIP.h"
 
 static void createFlasherSink(void);
 static void destroyFlasherSink(void);
@@ -81,7 +81,8 @@ loop:
 				sram_write(&b, ptr, 1);
 				ptr++;
 
-				<EXIT CONDITION> when 128kb is reached
+				//<EXIT CONDITION> when 128kb is reached
+                                fatal("OKEND");
 			}
 		}
 	}

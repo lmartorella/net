@@ -122,7 +122,7 @@ void sram_read(BYTE* dest, UINT32 address, BYTE count)
 
 // Test all 4 banks, return the number of the failing bank
 // or -1 if no fails
-char sram_test(void)
+signed char sram_test(void)
 {
 	// To use a random seq string that spans on all banks
 	// write first, read then

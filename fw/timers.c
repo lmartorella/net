@@ -1,15 +1,10 @@
 
 #include "hardware/fuses.h"
-#include <TCPIP Stack/TCPIP.h>
+#include "TCPIPStack/TCPIP.h"
 
 static DWORD s_1sec;
 
-void low_isr(void);
-#pragma code lowVector=0x18
-void LowVector(void){_asm goto low_isr _endasm}
-#pragma code
-#pragma interruptlow low_isr
-void low_isr(void)
+void interrupt low_priority low_isr(void)
 {
 	// Update ETH module timers
 	TickUpdate();
