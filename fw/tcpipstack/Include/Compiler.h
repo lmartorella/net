@@ -238,9 +238,11 @@
 #if defined (COMPILER_XC)
     #define __ALIGN2PACK __pack __align(2)
     #define __PACK __pack
+    #define __PERSISTENT persistent
 #else
     #define __ALIGN2PACK __attribute__((aligned(2), packed))
     #define __PACK __attribute__((packed))
+    #define __PERSISTENT __attribute__((persistent))
 #endif
 
 

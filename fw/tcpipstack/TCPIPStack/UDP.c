@@ -244,7 +244,7 @@ UDP_SOCKET UDPOpenEx(DWORD remoteHost, BYTE remoteHostType, UDP_PORT localPort,
 	UDP_SOCKET_INFO *p;
 
 	// Local temp port numbers.
-	static WORD NextPort __attribute__((persistent));
+	static __PERSISTENT WORD NextPort;
 
 
 	p = UDPSocketInfo;

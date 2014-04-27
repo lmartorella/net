@@ -1,4 +1,5 @@
 #include "fuses.h"
+#include "GenericTypeDefs.h"
 
 // Source: http://www.microchip.com/forums/m339126.aspx
 
@@ -11,7 +12,7 @@ typedef union
 		BYTE higher;
 		BYTE upper;
 	} bytes;
-	UINT24 ptr;
+	UINT32 ptr;
 } POINTER;
 
 //----------------------------------------------- 
@@ -30,17 +31,15 @@ static void setWTablePtr(POINTER* ptr)
 // Prototype: void loadWData(const ram BYTE* pData, BYTE nLen) 
 // Scope: Load the data into the 64 bytes registers 
 //----------------------------------------------- 
-static void loadWData(const ram BYTE* pData, BYTE nLen) 
+static void loadWData(BYTE* pData, BYTE nLen) 
 { 
 	BYTE i; 
 	for (i = 0; i < nLen; i++) 
 	{ 
 		 TABLAT = *pData; 
-		 pData++; 
-		 _asm 
-			 TBLWTPOSTINC 
-			 nop 
-		 _endasm 
+		 pData++;
+                 asm("TBLWTPOSTINC");
+                 NOP();
 	} 
 } 
 
@@ -90,10 +89,10 @@ static void rowErase(void)
 
 // Erase the entire row (destination should be multiple of ROW_SIZE = 1Kb)
 // and then copy the source bytes to the start of row, length should be at max 1Kb
-void rom_write(rom void* destination, ram BYTE* source, WORD length)
+void rom_write(UINT32 destination, BYTE* source, WORD length)
 {
 	POINTER ptr;
-	ptr.ptr = (UINT24)destination;
+	ptr.ptr = destination;
 
 	setWTablePtr(&ptr); 
 	rowErase(); 

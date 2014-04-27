@@ -199,7 +199,7 @@ typedef struct
 
 
 #if defined(STACK_CLIENT_MODE)
-static WORD NextPort __attribute__((persistent));	// Tracking variable for next local client port number
+static __PERSISTENT WORD NextPort;	// Tracking variable for next local client port number
 #endif
 
 /****************************************************************************
@@ -2093,6 +2093,8 @@ WORD TCPFindArrayEx(TCP_SOCKET hTCP, BYTE* cFindArray, WORD wLen, WORD wStart, W
 
 		ptrLocation += k;
 	}
+    // It should never reach this point
+    return 0xFFFFu;
 }
 
 /*****************************************************************************

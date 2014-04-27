@@ -3,7 +3,7 @@
 
 #define SPIRAM_SPI_IF (PIR1bits.SSP1IF)
 
-#pragma code spi_section
+//#pragma code spi_section
 
 static void ClearSPIDoneFlag(void)  
 {

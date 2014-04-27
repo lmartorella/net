@@ -43,21 +43,19 @@ static void pulsePort(BYTE data)
 
 #if CM1602_IF_MODE == 4
 	// wait for eventual bits in port to stabilize (BIT_EN could be on the same port)
-	_asm 
-		 nop
-	_endasm
+        NOP();
 
-	#if CM1602_IF_NIBBLE == 'low'
+	#if CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_LOW
 		oldData = port(CM1602_PORT) & 0xf0;
 		// Direct write, takes only the low part
 		// 7-4 bits of data should be ZERO
 		CM1602_IF_PORT = data | oldData;
-	#elif CM1602_IF_NIBBLE == 'high'
+	#elif CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_HIGH
 		oldData = CM1602_PORT & 0x0f;
 		// Direct write, takes only the high part
 		CM1602_PORT = (data << 4) | oldData;
 	#else
-		#error CM1602_IF_NIBBLE should be set to 'low' or 'high'
+		#error CM1602_IF_NIBBLE should be set to CM1602_IF_NIBBLE_LOW or CM1602_IF_NIBBLE_HIGH
 	#endif
 #else
 	CM1602_PORT = data;
@@ -184,7 +182,7 @@ void cm1602_write(BYTE data)
 	wait40us();
 }
 
-void cm1602_writeStr(const rom char* data)
+void cm1602_writeStr(const char* data)
 {
 	while (*data != 0)
 	{
@@ -193,7 +191,7 @@ void cm1602_writeStr(const rom char* data)
 	}
 }
 
-void cm1602_writeStrRam(const ram char* data)
+void cm1602_writeStrRam(char* data)
 {
 	while (*data != 0)
 	{

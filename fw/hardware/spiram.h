@@ -19,14 +19,14 @@ char sram_test(void);
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to read
 //  - count is the count of byes to read
-void sram_read(BYTE* ram dest, UINT24 address, BYTE count);
+void sram_read(BYTE* dest, UINT32 address, BYTE count);
 
 // Write a vector of bytes in RAM.
 // NOTE: do not support SPI cross-bank access
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to write
 //  - count is the count of byes to write
-void sram_write(BYTE* ram src, UINT24 address, BYTE count);
+void sram_write(BYTE* src, UINT32 address, BYTE count);
 
 
 #endif

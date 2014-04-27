@@ -4,6 +4,15 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f2" displayName="hardware" projectFiles="true">
+        <itemPath>../hardware/cm1602.h</itemPath>
+        <itemPath>../hardware/eeprom.h</itemPath>
+        <itemPath>../hardware/fuses.h</itemPath>
+        <itemPath>../hardware/spi.h</itemPath>
+        <itemPath>../hardware/spiram.h</itemPath>
+        <itemPath>../hardware/utilities.h</itemPath>
+        <itemPath>../hardware/vs1011e.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
         <itemPath>../tcpipstack/TCPIPConfig.h</itemPath>
@@ -107,9 +116,16 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f2" displayName="hardware" projectFiles="true">
+        <itemPath>../hardware/cm1602.c</itemPath>
+        <itemPath>../hardware/eeprom.c</itemPath>
+        <itemPath>../hardware/fuses.c</itemPath>
+        <itemPath>../hardware/spi.c</itemPath>
+        <itemPath>../hardware/spiram.c</itemPath>
+        <itemPath>../hardware/vs1011e.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>
-        <itemPath>../tcpipstack/TCPIPStack/BigInt.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/DHCP.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/DNS.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/Delay.c</itemPath>
@@ -132,6 +148,7 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>../tcpipstack</Elem>
+    <Elem>../hardware</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -334,6 +351,7 @@
         <property key="verbose" value="false"/>
         <property key="warning-level" value="0"/>
         <property key="what-to-do" value="ignore"/>
+        <appendMe value="--MSGDISABLE=1427"/>
       </HI-TECH-COMP>
       <HI-TECH-LINK>
         <property key="additional-options-checksum" value=""/>
@@ -351,8 +369,8 @@
         <property key="code-model-rom" value=""/>
         <property key="create-html-files" value="false"/>
         <property key="data-model-ram" value=""/>
-        <property key="data-model-size-of-double" value="24"/>
-        <property key="data-model-size-of-float" value="24"/>
+        <property key="data-model-size-of-double" value="32"/>
+        <property key="data-model-size-of-float" value="32"/>
         <property key="display-class-usage" value="false"/>
         <property key="display-hex-usage" value="false"/>
         <property key="display-overall-usage" value="true"/>

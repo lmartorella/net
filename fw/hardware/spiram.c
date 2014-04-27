@@ -60,7 +60,7 @@ void sram_init()
 	}
 }
 
-static UINT16 enableBank(UINT24 addr)
+static UINT16 enableBank(UINT32 addr)
 {
 	// support 4 banks = 128k
 	addr &= 0x1ffff;
@@ -73,7 +73,7 @@ static UINT16 enableBank(UINT24 addr)
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to write
 //  - count is the count of byes to write
-void sram_write(BYTE* ram src, UINT24 address, BYTE count)
+void sram_write(BYTE* src, UINT32 address, BYTE count)
 {
 	UINT16 raddr;
 	if (count == 0)
@@ -99,7 +99,7 @@ void sram_write(BYTE* ram src, UINT24 address, BYTE count)
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to read
 //  - count is the count of byes to read
-void sram_read(BYTE* ram dest, UINT24 address, BYTE count)
+void sram_read(BYTE* dest, UINT32 address, BYTE count)
 {
 	UINT16 raddr;
 	if (count == 0)
@@ -128,7 +128,7 @@ char sram_test(void)
 	// write first, read then
 	BYTE b;
 	BYTE test;
-	UINT24 addr = 0x1234;
+	UINT32 addr = 0x1234;
 
 	// Do some test with banks
 	for (b = 0; b < 4; b++, addr += 0x8000)

@@ -1,6 +1,7 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
+#include <xc.h>
 #include <p18f87j60.h>
 #include "utilities.h"
 
@@ -11,7 +12,9 @@
 #define CM1602_TRIS 		TRISE
 #define CM1602_PORTBITS		PORTEbits
 #define CM1602_IF_MODE 		4
-#define CM1602_IF_NIBBLE 	'high'
+#define CM1602_IF_NIBBLE_LOW 	0
+#define CM1602_IF_NIBBLE_HIGH 	1
+#define CM1602_IF_NIBBLE 	CM1602_IF_NIBBLE_HIGH
 #define CM1602_IF_BIT_RW 	PORTEbits.RE2
 #define CM1602_IF_BIT_RS 	PORTEbits.RE0
 #define CM1602_IF_BIT_EN 	PORTEbits.RE3

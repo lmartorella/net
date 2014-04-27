@@ -76,7 +76,7 @@ typedef signed short int    INT16;
 typedef signed long int     INT32;
 
 /* MPLAB C Compiler for PIC18 does not support 64-bit integers */
-#if !defined(__18CXX)
+#if !defined(__18CXX) && !defined(__XC8)
 __EXTENSION typedef signed long long    INT64;
 #endif
 
@@ -90,7 +90,7 @@ typedef unsigned short long UINT24;
 #endif
 typedef unsigned long int   UINT32;     /* other name for 32-bit integer */
 /* MPLAB C Compiler for PIC18 does not support 64-bit integers */
-#if !defined(__18CXX)
+#if !defined(__18CXX) && !defined(__XC8)
 __EXTENSION typedef unsigned long long  UINT64;
 #endif
 
@@ -242,7 +242,7 @@ typedef union
 } UINT32_VAL;
 
 /* MPLAB C Compiler for PIC18 does not support 64-bit integers */
-#if !defined(__18CXX)
+#if !defined(__18CXX) && !defined(__XC8)
 typedef union
 {
     UINT64 Val;
