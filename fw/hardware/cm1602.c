@@ -31,6 +31,10 @@
 #error CM1602_IF_BIT_RS not set
 #endif
 
+#if CM1602_IF_MODE == 4
+static persistent BOOL s_displayInited = 0;
+#endif
+
 // Clock the control bits in order to push the 4/8 bits to the display.
 // In case of 4-bit, the lower data is sent and the HIGH part should be ZERO
 static void pulsePort(BYTE data)
@@ -125,12 +129,18 @@ void cm1602_reset(void)
 	wait30ms();
 
 #if CM1602_IF_MODE == 4
-	CM1602_IF_BIT_RS = 0;
-	pulsePort(cmd >> 4);		// Enables the 4-bit mode
-	writeCmd(cmd);
-#else
-	writeCmd(cmd);
+        if (!s_displayInited)
+        {
+            // Translating to 8-bit (default at power-up) to 4-bit
+            // requires a dummy 8-bit command to be given that contains
+            // the MSB of the go-to-4bit command
+            // After a soft reset, this is not needed again, hence the persistent flag
+            CM1602_IF_BIT_RS = 0;
+            pulsePort(cmd >> 4);		// Enables the 4-bit mode
+            s_displayInited = 1;
+        }
 #endif
+	writeCmd(cmd);
 	wait40us();
 }
 
