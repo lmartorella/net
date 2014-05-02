@@ -23,8 +23,8 @@ enum RESET_REASON
 };
 static enum RESET_REASON _reason;
 
-static const rom char* msg1 = "Hi world! ";
-static const rom char* g_reasonMsgs[] = { 
+static const char* msg1 = "Hi world! ";
+static const char* g_reasonMsgs[] = { 
 				"POR",
 				"BOR",
 				"CFG",
@@ -41,7 +41,6 @@ static void storeResetReason(void)
 {
 	if (!RCONbits.NOT_RI)
 	{
-		RCONbits.NOT_RI = 1;
 		// Software exception. 
 		// Obtain last reason from appio.h 
 		_reason = RESET_EXC;
@@ -107,85 +106,89 @@ void sendHelo(void);
 
 void main()
 {
-	// Analyze RESET reason
-	storeResetReason();
+    int i;
+    // Analyze RESET reason
+    storeResetReason();
 
-	wait30ms();
+    wait30ms();
 
-	// reset display
-	cm1602_reset();
-	cm1602_clear();
-	cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
-	cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
+    // reset display
+    cm1602_reset();
+    cm1602_clear();
+    cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
+    cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
 
-	cm1602_setDdramAddr(0);
-	cm1602_writeStr(msg1);
-	cm1602_writeStr(g_reasonMsgs[_reason]);
-	if (_reason == RESET_EXC)
-	{
-		cm1602_writeStr(getLastFatal());
-	}
+    cm1602_setDdramAddr(0);
+    cm1602_writeStr(msg1);
+    cm1602_writeStr(g_reasonMsgs[_reason]);
+    if (_reason == RESET_EXC)
+    {
+            //cm1602_writeStr(getLastFatal());
+    }
 
-	println("Spi");
+    for (i = 0; i < 33; i++) wait30ms();
+    println("Spi");
+    for (i = 0; i < 33; i++) wait30ms();
 
-	// Enable SPI
-	// from 23k256 datasheet and figure 20.3 of PIC datasheet
-	// CKP = 0, CKE = 1
-	// Output: data sampled at clock falling.
-	// Input: data sampled at clock falling, at the end of the cycle.
-	spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
+    // Enable SPI
+    // from 23k256 datasheet and figure 20.3 of PIC datasheet
+    // CKP = 0, CKE = 1
+    // Output: data sampled at clock falling.
+    // Input: data sampled at clock falling, at the end of the cycle.
+    spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
-	sram_init();
-	vs1011_init();
+    sram_init();
+    vs1011_init();
 
-	println("ChkRam");
-	checkram();
+    println("ChkRam");
+    checkram();
 
-	println("IP");
-	memset(&AppConfig, 0, sizeof(AppConfig));
-	AppConfig.Flags.bIsDHCPEnabled = 1;
-	AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
-	AppConfig.MyMACAddr.v[1] = MY_DEFAULT_MAC_BYTE2;
-	AppConfig.MyMACAddr.v[2] = MY_DEFAULT_MAC_BYTE3;
-	AppConfig.MyMACAddr.v[3] = MY_DEFAULT_MAC_BYTE4;
-	AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
-	AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
+    println("IP");
+    memset(&AppConfig, 0, sizeof(AppConfig));
+    AppConfig.Flags.bIsDHCPEnabled = 1;
+    AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
+    AppConfig.MyMACAddr.v[1] = MY_DEFAULT_MAC_BYTE2;
+    AppConfig.MyMACAddr.v[2] = MY_DEFAULT_MAC_BYTE3;
+    AppConfig.MyMACAddr.v[3] = MY_DEFAULT_MAC_BYTE4;
+    AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
+    AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
-	enableInterrupts();
-	timers_init();
+    enableInterrupts();
+    timers_init();
 
-	println("DHCP");
+    println("DHCP");
 
-	// Start IP
-	DHCPInit(0);
-	DHCPEnable(0);
+    // Start IP
+    DHCPInit(0);
+    DHCPEnable(0);
 
-	println("Waiting..");
+    println("Waiting..");
 
-	// I'm alive
-	while (1) 
-	{
-		BOOL timer1 = timers_check1s();
+    // I'm alive
+    while (1)
+    {
+            BOOL timer1 = timers_check1s();
 
-		// Do ETH stuff
-		StackTask();
-        // This tasks invokes each of the core stack application tasks
-        StackApplications();
+            // Do ETH stuff
+            StackTask();
 
-		if (timer1)
-		{
-			timer1s();
-		}
-		if (s_dhcpOk)
-		{
-			prot_poll();
-			if (timer1)
-			{
-				prot_slowTimer();
-			}
-		}
-		ClrWdt();
-	}
+            // This tasks invokes each of the core stack application tasks
+            StackApplications();
+
+            if (timer1)
+            {
+                    timer1s();
+            }
+            if (s_dhcpOk)
+            {
+                    prot_poll();
+                    if (timer1)
+                    {
+                            prot_slowTimer();
+                    }
+            }
+            ClrWdt();
+    }
 }
 
 void timer1s()

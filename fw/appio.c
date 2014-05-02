@@ -4,7 +4,7 @@
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
 
-static char s_lastErr[8];
+static persistent char s_lastErr[8];
 
 static void createDisplaySink(void);
 static void destroyDisplaySink(void);
@@ -53,13 +53,14 @@ void printlnUp(const char* str)
 
 void fatal(const char* str)
 {
-	strncpypgm2ram(s_lastErr, str, sizeof(s_lastErr));
-	Reset();
+    strncpy(s_lastErr, str, sizeof(s_lastErr) - 1);
+    s_lastErr[sizeof(s_lastErr) - 1] = 0;
+    RESET();
 }
 
 const char* getLastFatal()
 {
-	return s_lastErr;
+    return s_lastErr;
 }
 
 static void createDisplaySink()
