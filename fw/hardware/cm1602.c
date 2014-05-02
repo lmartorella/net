@@ -182,7 +182,7 @@ void cm1602_write(BYTE data)
 	wait40us();
 }
 
-void cm1602_writeStr(char* data)
+void cm1602_writeStr(const char* data)
 {
 	while (*data != 0)
 	{

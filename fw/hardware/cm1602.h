@@ -59,7 +59,7 @@ void cm1602_shift(enum CM1602_SHIFT data);
 void cm1602_setCgramAddr(BYTE address);
 void cm1602_setDdramAddr(BYTE address);
 void cm1602_write(BYTE data);
-void cm1602_writeStr(char* str);
+void cm1602_writeStr(const char* str);
 
 // Read should be implemented ONLY on port tolerant to 5V 
 

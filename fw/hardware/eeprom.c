@@ -89,7 +89,7 @@ static void rowErase(void)
 
 // Erase the entire row (destination should be multiple of ROW_SIZE = 1Kb)
 // and then copy the source bytes to the start of row, length should be at max 1Kb
-void rom_write(const void* destination, void* source, WORD length)
+void rom_write(const void* destination, const void* source, WORD length)
 {
 	POINTER ptr;
 	ptr.ptr = (UINT32)(void*)destination;

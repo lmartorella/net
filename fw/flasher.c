@@ -11,14 +11,13 @@ static void pollFlasherSink(void);
 #define MSG_FLASH_ROM 0
 
 #define SINK_FLASHER_PORT (SINK_FLASHER_TYPE + BASE_SINK_PORT)
-const rom Sink g_flasherSink = { 
-							 SINK_FLASHER_TYPE,
+const Sink g_flasherSink = { 
+                             SINK_FLASHER_TYPE,
                              0, 
                              SINK_FLASHER_PORT,
                              &createFlasherSink,
                              &destroyFlasherSink,
-                             &pollFlasherSink
-						 };
+                             &pollFlasherSink };
 
 // The TCP client socket of display listener
 static TCP_SOCKET s_listenerSocket = INVALID_SOCKET;
@@ -71,7 +70,7 @@ loop:
 		else
 		{
 			// Write to RAM!
-			for (s; s >= 0; s--)
+			for (; s > 0; s--)
 			{
 				BYTE b;
 				if (!TCPGet(s_listenerSocket, &b))
@@ -82,6 +81,7 @@ loop:
 				ptr++;
 
 				//<EXIT CONDITION> when 128kb is reached
+                                // Optimize loop! Use buffer
                                 fatal("OKEND");
 			}
 		}

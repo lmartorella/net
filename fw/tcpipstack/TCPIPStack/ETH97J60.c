@@ -1209,6 +1209,7 @@ void MACPutArray(BYTE *val, WORD len)
 	}
 }//end MACPutArray
 
+#if defined(__18CXX)
 void MACPutROMArray(ROM BYTE *val, WORD len)
 {
     while(len--)
@@ -1225,7 +1226,7 @@ void MACPutROMArray(ROM BYTE *val, WORD len)
 		#endif
 	}
 }//end MACPutROMArray
-
+#endif
 
 /******************************************************************************
  * Function:        ReadPHYReg

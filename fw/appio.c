@@ -34,19 +34,19 @@ static void _clr(BYTE addr)
 	cm1602_setDdramAddr(addr);
 }
 
-static void _print(char* str, BYTE addr)
+static void _print(const char* str, BYTE addr)
 {
 	_clr(addr);
 	cm1602_writeStr(str);
 	ClrWdt();
 }
 
-void println(char* str)
+void println(const char* str)
 {
 	_print(str, 0x40);	
 }
 
-void printlnUp(char* str)
+void printlnUp(const char* str)
 {
 	_print(str, 0x00);	
 }
@@ -57,7 +57,7 @@ void fatal(const char* str)
 	Reset();
 }
 
-char* getLastFatal()
+const char* getLastFatal()
 {
 	return s_lastErr;
 }

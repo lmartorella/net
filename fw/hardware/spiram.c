@@ -73,7 +73,7 @@ static UINT16 enableBank(UINT32 addr)
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to write
 //  - count is the count of byes to write
-void sram_write(BYTE* src, UINT32 address, BYTE count)
+void sram_write(const BYTE* src, UINT32 address, BYTE count)
 {
 	UINT16 raddr;
 	if (count == 0)

@@ -307,7 +307,7 @@ void MACFlush(void);
 
 
 // ROM function variants for PIC18
-#if defined(__18CXX) || defined(__XC8)
+#if defined(__18CXX)
 	void MACPutROMArray(ROM BYTE *val, WORD len);
 #else
 	#define MACPutROMArray(a,b)	MACPutArray((BYTE*)a,b)
