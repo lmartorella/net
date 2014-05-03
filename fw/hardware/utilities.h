@@ -6,5 +6,6 @@
 extern void wait2ms(void);
 extern void wait30ms(void);
 extern void wait40us(void);
+extern void wait100us(void);
 
 #endif

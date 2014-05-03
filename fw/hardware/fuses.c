@@ -37,9 +37,16 @@
 // The oscillator works at 25Mhz without PLL, so 1 cycle is 160nS 
 void wait40us(void)
 {	
-	// 40us = ~256 * 160ns
-	// So wait 256 cycles
-	Delay10TCYx(26);
+    // 40us = ~256 * 160ns
+    // So wait 256 cycles
+    Delay10TCYx(26);
+}
+
+void wait100us(void)
+{
+    wait40us();
+    wait40us();
+    wait40us();
 }
 
 // The oscillator works at 25Mhz without PLL, so 1 cycle is 160nS 
@@ -54,4 +61,13 @@ void wait30ms(void)
 {
 	// 30ms = ~187500 * 160ns
 	Delay1KTCYx(188);
+}
+
+void wait1s(void)
+{
+    for (int i = 0; i < 33; i++)
+    {
+        wait30ms();
+        CLRWDT();
+    }
 }

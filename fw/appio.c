@@ -55,6 +55,7 @@ void fatal(const char* str)
 {
     strncpy(s_lastErr, str, sizeof(s_lastErr) - 1);
     s_lastErr[sizeof(s_lastErr) - 1] = 0;
+    wait30ms();
     RESET();
 }
 

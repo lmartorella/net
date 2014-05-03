@@ -31,40 +31,52 @@
 #error CM1602_IF_BIT_RS not set
 #endif
 
-#if CM1602_IF_MODE == 4
-static persistent BOOL s_displayInited = 0;
-#endif
+typedef union {
+    struct  {
+        unsigned R0 :1;
+        unsigned R1 :1;
+        unsigned R2 :1;
+        unsigned R3 :1;
+        unsigned R4 :1;
+        unsigned R5 :1;
+        unsigned R6 :1;
+        unsigned R7 :1;
+    };
+    BYTE v;
+} PORTXBITS_t;
+
+extern volatile PORTXBITS_t CM1602_PORTBITS @ CM1602_PORTADDR;
 
 // Clock the control bits in order to push the 4/8 bits to the display.
 // In case of 4-bit, the lower data is sent and the HIGH part should be ZERO
-static void pulsePort(BYTE data)
+static void pulsePort(BYTE v)
 {
+    PORTXBITS_t data;
+    data.v = v;
+    
+    CM1602_IF_BIT_EN = 1;
+
 #if CM1602_IF_MODE == 4
-	BYTE oldData;
-#endif
+    // wait for eventual bits in port to stabilize (BIT_EN could be on the same port)
+    NOP();
 
-	CM1602_IF_BIT_EN = 1;
-
-#if CM1602_IF_MODE == 4
-	// wait for eventual bits in port to stabilize (BIT_EN could be on the same port)
-        NOP();
-
-	#if CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_LOW
-		oldData = port(CM1602_PORT) & 0xf0;
-		// Direct write, takes only the low part
-		// 7-4 bits of data should be ZERO
-		CM1602_IF_PORT = data | oldData;
-	#elif CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_HIGH
-		oldData = CM1602_PORT & 0x0f;
-		// Direct write, takes only the high part
-		CM1602_PORT = (data << 4) | oldData;
-	#else
-		#error CM1602_IF_NIBBLE should be set to CM1602_IF_NIBBLE_LOW or CM1602_IF_NIBBLE_HIGH
-	#endif
+    #if CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_LOW
+        CM1602_PORTBITS.R0 = data.R0;
+        CM1602_PORTBITS.R1 = data.R1;
+        CM1602_PORTBITS.R2 = data.R2;
+        CM1602_PORTBITS.R3 = data.R3;
+    #elif CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_HIGH
+        CM1602_PORTBITS.R4 = data.R0;
+        CM1602_PORTBITS.R5 = data.R1;
+        CM1602_PORTBITS.R6 = data.R2;
+        CM1602_PORTBITS.R7 = data.R3;
+    #else
+            #error CM1602_IF_NIBBLE should be set to CM1602_IF_NIBBLE_LOW or CM1602_IF_NIBBLE_HIGH
+    #endif
 #else
-	CM1602_PORT = data;
+    CM1602_PORT = v;
 #endif
-	CM1602_IF_BIT_EN = 0;
+    CM1602_IF_BIT_EN = 0;
 }
 
 // write a byte to the port
@@ -94,54 +106,83 @@ static void writeData(BYTE data)
 	writeByte(data);
 }
 
+// From http://elm-chan.org/docs/lcd/hd44780_e.html
+/*
+ The HD44780 does not have an external reset signal. It has an 
+ * integrated power-on reset circuit and can be initialized to the 
+ * 8-bit mode by proper power-on condition. However the reset circuit 
+ * can not work properly if the supply voltage rises too slowly or fast. 
+ * Therefore the state of the host interface can be an unknown state, 
+ * 8-bit mode, 4-bit mode or half of 4-bit cycle at program started. 
+ * To initialize the HD44780 correctly even if it is unknown state, 
+ * the software reset procedure shown in Figure 4 is recommended 
+ * prior to initialize the HD44780 to the desired function.*/
+
 void cm1602_reset(void)
 {
-	BYTE cmd;
-	
-	// Enable all PORTE as output (display)
-	CM1602_PORT = 0xff;
-	CM1602_TRIS = 0;
+    BYTE cmd;
 
-	cmd = CMD_FUNCSET | 
+    // Enable all PORTE as output (display)
+    CM1602_PORT = 0xff;
+    CM1602_IF_BIT_EN = 1;
+    CM1602_TRIS = 0;
+    NOP();
+    CM1602_PORT = 0xff;
+    CM1602_IF_BIT_EN = 1;
+
+    // >15ms @5v
+    wait30ms();
+
+    // Push fake go-to-8bit state 3 times
+#if CM1602_IF_MODE == 4
+    cmd = (CMD_FUNCSET | CMD_FUNCSET_DL_8) >> 4;
+#else
+    cmd = CMD_FUNCSET | CMD_FUNCSET_DL_8;
+#endif
+    CM1602_IF_BIT_RS = 0;
+    CM1602_IF_BIT_RW = 0;
+    pulsePort(cmd); 
+    wait30ms();
+    pulsePort(cmd);
+    wait100us();
+    pulsePort(cmd);
+
+    // Now the device is proper reset, and the mode is 8-bit
+
+    cmd = CMD_FUNCSET |
 #if CM1602_LINE_COUNT == 1
-		CMD_FUNCSET_LN_1
+            CMD_FUNCSET_LN_1
 #elif CM1602_LINE_COUNT == 2
-		CMD_FUNCSET_LN_2
+            CMD_FUNCSET_LN_2
 #else
 #error CM1602_LINE_COUNT should be set to 1 or 2
 #endif
-	|
+    |
 #if CM1602_IF_MODE == 8
-		CMD_FUNCSET_DL_8
+            CMD_FUNCSET_DL_8
 #else
-		CMD_FUNCSET_DL_4
+            CMD_FUNCSET_DL_4
 #endif
-	|
+    |
 #if CM1602_FONT_HEIGHT == 7
-		CMD_FUNCSET_FS_7;
+            CMD_FUNCSET_FS_7;
 #elif CM1602_FONT_HEIGHT == 10
-		CMD_FUNCSET_FS_11;
+            CMD_FUNCSET_FS_11;
 #else
 #error CM1602_FONT_HEIGHT should be set to 7 or 10
 #endif
 
-	CM1602_IF_BIT_RW = 0;
-	wait30ms();
+    wait100us();
 
 #if CM1602_IF_MODE == 4
-        if (!s_displayInited)
-        {
-            // Translating to 8-bit (default at power-up) to 4-bit
-            // requires a dummy 8-bit command to be given that contains
-            // the MSB of the go-to-4bit command
-            // After a soft reset, this is not needed again, hence the persistent flag
-            CM1602_IF_BIT_RS = 0;
-            pulsePort(cmd >> 4);		// Enables the 4-bit mode
-            s_displayInited = 1;
-        }
+    // Translating to 8-bit (default at power-up) to 4-bit
+    // requires a dummy 8-bit command to be given that contains
+    // the MSB of the go-to-4bit command
+    // After a soft reset, this is not needed again, hence the persistent flag
+    pulsePort(cmd >> 4);		// Enables the 4-bit mode
 #endif
-	writeCmd(cmd);
-	wait40us();
+    writeCmd(cmd);
+    wait100us();
 }
 
 void cm1602_clear(void)

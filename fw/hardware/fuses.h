@@ -10,7 +10,7 @@
 // ******* 
 #define CM1602_PORT 		PORTE
 #define CM1602_TRIS 		TRISE
-#define CM1602_PORTBITS		PORTEbits
+#define CM1602_PORTADDR         0xF84;
 #define CM1602_IF_MODE 		4
 #define CM1602_IF_NIBBLE_LOW 	0
 #define CM1602_IF_NIBBLE_HIGH 	1

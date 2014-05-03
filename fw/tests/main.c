@@ -33,7 +33,6 @@ static void reset()
 void main()
 {
     int i;
-    wait30ms();
 
     reset();
 

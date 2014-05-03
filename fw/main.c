@@ -110,13 +110,13 @@ void main()
     // Analyze RESET reason
     storeResetReason();
 
-    wait30ms();
-
     // reset display
     cm1602_reset();
     cm1602_clear();
     cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
     cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
+
+    wait1s();
 
     cm1602_setDdramAddr(0);
     cm1602_writeStr(msg1);
@@ -126,9 +126,8 @@ void main()
             //cm1602_writeStr(getLastFatal());
     }
 
-    for (i = 0; i < 33; i++) wait30ms();
+    wait1s();
     println("Spi");
-    for (i = 0; i < 33; i++) wait30ms();
 
     // Enable SPI
     // from 23k256 datasheet and figure 20.3 of PIC datasheet
@@ -140,10 +139,12 @@ void main()
     sram_init();
     vs1011_init();
 
+    wait1s();
     println("ChkRam");
     checkram();
+    wait1s();
 
-    println("IP");
+    println("IP/DHCP");
     memset(&AppConfig, 0, sizeof(AppConfig));
     AppConfig.Flags.bIsDHCPEnabled = 1;
     AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
@@ -155,8 +156,6 @@ void main()
 
     enableInterrupts();
     timers_init();
-
-    println("DHCP");
 
     // Start IP
     DHCPInit(0);
