@@ -85,15 +85,25 @@ __PACK typedef struct
 	//PEER_DESCRIPTOR peerDescs[0];
 } SERVER_REGISTER;
 
-typedef UINT16 RGST_ERRCODE;
-#define RGST_ERRCODE_NEWGUID 2
+typedef enum
+{
+    RGST_OK = 0,
+    RGST_UNKNOWN_MESSAGE = 1,
+    RGST_ERRCODE_NEWGUID = 2,
+    RGST_UNKNOWN_SINKTYPE = 3,
+    RGST_UNKNOWN_ADDRESS = 4
+} RGST_ERRCODE_t;
 
 /*
 	REGISTER response
 */
 __PACK typedef struct
 {
-	RGST_ERRCODE errCode;
+    union
+    {
+	RGST_ERRCODE_t errCode;
+        UINT16 val;
+    };
 } SERVER_REGISTER_RESPONSE;
 __PACK typedef struct
 {
@@ -105,6 +115,8 @@ static void checkHelo(void);
 static void sendHelo(void);
 static void waitForRegisterConnection(void);
 static void waitForRegisterResponse(void);
+
+static char s_errMsg[6] = { 0 };
 
 /*
 	Manage POLLs (read buffers)
@@ -149,7 +161,7 @@ void prot_slowTimer()
 		break;
 	}
 
-	sprintf(buffer, "STA:%x", (int)s_protState);
+	sprintf(buffer, "STA:%x,%s", (int)s_protState, s_errMsg);
 	println(buffer);
 }
 
@@ -181,7 +193,7 @@ static void checkHelo()
 		UDPDiscard();
 
 		// Have HOME
-		if (strncmppgm2ram(response.preamble, "HOMEHERE", 8) == 0)
+		if (memcmp(response.preamble, "HOMEHERE", 8) == 0)
 		{
 			// Now contact the server!
 			s_homeIp = response.homeIp;
@@ -214,8 +226,8 @@ static void sendHelo()
 		fatal("HELO.rdy");
 	}
 
-	UDPPutROMString("HOMEHELO");
-	UDPPutROMArray((rom BYTE*)&g_persistentData.deviceId, sizeof(GUID));
+	UDPPutString("HOMEHELO");
+	UDPPutArray((BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
 	UDPFlush();
 }
 
@@ -231,19 +243,19 @@ static void waitForRegisterConnection()
 		}
 
 		// Preamble
-		TCPPutROMArray(s_serverSocket, (rom BYTE*)"RGST", 4);
+		TCPPutArray(s_serverSocket, (BYTE*)"RGST", 4);
 
 		// Put device count (2, DISPLAY and FLASHER)
-		TCPPutROMArray(s_serverSocket, (BYTE rom*)&AllSinksCount, sizeof(unsigned int));
+		TCPPutArray(s_serverSocket, (BYTE*)&AllSinksCount, sizeof(unsigned int));
 
 		for (i = 0; i < AllSinksCount; i++)
 		{
-			const Sink rom* sink = AllSinks[i]; 
+			const Sink* sink = AllSinks[i]; 
 			unsigned int port = BASE_SINK_PORT + sink->deviceId;
 			// Put device ID
-			TCPPutROMArray(s_serverSocket, (BYTE rom*)&sink->deviceId, sizeof(unsigned int));
+			TCPPutROMArray(s_serverSocket, (BYTE*)&sink->deviceId, sizeof(unsigned int));
 			// Put device CAPS
-			TCPPutROMArray(s_serverSocket, (BYTE rom*)&sink->caps, sizeof(unsigned int));
+			TCPPutROMArray(s_serverSocket, (BYTE*)&sink->caps, sizeof(unsigned int));
 			// Put device CAPS
 			TCPPutArray(s_serverSocket, (BYTE*)&port, sizeof(unsigned int));
 
@@ -266,24 +278,32 @@ static void waitForRegisterResponse()
 		SERVER_REGISTER_RESPONSE response;
 		TCPGetArray(s_serverSocket, (BYTE*)&response, sizeof(response));
 
-		if (response.errCode == RGST_ERRCODE_NEWGUID)
+		switch (response.errCode)
 		{
-			// Read the GUID response
-			SERVER_REGISTER_NEWGUID_RESPONSE data;
-			PersistentData persistence;
-			TCPGetArray(s_serverSocket, (BYTE*)&data, sizeof(data));
-			
-			boot_getUserData(&persistence);
-			persistence.deviceId = data.newGuid;
-			// Have new GUID! Program it.
-			boot_updateUserData(&persistence);
+                case RGST_OK:
+                    s_protState = STATE_REGISTERED;
+                    break;
+                case RGST_ERRCODE_NEWGUID:
+                    if (size < sizeof(SERVER_REGISTER_RESPONSE) + sizeof(SERVER_REGISTER_NEWGUID_RESPONSE))
+                    {
+                        fatal("RgRespSz");
+                    }
+                    // Read the GUID response
+                    SERVER_REGISTER_NEWGUID_RESPONSE data;
+                    PersistentData persistence;
+                    TCPGetArray(s_serverSocket, (BYTE*)&data, sizeof(data));
 
-			s_protState = STATE_REGISTERED_NEW_GUID;
-		}
-		else
-		{
-			s_protState = STATE_REGISTERED;
-		}
+                    boot_getUserData(&persistence);
+                    persistence.deviceId = data.newGuid;
+                    // Have new GUID! Program it.
+                    boot_updateUserData(&persistence);
+
+                    s_protState = STATE_REGISTERED_NEW_GUID;
+                    break;
+                default:
+                    sprintf(s_errMsg, "RG:%x", (int)response.errCode);
+                    break;
+                }
 
 		TCPClose(s_serverSocket);
 	}
