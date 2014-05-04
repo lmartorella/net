@@ -164,14 +164,14 @@ void ICMPProcess(NODE_INFO *remote, WORD len)
 
 		// Position the write pointer for the next IPPutHeader operation
 		// NOTE: do not put this before the IPIsTxReady() call for WF compatbility
-	    MACSetWritePtr(BASE_TX_ADDR + sizeof(ETHER_HEADER));
+	    MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER));
 
 		// Create IP header in TX memory
 		IPPutHeader(remote, IP_PROT_ICMP, len);
 
 		// Copy ICMP response into the TX memory
 		MACPutArray((BYTE*)&dwVal, sizeof(dwVal));
-		MACMemCopyAsync(-1, -1, len-4);
+		MACMemCopyAsync((BYTE*)-1, (BYTE*)-1, len-4);
 		while(!MACIsMemCopyDone());
 
 		// Transmit the echo reply packet
@@ -388,7 +388,7 @@ LONG ICMPGetReply(void)
 			ICMPTimer = TickGet();
 
 			// Position the write pointer for the next IPPutHeader operation
-		    MACSetWritePtr(BASE_TX_ADDR + sizeof(ETHER_HEADER));
+		    MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER));
 
 			// Create IP header in TX memory
 			IPPutHeader(&StaticVars.ICMPRemote, IP_PROT_ICMP, sizeof(ICMPPacket));

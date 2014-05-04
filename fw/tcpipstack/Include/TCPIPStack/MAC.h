@@ -290,19 +290,19 @@ BOOL MACIsLinked(void);
 
 BOOL MACGetHeader(MAC_ADDR *remote, BYTE* type);
 void MACSetReadPtrInRx(WORD offset);
-PTR_BASE MACSetWritePtr(PTR_BASE address);
-PTR_BASE MACSetReadPtr(PTR_BASE address);
+BYTE* MACSetWritePtr(BYTE* address);
+BYTE* MACSetReadPtr(BYTE* address);
 BYTE MACGet(void);
 WORD MACGetArray(BYTE *val, WORD len);
 void MACDiscardRx(void);
 WORD MACGetFreeRxSize(void);
-void MACMemCopyAsync(PTR_BASE destAddr, PTR_BASE sourceAddr, WORD len);
+void MACMemCopyAsync(BYTE* destAddr, BYTE* sourceAddr, WORD len);
 BOOL MACIsMemCopyDone(void);
 
 void MACPutHeader(MAC_ADDR *remote, BYTE type, WORD dataLen);
 BOOL MACIsTxReady(void);
 void MACPut(BYTE val);
-void MACPutArray(BYTE *val, WORD len);
+void MACPutArray(const BYTE *val, WORD len);
 void MACFlush(void);
 
 

@@ -260,10 +260,10 @@ static TCP_SOCKET hCurrentTCP = INVALID_SOCKET;		// Current TCP socket
 	Function Prototypes
   ***************************************************************************/
 
-static void TCPRAMCopy(PTR_BASE wDest, BYTE vDestType, PTR_BASE wSource, BYTE vSourceType, WORD wLength);
+static void TCPRAMCopy(BYTE* wDest, BYTE vDestType, BYTE* wSource, BYTE vSourceType, WORD wLength);
 
 #if defined(__18CXX)
-	static void TCPRAMCopyROM(PTR_BASE wDest, BYTE wDestType, ROM BYTE* wSource, WORD wLength);
+	static void TCPRAMCopyROM(BYTE* wDest, BYTE wDestType, ROM BYTE* wSource, WORD wLength);
 #else
 	#define TCPRAMCopyROM(a,b,c,d)	TCPRAMCopy(a,b,c,TCP_PIC_RAM,d)
 #endif
@@ -336,12 +336,12 @@ static void SyncTCB(void)
 	if(hLastTCB != INVALID_SOCKET)
 	{
 		// Save the current TCB
-		TCPRAMCopy(TCBStubs[hLastTCB].bufferTxStart - sizeof(MyTCB), TCBStubs[hLastTCB].vMemoryMedium, (PTR_BASE)&MyTCB, TCP_PIC_RAM, sizeof(MyTCB));
+		TCPRAMCopy(TCBStubs[hLastTCB].bufferTxStart - sizeof(MyTCB), TCBStubs[hLastTCB].vMemoryMedium, (BYTE*)&MyTCB, TCP_PIC_RAM, sizeof(MyTCB));
 	}
 
 	// Load up the new TCB
 	hLastTCB = hCurrentTCP;
-	TCPRAMCopy((PTR_BASE)&MyTCB, TCP_PIC_RAM, MyTCBStub.bufferTxStart - sizeof(MyTCB), MyTCBStub.vMemoryMedium, sizeof(MyTCB));
+	TCPRAMCopy((BYTE*)&MyTCB, TCP_PIC_RAM, MyTCBStub.bufferTxStart - sizeof(MyTCB), MyTCBStub.vMemoryMedium, sizeof(MyTCB));
 }
 
 
@@ -375,10 +375,10 @@ void TCPInit(void)
 	BYTE i;
 	BYTE vSocketsAllocated;
 	WORD wTXSize, wRXSize;
-	PTR_BASE ptrBaseAddress;
+	BYTE* ptrBaseAddress;
 	BYTE vMedium;
 	#if TCP_ETH_RAM_SIZE > 0
-	WORD wCurrentETHAddress = TCP_ETH_RAM_BASE_ADDRESS;
+	BYTE* wCurrentETHAddress = (BYTE*)TCP_ETH_RAM_BASE_ADDRESS;
 	#endif
 	#if TCP_PIC_RAM_SIZE > 0
 	PTR_BASE ptrCurrentPICAddress = TCP_PIC_RAM_BASE_ADDRESS;
@@ -418,14 +418,14 @@ void TCPInit(void)
 		{
 			#if TCP_ETH_RAM_SIZE > 0
 			case TCP_ETH_RAM:
-				ptrBaseAddress = wCurrentETHAddress;
+				ptrBaseAddress = (BYTE*)wCurrentETHAddress;
 				wCurrentETHAddress += sizeof(TCB) + wTXSize+1 + wRXSize+1;
 				// Do a sanity check to ensure that we aren't going to use memory that hasn't been allocated to us.
 				// If your code locks up right here, it means you've incorrectly allocated your TCP socket buffers in TCPIPConfig.h.  See the TCP memory allocation section.  More RAM needs to be allocated to the base memory mediums, or the individual sockets TX and RX FIFOS and socket quantiy needs to be shrunken.
 #if defined(WF_CS_TRIS)
 				while(wCurrentETHAddress > TCP_ETH_RAM_BASE_ADDRESS + WFGetTCBSize()/*TCP_ETH_RAM_SIZE*/);
 #else
-				while(wCurrentETHAddress > TCP_ETH_RAM_BASE_ADDRESS + TCP_ETH_RAM_SIZE);
+				while(wCurrentETHAddress > (BYTE*)(TCP_ETH_RAM_BASE_ADDRESS + TCP_ETH_RAM_SIZE));
 #endif
 				break;
 			#endif
@@ -1187,7 +1187,7 @@ BOOL TCPPut(TCP_SOCKET hTCP, BYTE byte)
 			MyTCBStub.txHead = MyTCBStub.bufferTxStart;
 	}
 	#else
-	TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, (PTR_BASE)&byte, TCP_PIC_RAM, sizeof(byte));
+	TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, (BYTE*)&byte, TCP_PIC_RAM, sizeof(byte));
 	if(++MyTCBStub.txHead >= MyTCBStub.bufferRxStart)
 		MyTCBStub.txHead = MyTCBStub.bufferTxStart;
 	#endif
@@ -1298,13 +1298,13 @@ WORD TCPPutArray(TCP_SOCKET hTCP, BYTE* data, WORD len)
 	if(MyTCBStub.txHead + wActualLen >= MyTCBStub.bufferRxStart)
 	{
 		wRightLen = MyTCBStub.bufferRxStart-MyTCBStub.txHead;
-		TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, (PTR_BASE)data, TCP_PIC_RAM, wRightLen);
+		TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, data, TCP_PIC_RAM, wRightLen);
 		data += wRightLen;
 		wActualLen -= wRightLen;
 		MyTCBStub.txHead = MyTCBStub.bufferTxStart;
 	}
 
-	TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, (PTR_BASE)data, TCP_PIC_RAM, wActualLen);
+	TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, data, TCP_PIC_RAM, wActualLen);
 	MyTCBStub.txHead += wActualLen;
 	#endif
 
@@ -1656,7 +1656,7 @@ BOOL TCPGet(TCP_SOCKET hTCP, BYTE* byte)
 	SyncTCBStub(hTCP);
 
 	if(byte)
-		TCPRAMCopy((PTR_BASE)byte, TCP_PIC_RAM, MyTCBStub.rxTail, MyTCBStub.vMemoryMedium, 1);
+		TCPRAMCopy(byte, TCP_PIC_RAM, MyTCBStub.rxTail, MyTCBStub.vMemoryMedium, 1);
 	if(++MyTCBStub.rxTail > MyTCBStub.bufferEnd)
 		MyTCBStub.rxTail = MyTCBStub.bufferRxStart;
 
@@ -1720,7 +1720,7 @@ WORD TCPGetArray(TCP_SOCKET hTCP, BYTE* buffer, WORD len)
 		RightLen = MyTCBStub.bufferEnd - MyTCBStub.rxTail + 1;
 		if(buffer)
 		{
-			TCPRAMCopy((PTR_BASE)buffer, TCP_PIC_RAM, MyTCBStub.rxTail, MyTCBStub.vMemoryMedium, RightLen);
+			TCPRAMCopy(buffer, TCP_PIC_RAM, MyTCBStub.rxTail, MyTCBStub.vMemoryMedium, RightLen);
 			buffer += RightLen;
 		}
 		len -= RightLen;
@@ -1728,7 +1728,7 @@ WORD TCPGetArray(TCP_SOCKET hTCP, BYTE* buffer, WORD len)
 	}
 
 	if(buffer)
-		TCPRAMCopy((PTR_BASE)buffer, TCP_PIC_RAM, MyTCBStub.rxTail, MyTCBStub.vMemoryMedium, len);
+		TCPRAMCopy(buffer, TCP_PIC_RAM, MyTCBStub.rxTail, MyTCBStub.vMemoryMedium, len);
 	MyTCBStub.rxTail += len;
 	len += RightLen;
 
@@ -1840,7 +1840,7 @@ WORD TCPGetRxFIFOFree(TCP_SOCKET hTCP)
   ***************************************************************************/
 WORD TCPPeekArray(TCP_SOCKET hTCP, BYTE *vBuffer, WORD wLen, WORD wStart)
 {
-	PTR_BASE ptrRead;
+	BYTE* ptrRead;
 	WORD w;
 	WORD wBytesUntilWrap;
 
@@ -1867,14 +1867,14 @@ WORD TCPPeekArray(TCP_SOCKET hTCP, BYTE *vBuffer, WORD wLen, WORD wStart)
 	if(wLen <= wBytesUntilWrap)
 	{
 		// Read all at once
-		TCPRAMCopy((PTR_BASE)vBuffer, TCP_PIC_RAM, ptrRead, MyTCBStub.vMemoryMedium, wLen);
+		TCPRAMCopy(vBuffer, TCP_PIC_RAM, ptrRead, MyTCBStub.vMemoryMedium, wLen);
 	}
 	else
 	{
 		// Read all bytes up to the wrap position and then read remaining bytes
 		// at the start of the buffer
-		TCPRAMCopy((PTR_BASE)vBuffer, TCP_PIC_RAM, ptrRead, MyTCBStub.vMemoryMedium, wBytesUntilWrap);
-		TCPRAMCopy((PTR_BASE)vBuffer+wBytesUntilWrap, TCP_PIC_RAM, MyTCBStub.bufferRxStart, MyTCBStub.vMemoryMedium, wLen - wBytesUntilWrap);
+		TCPRAMCopy(vBuffer, TCP_PIC_RAM, ptrRead, MyTCBStub.vMemoryMedium, wBytesUntilWrap);
+		TCPRAMCopy(vBuffer+wBytesUntilWrap, TCP_PIC_RAM, MyTCBStub.bufferRxStart, MyTCBStub.vMemoryMedium, wLen - wBytesUntilWrap);
 	}
 
 	return wLen;
@@ -1969,10 +1969,10 @@ BYTE TCPPeek(TCP_SOCKET hTCP, WORD wStart)
   ***************************************************************************/
 WORD TCPFindArrayEx(TCP_SOCKET hTCP, BYTE* cFindArray, WORD wLen, WORD wStart, WORD wSearchLen, BOOL bTextCompare)
 {
-	PTR_BASE ptrRead;
+	BYTE* ptrRead;
 	WORD wDataLen;
 	WORD wBytesUntilWrap;
-	PTR_BASE ptrLocation;
+	BYTE* ptrLocation;
 	WORD wLenStart;
 	BYTE *cFindArrayStart;
 	BYTE i, j, k;
@@ -1998,8 +1998,8 @@ WORD TCPFindArrayEx(TCP_SOCKET hTCP, BYTE* cFindArray, WORD wLen, WORD wStart, W
 	if(ptrLocation > MyTCBStub.bufferEnd)
 		ptrLocation -= MyTCBStub.bufferEnd - MyTCBStub.bufferRxStart + 1;
 	ptrRead = ptrLocation;
-	wBytesUntilWrap = MyTCBStub.bufferEnd - ptrLocation + 1;
-	ptrLocation = wStart;
+	wBytesUntilWrap = (WORD)(MyTCBStub.bufferEnd - ptrLocation + 1);
+	ptrLocation = (BYTE*)wStart;
 	wLenStart = wLen;
 	cFindArrayStart = cFindArray;
 	j = *cFindArray++;
@@ -2021,7 +2021,7 @@ WORD TCPFindArrayEx(TCP_SOCKET hTCP, BYTE* cFindArray, WORD wLen, WORD wStart, W
 			k = wDataLen;
 
 		// Read a chunk of data into the buffer
-		TCPRAMCopy((PTR_BASE)buffer, TCP_PIC_RAM, ptrRead, MyTCBStub.vMemoryMedium, (WORD)k);
+		TCPRAMCopy(buffer, TCP_PIC_RAM, ptrRead, MyTCBStub.vMemoryMedium, (WORD)k);
 		ptrRead += k;
 		wBytesUntilWrap -= k;
 
@@ -2042,7 +2042,7 @@ WORD TCPFindArrayEx(TCP_SOCKET hTCP, BYTE* cFindArray, WORD wLen, WORD wStart, W
 				if(j == buffer[i])
 				{
 					if(--wLen == 0u)
-						return ptrLocation-wLenStart + i + 1;
+						return (WORD)(ptrLocation-wLenStart + i + 1);
 					j = *cFindArray++;
 					isFinding = TRUE;
 					if(j >= 'a' && j <= 'z')
@@ -2069,7 +2069,7 @@ WORD TCPFindArrayEx(TCP_SOCKET hTCP, BYTE* cFindArray, WORD wLen, WORD wStart, W
 				if(j == buffer[i])
 				{
 					if(--wLen == 0u)
-						return ptrLocation-wLenStart + i + 1;
+						return (WORD)(ptrLocation-wLenStart + i + 1);
 					j = *cFindArray++;
 					isFinding = TRUE;
 				}
@@ -2459,7 +2459,7 @@ void TCPTick(void)
 						MyTCBStub.smState = TCP_SYN_RECEIVED;
 
 						// Delete this SYN from the SYNQueue and compact the SYNQueue[] array
-						TCPRAMCopy((PTR_BASE)&SYNQueue[w], TCP_PIC_RAM, (PTR_BASE)&SYNQueue[w+1], TCP_PIC_RAM, (TCP_SYN_QUEUE_MAX_ENTRIES-1u-w)*sizeof(TCP_SYN_QUEUE));
+						TCPRAMCopy((BYTE*)&SYNQueue[w], TCP_PIC_RAM, (BYTE*)&SYNQueue[w+1], TCP_PIC_RAM, (TCP_SYN_QUEUE_MAX_ENTRIES-1u-w)*sizeof(TCP_SYN_QUEUE));
 						SYNQueue[TCP_SYN_QUEUE_MAX_ENTRIES-1].wDestPort = 0u;
 
 						break;
@@ -2774,7 +2774,7 @@ void TCPTick(void)
 			if((WORD)TickGetDiv256() - SYNQueue[w].wTimestamp > (WORD)(TCP_SYN_QUEUE_TIMEOUT/256ull))
 			{
 				// Delete this SYN from the SYNQueue and compact the SYNQueue[] array
-				TCPRAMCopy((PTR_BASE)&SYNQueue[w], TCP_PIC_RAM, (PTR_BASE)&SYNQueue[w+1], TCP_PIC_RAM, (TCP_SYN_QUEUE_MAX_ENTRIES-1u-w)*sizeof(TCP_SYN_QUEUE));
+				TCPRAMCopy((BYTE*)&SYNQueue[w], TCP_PIC_RAM, (BYTE*)&SYNQueue[w+1], TCP_PIC_RAM, (TCP_SYN_QUEUE_MAX_ENTRIES-1u-w)*sizeof(TCP_SYN_QUEUE));
 				SYNQueue[TCP_SYN_QUEUE_MAX_ENTRIES-1].wDestPort = 0u;
 
 				// Since we deleted an entry, we need to roll back one
@@ -2984,7 +2984,7 @@ static void SendTCP(BYTE vTCPFlags, BYTE vSendFlags)
 			}
 
 			// Copy application data into the raw TX buffer
-			TCPRAMCopy(BASE_TX_ADDR+sizeof(ETHER_HEADER)+sizeof(IP_HEADER)+sizeof(TCP_HEADER), TCP_ETH_RAM, MyTCB.txUnackedTail, MyTCBStub.vMemoryMedium, len);
+			TCPRAMCopy((BYTE*)BASE_TX_ADDR+sizeof(ETHER_HEADER)+sizeof(IP_HEADER)+sizeof(TCP_HEADER), TCP_ETH_RAM, MyTCB.txUnackedTail, MyTCBStub.vMemoryMedium, len);
 			MyTCB.txUnackedTail += len;
 		}
 		else
@@ -3005,13 +3005,13 @@ static void SendTCP(BYTE vTCPFlags, BYTE vSendFlags)
 				pseudoHeader.Length = len;
 
 			// Copy application data into the raw TX buffer
-			TCPRAMCopy(BASE_TX_ADDR+sizeof(ETHER_HEADER)+sizeof(IP_HEADER)+sizeof(TCP_HEADER), TCP_ETH_RAM, MyTCB.txUnackedTail, MyTCBStub.vMemoryMedium, pseudoHeader.Length);
+			TCPRAMCopy((BYTE*)BASE_TX_ADDR+sizeof(ETHER_HEADER)+sizeof(IP_HEADER)+sizeof(TCP_HEADER), TCP_ETH_RAM, MyTCB.txUnackedTail, MyTCBStub.vMemoryMedium, pseudoHeader.Length);
 			pseudoHeader.Length = len - pseudoHeader.Length;
 
 			// Copy any left over chunks of application data over
 			if(pseudoHeader.Length)
 			{
-				TCPRAMCopy(BASE_TX_ADDR+sizeof(ETHER_HEADER)+sizeof(IP_HEADER)+sizeof(TCP_HEADER)+(MyTCBStub.bufferRxStart-MyTCB.txUnackedTail), TCP_ETH_RAM, MyTCBStub.bufferTxStart, MyTCBStub.vMemoryMedium, pseudoHeader.Length);
+				TCPRAMCopy((BYTE*)BASE_TX_ADDR+sizeof(ETHER_HEADER)+sizeof(IP_HEADER)+sizeof(TCP_HEADER)+(MyTCBStub.bufferRxStart-MyTCB.txUnackedTail), TCP_ETH_RAM, MyTCBStub.bufferTxStart, MyTCBStub.vMemoryMedium, pseudoHeader.Length);
 			}
 
 			MyTCB.txUnackedTail += len;
@@ -3162,14 +3162,14 @@ static void SendTCP(BYTE vTCPFlags, BYTE vSendFlags)
 	header.Checksum = ~CalcIPChecksum((BYTE*)&pseudoHeader, sizeof(pseudoHeader));
 
 	// Write IP header
-	MACSetWritePtr(BASE_TX_ADDR + sizeof(ETHER_HEADER));
+	MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER));
 	IPPutHeader(&MyTCB.remote.niRemoteMACIP, IP_PROT_TCP, len);
 	MACPutArray((BYTE*)&header, sizeof(header));
 	if(vTCPFlags & SYN)
 		MACPutArray((BYTE*)&options, sizeof(options));
 
 	// Update the TCP checksum
-	MACSetReadPtr(BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER));
+	MACSetReadPtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER));
 	wVal.Val = CalcIPBufferChecksum(len);
 #if defined(DEBUG_GENERATE_TX_LOSS)
 	// Damage TCP checksums on TX packets randomly
@@ -3178,7 +3178,7 @@ static void SendTCP(BYTE vTCPFlags, BYTE vSendFlags)
 		wVal.Val++;
 	}
 #endif
-	MACSetWritePtr(BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER) + 16);
+	MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER) + 16);
 	MACPutArray((BYTE*)&wVal, sizeof(WORD));
 
 	// Physically start the packet transmission over the network
@@ -3602,7 +3602,8 @@ static WORD GetMaxSegSizeOption(void)
 static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 {
 	DWORD dwTemp;
-	PTR_BASE wTemp;
+	WORD wTemp;
+	BYTE* pTemp;
 	LONG lMissingBytes;
 	WORD wMissingBytes;
 	WORD wFreeSpace;
@@ -3886,9 +3887,9 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 				MyTCBStub.Flags.bHalfFullFlush = FALSE;
 
 				// Bytes ACKed, free up the TX FIFO space
-				wTemp = MyTCBStub.txTail;
+				pTemp = MyTCBStub.txTail;
 				MyTCBStub.txTail += dwTemp;
-				if(MyTCB.txUnackedTail >= wTemp)
+				if(MyTCB.txUnackedTail >= pTemp)
 				{
 					if(MyTCB.txUnackedTail < MyTCBStub.txTail)
 					{
@@ -3898,10 +3899,10 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 				}
 				else
 				{
-					wTemp = MyTCB.txUnackedTail + (MyTCBStub.bufferRxStart - MyTCBStub.bufferTxStart);
-					if(wTemp < MyTCBStub.txTail)
+					pTemp = MyTCB.txUnackedTail + (MyTCBStub.bufferRxStart - MyTCBStub.bufferTxStart);
+					if(pTemp < MyTCBStub.txTail)
 					{
-						MyTCB.MySEQ += MyTCBStub.txTail - wTemp;
+						MyTCB.MySEQ += MyTCBStub.txTail - pTemp;
 						MyTCB.txUnackedTail = MyTCBStub.txTail;
 					}
 				}
@@ -4078,14 +4079,14 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 			// See if we need a two part copy (spans bufferEnd->bufferRxStart)
 			if(MyTCBStub.rxHead + len > MyTCBStub.bufferEnd)
 			{
-				wTemp = MyTCBStub.bufferEnd - MyTCBStub.rxHead + 1;
-				TCPRAMCopy(MyTCBStub.rxHead, MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, wTemp);
-				TCPRAMCopy(MyTCBStub.bufferRxStart, MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, len - wTemp);
+				wTemp = (WORD)(MyTCBStub.bufferEnd - MyTCBStub.rxHead + 1);
+				TCPRAMCopy(MyTCBStub.rxHead, MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, wTemp);
+				TCPRAMCopy(MyTCBStub.bufferRxStart, MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, len - wTemp);
 				MyTCBStub.rxHead = MyTCBStub.bufferRxStart + (len - wTemp);
 			}
 			else
 			{
-				TCPRAMCopy(MyTCBStub.rxHead, MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, len);
+				TCPRAMCopy(MyTCBStub.rxHead, MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, len);
 				MyTCBStub.rxHead += len;
 			}
 
@@ -4126,17 +4127,17 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
 				wTemp = MyTCBStub.bufferEnd - MyTCBStub.rxHead + 1 - wMissingBytes;
 				if((SHORT)wTemp >= 0)
 				{
-					TCPRAMCopy(MyTCBStub.rxHead + wMissingBytes, MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, wTemp);
-					TCPRAMCopy(MyTCBStub.bufferRxStart, MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, len - wTemp);
+					TCPRAMCopy(MyTCBStub.rxHead + wMissingBytes, MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, wTemp);
+					TCPRAMCopy(MyTCBStub.bufferRxStart, MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, len - wTemp);
 				}
 				else
 				{
-					TCPRAMCopy(MyTCBStub.rxHead + wMissingBytes - (MyTCBStub.bufferEnd - MyTCBStub.bufferRxStart + 1), MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, len);
+					TCPRAMCopy(MyTCBStub.rxHead + wMissingBytes - (MyTCBStub.bufferEnd - MyTCBStub.bufferRxStart + 1), MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, len);
 				}
 			}
 			else
 			{
-				TCPRAMCopy(MyTCBStub.rxHead + wMissingBytes, MyTCBStub.vMemoryMedium, (PTR_BASE)-1, TCP_ETH_RAM, len);
+				TCPRAMCopy(MyTCBStub.rxHead + wMissingBytes, MyTCBStub.vMemoryMedium, (BYTE*)-1, TCP_ETH_RAM, len);
 			}
 
 			// Record the hole is here
@@ -4350,7 +4351,7 @@ static void HandleTCPSeg(TCP_HEADER* h, WORD len)
   ***************************************************************************/
 BOOL TCPAdjustFIFOSize(TCP_SOCKET hTCP, WORD wMinRXSize, WORD wMinTXSize, BYTE vFlags)
 {
-	PTR_BASE ptrTemp, ptrHead;
+	BYTE* ptrTemp, *ptrHead;
 	WORD wTXAllocation;
 
 	if(hTCP >= TCP_SOCKET_COUNT)
@@ -4377,7 +4378,7 @@ BOOL TCPAdjustFIFOSize(TCP_SOCKET hTCP, WORD wMinRXSize, WORD wMinTXSize, BYTE v
 
 	// Make sure space is available for minimums
 	ptrTemp = MyTCBStub.bufferEnd - MyTCBStub.bufferTxStart - 1;
-	if(wMinRXSize + wMinTXSize > ptrTemp)
+	if(wMinRXSize + wMinTXSize > (WORD)ptrTemp)
 		return FALSE;
 
 	SyncTCB();
@@ -4397,11 +4398,11 @@ BOOL TCPAdjustFIFOSize(TCP_SOCKET hTCP, WORD wMinRXSize, WORD wMinTXSize, BYTE v
 		if(vFlags & TCP_ADJUST_GIVE_REST_TO_RX)
 		{
 			// Do a 50%/50% split with any odd byte always going to the RX FIFO
-			wTXAllocation += ptrTemp>>1;
+			wTXAllocation += ((WORD)ptrTemp)>>1;
 		}
 		else
 		{
-			wTXAllocation += ptrTemp;
+			wTXAllocation += ((WORD)ptrTemp);
 		}
 	}
 
@@ -4539,7 +4540,7 @@ BOOL TCPAdjustFIFOSize(TCP_SOCKET hTCP, WORD wMinRXSize, WORD wMinTXSize, BYTE v
 	overlap there must be at least 4 bytes of non-overlap to ensure correct
 	results due to hardware DMA requirements.
   ***************************************************************************/
-static void TCPRAMCopy(PTR_BASE ptrDest, BYTE vDestType, PTR_BASE ptrSource, BYTE vSourceType, WORD wLength)
+static void TCPRAMCopy(BYTE* ptrDest, BYTE vDestType, BYTE* ptrSource, BYTE vSourceType, WORD wLength)
 {
 	#if defined(SPIRAM_CS_TRIS)
 	BYTE vBuffer[16];
@@ -4552,18 +4553,18 @@ static void TCPRAMCopy(PTR_BASE ptrDest, BYTE vDestType, PTR_BASE ptrSource, BYT
 			switch(vDestType)
 			{
 				case TCP_PIC_RAM:
-					memcpy((void*)(BYTE*)ptrDest, (void*)(BYTE*)ptrSource, wLength);
+					memcpy((void*)ptrDest, (void*)ptrSource, wLength);
 					break;
 
 				case TCP_ETH_RAM:
-					if(ptrDest!=(PTR_BASE)-1)
+					if(ptrDest!=(BYTE*)-1)
 						MACSetWritePtr(ptrDest);
-					MACPutArray((BYTE*)ptrSource, wLength);
+					MACPutArray(ptrSource, wLength);
 					break;
 
 				#if defined(SPIRAM_CS_TRIS)
 				case TCP_SPI_RAM:
-					SPIRAMPutArray(ptrDest, (BYTE*)ptrSource, wLength);
+					SPIRAMPutArray(ptrDest, ptrSource, wLength);
 					break;
 				#endif
 			}
@@ -4573,9 +4574,9 @@ static void TCPRAMCopy(PTR_BASE ptrDest, BYTE vDestType, PTR_BASE ptrSource, BYT
 			switch(vDestType)
 			{
 				case TCP_PIC_RAM:
-					if(ptrSource!=(PTR_BASE)-1)
+					if(ptrSource!=(BYTE*)-1)
 						MACSetReadPtr(ptrSource);
-					MACGetArray((BYTE*)ptrDest, wLength);
+					MACGetArray(ptrDest, wLength);
 					break;
 
 				case TCP_ETH_RAM:
@@ -4585,7 +4586,7 @@ static void TCPRAMCopy(PTR_BASE ptrDest, BYTE vDestType, PTR_BASE ptrSource, BYT
 
 				#if defined(SPIRAM_CS_TRIS)
 				case TCP_SPI_RAM:
-					if(ptrSource!=(PTR_BASE)-1)
+					if(ptrSource!=(BYTE*)-1)
 						MACSetReadPtr(ptrSource);
 					w = sizeof(vBuffer);
 					while(wLength)
@@ -4609,11 +4610,11 @@ static void TCPRAMCopy(PTR_BASE ptrDest, BYTE vDestType, PTR_BASE ptrSource, BYT
 			switch(vDestType)
 			{
 				case TCP_PIC_RAM:
-					SPIRAMGetArray(ptrSource, (BYTE*)ptrDest, wLength);
+					SPIRAMGetArray(ptrSource, ptrDest, wLength);
 					break;
 
 				case TCP_ETH_RAM:
-					if(ptrDest!=(PTR_BASE)-1)
+					if(ptrDest!=(BYTE*)-1)
 						MACSetWritePtr(ptrDest);
 					w = sizeof(vBuffer);
 					while(wLength)

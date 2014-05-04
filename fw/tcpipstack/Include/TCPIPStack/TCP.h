@@ -108,13 +108,13 @@ typedef enum
 // Current size is 34 bytes (PIC18), 36 bytes (PIC24/dsPIC), or 56 (PIC32)
 typedef struct
 {
-	PTR_BASE bufferTxStart;		// First byte of TX buffer
-	PTR_BASE bufferRxStart;		// First byte of RX buffer.  TX buffer ends 1 byte prior
-	PTR_BASE bufferEnd;			// Last byte of RX buffer
-	PTR_BASE txHead;			// Head pointer for TX
-	PTR_BASE txTail;			// Tail pointer for TX
-	PTR_BASE rxHead;			// Head pointer for RX
-	PTR_BASE rxTail;			// Tail pointer for RX
+	BYTE* bufferTxStart;		// First byte of TX buffer
+	BYTE* bufferRxStart;		// First byte of RX buffer.  TX buffer ends 1 byte prior
+	BYTE* bufferEnd;			// Last byte of RX buffer
+	BYTE* txHead;			// Head pointer for TX
+	BYTE* txTail;			// Tail pointer for TX
+	BYTE* rxHead;			// Head pointer for RX
+	BYTE* rxTail;			// Tail pointer for RX
     DWORD eventTime;			// Packet retransmissions, state changes
 	WORD eventTime2;			// Window updates, automatic transmission
 	union
@@ -161,7 +161,7 @@ typedef struct
 	DWORD		retryInterval;			// How long to wait before retrying transmission
 	DWORD		MySEQ;					// Local sequence number
 	DWORD		RemoteSEQ;				// Remote sequence number
-	PTR_BASE	txUnackedTail;			// TX tail pointer for data that is not yet acked
+	BYTE*	txUnackedTail;			// TX tail pointer for data that is not yet acked
     WORD_VAL	remotePort;				// Remote port number
     WORD_VAL	localPort;				// Local port number
 	WORD		remoteWindow;			// Remote window size

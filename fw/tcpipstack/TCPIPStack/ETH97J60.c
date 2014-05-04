@@ -703,13 +703,13 @@ void MACSetReadPtrInRx(WORD offset)
  *
  * Note:			None
  *****************************************************************************/
-PTR_BASE MACSetWritePtr(PTR_BASE address)
+BYTE* MACSetWritePtr(BYTE* address)
 {
 	WORD oldVal;
 
 	oldVal = EWRPT;
-	EWRPT = address;
-	return oldVal;
+	EWRPT = (WORD)address;
+	return (BYTE*)oldVal;
 }
 
 /******************************************************************************
@@ -728,13 +728,13 @@ PTR_BASE MACSetWritePtr(PTR_BASE address)
  *
  * Note:			None
  *****************************************************************************/
-PTR_BASE MACSetReadPtr(PTR_BASE address)
+BYTE* MACSetReadPtr(BYTE* address)
 {
 	WORD oldVal;
 
 	oldVal = ERDPT;
-	ERDPT = address;
-	return oldVal;
+	ERDPT = (WORD)address;
+	return (BYTE*)oldVal;
 }
 
 
@@ -952,21 +952,21 @@ WORD CalcIPBufferChecksum(WORD len)
  *					calling this function, this function will block until it
  *					can start this transfer.
  *****************************************************************************/
-void MACMemCopyAsync(PTR_BASE destAddr, PTR_BASE sourceAddr, WORD len)
+void MACMemCopyAsync(BYTE* destAddr, BYTE* sourceAddr, WORD len)
 {
 	WORD_VAL ReadSave, WriteSave;
 	BOOL UpdateWritePointer = FALSE;
 	BOOL UpdateReadPointer = FALSE;
 
-	if(destAddr == (PTR_BASE)-1)
+	if(destAddr == (BYTE*)-1)
 	{
 		UpdateWritePointer = TRUE;
-		destAddr = EWRPT;
+		destAddr = (BYTE*)EWRPT;
 	}
-	if(sourceAddr == (PTR_BASE)-1)
+	if(sourceAddr == (BYTE*)-1)
 	{
 		UpdateReadPointer = TRUE;
-		sourceAddr = ERDPT;
+		sourceAddr = (BYTE*)ERDPT;
 	}
 
 	// Handle special conditions where len == 0 or len == 1
@@ -975,8 +975,8 @@ void MACMemCopyAsync(PTR_BASE destAddr, PTR_BASE sourceAddr, WORD len)
 	{
 		ReadSave.Val = ERDPT;
 		WriteSave.Val = EWRPT;
-		ERDPT = sourceAddr;
-		EWRPT = destAddr;
+		ERDPT = (WORD)sourceAddr;
+		EWRPT = (WORD)destAddr;
 		while(len--)
 			MACPut(MACGet());
 		if(!UpdateReadPointer)
@@ -992,14 +992,14 @@ void MACMemCopyAsync(PTR_BASE destAddr, PTR_BASE sourceAddr, WORD len)
 	{
 		if(UpdateWritePointer)
 		{
-			WriteSave.Val = destAddr + len;
+			WriteSave.Val = (WORD)destAddr + len;
 			EWRPT = WriteSave.Val;
 		}
-		len += sourceAddr - 1;
+		len += (WORD)sourceAddr - 1;
 		while(ECON1bits.DMAST);
-		EDMAST = sourceAddr;
-		EDMADST = destAddr;
-		if((sourceAddr <= RXSTOP) && (len > RXSTOP)) //&& (sourceAddr >= RXSTART))
+		EDMAST = (WORD)sourceAddr;
+		EDMADST = (WORD)destAddr;
+		if(((WORD)sourceAddr <= RXSTOP) && (len > RXSTOP)) //&& (sourceAddr >= RXSTART))
 			len -= RXSIZE;
 		EDMAND = len;
 		ECON1bits.CSUMEN = 0;
@@ -1009,7 +1009,7 @@ void MACMemCopyAsync(PTR_BASE destAddr, PTR_BASE sourceAddr, WORD len)
 		if(UpdateReadPointer)
 		{
 			len++;
-			if((sourceAddr <= RXSTOP) && (len > RXSTOP)) //&& (sourceAddr >= RXSTART))
+			if(((WORD)sourceAddr <= RXSTOP) && (len > RXSTOP)) //&& (sourceAddr >= RXSTART))
 				len -= RXSIZE;
 			ERDPT = len;
 		}
@@ -1192,7 +1192,7 @@ void MACPut(BYTE val)
  *
  * Note:            None
  *****************************************************************************/
-void MACPutArray(BYTE *val, WORD len)
+void MACPutArray(const BYTE *val, WORD len)
 {
     while(len--)
 	{

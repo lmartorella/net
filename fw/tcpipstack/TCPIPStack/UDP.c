@@ -797,7 +797,7 @@ BOOL UDPPut(BYTE v)
   	this value is less than wDataLen, then the buffer became full and the
   	input was truncated.
   ***************************************************************************/
-WORD UDPPutArray(BYTE *cData, WORD wDataLen)
+WORD UDPPutArray(const BYTE *cData, WORD wDataLen)
 {
 	WORD wTemp;
 
@@ -888,9 +888,9 @@ WORD UDPPutROMArray(ROM BYTE* cData, WORD wDataLen)
   	dereference to a NULL byte, then the buffer became full and the input
   	data was truncated.
   ***************************************************************************/
-BYTE* UDPPutString(BYTE *strData)
+BYTE* UDPPutString(const BYTE *strData)
 {
-	return strData + UDPPutArray(strData, strlen((char*)strData));
+	return (BYTE*)(strData + UDPPutArray(strData, strlen((char*)strData)));
 }
 
 /*****************************************************************************
@@ -989,7 +989,7 @@ void UDPFlush(void)
 
 	// Position the hardware write pointer where we will need to
 	// begin writing the IP header
-	MACSetWritePtr(BASE_TX_ADDR + sizeof(ETHER_HEADER));
+	MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER));
 
 	// Write IP header to packet
 	IPPutHeader(&p->remote.remoteNode, IP_PROT_UDP, wUDPLength);
@@ -1000,15 +1000,15 @@ void UDPFlush(void)
 	// Calculate the final UDP checksum and write it in, if enabled
 	#if defined(UDP_USE_TX_CHECKSUM)
 	{
-        PTR_BASE	wReadPtrSave;
+        BYTE*	wReadPtrSave;
         WORD		wChecksum;
 
-		wReadPtrSave = MACSetReadPtr(BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER));
+		wReadPtrSave = MACSetReadPtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER));
 		wChecksum = CalcIPBufferChecksum(wUDPLength);
 		if(wChecksum == 0x0000u)
 			wChecksum = 0xFFFF;
 		MACSetReadPtr(wReadPtrSave);
-		MACSetWritePtr(BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER) + 6);	// 6 is the offset to the Checksum field in UDP_HEADER
+		MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER) + 6);	// 6 is the offset to the Checksum field in UDP_HEADER
 		MACPutArray((BYTE*)&wChecksum, sizeof(wChecksum));
 	}
 	#endif

@@ -335,7 +335,7 @@ BOOL ARPSendPkt(DWORD SrcIPAddr, DWORD DestIPAddr, BYTE op_req )
 static BOOL ARPPut(ARP_PACKET* packet)
 {
 	while(!MACIsTxReady());
-	MACSetWritePtr(BASE_TX_ADDR);
+	MACSetWritePtr((BYTE*)BASE_TX_ADDR);
 
 
     packet->HardwareType  = HW_ETHERNET;

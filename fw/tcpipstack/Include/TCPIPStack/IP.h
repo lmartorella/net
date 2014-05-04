@@ -123,7 +123,7 @@ typedef struct _PSEUDO_HEADER
  * Note:            None
  *
  ********************************************************************/
-#define IPSetTxBuffer(b) MACSetWritePtr(b + BASE_TX_ADDR + sizeof(ETHER_HEADER) + sizeof(IP_HEADER))
+#define IPSetTxBuffer(b) MACSetWritePtr((BYTE*)BASE_TX_ADDR + (b) + sizeof(ETHER_HEADER) + sizeof(IP_HEADER))
 
 
 
