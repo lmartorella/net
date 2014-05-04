@@ -3,9 +3,10 @@
 
 #include <GenericTypeDefs.h>
 
-extern void wait2ms(void);
-extern void wait30ms(void);
-extern void wait40us(void);
-extern void wait100us(void);
+extern void wait2ms();
+extern void wait30ms();
+extern void wait40us();
+extern void wait100us();
+extern void wait1s();
 
 #endif

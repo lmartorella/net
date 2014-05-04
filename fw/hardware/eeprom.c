@@ -1,5 +1,6 @@
 #include "fuses.h"
 #include "GenericTypeDefs.h"
+#include "../appio.h"
 
 // Source: http://www.microchip.com/forums/m339126.aspx
 
@@ -94,8 +95,21 @@ void rom_write(const void* destination, const void* source, WORD length)
 	POINTER ptr;
 	ptr.ptr = (UINT32)(void*)destination;
 
+        // The destination pointer should be row aligned
+        if ((ptr.ptr & 0x3FF) != 0)
+        {
+            fatal("ROWER");
+        }
+        // Max write the row size
+        if (length > 0x400)
+        {
+            fatal("ROWL");
+        }
+
+        // Erase the row
 	setWTablePtr(&ptr); 
-	rowErase(); 
+	rowErase();
+
 	setWTablePtr(&ptr); 
 	loadWData(source, length);
 	setWTablePtr(&ptr); 

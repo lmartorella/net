@@ -116,14 +116,12 @@ void main()
     cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
     cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
 
-    wait1s();
-
     cm1602_setDdramAddr(0);
     cm1602_writeStr(msg1);
     cm1602_writeStr(g_reasonMsgs[_reason]);
     if (_reason == RESET_EXC)
     {
-            //cm1602_writeStr(getLastFatal());
+        cm1602_writeStr(getLastFatal());
     }
 
     wait1s();

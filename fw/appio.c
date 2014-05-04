@@ -4,21 +4,21 @@
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
 
-static persistent char s_lastErr[8];
+// The pointer is pointing to ROM space, otherwise after the RESET
+// the volatile content can be lost.
+static persistent rom const char* s_lastErr;
 
 static void createDisplaySink(void);
 static void destroyDisplaySink(void);
 static void pollDisplaySink(void);
 
 #define DISPLAY_SINK_PORT (SINK_DISPLAY_TYPE + BASE_SINK_PORT)
-const rom Sink g_displaySink = { 
-							 SINK_DISPLAY_TYPE,
-                             0, 
-                             DISPLAY_SINK_PORT,
-                             &createDisplaySink,
-                             &destroyDisplaySink,
-                             &pollDisplaySink
-						 };
+const rom Sink g_displaySink = { SINK_DISPLAY_TYPE,
+                                 0,
+                                 DISPLAY_SINK_PORT,
+                                 &createDisplaySink,
+                                 &destroyDisplaySink,
+                                 &pollDisplaySink };
 
 // The TCP client socket of display listener
 static TCP_SOCKET s_listenerSocket = INVALID_SOCKET;
@@ -51,10 +51,9 @@ void printlnUp(const char* str)
 	_print(str, 0x00);	
 }
 
-void fatal(const char* str)
+void fatal(rom const char* str)
 {
-    strncpy(s_lastErr, str, sizeof(s_lastErr) - 1);
-    s_lastErr[sizeof(s_lastErr) - 1] = 0;
+    s_lastErr = str;
     wait30ms();
     RESET();
 }
