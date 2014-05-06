@@ -10,9 +10,9 @@
 
 // This will override the spi_init() call
 void sram_init(void);
-// Test all 4 banks, return the number of the failing bank
+// Test all 4 banks, return the ADDR of the failing test
 // or -1 if no fails
-signed char sram_test(void);
+UINT32 sram_test(void);
 
 // Read a vector of bytes in RAM.
 // NOTE: do not support SPI cross-bank access

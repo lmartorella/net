@@ -63,8 +63,7 @@ void sram_init()
 static UINT16 enableBank(UINT32 addr)
 {
 	// support 4 banks = 128k
-	addr &= 0x1ffff;
-	en[addr >> 15]();
+	en[(addr >> 15) & 0x3]();
 	return (UINT16)addr;
 }
 
@@ -120,29 +119,3 @@ void sram_read(BYTE* dest, UINT32 address, BYTE count)
 	disableAll();
 }
 
-// Test all 4 banks, return the number of the failing bank
-// or -1 if no fails
-signed char sram_test(void)
-{
-	// To use a random seq string that spans on all banks
-	// write first, read then
-	BYTE b;
-	BYTE test;
-	UINT32 addr = 0x1234;
-
-	// Do some test with banks
-	for (b = 0; b < 4; b++, addr += 0x8000)
-	{
-		sram_write(&b, addr, 1);
-	}
-	addr = 0x1234;
-	for (b = 0; b < 4; b++, addr += 0x8000)
-	{
-		sram_read(&test, addr, 1);
-		if (test != b)
-		{
-			return b;
-		}
-	}
-	return -1;
-}
