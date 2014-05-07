@@ -34,7 +34,7 @@ static void reset()
 
 // Test all 4 banks, return the ADDR of the failing test
 // or -1 if no fails
-void _sram_test(void)
+BYTE _sram_test(BYTE bs)
 {
     char msg[16];
 	// To use a pseudo-random seq string that spans on all banks
@@ -46,7 +46,7 @@ void _sram_test(void)
         // Write all
         _clr(0x40);
         addr = 0x0;
-        b = 0;
+        b = bs;
         for (i1 = 0; i1 < 2; i1++)
         {
             i2 = 0;
@@ -73,7 +73,7 @@ void _sram_test(void)
         // READ all
         _clr(0x40);
         addr = 0x0;
-        b = 0;
+        b = bs;
         for (i1 = 0; i1 < 2; i1++)
         {
             i2 = 0;
@@ -90,7 +90,7 @@ void _sram_test(void)
                         _print(msg, 0x0);
                         sprintf(msg, "EXP: %2X, RD: %2X", (int)b, (int)br);
                         _print(msg, 0x40);
-                        return;
+                        return 0;
                     }
                     addr++;
                     i3++;
@@ -106,6 +106,7 @@ void _sram_test(void)
         }
 
     _print("PASS", 0x40);
+    return 1;
 }
 
 void main()
@@ -120,11 +121,11 @@ void main()
     // CKP = 0, CKE = 1
     // Output: data sampled at clock falling.
     // Input: data sampled at clock falling, at the end of the cycle.
-    spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F16);
+    spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
     sram_init();
 
-    _sram_test();
-
+    BYTE b = 0;
+    while (_sram_test(b++));
     while (1) CLRWDT();
 }

@@ -7,14 +7,6 @@
 #define MEM_CSTRIS2	MEM_TRISBITS.MEM_BANK2_CS
 #define MEM_CSTRIS3	MEM_TRISBITS.MEM_BANK3_CS
 
-static void en0(void) { MEM_CS0 = 0; }
-static void en1(void) { MEM_CS1 = 0; }
-static void en2(void) { MEM_CS2 = 0; }
-static void en3(void) { MEM_CS3 = 0; }
-
-typedef void(*action)(void); 
-static action en[] = { en0, en1, en2, en3 };  
-
 enum STATUSREG
 {
 	ST_BYTEMODE = 0x0,
@@ -38,6 +30,26 @@ static void disableAll(void)
 	MEM_PORT |= MEM_BANK_CS_MASK;
 }
 
+static void enableBank(BYTE b)
+{
+    // support 4 banks = 128k
+    switch (b & 0x3)
+    {
+        case 0:
+            MEM_CS0 = 0;
+            break;
+        case 1:
+            MEM_CS1 = 0;
+            break;
+        case 2:
+            MEM_CS2 = 0;
+            break;
+        case 3:
+            MEM_CS3 = 0;
+            break;
+    }
+}
+
 // This will override the spi_init() call
 void sram_init()
 {
@@ -52,19 +64,12 @@ void sram_init()
 
 	for (b = 0; b < 4; b++)
 	{
-		en[b]();
+		enableBank(b);
 		// Enter full range mode
 		spi_shift(MSG_WRSR);
 		spi_shift(ST_SEQMODE | HOLD_DIS);
 		disableAll();
 	}
-}
-
-static UINT16 enableBank(UINT32 addr)
-{
-	// support 4 banks = 128k
-	en[(addr >> 15) & 0x3]();
-	return (UINT16)addr;
 }
 
 // Write a vector of bytes in RAM.
@@ -79,8 +84,9 @@ void sram_write(const BYTE* src, UINT32 address, BYTE count)
 	{
 		return;
 	}
+	raddr = (UINT16)address;
+        enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
-	raddr = enableBank(address);
 	spi_shift(raddr >> 8);
 	spi_shift((BYTE)raddr);
 	do 
@@ -105,8 +111,9 @@ void sram_read(BYTE* dest, UINT32 address, BYTE count)
 	{
 		return;
 	}
+	raddr = (UINT16)address;
+        enableBank(address >> 15);
 	spi_shift(MSG_READ);
-	raddr = enableBank(address);
 	spi_shift(raddr >> 8);
 	spi_shift((BYTE)raddr);
 	do 
