@@ -32,7 +32,7 @@ namespace Lucky.Home.Core
 
         public bool Equals(Peer peer)
         {
-            return ID == peer.ID && Address.Equals(peer.Address) && Sinks.SequenceEqual(peer.Sinks);
+            return ID == peer.ID && Address.Equals(peer.Address);
         }
     }
 }

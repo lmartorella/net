@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace Lucky.Home.Core
 {
@@ -11,6 +12,7 @@ namespace Lucky.Home.Core
     class Sink : IEquatable<Sink>
     {
         private IPAddress _host;
+        protected readonly Logger Logger = new Logger();
 
         internal void Initialize(Peer peer, ushort deviceCaps, ushort servicePort)
         {
@@ -45,6 +47,9 @@ namespace Lucky.Home.Core
             {
                 _tcpClient = new TcpClient();
                 _tcpClient.Connect(endPoint);
+                _tcpClient.Client.NoDelay = true;
+                _tcpClient.Client.ReceiveTimeout = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
+                _tcpClient.Client.LingerState = new LingerOption(true, 1);
                 _clientStream = _tcpClient.GetStream();
                 Reader = new BinaryReader(_clientStream);
                 Writer = new BinaryWriter(_clientStream);
@@ -72,6 +77,11 @@ namespace Lucky.Home.Core
         protected IConnection Open()
         {
             return new Connection(new IPEndPoint(_host, Port));
+        }
+
+        public override string ToString()
+        {
+            return "Sink " + GetType().Name + " @" + _host;
         }
 
         public bool Equals(Sink sink)

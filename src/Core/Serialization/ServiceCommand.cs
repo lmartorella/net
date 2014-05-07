@@ -2,20 +2,20 @@
 
 namespace Lucky.Home.Core.Serialization
 {
-    class ServiceCommand
+    public class ServiceCommand
     {
         [SerializeAsFixedArray(4)]
         [Selector("RGST", typeof(ServiceRegisterCommand))]
         public string Command;
     }
 
-    class ServiceRegisterCommand : ServiceCommand
+    public class ServiceRegisterCommand : ServiceCommand
     {
         [SerializeAsDynArray]
         public SinkInfo[] Sinks;
     }
 
-    class SinkInfo
+    public class SinkInfo
     {
         public ushort DeviceId;
         public ushort DeviceCaps;

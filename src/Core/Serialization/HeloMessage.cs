@@ -3,7 +3,7 @@ using System.Net;
 
 namespace Lucky.Home.Core.Serialization
 {
-    class HeloMessage
+    public class HeloMessage
     {
         [SerializeAsFixedArray(8)]
         public string Preamble;
@@ -13,7 +13,7 @@ namespace Lucky.Home.Core.Serialization
         public const string PreambleValue = "HOMEHELO";
     }
 
-    class HeloAckMessage
+    public class HeloAckMessage
     {
         [SerializeAsFixedArray(8)]
         public string Preamble;

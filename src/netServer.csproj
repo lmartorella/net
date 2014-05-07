@@ -49,6 +49,7 @@
     <Compile Include="Core\Manager.cs" />
     <Compile Include="Core\Peer.cs" />
     <Compile Include="Core\PeerDiscoveredEventArgs.cs" />
+    <Compile Include="Core\Serialization\ErrorCode.cs" />
     <Compile Include="Core\Serialization\HeloMessage.cs" />
     <Compile Include="Core\Serialization\NetSerializer.cs" />
     <Compile Include="Core\Serialization\SelectorAttribute.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sinks\DeviceIds.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
+    <Compile Include="Core\Serialization\FlashAckResponse.cs" />
     <Compile Include="Sinks\RomFlasherSink.cs" />
   </ItemGroup>
   <ItemGroup />

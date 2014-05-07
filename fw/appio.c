@@ -2,26 +2,10 @@
 #include "appio.h"
 #include "hardware/cm1602.h"
 #include <string.h>
-#include "TCPIPStack/TCPIP.h"
 
 // The pointer is pointing to ROM space, otherwise after the RESET
 // the volatile content can be lost.
-static persistent rom const char* s_lastErr;
-
-static void createDisplaySink(void);
-static void destroyDisplaySink(void);
-static void pollDisplaySink(void);
-
-#define DISPLAY_SINK_PORT (SINK_DISPLAY_TYPE + BASE_SINK_PORT)
-const rom Sink g_displaySink = { SINK_DISPLAY_TYPE,
-                                 0,
-                                 DISPLAY_SINK_PORT,
-                                 &createDisplaySink,
-                                 &destroyDisplaySink,
-                                 &pollDisplaySink };
-
-// The TCP client socket of display listener
-static TCP_SOCKET s_listenerSocket = INVALID_SOCKET;
+static persistent const char* s_lastErr;
 
 static void _clr(BYTE addr)
 {
@@ -32,6 +16,16 @@ static void _clr(BYTE addr)
 		cm1602_write(' ');
 	}
 	cm1602_setDdramAddr(addr);
+}
+
+void clearln()
+{
+	_clr(0x40);
+}
+
+void clearlnUp()
+{
+	_clr(0x00);
 }
 
 static void _print(const char* str, BYTE addr)
@@ -51,7 +45,12 @@ void printlnUp(const char* str)
 	_print(str, 0x00);	
 }
 
-void fatal(rom const char* str)
+void printch(char ch)
+{
+	cm1602_write(ch);
+}
+
+void fatal(const char* str)
 {
     s_lastErr = str;
     wait30ms();
@@ -63,45 +62,3 @@ const char* getLastFatal()
     return s_lastErr;
 }
 
-static void createDisplaySink()
-{
-	// Open the sever TCP channel
-	s_listenerSocket = TCPOpen(0, TCP_OPEN_SERVER, DISPLAY_SINK_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
-	if (s_listenerSocket == INVALID_SOCKET)
-	{
-		fatal("DSP_SRV");
-	}
-}
-
-static void destroyDisplaySink()
-{
-	if (s_listenerSocket != INVALID_SOCKET)
-	{
-		TCPClose(s_listenerSocket);
-	}
-}
-
-static void pollDisplaySink()
-{
-	unsigned short s;
-	if (!TCPIsConnected(s_listenerSocket))
-	{
-		return;
-	}
-
-	s = TCPIsGetReady(s_listenerSocket);
-	if (s > sizeof(unsigned short))
-	{
-		char buffer[16];
-		TCPGetArray(s_listenerSocket, (BYTE*)&s, sizeof(unsigned short));
-		if (s > 15) 
-		{
-			s = 15;
-		}
-		TCPGetArray(s_listenerSocket, (BYTE*)buffer, s);
-		buffer[s] = '\0';
-		TCPDiscard(s_listenerSocket);
-		// Write it
-		printlnUp(buffer);
-	}
-}

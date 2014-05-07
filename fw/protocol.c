@@ -1,5 +1,6 @@
 #include "protocol.h"
 #include "appio.h"
+#include "displaySink.h"
 #include "persistence.h"
 #include "hardware/cm1602.h"
 #include "hardware/fuses.h"

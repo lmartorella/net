@@ -90,17 +90,6 @@ static void enableInterrupts(void)
 	INTCONbits.GIEH = 1;
 }
 
-static void checkram(void)
-{
-	signed char err = sram_test();
-	if (err >= 0)
-	{
-		cm1602_setDdramAddr(0x40);
-		cm1602_writeStr("bankfail#");
-		cm1602_write(err + '0');
-	}
-}
-
 void timer1s(void);
 void sendHelo(void);
 
@@ -139,9 +128,9 @@ void main()
 
     wait1s();
     println("ChkRam");
-    checkram();
-    wait1s();
-
+    sram_test_gui(123);
+    clearlnUp();
+    
     println("IP/DHCP");
     memset(&AppConfig, 0, sizeof(AppConfig));
     AppConfig.Flags.bIsDHCPEnabled = 1;

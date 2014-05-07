@@ -1,6 +1,8 @@
 #include "spiram.h"
 #include "spi.h"
 #include "fuses.h"
+#include "../appio.h"
+#include <stdio.h>
 
 #define MEM_CSTRIS0	MEM_TRISBITS.MEM_BANK0_CS
 #define MEM_CSTRIS1	MEM_TRISBITS.MEM_BANK1_CS
@@ -50,6 +52,7 @@ static void enableBank(BYTE b)
     }
 }
 
+
 // This will override the spi_init() call
 void sram_init()
 {
@@ -77,7 +80,7 @@ void sram_init()
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to write
 //  - count is the count of byes to write
-void sram_write(const BYTE* src, UINT32 address, BYTE count)
+void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 {
 	UINT16 raddr;
 	if (count == 0)
@@ -104,7 +107,7 @@ void sram_write(const BYTE* src, UINT32 address, BYTE count)
 //  - *dest is in banked PIC RAM
 //  - address is logic SPIRAM address of the first byte to read
 //  - count is the count of byes to read
-void sram_read(BYTE* dest, UINT32 address, BYTE count)
+void sram_read(BYTE* dest, UINT32 address, UINT16 count)
 {
 	UINT16 raddr;
 	if (count == 0)
@@ -124,5 +127,83 @@ void sram_read(BYTE* dest, UINT32 address, BYTE count)
 	}
 	while (--count > 0);
 	disableAll();
+}
+
+// Test all 4 banks, displays the ADDR of the failing test and hang if found one
+// bs is the BYTE seed
+void sram_test_gui(BYTE bs)
+{
+    char msg[16];
+    BYTE buffer[256];
+
+    // To use a pseudo-random seq string that spans on all banks
+    // write first, read then
+    BYTE b;
+    UINT32 addr;
+    BYTE i1, i2, i3;
+
+    // Write all
+    clearln();
+    addr = 0x0;
+    b = bs;
+    for (i1 = 0; i1 < 2; i1++)
+    {
+        i2 = 0;
+        do
+        {
+            i3 = 0;
+            do
+            {
+                b += 251; // largest prime < 256
+                buffer[i3++] = b;
+            } while (i3 != 0);
+
+            sram_write(buffer, addr, 256);
+            addr += 256;
+            i2++;
+
+            if ((i2 % 0x20) == 0)
+            {
+                printch('.');
+            }
+
+        } while (i2 != 0);
+    }
+
+    // READ all
+    clearln();
+    addr = 0x0;
+    b = bs;
+    for (i1 = 0; i1 < 2; i1++)
+    {
+        i2 = 0;
+        do
+        {
+            i3 = 0;
+            sram_read(buffer, addr, 256);
+            do
+            {
+                b += 251; // largest prime < 256
+                if (buffer[i3++] != b)
+                {
+                    sprintf(msg, "FAIL #%8lX", addr);
+                    printlnUp(msg);
+                    sprintf(msg, "EXP: %2X, RD: %2X", (int)b, (int)buffer[i3 - 1]);
+                    println(msg);
+                    // HANG
+                    di();
+                    while (1) CLRWDT();
+                }
+            } while (i3 != 0);
+            i2++;
+            addr += 256;
+
+            if ((i2 % 0x20) == 0)
+            {
+                printch('%');
+            }
+
+        } while (i2 != 0);
+    }
 }
 

@@ -1,5 +1,6 @@
 #include "hardware/fuses.h"
 #include "hardware/spiram.h"
+#include "protocol.h"
 #include "appio.h"
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"

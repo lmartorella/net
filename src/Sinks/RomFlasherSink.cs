@@ -69,16 +69,6 @@ namespace Lucky.Home.Sinks
             public byte[] ControlCode = new byte[] { 0x55, 0xaa };
         }
 
-        private enum ErrorCode : ushort
-        {
-            Ok = 0
-        }
-
-        private class AckResponse
-        {
-            public ErrorCode ErrCode;
-        }
-
         public void SendProgram()
         {
             using (IConnection conn = Open())
@@ -100,7 +90,7 @@ namespace Lucky.Home.Sinks
 
         private void ValidateResponse(BinaryReader reader)
         {
-            AckResponse response = NetSerializer<AckResponse>.Read(reader);
+            FlashAckResponse response = NetSerializer<FlashAckResponse>.Read(reader);
             if (response.ErrCode != ErrorCode.Ok)
             {
                 throw new InvalidOperationException("Error code: " + response.ErrCode);

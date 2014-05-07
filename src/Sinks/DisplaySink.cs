@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
 using System.Threading;
 using Lucky.Home.Core;
 using Lucky.Home.Core.Serialization;
@@ -16,9 +17,14 @@ namespace Lucky.Home.Sinks
     [DeviceId(DeviceIds.Display)]
     class DisplaySink : Sink
     {
-        private readonly Timer _timer;
+        private Timer _timer;
 
         public DisplaySink()
+        {
+            Schedule();
+        }
+
+        private void Schedule()
         {
             _timer = new Timer(SendHi, null, 500, Timeout.Infinite);
         }
@@ -35,12 +41,20 @@ namespace Lucky.Home.Sinks
             {
                 using (var connection = Open())
                 {
-                    Message msg = new Message { Text = "Hello world." };
+                    Message msg = new Message { Text = DateTime.Now.ToString("HH:mm:ss") };
                     NetSerializer<Message>.Write(msg, connection.Writer);
+                    ErrorCode ack = (ErrorCode) connection.Reader.ReadUInt16();
+                    if (ack != ErrorCode.Ok)
+                    {
+                        Logger.Log("Bad response  at " + this + ": " + ack);
+                        return;
+                    }
                 }
+                Schedule();
             }
-            catch (SocketException)
+            catch (Exception exc)
             {
+                Logger.Log("SocketException " + exc.Message + " at " + this);
                 _timer.Dispose();
             }
         }

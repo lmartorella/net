@@ -51,17 +51,21 @@ namespace Lucky.Home.Core
             Peer oldPeer;
             if (_peersByAddress.TryGetValue(peer.Address, out oldPeer))
             {
-                if (oldPeer.Equals(peer))
+                if (!oldPeer.Equals(peer))
                 {
-                    return;
+                    Logger.Log("DuplicatedAddress", "address", peer.Address);
                 }
-                Logger.Log("DuplicatedAddress", "address", peer.Address);
             }
+
             _peersByAddress[peer.Address] = peer;
+
             // Exists same GUID?
-            if (_peersByGuid.ContainsKey(peer.ID))
+            if (_peersByGuid.TryGetValue(peer.ID, out oldPeer))
             {
-                Logger.Log("DuplicatedID", "guid", peer.ID);
+                if (!oldPeer.Equals(peer))
+                {
+                    Logger.Log("DuplicatedID", "guid", peer.ID);
+                }
             }
             _peersByGuid[peer.ID] = peer;
         }

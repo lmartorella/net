@@ -32,83 +32,6 @@ static void reset()
     cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
 }
 
-// Test all 4 banks, return the ADDR of the failing test
-// or -1 if no fails
-BYTE _sram_test(BYTE bs)
-{
-    char msg[16];
-	// To use a pseudo-random seq string that spans on all banks
-	// write first, read then
-	BYTE b, br;
-	UINT32 addr;
-        BYTE i1, i2, i3;
-
-        // Write all
-        _clr(0x40);
-        addr = 0x0;
-        b = bs;
-        for (i1 = 0; i1 < 2; i1++)
-        {
-            i2 = 0;
-            do
-            {
-                i3 = 0;
-                do
-                {
-                    b += 251; // largest prime < 256
-                    sram_write(&b, addr, 1);
-                    addr++;
-                    i3++;
-                } while (i3 != 0);
-                i2++;
-
-                if ((i2 % 0x20) == 0)
-                {
-                    cm1602_write('.');
-                }
-
-            } while (i2 != 0);
-        }
-
-        // READ all
-        _clr(0x40);
-        addr = 0x0;
-        b = bs;
-        for (i1 = 0; i1 < 2; i1++)
-        {
-            i2 = 0;
-            do
-            {
-                i3 = 0;
-                do
-                {
-                    b += 251; // largest prime < 256
-                    sram_read(&br, addr, 1);
-                    if (br != b)
-                    {
-                        sprintf(msg, "FAIL #%8lX", addr);
-                        _print(msg, 0x0);
-                        sprintf(msg, "EXP: %2X, RD: %2X", (int)b, (int)br);
-                        _print(msg, 0x40);
-                        return 0;
-                    }
-                    addr++;
-                    i3++;
-                } while (i3 != 0);
-                i2++;
-
-                if ((i2 % 0x20) == 0)
-                {
-                    cm1602_write('%');
-                }
-
-            } while (i2 != 0);
-        }
-
-    _print("PASS", 0x40);
-    return 1;
-}
-
 void main()
 {
     reset();
@@ -126,6 +49,5 @@ void main()
     sram_init();
 
     BYTE b = 0;
-    while (_sram_test(b++));
-    while (1) CLRWDT();
+    while (1) sram_test_gui(b++);
 }

@@ -20,6 +20,7 @@
       <itemPath>../hardware/spi.c</itemPath>
       <itemPath>../hardware/spiram.c</itemPath>
       <itemPath>../tests/ramMain.c</itemPath>
+      <itemPath>../appio.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -28,8 +29,7 @@
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
-    <Elem>../hardware</Elem>
-    <Elem>../tests</Elem>
+    <Elem>..</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
