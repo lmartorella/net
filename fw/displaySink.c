@@ -58,12 +58,16 @@ static void pollDisplaySink()
 		}
 		TCPGetArray(s_listenerSocket, (BYTE*)buffer, s);
 		buffer[s] = '\0';
-		TCPDiscard(s_listenerSocket);
 		// Write it
 		printlnUp(buffer);
+
                 // ACK
-                TCPPut(s_listenerSocket, 0);
-                TCPPut(s_listenerSocket, 0);
+                s = 0;
+                if (TCPPutArray(s_listenerSocket, &s, 2) != 2)
+                {
+                    fatal("DSP_SND");
+                }
                 TCPFlush(s_listenerSocket);
+		TCPDiscard(s_listenerSocket);
 	}
 }

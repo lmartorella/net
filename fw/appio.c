@@ -5,7 +5,7 @@
 
 // The pointer is pointing to ROM space, otherwise after the RESET
 // the volatile content can be lost.
-static persistent const char* s_lastErr;
+static persistent char s_lastErr[8];
 
 static void _clr(BYTE addr)
 {
@@ -47,12 +47,13 @@ void printlnUp(const char* str)
 
 void printch(char ch)
 {
-	cm1602_write(ch);
+    cm1602_write(ch);
 }
 
 void fatal(const char* str)
 {
-    s_lastErr = str;
+    strncpy(s_lastErr, str, sizeof(s_lastErr) - 1);
+    s_lastErr[sizeof(s_lastErr)] = 0;
     wait30ms();
     RESET();
 }

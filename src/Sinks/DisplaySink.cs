@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Net.Sockets;
 using System.Threading;
 using Lucky.Home.Core;
 using Lucky.Home.Core.Serialization;
+
+// ReSharper disable once UnusedMember.Global
 
 namespace Lucky.Home.Sinks
 {
@@ -43,13 +44,12 @@ namespace Lucky.Home.Sinks
                 {
                     Message msg = new Message { Text = DateTime.Now.ToString("HH:mm:ss") };
                     NetSerializer<Message>.Write(msg, connection.Writer);
-                    Thread.Sleep(500);
-                    //ErrorCode ack = (ErrorCode) connection.Reader.ReadUInt16();
-                    //if (ack != ErrorCode.Ok)
-                    //{
-                    //    Logger.Log("Bad response  at " + this + ": " + ack);
-                    //    return;
-                    //}
+                    ErrorCode ack = (ErrorCode)connection.Reader.ReadUInt16();
+                    if (ack != ErrorCode.Ok)
+                    {
+                        Logger.Log("Bad response  at " + this + ": " + ack);
+                        return;
+                    }
                 }
                 Schedule();
             }
