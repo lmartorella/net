@@ -43,12 +43,13 @@ namespace Lucky.Home.Sinks
                 {
                     Message msg = new Message { Text = DateTime.Now.ToString("HH:mm:ss") };
                     NetSerializer<Message>.Write(msg, connection.Writer);
-                    ErrorCode ack = (ErrorCode) connection.Reader.ReadUInt16();
-                    if (ack != ErrorCode.Ok)
-                    {
-                        Logger.Log("Bad response  at " + this + ": " + ack);
-                        return;
-                    }
+                    Thread.Sleep(500);
+                    //ErrorCode ack = (ErrorCode) connection.Reader.ReadUInt16();
+                    //if (ack != ErrorCode.Ok)
+                    //{
+                    //    Logger.Log("Bad response  at " + this + ": " + ack);
+                    //    return;
+                    //}
                 }
                 Schedule();
             }

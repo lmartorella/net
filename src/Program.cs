@@ -8,7 +8,7 @@ namespace Lucky.Home
     {
         static void Main()
         {
-            Manager.Register<HelloListener, IHelloListener>();
+            //Manager.Register<HelloListener, IHelloListener>();
             Manager.Register<Logger, ILogger>();
             Manager.Register<Server, IServer>();
             Manager.Register<SinkManager, SinkManager>();

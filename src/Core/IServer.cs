@@ -8,7 +8,7 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Get the public host address
         /// </summary>
-        IPAddress Address { get; }
+        IPAddress[] Addresses { get; }
 
         /// <summary>
         /// Get the public host service port (TCP)

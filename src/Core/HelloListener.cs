@@ -9,8 +9,9 @@ namespace Lucky.Home.Core
     /// <summary>
     /// HELLO UDP service, for discovering devices
     /// </summary>
-    class HelloListener : ServiceBase, IHelloListener, IDisposable
+    class HelloListener : IHelloListener, IDisposable
     {
+        private readonly IPAddress _address;
         private readonly UdpClient _client;
 
         /// <summary>
@@ -20,10 +21,13 @@ namespace Lucky.Home.Core
         private const int HomeProtocolPort = 17008;
 
         private readonly object _lock = new object();
-        
-        public HelloListener()
+        private Logger _logger;
+
+        public HelloListener(IPAddress address)
         {
-            _client = new UdpClient(HeloProtocolPort, AddressFamily.InterNetwork);
+            _address = address;
+            _logger = new Logger();
+            _client = new UdpClient(new IPEndPoint(address, HeloProtocolPort));
             _client.BeginReceive(OnReceiveData, null);
         }
 
@@ -39,12 +43,12 @@ namespace Lucky.Home.Core
                     bool validMsg = DecodeHelloMessage(reader, remoteEndPoint, out peerGuid);
                     if (validMsg)
                     {
-                        Logger.Log("PeerDiscovered", "ID", peerGuid);
+                        _logger.Log("PeerDiscovered", "ID", peerGuid);
                         if (PeerDiscovered != null)
                         {
                             PeerDiscovered(this, new PeerDiscoveredEventArgs(new Peer(peerGuid, remoteEndPoint.Address)));
                         }
-                        SendAck(remoteEndPoint.Address);
+                        SendAck(remoteEndPoint.Address, _address);
                     }
                 }
             }
@@ -84,7 +88,7 @@ namespace Lucky.Home.Core
         /// </summary>
         public event EventHandler<PeerDiscoveredEventArgs> PeerDiscovered;
 
-        private void SendAck(IPAddress address)
+        private void SendAck(IPAddress address, IPAddress hostAddress)
         {
             lock (_lock)
             {
@@ -93,7 +97,7 @@ namespace Lucky.Home.Core
                 // Forge a HERE packet
                 HeloAckMessage msg = new HeloAckMessage();
                 msg.Preamble = HeloAckMessage.PreambleValue;
-                msg.ServerAddress = server.Address;
+                msg.ServerAddress = hostAddress;
                 msg.ServerPort = server.Port;
 
                 // Send a HERE packet

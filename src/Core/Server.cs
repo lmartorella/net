@@ -14,34 +14,39 @@ namespace Lucky.Home.Core
         private readonly Dictionary<IPAddress, Peer> _peersByAddress = new Dictionary<IPAddress, Peer>();
 
         private const ushort DefaultPort = 17008;
-        private readonly TcpListener _serviceListener;
+        private readonly TcpListener[] _serviceListeners;
 
         public Server()
         {
             // Find the public IP
-            Address = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
-            if (Address == null)
+            Addresses = Dns.GetHostAddresses(Dns.GetHostName()).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip)).ToArray();
+            if (!Addresses.Any())
             {
-                throw new InvalidOperationException("Cannot find a public IP address of the host");
+                throw new InvalidOperationException("Cannot find a valid public IP address of the host");
             }
             Port = DefaultPort;
 
-            _serviceListener = TryCreateListener();
-            _serviceListener.Start();
+            _serviceListeners = Addresses.Select(address =>
+            {
+                TcpListener listener = TryCreateListener(address);
+                listener.Start();
+                AsyncCallback handler = null;
+                handler = ar =>
+                {
+                    var tcpClient = listener.EndAcceptTcpClient(ar);
+                    HandleServiceSocketAccepted(tcpClient);
+                    listener.BeginAcceptTcpClient(handler, null);
+                };
+                listener.BeginAcceptTcpClient(handler, null);
+                
+                // Start HELLO listener
+                var helloListener = new HelloListener(address);
+                helloListener.PeerDiscovered += (o, e) => HandleNewPeer(e.Peer);
 
-            AsyncCallback handler = null;
-            handler = ar =>
-                    {
-                        var tcpClient = _serviceListener.EndAcceptTcpClient(ar);
-                        HandleServiceSocketAccepted(tcpClient);
-                        _serviceListener.BeginAcceptTcpClient(handler, null);
-                    };
-            _serviceListener.BeginAcceptTcpClient(handler, null);
-            Logger.Log("Opened Server", "host", Address, "Port", Port);
+                return listener;
+            }).ToArray();
 
-            // Start HELLO listener
-            var listener = Manager.GetService<IHelloListener>();
-            listener.PeerDiscovered += (o, e) => HandleNewPeer(e.Peer);
+            Logger.Log("Opened Server", "hosts", string.Join(";", Addresses.Select(a => a.ToString())), "Port", Port);
         }
 
         private void HandleNewPeer(Peer peer)
@@ -70,17 +75,17 @@ namespace Lucky.Home.Core
             _peersByGuid[peer.ID] = peer;
         }
 
-        private TcpListener TryCreateListener()
+        private TcpListener TryCreateListener(IPAddress address)
         {
             do
             {
                 try
                 {
-                    return new TcpListener(Address, Port);
+                    return new TcpListener(address, Port);
                 }
                 catch (SocketException)
                 {
-                    Logger.Log("TCPPortBusy", "port", Port, "trying", Port + 1);
+                    Logger.Log("TCPPortBusy", "port", address + ":" + Port, "trying", Port + 1);
                     Port++;
                 }
             } while (true);
@@ -88,7 +93,10 @@ namespace Lucky.Home.Core
 
         public void Dispose()
         {
-            _serviceListener.Stop();
+            foreach (var serviceListener in _serviceListeners)
+            {
+                serviceListener.Stop();
+            }
         }
 
         #region IServer interface implementation 
@@ -96,7 +104,7 @@ namespace Lucky.Home.Core
         /// <summary>
         /// Get the public host address
         /// </summary>
-        public IPAddress Address { get; private set; }
+        public IPAddress[] Addresses { get; private set; }
 
         /// <summary>
         /// Get the public host service port (TCP)
