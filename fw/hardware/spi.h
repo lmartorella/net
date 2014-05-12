@@ -36,7 +36,9 @@ enum SPI_INIT
 
 // Init SPI as master
 void spi_init(enum SPI_INIT value);
-// Send/read MSB
+// Send/read a byte MSB
 BYTE spi_shift(BYTE data);
+// Send/read a word MSB
+UINT16 spi_shift16(UINT16 data);
 
 #endif

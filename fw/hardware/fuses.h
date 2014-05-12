@@ -41,10 +41,10 @@
 #define VS1011_TRISBITS TRISBbits
 #define VS1011_RESET 	RB4
 #define VS1011_DREQ  	RB5
-#define VS1011_SDATA 	RB2
-#define VS1011_DCLK  	RB3
-#define VS1011_BSYNC 	RB0
-#define VS1011_CS	 	RB1
+#define VS1011_GPIO3 	RB2
+#define VS1011_GPIO2  	RB3
+#define VS1011_XDCS 	RB0
+#define VS1011_XCS	RB1
 
 
 // ******* 

@@ -119,8 +119,8 @@ void main()
     // Enable SPI
     // from 23k256 datasheet and figure 20.3 of PIC datasheet
     // CKP = 0, CKE = 1
-    // Output: data sampled at clock falling.
-    // Input: data sampled at clock falling, at the end of the cycle.
+    // Output: data changed at clock falling.
+    // Input: data sampled at clock rising.
     spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
     sram_init();

@@ -90,8 +90,7 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 	raddr = (UINT16)address;
         enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
-	spi_shift(raddr >> 8);
-	spi_shift((BYTE)raddr);
+	spi_shift16(raddr);
 	do 
 	{
 		// Write 1 byte
@@ -117,8 +116,7 @@ void sram_read(BYTE* dest, UINT32 address, UINT16 count)
 	raddr = (UINT16)address;
         enableBank(address >> 15);
 	spi_shift(MSG_READ);
-	spi_shift(raddr >> 8);
-	spi_shift((BYTE)raddr);
+	spi_shift16(raddr);
 	do 
 	{
 		// Read 1 byte

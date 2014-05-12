@@ -41,7 +41,7 @@ void spi_init(enum SPI_INIT value)
 	SSP1STAT = value;		// only get 7-6 bits, other are not writable
 }
 
-// Send/read MSB
+// Send/read a byte MSB
 BYTE spi_shift(BYTE data)
 {
 	// now write data to send
@@ -51,3 +51,10 @@ BYTE spi_shift(BYTE data)
 	return SSP1BUF;
 }
 
+// Send/read a word MSB
+UINT16 spi_shift16(UINT16 data)
+{
+    BYTE bm = spi_shift(data >> 8);
+    BYTE bl = spi_shift((BYTE)data);
+    return (bm << 8) + bl;
+}

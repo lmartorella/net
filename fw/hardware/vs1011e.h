@@ -3,6 +3,7 @@
 
 #include "fuses.h"
 
+// Init hardware ports
 void vs1011_init(void);
 
 #endif

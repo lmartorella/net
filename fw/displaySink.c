@@ -63,7 +63,7 @@ static void pollDisplaySink()
 
                 // ACK
                 s = 0;
-                if (TCPPutArray(s_listenerSocket, &s, 2) != 2)
+                if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
                 {
                     fatal("DSP_SND");
                 }
