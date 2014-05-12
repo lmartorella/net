@@ -121,7 +121,7 @@ void main()
     // CKP = 0, CKE = 1
     // Output: data changed at clock falling.
     // Input: data sampled at clock rising.
-    spi_init(SPI_SMP_MIDDLE | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
+    spi_init(SPI_SMP_END | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
     sram_init();
     vs1011_init();

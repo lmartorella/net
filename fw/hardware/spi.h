@@ -40,5 +40,7 @@ void spi_init(enum SPI_INIT value);
 BYTE spi_shift(BYTE data);
 // Send/read a word MSB
 UINT16 spi_shift16(UINT16 data);
+// Send an array and ignore in data
+void spi_shift_array(const BYTE* buffer, BYTE size);
 
 #endif

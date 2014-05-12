@@ -45,6 +45,8 @@
 #define VS1011_GPIO2  	RB3
 #define VS1011_XDCS 	RB0
 #define VS1011_XCS	RB1
+#define VS1011_XTALI    25000           // in mhz
+#define VS1011_CLK_DOUBLING    0
 
 
 // ******* 

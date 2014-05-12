@@ -58,3 +58,12 @@ UINT16 spi_shift16(UINT16 data)
     BYTE bl = spi_shift((BYTE)data);
     return (bm << 8) + bl;
 }
+
+// Send an array and ignore in data
+void spi_shift_array(const BYTE* buffer, BYTE size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        spi_shift(*(buffer++));
+    }
+}
