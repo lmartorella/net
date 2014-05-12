@@ -9,6 +9,8 @@
 
 void main()
 {
+    char buf[16];
+    
     cm1602_reset();
     cm1602_clear();
     cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
@@ -41,12 +43,23 @@ void main()
             break;
         case VS1011_MODEL_HWFAIL:
             println("HW FAIL");
+            SLEEP();
             break;
         default:
-            println("UNKNOWN");
+            sprintf(buf, "UNKNOWN: %d", model);
+            println(buf);
+            SLEEP();
             break;
     }
-    //println("OK");
 
-    SLEEP();
+    vs1011_sineTest(1500);
+
+loop:
+    for (int f = 0; f < 20; f++)
+    {
+        vs1011_volume(f + 10, 30 - f);
+        wait30ms();
+        wait30ms();
+    }
+    goto loop;
 }

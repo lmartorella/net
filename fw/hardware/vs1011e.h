@@ -15,6 +15,11 @@ typedef enum
 
 // Init hardware ports and chip
 // Returns the VS1011 MODEL
-VS1011_MODEL vs1011_init(void);
+VS1011_MODEL vs1011_init();
+
+// Start sine test using 48000kHz out (MAX), freq should be multiple 375 to be exact
+void vs1011_sineTest(UINT16 freq);
+// Volume attenuation in db, 0-99
+void vs1011_volume(BYTE leftAtt, BYTE rightAtt);
 
 #endif

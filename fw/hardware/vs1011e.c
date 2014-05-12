@@ -45,6 +45,10 @@ typedef enum
     SCI_WRITE = 0x2
 } SPI_COMMAND;
 
+static const BYTE TEST_MEM[] = { 0x4d, 0xea, 0x6d, 0x54 };
+static const BYTE TEST_SINE[] = { 0x53, 0xef, 0x6e };
+static const BYTE TEST_QUEUE[] = { 0, 0, 0, 0 };
+
 static void _writeCommand(SCI_COMMAND addr, UINT16 command)
 {
     VS1011_PORTBITS.VS1011_XCS = 0;
@@ -72,28 +76,6 @@ static UINT16 _readCommand(SCI_COMMAND addr)
     return ret;
 }
 
-static const BYTE TEST_MEM[] = { 0x4d, 0xea, 0x6d, 0x54, 0, 0, 0, 0 };
-
-static BOOL _memoryTest()
-{
-    CLRWDT();
-
-    VS1011_PORTBITS.VS1011_XDCS = 0;
-    spi_shift_array(TEST_MEM, sizeof(TEST_MEM));
-    VS1011_PORTBITS.VS1011_XDCS = 1;
-
-    // The test take 200.000 CLKI = ~8ms
-
-    UINT16 hwRes;
-    do
-    {
-        hwRes = _readCommand(SCI_HDAT0);
-    } while (!(hwRes & 0x8000));
-
-    CLRWDT();
-    return (hwRes & 0x7f) == 0x7f;
-}
-
 static void _reset()
 {
     VS1011_PORTBITS.VS1011_RESET = 0;
@@ -105,6 +87,54 @@ static void _reset()
 
     // Now wait for 50000 XTALI = ~2000us < WDT
     while (!VS1011_PORTBITS.VS1011_DREQ);
+}
+
+static void _enterTestMode()
+{
+    CLRWDT();
+    _reset();
+    UINT16 mode = SM_TEST_ENABLE | SM_SDINEW_ENABLE | SM_DACT_RISING | SM_SDIORD_MSBFIRST;
+    _writeCommand(SCI_MODE, mode);
+}
+
+static BOOL _memoryTest()
+{
+    _enterTestMode();
+
+    VS1011_PORTBITS.VS1011_XDCS = 0;
+    spi_shift_array(TEST_MEM, sizeof(TEST_MEM));
+    spi_shift_array(TEST_QUEUE, sizeof(TEST_QUEUE));
+    VS1011_PORTBITS.VS1011_XDCS = 1;
+
+    // The test take 200.000 CLKI = ~8ms
+    UINT16 hwRes;
+    do
+    {
+        hwRes = _readCommand(SCI_HDAT0);
+    } while (!(hwRes & 0x8000));
+
+    CLRWDT();
+    return (hwRes & 0x7f) == 0x7f;
+}
+
+void vs1011_sineTest(UINT16 freq)
+{
+    UINT32 fk = freq * 128ul / 48000ul;
+    BYTE cmd = (1 << 5) | (((BYTE)fk) & 0x1f);
+    _enterTestMode();
+
+    VS1011_PORTBITS.VS1011_XDCS = 0;
+    spi_shift_array(TEST_SINE, sizeof(TEST_SINE));
+    spi_shift(cmd);
+    spi_shift_array(TEST_QUEUE, sizeof(TEST_QUEUE));
+    VS1011_PORTBITS.VS1011_XDCS = 1;
+}
+
+void vs1011_volume(BYTE left, BYTE right)
+{
+    if (left == 0xff) left = 0xfe;
+    if (right == 0xff) right = 0xfe;
+    _writeCommand(SCI_VOL, (left << 8) + right);
 }
 
 VS1011_MODEL vs1011_init(void)
@@ -120,10 +150,6 @@ VS1011_MODEL vs1011_init(void)
     VS1011_TRISBITS.VS1011_XDCS = 0;
 
     // Start SDI tests
-    _reset();
-    UINT16 mode = SM_TEST_ENABLE | SM_SDINEW_ENABLE | SM_DACT_RISING | SM_SDIORD_MSBFIRST;
-    _writeCommand(SCI_MODE, mode);
-
     if (!_memoryTest())
     {
         return VS1011_MODEL_HWFAIL;
