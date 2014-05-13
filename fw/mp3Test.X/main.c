@@ -10,6 +10,7 @@
 void main()
 {
     char buf[16];
+    char i;
     
     cm1602_reset();
     cm1602_clear();
@@ -55,11 +56,17 @@ void main()
     vs1011_sineTest(1500);
 
 loop:
-    for (int f = 0; f < 20; f++)
+    for (i = 0; i < 20; i++)
     {
-        vs1011_volume(f + 10, 30 - f);
+        vs1011_volume(i + 10, 30 - i);
         wait30ms();
+        CLRWDT();
+    }
+    for (i = 20; i > 0; i--)
+    {
+        vs1011_volume(i + 10, 30 - i);
         wait30ms();
+        CLRWDT();
     }
     goto loop;
 }

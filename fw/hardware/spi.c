@@ -67,3 +67,12 @@ void spi_shift_array(const BYTE* buffer, BYTE size)
         spi_shift(*(buffer++));
     }
 }
+
+// Send a repeated byte
+void spi_shift_repeat(BYTE data, BYTE size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        spi_shift(data);
+    }
+}

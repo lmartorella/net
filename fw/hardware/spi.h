@@ -42,5 +42,7 @@ BYTE spi_shift(BYTE data);
 UINT16 spi_shift16(UINT16 data);
 // Send an array and ignore in data
 void spi_shift_array(const BYTE* buffer, BYTE size);
+// Send a repeated byte
+void spi_shift_repeat(BYTE data, BYTE size);
 
 #endif

@@ -47,7 +47,6 @@ typedef enum
 
 static const BYTE TEST_MEM[] = { 0x4d, 0xea, 0x6d, 0x54 };
 static const BYTE TEST_SINE[] = { 0x53, 0xef, 0x6e };
-static const BYTE TEST_QUEUE[] = { 0, 0, 0, 0 };
 
 static void _writeCommand(SCI_COMMAND addr, UINT16 command)
 {
@@ -103,7 +102,7 @@ static BOOL _memoryTest()
 
     VS1011_PORTBITS.VS1011_XDCS = 0;
     spi_shift_array(TEST_MEM, sizeof(TEST_MEM));
-    spi_shift_array(TEST_QUEUE, sizeof(TEST_QUEUE));
+    spi_shift_repeat(0, 4);
     VS1011_PORTBITS.VS1011_XDCS = 1;
 
     // The test take 200.000 CLKI = ~8ms
@@ -114,7 +113,7 @@ static BOOL _memoryTest()
     } while (!(hwRes & 0x8000));
 
     CLRWDT();
-    return (hwRes & 0x7f) == 0x7f;
+    return hwRes == 0x807f;
 }
 
 void vs1011_sineTest(UINT16 freq)
@@ -126,7 +125,7 @@ void vs1011_sineTest(UINT16 freq)
     VS1011_PORTBITS.VS1011_XDCS = 0;
     spi_shift_array(TEST_SINE, sizeof(TEST_SINE));
     spi_shift(cmd);
-    spi_shift_array(TEST_QUEUE, sizeof(TEST_QUEUE));
+    spi_shift_repeat(0, 4);
     VS1011_PORTBITS.VS1011_XDCS = 1;
 }
 
