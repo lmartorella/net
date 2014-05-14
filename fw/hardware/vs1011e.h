@@ -13,11 +13,13 @@ typedef enum
     VS1011_MODEL_HWFAIL = 0xff
 } VS1011_MODEL;
 
-// Init hardware ports and chip
-// Returns the VS1011 MODEL
-VS1011_MODEL vs1011_init();
+// Setup hardware pins
+void vs1011_setup();
 
-// Start sine test using 48000kHz out (MAX), freq should be multiple 375 to be exact
+// Init/reset chip and returns the VS1011 MODEL
+VS1011_MODEL vs1011_reset(BOOL enableStream);
+
+// Reset the device and start sine test using 48000kHz out (MAX), freq should be multiple 375 to be exact
 void vs1011_sineTest(UINT16 freq);
 // Volume attenuation in db, 0-99
 void vs1011_volume(BYTE leftAtt, BYTE rightAtt);

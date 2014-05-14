@@ -1,4 +1,3 @@
-
 #include "hardware/fuses.h"
 #include "displaySink.h"
 #include "appio.h"

@@ -9,11 +9,19 @@ void prot_slowTimer(void);
 
 typedef void (*Action)(void);
 
+// Sink for flash ROM (flasher sink type)
+typedef enum
+{
+    SINK_DISPLAY_TYPE = 1,
+    SINK_FLASHER_TYPE = 2,
+    SINK_AUDIO_TYPE = 3
+} SINK_TYPES;
+
 // Class virtual pointers
 typedef struct SinkStruct
 {	
 	// Device ID
-	unsigned int deviceId; 
+	SINK_TYPES deviceId;
 	// Device caps
 	unsigned int caps; 
 	// Port
@@ -26,10 +34,6 @@ typedef struct SinkStruct
 	Action pollHandler;
 } Sink;
 
-
-// Sink for flash ROM (flasher sink type)
-#define SINK_DISPLAY_TYPE 1
-#define SINK_FLASHER_TYPE 2
 #define BASE_SINK_PORT 20000
 
 #endif

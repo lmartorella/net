@@ -27,7 +27,8 @@ void main()
     spi_init(SPI_SMP_END | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
     // Init chip
-    VS1011_MODEL model = vs1011_init();
+    vs1011_setup();
+    VS1011_MODEL model = vs1011_reset(FALSE);
     switch (model)
     {
         case VS1011_MODEL_VS1001:

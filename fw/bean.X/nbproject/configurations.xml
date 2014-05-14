@@ -12,6 +12,7 @@
         <itemPath>../hardware/spiram.h</itemPath>
         <itemPath>../hardware/utilities.h</itemPath>
         <itemPath>../hardware/vs1011e.h</itemPath>
+        <itemPath>../audioSink.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -153,6 +154,7 @@
       <itemPath>../timers.c</itemPath>
       <itemPath>../persistence2.c</itemPath>
       <itemPath>../displaySink.c</itemPath>
+      <itemPath>../audioSink.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

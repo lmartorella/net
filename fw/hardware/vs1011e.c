@@ -136,18 +136,20 @@ void vs1011_volume(BYTE left, BYTE right)
     _writeCommand(SCI_VOL, (left << 8) + right);
 }
 
-VS1011_MODEL vs1011_init(void)
+void vs1011_setup()
 {
-    // Reset the device
+    // Don't reset the device
     VS1011_PORTBITS.VS1011_RESET = 1;
     VS1011_TRISBITS.VS1011_RESET = 0;
-
     // enable cs out and deassert
     VS1011_PORTBITS.VS1011_XCS = 1;
     VS1011_PORTBITS.VS1011_XDCS = 1;
     VS1011_TRISBITS.VS1011_XCS = 0;
     VS1011_TRISBITS.VS1011_XDCS = 0;
+}
 
+VS1011_MODEL vs1011_reset(BOOL enableStream)
+{
     // Start SDI tests
     if (!_memoryTest())
     {
@@ -156,8 +158,11 @@ VS1011_MODEL vs1011_init(void)
 
     // Now set native mode
     _reset();
-    UINT16 mode = SM_DIFF_NORMAL | SM_LAYER12_ALLOW | SM_STREAM_ENABLE | SM_SDINEW_ENABLE
-            | SM_DACT_RISING | SM_SDIORD_MSBFIRST;
+    UINT16 mode = SM_DIFF_NORMAL | SM_LAYER12_ALLOW | SM_SDINEW_ENABLE | SM_DACT_RISING | SM_SDIORD_MSBFIRST;
+    if (enableStream)
+    {
+        mode |= SM_STREAM_ENABLE;
+    }
     _writeCommand(SCI_MODE, mode);
 
     // Now change the XTALI frequency to the one set in fuses

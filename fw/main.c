@@ -124,7 +124,7 @@ void main()
     spi_init(SPI_SMP_END | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
     sram_init();
-    vs1011_init();
+    vs1011_setup();
 
     wait1s();
     println("ChkRam");

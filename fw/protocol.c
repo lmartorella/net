@@ -1,6 +1,7 @@
 #include "protocol.h"
 #include "appio.h"
 #include "displaySink.h"
+#include "audioSink.h"
 #include "persistence.h"
 #include "hardware/cm1602.h"
 #include "hardware/fuses.h"
@@ -43,7 +44,7 @@ static WORD s_homePort;
 static TCP_SOCKET s_serverSocket;
 
 // Array of all sinks
-static const Sink* AllSinks[] = { &g_displaySink }; 
+static const Sink* AllSinks[] = { &g_displaySink, &g_audioSink };
 static const unsigned int AllSinksCount = 1; 
 
 
