@@ -63,9 +63,9 @@
     <Compile Include="Core\SinkManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sinks\DeviceIds.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Core\Serialization\FlashAckResponse.cs" />
+    <Compile Include="Sinks\AudioPlayerSink.cs" />
     <Compile Include="Sinks\RomFlasherSink.cs" />
   </ItemGroup>
   <ItemGroup />

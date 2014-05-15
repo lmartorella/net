@@ -45,7 +45,8 @@ static TCP_SOCKET s_serverSocket;
 
 // Array of all sinks
 static const Sink* AllSinks[] = { &g_displaySink, &g_audioSink };
-static const unsigned int AllSinksCount = 1; 
+//#define AllSinksCount (sizeof(AllSinks) / sizeof(Sink*))
+#define AllSinksCount 2
 
 
 /*
@@ -248,7 +249,8 @@ static void waitForRegisterConnection()
 		TCPPutArray(s_serverSocket, (BYTE*)"RGST", 4);
 
 		// Put device count (2, DISPLAY and FLASHER)
-		TCPPutArray(s_serverSocket, (BYTE*)&AllSinksCount, sizeof(unsigned int));
+                i = AllSinksCount;
+		TCPPutArray(s_serverSocket, (BYTE*)&i, sizeof(unsigned int));
 
 		for (i = 0; i < AllSinksCount; i++)
 		{

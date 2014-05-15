@@ -15,10 +15,11 @@ namespace Lucky.Home.Sinks
     ///          -> [word:lenght] + ASCII
     ///           TCP_CLOSE
     /// </remarks>
-    [DeviceId(DeviceIds.Display)]
+    [DeviceId(DisplaySinkid)]
     class DisplaySink : Sink
     {
         private Timer _timer;
+        private const int DisplaySinkid = 1;
 
         public DisplaySink()
         {
@@ -43,8 +44,8 @@ namespace Lucky.Home.Sinks
                 using (var connection = Open())
                 {
                     Message msg = new Message { Text = DateTime.Now.ToString("HH:mm:ss") };
-                    NetSerializer<Message>.Write(msg, connection.Writer);
-                    ErrorCode ack = (ErrorCode)connection.Reader.ReadUInt16();
+                    connection.Write(msg);
+                    ErrorCode ack = connection.Read<ErrorCode>();
                     if (ack != ErrorCode.Ok)
                     {
                         Logger.Log("Bad response  at " + this + ": " + ack);

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Core
 {
@@ -47,12 +47,29 @@ namespace Lucky.Home.Core
             {
                 _tcpClient = new TcpClient();
                 _tcpClient.Connect(endPoint);
-                //_tcpClient.Client.NoDelay = true;
-                //_tcpClient.Client.ReceiveTimeout = (int)TimeSpan.FromSeconds(5).TotalMilliseconds;
-                //_tcpClient.Client.LingerState = new LingerOption(true, 1);
                 _clientStream = _tcpClient.GetStream();
                 Reader = new BinaryReader(_clientStream);
                 Writer = new BinaryWriter(_clientStream);
+            }
+
+            public void Write<T>(T data)
+            {
+                NetSerializer<T>.Write(data, Writer);
+            }
+
+            public void Write(byte[] data)
+            {
+                Writer.Write(data);
+            }
+
+            public T Read<T>()
+            {
+                return NetSerializer<T>.Read(Reader);
+            }
+
+            public void Flush()
+            {
+                Writer.Flush();
             }
 
             /// <summary>

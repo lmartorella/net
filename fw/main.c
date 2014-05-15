@@ -110,6 +110,7 @@ void main()
     cm1602_writeStr(g_reasonMsgs[_reason]);
     if (_reason == RESET_EXC)
     {
+        cm1602_setDdramAddr(0x40);
         cm1602_writeStr(getLastFatal());
     }
 
