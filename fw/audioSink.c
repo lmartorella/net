@@ -2,12 +2,17 @@
 #include "audioSink.h"
 #include "appio.h"
 #include "hardware/vs1011e.h"
+#include "hardware/spiram.h"
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
 
 static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
+static BOOL _isWaitingForCommand;
+static BYTE TEMP_BUFFER[256];
+static UINT32 _ringStart, _ringEnd;
+#define RING_SIZE 0x20000       // All 128Kb!
 
 #define AUDIO_SINK_PORT (SINK_AUDIO_TYPE + BASE_SINK_PORT)
 const rom Sink g_audioSink = { SINK_AUDIO_TYPE,
@@ -28,6 +33,8 @@ static void createAudioSink()
 	{
 		fatal("MP3_SRV");
 	}
+        _isWaitingForCommand = TRUE;
+        _ringStart = _ringEnd = 0;
 }
 
 static void destroyAudioSink()
@@ -42,7 +49,8 @@ typedef enum
 {
     AUDIO_INIT = 0,         // Reset the Audio HW
     AUDIO_SET_VOLUME = 1,   // Change volume
-    AUDIO_TEST_SINE = 2     // Start a sine test (reset to quit)
+    AUDIO_TEST_SINE = 2,    // Start a sine test (reset to quit)
+    AUDIO_STREAM = 3,       // Send data packet to SDI channel
 } AUDIO_COMMAND;  // 8-bit integer
 
 typedef enum
@@ -62,6 +70,11 @@ typedef struct
 {
     UINT frequency;         // in Hz, using 48Khz sampling rate, will be rounded to next 375Hz step
 } AUDIO_SINETEST_DATA;
+
+typedef struct
+{
+    WORD packetSize;
+} AUDIO_STREAM_DATA;
 
 static AUDIO_RESPONSE _initAudio()
 {
@@ -93,39 +106,110 @@ static AUDIO_RESPONSE _sineTest()
     return AUDIO_RES_OK;
 }
 
+static WORD _streamSize;
+static void _processData();
+
+static AUDIO_RESPONSE _startStream()
+{
+    // Read packet size
+    AUDIO_STREAM_DATA msg;
+    if (TCPGetArray(s_listenerSocket, (BYTE*)&msg, sizeof(AUDIO_STREAM_DATA)) != sizeof(AUDIO_STREAM_DATA))
+    {
+        return AUDIO_RES_SOCKET_ERR;
+    }
+    _streamSize = msg.packetSize;
+
+    // Now read _streamSize BYTES to RAM
+    _processData();
+    return AUDIO_RES_OK;
+}
+
+static void _processData()
+{
+    WORD len = TCPIsGetReady(s_listenerSocket);
+    while (len > 0 && _streamSize > 0)
+    {
+        // Allocate bytes and transfer it to the external RAM ring buffer
+        WORD l = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
+        if ((_ringEnd + l) > RING_SIZE)
+        {
+            l = RING_SIZE - _ringEnd;
+        }
+
+        TCPGetArray(s_listenerSocket, TEMP_BUFFER, l);
+        // Copy data to Ext RAM
+        di();
+        sram_write(TEMP_BUFFER, _ringEnd, l);
+        _ringEnd = (_ringEnd + l) % RING_SIZE;
+        ei();
+        len -= l;
+        _streamSize -= l;
+    }
+
+    if (_streamSize == 0)
+    {
+        _isWaitingForCommand = TRUE;
+        // ACK
+        AUDIO_RESPONSE response = AUDIO_RES_OK;
+        if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_RESPONSE)) != sizeof(AUDIO_RESPONSE))
+        {
+            fatal("MP3_ACK");
+        }
+        TCPFlush(s_listenerSocket);
+        TCPDiscard(s_listenerSocket);
+    }
+}
+
 static void pollAudioSink()
 {
 	unsigned short s;
 	if (!TCPIsConnected(s_listenerSocket))
 	{
-		return;
+            return;
 	}
 
 	s = TCPIsGetReady(s_listenerSocket);
-	if (s >= sizeof(AUDIO_COMMAND))
-	{
-		AUDIO_COMMAND cmd;
-		TCPGetArray(s_listenerSocket, (BYTE*)&cmd, sizeof(AUDIO_COMMAND));
-                AUDIO_RESPONSE response;
-                switch (cmd)
-                {
-                    case AUDIO_INIT:
-                        response = _initAudio();
-                        break;
-                    case AUDIO_SET_VOLUME:
-                        response = _setVolume();
-                        break;
-                    case AUDIO_TEST_SINE:
-                        response = _sineTest();
-                        break;
-                }
+        if (_isWaitingForCommand)
+        {
+            if (s >= sizeof(AUDIO_COMMAND))
+            {
+                    AUDIO_COMMAND cmd;
+                    TCPGetArray(s_listenerSocket, (BYTE*)&cmd, sizeof(AUDIO_COMMAND));
+                    AUDIO_RESPONSE response;
+                    switch (cmd)
+                    {
+                        case AUDIO_INIT:
+                            response = _initAudio();
+                            break;
+                        case AUDIO_SET_VOLUME:
+                            response = _setVolume();
+                            break;
+                        case AUDIO_TEST_SINE:
+                            response = _sineTest();
+                            break;
+                        case AUDIO_STREAM:
+                            response = _startStream();
+                            if (response == AUDIO_RES_OK)
+                            {
+                                _isWaitingForCommand = FALSE;
+                            }
+                            break;
+                    }
 
-                // ACK
-                if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_RESPONSE)) != sizeof(AUDIO_RESPONSE))
-                {
-                    fatal("MP3_SND");
-                }
-                TCPFlush(s_listenerSocket);
-		TCPDiscard(s_listenerSocket);
-	}
+                    if (_isWaitingForCommand)
+                    {
+                        // ACK
+                        if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_RESPONSE)) != sizeof(AUDIO_RESPONSE))
+                        {
+                            fatal("MP3_SND");
+                        }
+                        TCPFlush(s_listenerSocket);
+                        TCPDiscard(s_listenerSocket);
+                    }
+            }
+        }
+        else
+        {
+            _processData();
+        }
 }
