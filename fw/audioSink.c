@@ -51,6 +51,10 @@ typedef enum
     AUDIO_SET_VOLUME = 1,   // Change volume
     AUDIO_TEST_SINE = 2,    // Start a sine test (reset to quit)
     AUDIO_STREAM = 3,       // Send data packet to SDI channel
+
+    AUDIO_TEST_1 = 100,      // Test, don't copy data in mem but get it from TCP
+    AUDIO_TEST_2 = 101,      // Test, don't fetch data from TCP but flush it. Simulate a ram copy
+    AUDIO_TEST_3 = 102      // TEST_1 + TEST_2
 } AUDIO_COMMAND;  // 8-bit integer
 
 typedef enum
@@ -124,6 +128,9 @@ static AUDIO_RESPONSE _startStream()
     return AUDIO_RES_OK;
 }
 
+static BOOL _disableTcpGet;
+static BOOL _disableRamWrite;
+
 static void _processData()
 {
     WORD len = TCPIsGetReady(s_listenerSocket);
@@ -136,12 +143,28 @@ static void _processData()
             l = RING_SIZE - _ringEnd;
         }
 
-        TCPGetArray(s_listenerSocket, TEMP_BUFFER, l);
-        // Copy data to Ext RAM
-        di();
-        sram_write(TEMP_BUFFER, _ringEnd, l);
-        _ringEnd = (_ringEnd + l) % RING_SIZE;
-        ei();
+        if (_disableTcpGet)
+        {
+            TCPDiscard(s_listenerSocket);
+            l = len;
+        }
+        else
+        {
+            TCPGetArray(s_listenerSocket, TEMP_BUFFER, l);
+        }
+
+        if (_disableRamWrite)
+        {
+        }
+        else
+        {
+            // Copy data to Ext RAM
+            di();
+            sram_write(TEMP_BUFFER, _ringEnd, l);
+            _ringEnd = (_ringEnd + l) % RING_SIZE;
+            ei();
+        }
+        
         len -= l;
         _streamSize -= l;
     }
@@ -157,6 +180,7 @@ static void _processData()
         }
         TCPFlush(s_listenerSocket);
         TCPDiscard(s_listenerSocket);
+        _disableTcpGet = _disableRamWrite = FALSE;
     }
 }
 
@@ -187,6 +211,12 @@ static void pollAudioSink()
                         case AUDIO_TEST_SINE:
                             response = _sineTest();
                             break;
+                        case AUDIO_TEST_1:
+                        case AUDIO_TEST_2:
+                        case AUDIO_TEST_3:
+                            _disableTcpGet = (cmd == AUDIO_TEST_2 || cmd == AUDIO_TEST_3);
+                            _disableRamWrite = (cmd == AUDIO_TEST_1 || cmd == AUDIO_TEST_3);
+                            // nobreak;
                         case AUDIO_STREAM:
                             response = _startStream();
                             if (response == AUDIO_RES_OK)

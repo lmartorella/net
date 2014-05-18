@@ -19,7 +19,7 @@ namespace Lucky.Home.Sinks
             Init = 0,
             SetVolume = 1,
             TestSine = 2,
-            StreamData = 3
+            StreamData = 102
         }
 
         private enum ErrorCode : byte
@@ -97,6 +97,7 @@ namespace Lucky.Home.Sinks
                 byte[] data = ExampleData.PortalEndingTheme_mp3;
                 int i = 0;
                 DateTime ts = DateTime.Now;
+                int tdelta = 0;
 
                 while (i < data.Length)
                 {
@@ -114,12 +115,14 @@ namespace Lucky.Home.Sinks
                     }
 
                     i += l;
+                    tdelta += l;
 
                     DateTime t = DateTime.Now;
                     if (t - ts > TimeSpan.FromSeconds(1))
                     {
-                        Console.WriteLine("{0}Kb\r", i / 1024);
+                        Console.WriteLine("{0}KB, avg: {1}KB/s\n", i / 1024, tdelta);
                         ts = t;
+                        tdelta = 0;
                     }
                 }
             }
