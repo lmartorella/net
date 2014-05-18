@@ -8,7 +8,7 @@
 #define STACK_USE_ICMP_CLIENT			// Ping transmission capability
 //#define STACK_USE_AUTO_IP               // Dynamic link-layer IP address automatic configuration protocol
 #define STACK_USE_DHCP_CLIENT			// Dynamic Host Configuration Protocol client for obtaining IP address and other parameters
-#define STACK_USE_TFTP_CLIENT			// Trivial File Transfer Protocol client
+//#define STACK_USE_TFTP_CLIENT			// Trivial File Transfer Protocol client
 //#define STACK_USE_BERKELEY_API			// Berekely Sockets APIs are available
 
 // =======================================================================

@@ -315,11 +315,11 @@
 #if defined(STACK_USE_MD5) || defined(STACK_USE_SHA1)
 	#include "TCPIPStack/Hashes.h"
 #endif
-
+/*
 	#include "TCPIPStack/XEEPROM.h"
 	#include "TCPIPStack/SPIFlash.h"
 	#include "TCPIPStack/SPIRAM.h"
-
+*/
 #if defined(STACK_USE_UDP)
 	#include "TCPIPStack/UDP.h"
 #endif

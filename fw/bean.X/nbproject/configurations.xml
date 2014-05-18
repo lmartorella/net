@@ -19,23 +19,11 @@
         <itemPath>../tcpipstack/TCPIPConfig.h</itemPath>
         <itemPath>../tcpipstack/Include/Compiler.h</itemPath>
         <itemPath>../tcpipstack/Include/GenericTypeDefs.h</itemPath>
-        <itemPath>../tcpipstack/Include/LCDBlocking.h</itemPath>
         <itemPath>../tcpipstack/Include/TimeDelay.h</itemPath>
         <itemPath>../tcpipstack/Include/debug.h</itemPath>
         <itemPath>../tcpipstack/Include/struct_queue.h</itemPath>
         <itemPath>../tcpipstack/Include/timer.h</itemPath>
-        <itemPath>../tcpipstack/Include/uart2.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/_HTTP2.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES_CBC.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES_CFB.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES_CTR.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES_ECB.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES_ECB_PIC32.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/AES_OFB.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/aes_pic24f.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Announce.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ARCFOUR.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/ARP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/AutoIP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/BerkeleyAPI.h</itemPath>
@@ -43,71 +31,28 @@
         <itemPath>../tcpipstack/Include/TCPIPStack/Delay.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/DHCP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/DNS.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/DynDNS.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ENC28J60.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ENCX24J600.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/eth_pic32_ext_phy_rtl8201FL.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/ETH97J60.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ETHPIC32ExtPhy.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ETHPIC32ExtPhyDP83640.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ETHPIC32ExtPhyDP83848.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ETHPIC32ExtPhyRegs.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ETHPIC32ExtPhySMSC8700.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ETHPIC32ExtPhySMSC8720.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/FileSystem.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/FTP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Hashes.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Helpers.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/HTTP2.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/ICMP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/IP.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/LCDBlocking.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/MAC.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/MPFS2.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/NBNS.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Random.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Reboot.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/regdef.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/RSA.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/SMTP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/SNMP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/SNMPv3.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/SNTP.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/SPIFlash.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/SPIRAM.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/SSL.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/SSLClientSize.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/StackTsk.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/TCP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/TCPIP.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/TCPPerformanceTest.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/Telnet.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/TFTPc.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Tick.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/UART.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/UART2TCPBridge.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/UDP.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/UDPPerformanceTest.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WF_pbkdf2.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFApi.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFConsole.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFConsoleIfconfig.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFConsoleIwconfig.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFConsoleIwpriv.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFConsoleMsgHandler.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFConsoleMsgs.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFDebugStrings.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFDriverPrv.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFDriverPrv_24G.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFEasyConfig.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFMac.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFMgmtMsg.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFRaw.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/WFRaw_24G.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/XEEPROM.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ZeroconfHelper.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ZeroconfLinkLocal.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/ZeroconfMulticastDNS.h</itemPath>
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
       <itemPath>../persistence.h</itemPath>
