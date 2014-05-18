@@ -63,12 +63,25 @@
     <Compile Include="Core\SinkManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resources\ExampleData.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ExampleData.resx</DependentUpon>
+    </Compile>
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Core\Serialization\FlashAckResponse.cs" />
     <Compile Include="Sinks\AudioPlayerSink.cs" />
     <Compile Include="Sinks\RomFlasherSink.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ExampleData.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ExampleData.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Half Life 2 Portal - Ending Theme.mp3" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem copy "$(TargetPath)" \\mule\backup</PostBuildEvent>

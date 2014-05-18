@@ -2,6 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
+using Lucky.Home.Core.Serialization;
+using Lucky.Home.Resources;
+
+// ReSharper disable once UnusedMember.Global
 
 namespace Lucky.Home.Sinks
 {
@@ -14,7 +18,8 @@ namespace Lucky.Home.Sinks
         {
             Init = 0,
             SetVolume = 1,
-            TestSine = 2
+            TestSine = 2,
+            StreamData = 3
         }
 
         private enum ErrorCode : byte
@@ -50,6 +55,20 @@ namespace Lucky.Home.Sinks
             }
         }
 
+        private class StreamDataMessage
+        {
+            public Command Command;
+            [SerializeAsDynArrayAttribute]
+            public byte[] Data;
+
+            public StreamDataMessage(byte[] data, int start, int l)
+            {
+                Command = Command.StreamData;
+                Data = new byte[l];
+                Array.Copy(data, start, Data, 0, l);
+            }
+        }
+
         protected override void OnInitialize()
         {
             base.OnInitialize();
@@ -66,10 +85,26 @@ namespace Lucky.Home.Sinks
                     }
                 }
 
-                using (var connection = Open())
+                //SineTest();
+                Mp3Test();
+            });
+        }
+
+        private void Mp3Test()
+        {
+            using (var connection = Open())
+            {
+                byte[] data = ExampleData.PortalEndingTheme_mp3;
+                int i = 0;
+                DateTime ts = DateTime.Now;
+
+                while (i < data.Length)
                 {
-                    connection.Write(new byte[] { 2, 0xdc, 5 });
-                    //connection.Write(new SineTestMessage(1500));
+                    const int MAX_PACKET_SIZE = 2048;
+                    int l = Math.Min(MAX_PACKET_SIZE, data.Length - i);
+
+                    StreamDataMessage msg = new StreamDataMessage(data, i, l);
+                    connection.Write(msg);
 
                     ErrorCode ack = connection.Read<ErrorCode>();
                     if (ack != ErrorCode.Ok)
@@ -77,33 +112,56 @@ namespace Lucky.Home.Sinks
                         Logger.Log("Bad response  at " + this + ": " + ack);
                         return;
                     }
-                }
 
-                for (int i = 0; i < 20; i++)
-                {
-                    if (!SetVolume((i + 10), (30 - i)))
+                    i += l;
+
+                    DateTime t = DateTime.Now;
+                    if (t - ts > TimeSpan.FromSeconds(1))
                     {
-                        return;
+                        Console.WriteLine("{0}Kb\r", i / 1024);
+                        ts = t;
                     }
-                    Thread.Sleep(30);
                 }
-                for (int i = 20; i > 0; i--)
+            }
+        }
+
+        private void SineTest()
+        {
+            using (var connection = Open())
+            {
+                connection.Write(new SineTestMessage(1500));
+
+                ErrorCode ack = connection.Read<ErrorCode>();
+                if (ack != ErrorCode.Ok)
                 {
-                    if (!SetVolume((i + 10), (30 - i)))
-                    {
-                        return;
-                    }
-                    Thread.Sleep(30);
+                    Logger.Log("Bad response  at " + this + ": " + ack);
+                    return;
                 }
-            });
+            }
+
+            for (int i = 0; i < 20; i++)
+            {
+                if (!SetVolume((i + 10), (30 - i)))
+                {
+                    return;
+                }
+                Thread.Sleep(30);
+            }
+            for (int i = 20; i > 0; i--)
+            {
+                if (!SetVolume((i + 10), (30 - i)))
+                {
+                    return;
+                }
+                Thread.Sleep(30);
+            }
         }
 
         private bool SetVolume(int left, int right)
         {
             using (var connection = Open())
             {
-                connection.Write(new byte[] { 1, (byte)left, (byte)right });
-                //connection.Write(new SetVolumeMessage(left, right));
+                connection.Write(new SetVolumeMessage(left, right));
 
                 ErrorCode ack = connection.Read<ErrorCode>();
                 if (ack != ErrorCode.Ok)

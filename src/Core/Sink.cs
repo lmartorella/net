@@ -40,36 +40,31 @@ namespace Lucky.Home.Core
             private TcpClient _tcpClient;
             private readonly Stream _clientStream;
 
-            public BinaryReader Reader { get; private set; }
-            public BinaryWriter Writer { get; private set; }
+            private readonly BinaryReader _reader;
 
             public Connection(IPEndPoint endPoint)
             {
                 _tcpClient = new TcpClient();
                 _tcpClient.Connect(endPoint);
                 _clientStream = _tcpClient.GetStream();
-                Reader = new BinaryReader(_clientStream);
-                Writer = new BinaryWriter(_clientStream);
+                _reader = new BinaryReader(_clientStream);
             }
 
             public void Write<T>(T data)
             {
-                NetSerializer<T>.Write(data, Writer);
-            }
+                MemoryStream stream = new MemoryStream();
+                var writer = new BinaryWriter(stream);
+                NetSerializer<T>.Write(data, writer);
+                writer.Flush();
+                int l = (int)stream.Position;
+                stream.Position = 0;
 
-            public void Write(byte[] data)
-            {
-                Writer.Write(data);
+                _clientStream.Write(stream.GetBuffer(), 0, l);
             }
 
             public T Read<T>()
             {
-                return NetSerializer<T>.Read(Reader);
-            }
-
-            public void Flush()
-            {
-                Writer.Flush();
+                return NetSerializer<T>.Read(_reader);
             }
 
             /// <summary>
@@ -80,8 +75,7 @@ namespace Lucky.Home.Core
                 if (_tcpClient != null)
                 {
                     _clientStream.Flush();
-                    Reader.Close();
-                    Writer.Close();
+                    _reader.Close();
                     _tcpClient.Close();
                     _tcpClient = null;
                 }
