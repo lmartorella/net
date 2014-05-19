@@ -10,7 +10,7 @@ static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
 static BOOL _isWaitingForCommand;
-static BYTE TEMP_BUFFER[256];
+static BYTE TEMP_BUFFER[250];       // Less than 256, to call sram_write_8
 static UINT32 _ringStart, _ringEnd;
 #define RING_SIZE 0x20000       // All 128Kb!
 
@@ -28,7 +28,7 @@ static TCP_SOCKET s_listenerSocket = INVALID_SOCKET;
 static void createAudioSink()
 {
 	// Open the sever TCP channel
-	s_listenerSocket = TCPOpen(0, TCP_OPEN_SERVER, AUDIO_SINK_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
+	s_listenerSocket = TCPOpen(0, TCP_OPEN_SERVER, AUDIO_SINK_PORT, TCP_PURPOSE_STREAM_TCP_SERVER);
 	if (s_listenerSocket == INVALID_SOCKET)
 	{
 		fatal("MP3_SRV");
@@ -80,6 +80,13 @@ typedef struct
     WORD packetSize;
 } AUDIO_STREAM_DATA;
 
+typedef struct
+{
+    AUDIO_RESPONSE res;
+    WORD elapsedMs;
+    WORD calls;
+} AUDIO_STREAM_RESPONSE;
+
 static AUDIO_RESPONSE _initAudio()
 {
     VS1011_MODEL r = vs1011_reset(FALSE);
@@ -112,10 +119,14 @@ static AUDIO_RESPONSE _sineTest()
 
 static WORD _streamSize;
 static void _processData();
+static DWORD _startTime;
+static int _dequeueCallCount;
 
 static AUDIO_RESPONSE _startStream()
 {
     // Read packet size
+    _startTime = TickGet();
+    _dequeueCallCount = 0;
     AUDIO_STREAM_DATA msg;
     if (TCPGetArray(s_listenerSocket, (BYTE*)&msg, sizeof(AUDIO_STREAM_DATA)) != sizeof(AUDIO_STREAM_DATA))
     {
@@ -133,11 +144,12 @@ static BOOL _disableRamWrite;
 
 static void _processData()
 {
+    _dequeueCallCount++;
     WORD len = TCPIsGetReady(s_listenerSocket);
     while (len > 0 && _streamSize > 0)
     {
         // Allocate bytes and transfer it to the external RAM ring buffer
-        WORD l = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
+        BYTE l = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
         if ((_ringEnd + l) > RING_SIZE)
         {
             l = RING_SIZE - _ringEnd;
@@ -146,7 +158,7 @@ static void _processData()
         if (_disableTcpGet)
         {
             TCPDiscard(s_listenerSocket);
-            l = len;
+            l = 255;    // cannot load the sram_write_8 with more than 255 bytes!
         }
         else
         {
@@ -160,7 +172,7 @@ static void _processData()
         {
             // Copy data to Ext RAM
             di();
-            sram_write(TEMP_BUFFER, _ringEnd, l);
+            sram_write_8(TEMP_BUFFER, _ringEnd, (BYTE)l);
             _ringEnd = (_ringEnd + l) % RING_SIZE;
             ei();
         }
@@ -171,16 +183,21 @@ static void _processData()
 
     if (_streamSize == 0)
     {
-        _isWaitingForCommand = TRUE;
+        AUDIO_STREAM_RESPONSE response;
+        response.elapsedMs = TickConvertToMilliseconds(TickGet() - _startTime);
+        response.res = AUDIO_RES_OK;
+        response.calls = _dequeueCallCount;
+
         // ACK
-        AUDIO_RESPONSE response = AUDIO_RES_OK;
-        if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_RESPONSE)) != sizeof(AUDIO_RESPONSE))
+        _isWaitingForCommand = TRUE;
+        
+        if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_STREAM_RESPONSE)) != sizeof(AUDIO_STREAM_RESPONSE))
         {
             fatal("MP3_ACK");
         }
+        
         TCPFlush(s_listenerSocket);
         TCPDiscard(s_listenerSocket);
-        _disableTcpGet = _disableRamWrite = FALSE;
     }
 }
 
@@ -212,12 +229,19 @@ static void pollAudioSink()
                             response = _sineTest();
                             break;
                         case AUDIO_TEST_1:
+                            _disableRamWrite = TRUE;
+                            _disableTcpGet = FALSE;
+                            goto audioStream;
                         case AUDIO_TEST_2:
+                            _disableRamWrite = FALSE;
+                            _disableTcpGet = TRUE;
+                            goto audioStream;
                         case AUDIO_TEST_3:
-                            _disableTcpGet = (cmd == AUDIO_TEST_2 || cmd == AUDIO_TEST_3);
-                            _disableRamWrite = (cmd == AUDIO_TEST_1 || cmd == AUDIO_TEST_3);
-                            // nobreak;
+                            _disableTcpGet = _disableRamWrite = TRUE;
+                            goto audioStream;
                         case AUDIO_STREAM:
+                            _disableTcpGet = _disableRamWrite = FALSE;
+audioStream:
                             response = _startStream();
                             if (response == AUDIO_RES_OK)
                             {

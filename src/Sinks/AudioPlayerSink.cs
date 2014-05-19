@@ -14,15 +14,15 @@ namespace Lucky.Home.Sinks
     {
         private const int AudioSinkId = 3;
 
-        private enum Command : byte
+        public enum Command : byte
         {
             Init = 0,
             SetVolume = 1,
             TestSine = 2,
-            StreamData = 102
+            StreamData = 3
         }
 
-        private enum ErrorCode : byte
+        public enum ErrorCode : byte
         {
             Ok = 0,
             HwFail = 1,      // MP3 hw fail (wrong model, internal test failed...)
@@ -55,7 +55,7 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        private class StreamDataMessage
+        public class StreamDataMessage
         {
             public Command Command;
             [SerializeAsDynArrayAttribute]
@@ -67,6 +67,13 @@ namespace Lucky.Home.Sinks
                 Data = new byte[l];
                 Array.Copy(data, start, Data, 0, l);
             }
+        }
+
+        public class StreamResponse
+        {
+            public ErrorCode Result;
+            public ushort ElapsedMs;
+            public ushort CallsCount;
         }
 
         protected override void OnInitialize()
@@ -81,13 +88,13 @@ namespace Lucky.Home.Sinks
                     if (ack != ErrorCode.Ok)
                     {
                         Logger.Log("Bad response  at " + this + ": " + ack);
-                        return;
                     }
                 }
 
                 //SineTest();
-                Mp3Test();
+                //Mp3Test();
             });
+            StartTestEvent += (o, e) => Mp3Test();
         }
 
         private void Mp3Test()
@@ -98,29 +105,35 @@ namespace Lucky.Home.Sinks
                 int i = 0;
                 DateTime ts = DateTime.Now;
                 int tdelta = 0;
+                int recvTimeAcc = 0;
+                int recvCallsAcc = 0;
+                int recvSamples = 0;
 
                 while (i < data.Length)
                 {
-                    const int MAX_PACKET_SIZE = 2048;
+                    const int MAX_PACKET_SIZE = 1500;
                     int l = Math.Min(MAX_PACKET_SIZE, data.Length - i);
 
                     StreamDataMessage msg = new StreamDataMessage(data, i, l);
                     connection.Write(msg);
 
-                    ErrorCode ack = connection.Read<ErrorCode>();
-                    if (ack != ErrorCode.Ok)
+                    StreamResponse ack = connection.Read<StreamResponse>();
+                    if (ack.Result != ErrorCode.Ok)
                     {
-                        Logger.Log("Bad response  at " + this + ": " + ack);
+                        Logger.Log("Bad response  at " + this + ": " + ack.Result);
                         return;
                     }
 
+                    recvTimeAcc += ack.ElapsedMs;
+                    recvCallsAcc += ack.CallsCount;
+                    recvSamples++;
                     i += l;
                     tdelta += l;
 
                     DateTime t = DateTime.Now;
                     if (t - ts > TimeSpan.FromSeconds(1))
                     {
-                        Console.WriteLine("{0}KB, avg: {1}KB/s\n", i / 1024, tdelta);
+                        Console.WriteLine("{0}KB, avg: {1:0.0}KB/s. MTU:1500: avgRcv: {2:0.0}ms, avgDequeue#: {3:0.0}\n", i / 1024, tdelta / 1024.0, (float)recvTimeAcc / recvSamples, (float)recvCallsAcc / recvSamples);
                         ts = t;
                         tdelta = 0;
                     }
@@ -174,6 +187,16 @@ namespace Lucky.Home.Sinks
                 }
             }
             return true;
+        }
+
+        private static event EventHandler StartTestEvent;
+
+        public static void StartTest()
+        {
+            if (StartTestEvent != null)
+            {
+                StartTestEvent(null, EventArgs.Empty);  
+            }
         }
     }
 }

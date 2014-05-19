@@ -82,12 +82,11 @@ void sram_init()
 //  - count is the count of byes to write
 void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 {
-	UINT16 raddr;
 	if (count == 0)
 	{
 		return;
 	}
-	raddr = (UINT16)address;
+	UINT16 raddr = (UINT16)address;
         enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
 	spi_shift16(raddr);
@@ -99,6 +98,31 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 	}
 	while (--count > 0);
 	disableAll();
+}
+
+// Write a vector of bytes in RAM, optimized for 255 bytes MAX
+// NOTE: do not support SPI cross-bank access
+//  - *dest is in banked PIC RAM
+//  - address is logic SPIRAM address of the first byte to write
+//  - count is the count of byes to write
+void sram_write_8(const BYTE* src, UINT32 address, BYTE count)
+{
+	if (count == 0)
+	{
+		return;
+	}
+	UINT16 raddr = (UINT16)address;
+        enableBank(address >> 15);
+	spi_shift(MSG_WRITE);
+	spi_shift16(raddr);
+	do
+	{
+		// Write 1 byte
+		spi_shift(*(src++));
+	}
+	while (--count > 0);
+	disableAll();
+        ClrWdt();
 }
 
 // Read a vector of bytes in RAM.

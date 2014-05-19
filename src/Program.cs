@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using Lucky.Home.Core;
+using Lucky.Home.Sinks;
 
 namespace Lucky.Home
 {
@@ -18,12 +19,18 @@ namespace Lucky.Home
             // Start server
             Manager.GetService<IServer>();
 
-            // Wait for Ctrl+Break
-            Console.WriteLine("Press CTRL+C to exit....");
-
             while (true)
             {
-                Console.Read();
+                Console.Write("Enter 's' to start stream test or 'q' to quit: ");
+                string str = Console.ReadLine();
+                switch (str)
+                {
+                    case "q":
+                        return;
+                    case "s":
+                        AudioPlayerSink.StartTest();
+                        break;
+                }
             }
         }
     }

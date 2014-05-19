@@ -5,10 +5,7 @@
 
 //#pragma code spi_section
 
-static void ClearSPIDoneFlag(void)  
-{
-	SPIRAM_SPI_IF = 0;
-}
+#define ClearSPIDoneFlag()  SPIRAM_SPI_IF = 0
 
 static void WaitForDataByte(void)   
 {
