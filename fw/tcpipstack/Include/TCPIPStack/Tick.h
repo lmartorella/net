@@ -82,6 +82,6 @@ DWORD TickGet(void);
 DWORD TickGetDiv256(void);
 DWORD TickGetDiv64K(void);
 DWORD TickConvertToMilliseconds(DWORD dwTickValue);
-void TickUpdate(void);
+BYTE TickUpdate(void);
 
 #endif

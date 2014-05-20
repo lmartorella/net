@@ -3,16 +3,38 @@
 #include "appio.h"
 #include "hardware/vs1011e.h"
 #include "hardware/spiram.h"
+#include "hardware/spi.h"
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
 
 static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
-static BOOL _isWaitingForCommand;
 static BYTE TEMP_BUFFER[250];       // Less than 256, to call sram_write_8
-static UINT32 _ringStart, _ringEnd;
-#define RING_SIZE 0x20000       // All 128Kb!
+static long _ringStart, _ringEnd;
+#define RING_SIZE 0x20000l       // All 128Kb!
+
+inline static long queueSize()
+{
+    return ((_ringEnd - _ringStart) + RING_SIZE) % RING_SIZE;
+}
+
+inline static long freeSize()
+{
+    return RING_SIZE - queueSize();
+}
+
+static union
+{
+    struct
+    {
+        unsigned disableTcpGet :1;
+        unsigned disableRamWrite :1;
+        unsigned isWaitingForCommand :1;
+        unsigned sdiCopyEnabled :1;
+    };
+    BYTE b;
+} s_flags;
 
 #define AUDIO_SINK_PORT (SINK_AUDIO_TYPE + BASE_SINK_PORT)
 const rom Sink g_audioSink = { SINK_AUDIO_TYPE,
@@ -33,8 +55,9 @@ static void createAudioSink()
 	{
 		fatal("MP3_SRV");
 	}
-        _isWaitingForCommand = TRUE;
-        _ringStart = _ringEnd = 0;
+        _ringStart = _ringEnd = 0l;
+        s_flags.b = 0;
+        s_flags.isWaitingForCommand = 1;
 }
 
 static void destroyAudioSink()
@@ -51,8 +74,9 @@ typedef enum
     AUDIO_SET_VOLUME = 1,   // Change volume
     AUDIO_TEST_SINE = 2,    // Start a sine test (reset to quit)
     AUDIO_STREAM = 3,       // Send data packet to SDI channel
+    AUDIO_ENABLE_SDI = 4,   // Enable stream data to SDI MP3 channel
 
-    AUDIO_TEST_1 = 100,      // Test, don't copy data in mem but get it from TCP
+    AUDIO_TEST_1 = 100,      // Test, don't copy data in ext mem but get it from TCP
     AUDIO_TEST_2 = 101,      // Test, don't fetch data from TCP but flush it. Simulate a ram copy
     AUDIO_TEST_3 = 102      // TEST_1 + TEST_2
 } AUDIO_COMMAND;  // 8-bit integer
@@ -139,46 +163,50 @@ static AUDIO_RESPONSE _startStream()
     return AUDIO_RES_OK;
 }
 
-static BOOL _disableTcpGet;
-static BOOL _disableRamWrite;
-
 static void _processData()
 {
     _dequeueCallCount++;
     WORD len = TCPIsGetReady(s_listenerSocket);
-    while (len > 0 && _streamSize > 0)
+
+    // If no room, leave the socket unread
+    if (freeSize() >= len)
     {
-        // Allocate bytes and transfer it to the external RAM ring buffer
-        BYTE l = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
-        if ((_ringEnd + l) > RING_SIZE)
+        while (len > 0 && _streamSize > 0)
         {
-            l = RING_SIZE - _ringEnd;
-        }
+            // Allocate bytes and transfer it to the external RAM ring buffer
+            spi_lock(); // really necessary to lock on ringEnd?
+            BYTE l = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
+            if ((_ringEnd + l) > RING_SIZE)
+            {
+                l = RING_SIZE - _ringEnd;
+            }
+            spi_release();
 
-        if (_disableTcpGet)
-        {
-            TCPDiscard(s_listenerSocket);
-            l = 255;    // cannot load the sram_write_8 with more than 255 bytes!
-        }
-        else
-        {
-            TCPGetArray(s_listenerSocket, TEMP_BUFFER, l);
-        }
+            if (s_flags.disableTcpGet)
+            {
+                TCPDiscard(s_listenerSocket);
+                l = 255;    // cannot load the sram_write_8 with more than 255 bytes!
+            }
+            else
+            {
+                TCPGetArray(s_listenerSocket, TEMP_BUFFER, l);
+            }
 
-        if (_disableRamWrite)
-        {
+            if (s_flags.disableRamWrite)
+            {
+            }
+            else
+            {
+                // Copy data to Ext RAM
+                spi_lock();
+                sram_write_8(TEMP_BUFFER, _ringEnd, (BYTE)l);
+                _ringEnd = (_ringEnd + l) % RING_SIZE;
+                spi_release();
+            }
+
+            len -= l;
+            _streamSize -= l;
         }
-        else
-        {
-            // Copy data to Ext RAM
-            di();
-            sram_write_8(TEMP_BUFFER, _ringEnd, (BYTE)l);
-            _ringEnd = (_ringEnd + l) % RING_SIZE;
-            ei();
-        }
-        
-        len -= l;
-        _streamSize -= l;
     }
 
     if (_streamSize == 0)
@@ -189,7 +217,7 @@ static void _processData()
         response.calls = _dequeueCallCount;
 
         // ACK
-        _isWaitingForCommand = TRUE;
+        s_flags.isWaitingForCommand = 1;
         
         if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_STREAM_RESPONSE)) != sizeof(AUDIO_STREAM_RESPONSE))
         {
@@ -210,7 +238,7 @@ static void pollAudioSink()
 	}
 
 	s = TCPIsGetReady(s_listenerSocket);
-        if (_isWaitingForCommand)
+        if (s_flags.isWaitingForCommand)
         {
             if (s >= sizeof(AUDIO_COMMAND))
             {
@@ -228,29 +256,32 @@ static void pollAudioSink()
                         case AUDIO_TEST_SINE:
                             response = _sineTest();
                             break;
+                        case AUDIO_ENABLE_SDI:
+                            s_flags.sdiCopyEnabled = 1;
+                            break;
                         case AUDIO_TEST_1:
-                            _disableRamWrite = TRUE;
-                            _disableTcpGet = FALSE;
+                            s_flags.disableRamWrite = 1;
+                            s_flags.disableTcpGet = 0;
                             goto audioStream;
                         case AUDIO_TEST_2:
-                            _disableRamWrite = FALSE;
-                            _disableTcpGet = TRUE;
+                            s_flags.disableRamWrite = 0;
+                            s_flags.disableTcpGet = 1;
                             goto audioStream;
                         case AUDIO_TEST_3:
-                            _disableTcpGet = _disableRamWrite = TRUE;
+                            s_flags.disableTcpGet = s_flags.disableRamWrite = 1;
                             goto audioStream;
                         case AUDIO_STREAM:
-                            _disableTcpGet = _disableRamWrite = FALSE;
+                            s_flags.disableTcpGet = s_flags.disableRamWrite = 0;
 audioStream:
                             response = _startStream();
                             if (response == AUDIO_RES_OK)
                             {
-                                _isWaitingForCommand = FALSE;
+                                s_flags.isWaitingForCommand = 0;
                             }
                             break;
                     }
 
-                    if (_isWaitingForCommand)
+                    if (s_flags.isWaitingForCommand)
                     {
                         // ACK
                         if (TCPPutArray(s_listenerSocket, (BYTE*)&response, sizeof(AUDIO_RESPONSE)) != sizeof(AUDIO_RESPONSE))
@@ -266,4 +297,21 @@ audioStream:
         {
             _processData();
         }
+}
+
+void audio_pollMp3Player()
+{
+   static BYTE buffer[32];       // Less than 256, to call sram_write_8
+   if (s_flags.sdiCopyEnabled && !spi_isLocked())
+    {
+        if (vs1011_isWaitingData() && queueSize() > sizeof(buffer))
+        {
+            // Pull 32 bytes of data
+            sram_read_8(buffer, _ringStart, sizeof(buffer));
+           _ringStart += sizeof(buffer);
+
+           // Flush data to MP3
+           vs1011_streamData(buffer, sizeof(buffer));
+        }
+    }
 }

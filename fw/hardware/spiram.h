@@ -35,5 +35,12 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count);
 //  - count is the count of byes to write
 void sram_write_8(const BYTE* src, UINT32 address, BYTE count);
 
+// Read a vector of bytes in RAM, optimized for 255 bytes MAX
+// NOTE: do not support SPI cross-bank access
+//  - *dest is in banked PIC RAM
+//  - address is logic SPIRAM address of the first byte to read
+//  - count is the count of byes to read
+void sram_read_8(BYTE* dest, UINT32 address, BYTE count);
+
 
 #endif

@@ -28,8 +28,8 @@ enum MSG
 
 static void disableAll(void)
 {	
-	// Set all CS to 1 (disabled)
-	MEM_PORT |= MEM_BANK_CS_MASK;
+    // Set all CS to 1 (disabled)
+    MEM_PORT |= MEM_BANK_CS_MASK;
 }
 
 static void enableBank(BYTE b)
@@ -65,6 +65,7 @@ void sram_init()
 
 	disableAll();
 
+        spi_lock();
 	for (b = 0; b < 4; b++)
 	{
 		enableBank(b);
@@ -73,6 +74,7 @@ void sram_init()
 		spi_shift(ST_SEQMODE | HOLD_DIS);
 		disableAll();
 	}
+        spi_release();
 }
 
 // Write a vector of bytes in RAM.
@@ -86,7 +88,9 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 	{
 		return;
 	}
+
 	UINT16 raddr = (UINT16)address;
+        spi_lock();
         enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
 	spi_shift16(raddr);
@@ -98,6 +102,7 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 	}
 	while (--count > 0);
 	disableAll();
+        spi_release();
 }
 
 // Write a vector of bytes in RAM, optimized for 255 bytes MAX
@@ -112,6 +117,7 @@ void sram_write_8(const BYTE* src, UINT32 address, BYTE count)
 		return;
 	}
 	UINT16 raddr = (UINT16)address;
+        spi_lock();
         enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
 	spi_shift16(raddr);
@@ -122,6 +128,7 @@ void sram_write_8(const BYTE* src, UINT32 address, BYTE count)
 	}
 	while (--count > 0);
 	disableAll();
+        spi_release();
         ClrWdt();
 }
 
@@ -138,6 +145,7 @@ void sram_read(BYTE* dest, UINT32 address, UINT16 count)
 		return;
 	}
 	raddr = (UINT16)address;
+        spi_lock();
         enableBank(address >> 15);
 	spi_shift(MSG_READ);
 	spi_shift16(raddr);
@@ -149,6 +157,7 @@ void sram_read(BYTE* dest, UINT32 address, UINT16 count)
 	}
 	while (--count > 0);
 	disableAll();
+        spi_release();
 }
 
 // Test all 4 banks, displays the ADDR of the failing test and hang if found one

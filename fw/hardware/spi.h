@@ -45,4 +45,9 @@ void spi_shift_array(const BYTE* buffer, BYTE size);
 // Send a repeated byte
 void spi_shift_repeat(BYTE data, BYTE size);
 
+extern BYTE s_spiInUse;
+#define spi_lock() (s_spiInUse++)
+#define spi_release() (s_spiInUse--)
+#define spi_isLocked() (s_spiInUse > 0)
+
 #endif

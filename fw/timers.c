@@ -1,13 +1,20 @@
 
 #include "hardware/fuses.h"
 #include "TCPIPStack/TCPIP.h"
+#include "audioSink.h"
 
 static DWORD s_1sec;
 
 void interrupt low_priority low_isr(void)
 {
-	// Update ETH module timers
-	TickUpdate();
+    // Update ETH module timers at ~23Khz freq
+    BYTE b = TickUpdate();
+
+    // Prescale to ~1.5khz
+    if ((b % 16) == 0)
+    {
+        audio_pollMp3Player();
+    }
 }
 
 void timers_init()

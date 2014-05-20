@@ -11,5 +11,8 @@
 // The public sink descriptor
 extern const Sink g_audioSink;
 
+// Poll 
+void audio_pollMp3Player();
+
 #endif	/* AUDIO_SINK_H */
 

@@ -384,18 +384,23 @@ DWORD TickConvertToMilliseconds(DWORD dwTickValue)
 	None
 
   Returns:
-  	None
+     The LSB of tick
   ***************************************************************************/
 #if defined(__18CXX) || defined(__XC8)
-void TickUpdate(void)
+BYTE TickUpdate(void)
 {
     if(INTCONbits.TMR0IF)
     {
-		// Increment internal high tick counter
-		dwInternalTicks++;
-
-		// Reset interrupt flag
+        // Increment internal high tick counter
+        dwInternalTicks++;
+        
+        // Reset interrupt flag
         INTCONbits.TMR0IF = 0;
+        return ((BYTE)dwInternalTicks);
+    }
+    else
+    {
+        return 0xff;
     }
 }
 

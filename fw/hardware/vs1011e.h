@@ -24,4 +24,8 @@ void vs1011_sineTest(UINT16 freq);
 // Volume attenuation in db, 0-99
 void vs1011_volume(BYTE leftAtt, BYTE rightAtt);
 
+BOOL vs1011_isWaitingData();
+// Max 32 bytes
+void vs1011_streamData(BYTE* buffer, BYTE size);
+
 #endif
