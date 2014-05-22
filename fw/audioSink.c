@@ -188,7 +188,6 @@ static void _processData()
                     toCopy = (BYTE)space;
                 }
             }
-            spi_release();
 
             if (s_flags.disableTcpGet)
             {
@@ -206,13 +205,12 @@ static void _processData()
             else
             {
                 // Copy data to Ext RAM
-                spi_lock();
                 sram_write_8(TEMP_BUFFER, _ringEnd, toCopy);
                 //_ringEnd = (_ringEnd + l) % RING_SIZE;
                 _ringEnd += toCopy;
-                spi_release();
             }
 
+            spi_release();
             len -= toCopy;
             _streamSize -= toCopy;
         }
@@ -309,20 +307,33 @@ audioStream:
         }
 }
 
+
+#define BLOCK_SIZE 32
+
 void audio_pollMp3Player()
 {
-   static BYTE buffer[32];       // Less than 256, to call sram_write_8
-   if (s_flags.sdiCopyEnabled && !spi_isLocked())
+    if (s_flags.sdiCopyEnabled && !spi_isLocked())
     {
-        if (vs1011_isWaitingData() && queueSize() > sizeof(buffer))
+        UINT16 len = queueSize();
+        if (vs1011_isWaitingData() && len >= BLOCK_SIZE)
         {
-            // Pull 32 bytes of data
-            sram_read_8(buffer, _ringStart, sizeof(buffer));
-            //_ringStart = (_ringStart + sizeof(buffer)) % RING_SIZE;
-            _ringStart += sizeof(buffer);
+            UINT16 space = -_ringStart;
+            if (_ringStart > 0 && space < BLOCK_SIZE)
+            {
+                sram_read_8(TEMP_BUFFER, _ringStart, space);
+                sram_read_8(TEMP_BUFFER + space, 0, BLOCK_SIZE - space);
+            }
+            else
+            {
+                // Pull 32 bytes of data
+                sram_read_8(TEMP_BUFFER, _ringStart, BLOCK_SIZE);
+            }
+            
+            //_ringStart = (_ringStart + toCopy) % RING_SIZE;
+            _ringStart += BLOCK_SIZE;
 
             // Flush data to MP3
-            vs1011_streamData(buffer, sizeof(buffer));
+            vs1011_streamData(TEMP_BUFFER, BLOCK_SIZE);
         }
     }
 }

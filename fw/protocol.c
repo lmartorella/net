@@ -12,17 +12,17 @@
 typedef enum PROTOCOL_STATE_enum
 {	
 	// Reset
-	STATE_NOT_INITIALIZED,
+	STATE_NOT_INITIALIZED = 0,
 	// HELO mode: send UDP packets and waits for HOME response
-	STATE_HELO,
+	STATE_HELO = 1,
 	// Helo closed, now registering to the server
-	STATE_REGISTER_CONNECTING,
+	STATE_REGISTER_CONNECTING = 2,
 	// Registering sent, waiting for ACK
-	STATE_REGISTER_ACK,
+	STATE_REGISTER_ACK = 3,
 	// OK, registered
-	STATE_REGISTERED,
+	STATE_REGISTERED = 4,
 	// OK, registered
-	STATE_REGISTERED_NEW_GUID
+	STATE_REGISTERED_NEW_GUID = 5
 } PROTOCOL_STATE;
 
 static PROTOCOL_STATE s_protState = STATE_NOT_INITIALIZED;

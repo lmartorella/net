@@ -96,12 +96,12 @@ namespace Lucky.Home.Sinks
                         Logger.Log("Bad Init response at " + this + ": " + ack);
                     }
 
-                    connection.Write(Command.EnableSdi);
-                    ack = connection.Read<ErrorCode>();
-                    if (ack != ErrorCode.Ok)
-                    {
-                        Logger.Log("Bad EnableSdi response at " + this + ": " + ack);
-                    }
+                    //connection.Write(Command.EnableSdi);
+                    //ack = connection.Read<ErrorCode>();
+                    //if (ack != ErrorCode.Ok)
+                    //{
+                    //    Logger.Log("Bad EnableSdi response at " + this + ": " + ack);
+                    //}
                 }
 
                 //SineTest();

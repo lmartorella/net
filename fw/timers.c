@@ -11,7 +11,7 @@ void interrupt low_priority low_isr(void)
     BYTE b = TickUpdate();
 
     // Prescale to ~1.5khz
-    if ((b % 16) == 0)
+    if ((b & 0xf) == 0)
     {
         audio_pollMp3Player();
     }
