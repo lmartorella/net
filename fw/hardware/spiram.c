@@ -84,23 +84,18 @@ void sram_init()
 //  - count is the count of byes to write
 void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 {
-	if (count == 0)
-	{
-		return;
-	}
-
 	UINT16 raddr = (UINT16)address;
         spi_lock();
         enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
 	spi_shift16(raddr);
-	do 
+	while (count > 0)
 	{
-		// Write 1 byte
-		spi_shift(*(src++));
-		ClrWdt();
+            // Write 1 byte
+            spi_shift(*(src++));
+            count--;
+            ClrWdt();
 	}
-	while (--count > 0);
 	disableAll();
         spi_release();
 }
@@ -112,21 +107,12 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count)
 //  - count is the count of byes to write
 void sram_write_8(const BYTE* src, UINT32 address, BYTE count)
 {
-	if (count == 0)
-	{
-		return;
-	}
 	UINT16 raddr = (UINT16)address;
         spi_lock();
         enableBank(address >> 15);
 	spi_shift(MSG_WRITE);
 	spi_shift16(raddr);
-	do
-	{
-		// Write 1 byte
-		spi_shift(*(src++));
-	}
-	while (--count > 0);
+        spi_shift_array_8(src, count);
 	disableAll();
         spi_release();
         ClrWdt();
@@ -139,23 +125,41 @@ void sram_write_8(const BYTE* src, UINT32 address, BYTE count)
 //  - count is the count of byes to read
 void sram_read(BYTE* dest, UINT32 address, UINT16 count)
 {
-	UINT16 raddr;
-	if (count == 0)
-	{
-		return;
-	}
-	raddr = (UINT16)address;
+	UINT16 raddr = (UINT16)address;
         spi_lock();
         enableBank(address >> 15);
 	spi_shift(MSG_READ);
 	spi_shift16(raddr);
-	do 
+        while (count > 0)
 	{
-		// Read 1 byte
-		*(dest++) = spi_shift(0);
-		ClrWdt();
+            // Read 1 byte
+            *(dest++) = spi_shift(0);
+            count--;
+            ClrWdt();
 	}
-	while (--count > 0);
+	disableAll();
+        spi_release();
+}
+
+// Read a vector of bytes in RAM.
+// NOTE: do not support SPI cross-bank access
+//  - *dest is in banked PIC RAM
+//  - address is logic SPIRAM address of the first byte to read
+//  - count is the count of byes to read
+void sram_read_8(BYTE* dest, UINT32 address, BYTE count)
+{
+	UINT16 raddr = (UINT16)address;
+        spi_lock();
+        enableBank(address >> 15);
+	spi_shift(MSG_READ);
+	spi_shift16(raddr);
+        while (count > 0)
+	{
+            // Read 1 byte
+            *(dest++) = spi_shift(0);
+            count--;
+            ClrWdt();
+	}
 	disableAll();
         spi_release();
 }

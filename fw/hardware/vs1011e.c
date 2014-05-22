@@ -50,6 +50,7 @@ static const BYTE TEST_SINE[] = { 0x53, 0xef, 0x6e };
 
 static void _writeCommand(SCI_COMMAND addr, UINT16 command)
 {
+	spi_lock();
     VS1011_PORTBITS.VS1011_XCS = 0;
     
     spi_shift(SCI_WRITE); //8
@@ -57,12 +58,19 @@ static void _writeCommand(SCI_COMMAND addr, UINT16 command)
     spi_shift16(command);   //16
 
     VS1011_PORTBITS.VS1011_XCS = 1;
+	spi_release();
     // Wait for command exec
     while (!VS1011_PORTBITS.VS1011_DREQ);
 }
 
+BOOL vs1011_isWaitingData()
+{
+    return VS1011_PORTBITS.VS1011_DREQ;
+}
+
 static UINT16 _readCommand(SCI_COMMAND addr)
 {
+	spi_lock();
     VS1011_PORTBITS.VS1011_XCS = 0;
 
     spi_shift(SCI_READ); //8
@@ -70,6 +78,7 @@ static UINT16 _readCommand(SCI_COMMAND addr)
     UINT16 ret = spi_shift16(0);   //16
 
     VS1011_PORTBITS.VS1011_XCS = 1;
+	spi_release();
     // Wait for command exec
     //while (!VS1011_PORTBITS.VS1011_DREQ);
     return ret;
@@ -77,6 +86,7 @@ static UINT16 _readCommand(SCI_COMMAND addr)
 
 static void _reset()
 {
+	spi_lock();
     VS1011_PORTBITS.VS1011_RESET = 0;
     // Maintain the RESET for 2 XTALI
     wait40us();
@@ -86,6 +96,7 @@ static void _reset()
 
     // Now wait for 50000 XTALI = ~2000us < WDT
     while (!VS1011_PORTBITS.VS1011_DREQ);
+	spi_release();
 }
 
 static void _enterTestMode()
@@ -100,9 +111,10 @@ static BOOL _memoryTest()
 {
     _enterTestMode();
 
+	spi_lock();
     VS1011_PORTBITS.VS1011_XDCS = 0;
-    spi_shift_array(TEST_MEM, sizeof(TEST_MEM));
-    spi_shift_repeat(0, 4);
+    spi_shift_array_8(TEST_MEM, sizeof(TEST_MEM));
+    spi_shift_repeat_8(0, 4);
     VS1011_PORTBITS.VS1011_XDCS = 1;
 
     // The test take 200.000 CLKI = ~8ms
@@ -113,6 +125,7 @@ static BOOL _memoryTest()
     } while (!(hwRes & 0x8000));
 
     CLRWDT();
+	spi_release();
     return hwRes == 0x807f;
 }
 
@@ -122,11 +135,13 @@ void vs1011_sineTest(UINT16 freq)
     BYTE cmd = (1 << 5) | (((BYTE)fk) & 0x1f);
     _enterTestMode();
 
+	spi_lock();
     VS1011_PORTBITS.VS1011_XDCS = 0;
-    spi_shift_array(TEST_SINE, sizeof(TEST_SINE));
+    spi_shift_array_8(TEST_SINE, sizeof(TEST_SINE));
     spi_shift(cmd);
-    spi_shift_repeat(0, 4);
+    spi_shift_repeat_8(0, 4);
     VS1011_PORTBITS.VS1011_XDCS = 1;
+	spi_release();
 }
 
 void vs1011_volume(BYTE left, BYTE right)
@@ -134,6 +149,18 @@ void vs1011_volume(BYTE left, BYTE right)
     if (left == 0xff) left = 0xfe;
     if (right == 0xff) right = 0xfe;
     _writeCommand(SCI_VOL, (left << 8) + right);
+}
+
+// Max 32 bytes
+void vs1011_streamData(BYTE* buffer, BYTE size)
+{
+	spi_lock();
+    VS1011_PORTBITS.VS1011_XDCS = 0;
+
+    spi_shift_array_8(buffer, size);
+
+    VS1011_PORTBITS.VS1011_XDCS = 1;
+	spi_release();
 }
 
 void vs1011_setup()
@@ -173,3 +200,4 @@ VS1011_MODEL vs1011_reset(BOOL enableStream)
     UINT16 v = _readCommand(SCI_STATUS);
     return (VS1011_MODEL)((v >> 4) & 0x7);
 }
+

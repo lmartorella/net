@@ -19,7 +19,12 @@ namespace Lucky.Home.Sinks
             Init = 0,
             SetVolume = 1,
             TestSine = 2,
-            StreamData = 3
+            StreamData = 3,
+            EnableSdi = 4,
+
+            Test1 = 100,
+            Test2 = 101,
+            Test3 = 102
         }
 
         public enum ErrorCode : byte
@@ -74,6 +79,7 @@ namespace Lucky.Home.Sinks
             public ErrorCode Result;
             public ushort ElapsedMs;
             public ushort CallsCount;
+            public ushort BufferFreeSize;
         }
 
         protected override void OnInitialize()
@@ -87,7 +93,14 @@ namespace Lucky.Home.Sinks
                     ErrorCode ack = connection.Read<ErrorCode>();
                     if (ack != ErrorCode.Ok)
                     {
-                        Logger.Log("Bad response  at " + this + ": " + ack);
+                        Logger.Log("Bad Init response at " + this + ": " + ack);
+                    }
+
+                    connection.Write(Command.EnableSdi);
+                    ack = connection.Read<ErrorCode>();
+                    if (ack != ErrorCode.Ok)
+                    {
+                        Logger.Log("Bad EnableSdi response at " + this + ": " + ack);
                     }
                 }
 
@@ -108,6 +121,7 @@ namespace Lucky.Home.Sinks
                 int recvTimeAcc = 0;
                 int recvCallsAcc = 0;
                 int recvSamples = 0;
+                int recvBufferSizeAcc = 0;
 
                 while (i < data.Length)
                 {
@@ -120,12 +134,13 @@ namespace Lucky.Home.Sinks
                     StreamResponse ack = connection.Read<StreamResponse>();
                     if (ack.Result != ErrorCode.Ok)
                     {
-                        Logger.Log("Bad response  at " + this + ": " + ack.Result);
+                        Logger.Log("Bad StreamResponse response at " + this + ": " + ack.Result);
                         return;
                     }
 
                     recvTimeAcc += ack.ElapsedMs;
                     recvCallsAcc += ack.CallsCount;
+                    recvBufferSizeAcc += ack.BufferFreeSize;
                     recvSamples++;
                     i += l;
                     tdelta += l;
@@ -133,9 +148,13 @@ namespace Lucky.Home.Sinks
                     DateTime t = DateTime.Now;
                     if (t - ts > TimeSpan.FromSeconds(1))
                     {
-                        Console.WriteLine("{0}KB, avg: {1:0.0}KB/s. MTU:1500: avgRcv: {2:0.0}ms, avgDequeue#: {3:0.0}\n", i / 1024, tdelta / 1024.0, (float)recvTimeAcc / recvSamples, (float)recvCallsAcc / recvSamples);
+                        Console.WriteLine("{0}KB, avg: {1:0.0}KB/s. MTU:1500: avgRcv: {2:0.0}ms, avgDequeue#: {3:0.0}, avgBufferFree: {4:0.0}Kb\n", i / 1024, tdelta / 1024.0, (float)recvTimeAcc / recvSamples, (float)recvCallsAcc / recvSamples, (float)recvBufferSizeAcc / recvSamples / 1024);
                         ts = t;
                         tdelta = 0;
+                        recvTimeAcc = 0;
+                        recvCallsAcc = 0;
+                        recvBufferSizeAcc = 0;
+                        recvSamples = 0;
                     }
                 }
             }
@@ -182,7 +201,7 @@ namespace Lucky.Home.Sinks
                 ErrorCode ack = connection.Read<ErrorCode>();
                 if (ack != ErrorCode.Ok)
                 {
-                    Logger.Log("Bad response  at " + this + ": " + ack);
+                    Logger.Log("Bad response SetVolumeMessage at " + this + ": " + ack);
                     return false;
                 }
             }

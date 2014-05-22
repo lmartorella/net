@@ -41,9 +41,9 @@ BYTE spi_shift(BYTE data);
 // Send/read a word MSB
 UINT16 spi_shift16(UINT16 data);
 // Send an array and ignore in data
-void spi_shift_array(const BYTE* buffer, BYTE size);
+void spi_shift_array_8(const BYTE* buffer, BYTE size);
 // Send a repeated byte
-void spi_shift_repeat(BYTE data, BYTE size);
+void spi_shift_repeat_8(BYTE data, BYTE size);
 
 extern BYTE s_spiInUse;
 #define spi_lock() (s_spiInUse++)

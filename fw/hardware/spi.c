@@ -65,23 +65,25 @@ UINT16 spi_shift16(UINT16 data)
 }
 
 // Send an array and ignore in data
-void spi_shift_array(const BYTE* buffer, BYTE size)
+void spi_shift_array_8(const BYTE* buffer, BYTE size)
 {
     spi_lock();
-    for (int i = 0; i < size; i++)
+    while (size > 0)
     {
         spi_shift(*(buffer++));
+        size--;
     }
     spi_release();
 }
 
 // Send a repeated byte
-void spi_shift_repeat(BYTE data, BYTE size)
+void spi_shift_repeat_8(BYTE data, BYTE size)
 {
     spi_lock();
-    for (int i = 0; i < size; i++)
+    while (size > 0)
     {
         spi_shift(data);
+        size--;
     }
     spi_release();
 }

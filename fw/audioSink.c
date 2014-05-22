@@ -11,17 +11,19 @@ static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
 static BYTE TEMP_BUFFER[250];       // Less than 256, to call sram_write_8
-static long _ringStart, _ringEnd;
-#define RING_SIZE 0x20000l       // All 128Kb!
+static UINT16 _ringStart, _ringEnd;
+#define RING_SIZE 0x10000l          // Only 64Kb, simplify logic
 
-inline static long queueSize()
+inline static UINT16 queueSize()
 {
-    return ((_ringEnd - _ringStart) + RING_SIZE) % RING_SIZE;
+    //return ((_ringEnd - _ringStart) + RING_SIZE) % RING_SIZE;
+    return _ringEnd - _ringStart;
 }
 
-inline static long freeSize()
+inline static UINT16 freeSize()
 {
-    return RING_SIZE - queueSize();
+    //return RING_SIZE - queueSize();
+    return -queueSize() - 1;
 }
 
 static union
@@ -107,8 +109,9 @@ typedef struct
 typedef struct
 {
     AUDIO_RESPONSE res;
-    WORD elapsedMs;
-    WORD calls;
+    UINT16 elapsedMs;
+    UINT16 calls;
+    UINT16 freeSize;
 } AUDIO_STREAM_RESPONSE;
 
 static AUDIO_RESPONSE _initAudio()
@@ -174,22 +177,27 @@ static void _processData()
         while (len > 0 && _streamSize > 0)
         {
             // Allocate bytes and transfer it to the external RAM ring buffer
+            BYTE toCopy = len > sizeof(TEMP_BUFFER) ? (BYTE)sizeof(TEMP_BUFFER) : (BYTE)len;
+
             spi_lock(); // really necessary to lock on ringEnd?
-            BYTE l = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
-            if ((_ringEnd + l) > RING_SIZE)
+            if (_ringEnd > 0)
             {
-                l = RING_SIZE - _ringEnd;
+                UINT16 space = -_ringEnd;
+                if (toCopy > space)
+                {
+                    toCopy = (BYTE)space;
+                }
             }
             spi_release();
 
             if (s_flags.disableTcpGet)
             {
                 TCPDiscard(s_listenerSocket);
-                l = 255;    // cannot load the sram_write_8 with more than 255 bytes!
+                toCopy = 128;    // cannot load the sram_write_8 with more than 255 bytes!
             }
             else
             {
-                TCPGetArray(s_listenerSocket, TEMP_BUFFER, l);
+                TCPGetArray(s_listenerSocket, TEMP_BUFFER, toCopy);
             }
 
             if (s_flags.disableRamWrite)
@@ -199,13 +207,14 @@ static void _processData()
             {
                 // Copy data to Ext RAM
                 spi_lock();
-                sram_write_8(TEMP_BUFFER, _ringEnd, (BYTE)l);
-                _ringEnd = (_ringEnd + l) % RING_SIZE;
+                sram_write_8(TEMP_BUFFER, _ringEnd, toCopy);
+                //_ringEnd = (_ringEnd + l) % RING_SIZE;
+                _ringEnd += toCopy;
                 spi_release();
             }
 
-            len -= l;
-            _streamSize -= l;
+            len -= toCopy;
+            _streamSize -= toCopy;
         }
     }
 
@@ -215,6 +224,7 @@ static void _processData()
         response.elapsedMs = TickConvertToMilliseconds(TickGet() - _startTime);
         response.res = AUDIO_RES_OK;
         response.calls = _dequeueCallCount;
+        response.freeSize = freeSize();
 
         // ACK
         s_flags.isWaitingForCommand = 1;
@@ -244,7 +254,7 @@ static void pollAudioSink()
             {
                     AUDIO_COMMAND cmd;
                     TCPGetArray(s_listenerSocket, (BYTE*)&cmd, sizeof(AUDIO_COMMAND));
-                    AUDIO_RESPONSE response;
+                    AUDIO_RESPONSE response = AUDIO_RES_OK;
                     switch (cmd)
                     {
                         case AUDIO_INIT:
@@ -308,10 +318,11 @@ void audio_pollMp3Player()
         {
             // Pull 32 bytes of data
             sram_read_8(buffer, _ringStart, sizeof(buffer));
-           _ringStart += sizeof(buffer);
+            //_ringStart = (_ringStart + sizeof(buffer)) % RING_SIZE;
+            _ringStart += sizeof(buffer);
 
-           // Flush data to MP3
-           vs1011_streamData(buffer, sizeof(buffer));
+            // Flush data to MP3
+            vs1011_streamData(buffer, sizeof(buffer));
         }
     }
 }
