@@ -64,7 +64,7 @@
  *   requires them otherwise, enable them here.
  */
 #define STACK_USE_TCP
-#define STACK_USE_UDP
+//#define STACK_USE_UDP
 
 /* Client Mode Configuration
  *   Uncomment following line if this stack will be used in CLIENT

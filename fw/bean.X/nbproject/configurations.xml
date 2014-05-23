@@ -92,7 +92,6 @@
         <itemPath>../tcpipstack/TCPIPStack/UDP.c</itemPath>
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
-      <itemPath>../flasher.c</itemPath>
       <itemPath>../main.c</itemPath>
       <itemPath>../persistence.c</itemPath>
       <itemPath>../protocol.c</itemPath>
@@ -295,7 +294,7 @@
         <property key="extra-include-directories"
                   value="..\tcpipstack;..\tcpipstack\Include;..\tcpipstack\Include\TCPIPStack"/>
         <property key="identifier-length" value="255"/>
-        <property key="operation-mode" value="free"/>
+        <property key="operation-mode" value="pro"/>
         <property key="opt-xc8-compiler-strict_ansi" value="false"/>
         <property key="optimization-assembler" value="true"/>
         <property key="optimization-assembler-files" value="true"/>
@@ -334,7 +333,7 @@
         <property key="display-class-usage" value="false"/>
         <property key="display-hex-usage" value="false"/>
         <property key="display-overall-usage" value="true"/>
-        <property key="display-psect-usage" value="true"/>
+        <property key="display-psect-usage" value="false"/>
         <property key="fill-flash-options-addr" value=""/>
         <property key="fill-flash-options-const" value=""/>
         <property key="fill-flash-options-how" value="0"/>

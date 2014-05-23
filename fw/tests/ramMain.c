@@ -1,9 +1,6 @@
 #include "../hardware/fuses.h"
 #include "../hardware/utilities.h"
 #include "../hardware/cm1602.h"
-#include "../hardware/spiram.h"
-#include "../hardware/spi.h"
-#include <stdio.h>
 
 static void _clr(BYTE addr)
 {

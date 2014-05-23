@@ -60,7 +60,7 @@
 // other Microchip software libraries and therefore poses a merge and maintence
 // problem.  Instead of using the TICK data type, just use the base DWORD data
 // type instead.
-typedef __attribute__((__deprecated__)) DWORD TICK;
+//typedef __attribute__((__deprecated__)) DWORD TICK;
 
 // This value is used by TCP and other modules to implement timeout actions.
 // For this definition, the Timer must be initialized to use a 1:256 prescalar
@@ -82,6 +82,6 @@ DWORD TickGet(void);
 DWORD TickGetDiv256(void);
 DWORD TickGetDiv64K(void);
 DWORD TickConvertToMilliseconds(DWORD dwTickValue);
-BYTE TickUpdate(void);
+void TickUpdate(void);
 
 #endif

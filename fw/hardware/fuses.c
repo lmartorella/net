@@ -1,5 +1,5 @@
 #include "fuses.h"
-#include <delays.h>
+//#include <delays.h>
 // For the list of fuses, run "mcc18.exe --help-config -p=18f87j60"
 
 // Enable WDT, 1:256 prescaler

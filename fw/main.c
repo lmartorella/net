@@ -8,6 +8,7 @@
 #include "timers.h"
 #include "appio.h"
 #include "TCPIPStack/TCPIP.h"
+#include "audioSink.h"
 #include <stdio.h>
 
 // The smallest type capable of representing all values in the enumeration type.
@@ -95,7 +96,6 @@ void sendHelo(void);
 
 void main()
 {
-    int i;
     // Analyze RESET reason
     storeResetReason();
 
@@ -154,26 +154,30 @@ void main()
     // I'm alive
     while (1)
     {
-            BOOL timer1 = timers_check1s();
+            TIMER_RES timers = timers_check();
 
-            // Do ETH stuff
-            StackTask();
-
-            // This tasks invokes each of the core stack application tasks
-            StackApplications();
-
-            if (timer1)
+            if (timers.timer_10ms)
             {
-                    timer1s();
-            }
-            if (s_dhcpOk)
-            {
+                // Do ETH stuff
+                StackTask();
+                // This tasks invokes each of the core stack application tasks
+                StackApplications();
+                if (s_dhcpOk)
+                {
                     prot_poll();
-                    if (timer1)
-                    {
-                            prot_slowTimer();
-                    }
+                }
             }
+
+            if (timers.timer_1s)
+            {
+                timer1s();
+                if (s_dhcpOk)
+                {
+                    prot_slowTimer();
+                }
+            }
+
+            audio_pollMp3Player();
             ClrWdt();
     }
 }
@@ -181,7 +185,7 @@ void main()
 void timer1s()
 {
 	char buf[17];
-	int dhcpOk, dhcpWasOk;
+	int dhcpOk;
 	println("");
 
 	dhcpOk = DHCPIsBound(0) != 0;

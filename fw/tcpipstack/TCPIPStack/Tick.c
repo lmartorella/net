@@ -387,7 +387,7 @@ DWORD TickConvertToMilliseconds(DWORD dwTickValue)
      The LSB of tick
   ***************************************************************************/
 #if defined(__18CXX) || defined(__XC8)
-BYTE TickUpdate(void)
+void TickUpdate(void)
 {
     if(INTCONbits.TMR0IF)
     {
@@ -396,11 +396,6 @@ BYTE TickUpdate(void)
         
         // Reset interrupt flag
         INTCONbits.TMR0IF = 0;
-        return ((BYTE)dwInternalTicks);
-    }
-    else
-    {
-        return 0xff;
     }
 }
 
