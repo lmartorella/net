@@ -14,9 +14,10 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>../timers.c</itemPath>
       <itemPath>../hardware/fuses.c</itemPath>
       <itemPath>../tests/timerMain.c</itemPath>
+      <itemPath>../appio.c</itemPath>
+      <itemPath>../hardware/cm1602.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
