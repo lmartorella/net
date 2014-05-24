@@ -100,24 +100,6 @@ void sram_write(const BYTE* src, UINT32 address, UINT16 count)
         spi_release();
 }
 
-// Write a vector of bytes in RAM, optimized for 255 bytes MAX
-// NOTE: do not support SPI cross-bank access
-//  - *dest is in banked PIC RAM
-//  - address is logic SPIRAM address of the first byte to write
-//  - count is the count of byes to write
-void sram_write_8(const BYTE* src, UINT32 address, BYTE count)
-{
-	UINT16 raddr = (UINT16)address;
-        spi_lock();
-        enableBank(address >> 15);
-	spi_shift(MSG_WRITE);
-	spi_shift16(raddr);
-        spi_shift_array_8(src, count);
-	disableAll();
-        spi_release();
-        ClrWdt();
-}
-
 // Read a vector of bytes in RAM.
 // NOTE: do not support SPI cross-bank access
 //  - *dest is in banked PIC RAM
@@ -135,110 +117,79 @@ void sram_read(BYTE* dest, UINT32 address, UINT16 count)
             // Read 1 byte
             *(dest++) = spi_shift(0);
             count--;
-            ClrWdt();
 	}
 	disableAll();
-        spi_release();
-}
-
-// Read a vector of bytes in RAM.
-// NOTE: do not support SPI cross-bank access
-//  - *dest is in banked PIC RAM
-//  - address is logic SPIRAM address of the first byte to read
-//  - count is the count of byes to read
-void sram_read_8(BYTE* dest, UINT32 address, BYTE count)
-{
-	UINT16 raddr = (UINT16)address;
-        spi_lock();
-        enableBank(address >> 15);
-	spi_shift(MSG_READ);
-	spi_shift16(raddr);
-        while (count > 0)
-	{
-            // Read 1 byte
-            *(dest++) = spi_shift(0);
-            count--;
-            ClrWdt();
-	}
-	disableAll();
+        ClrWdt();
         spi_release();
 }
 
 // Test all 4 banks, displays the ADDR of the failing test and hang if found one
 // bs is the BYTE seed
-void sram_test_gui(BYTE bs)
-{
-    char msg[16];
-    BYTE buffer[256];
+#define HIGH_MEM 0x20000
 
+// Use a non-256 multiple to test cross-boundary accesses
+void sram_test_gui(BYTE bs, BYTE* buffer, UINT16 bufferSize)
+{
     // To use a pseudo-random seq string that spans on all banks
     // write first, read then
-    BYTE b;
-    UINT32 addr;
-    BYTE i1, i2, i3;
 
     // Write all
     clearln();
-    addr = 0x0;
-    b = bs;
-    for (i1 = 0; i1 < 2; i1++)
+    BYTE b = bs;
+    BYTE gui = 0;
+    for (UINT32 addr = 0; addr < HIGH_MEM; addr += bufferSize)
     {
-        i2 = 0;
-        do
+        UINT16 toWrite = bufferSize;
+        if (addr + toWrite > HIGH_MEM)
         {
-            i3 = 0;
-            do
-            {
-                b += 251; // largest prime < 256
-                buffer[i3++] = b;
-            } while (i3 != 0);
+            toWrite = HIGH_MEM - addr;
+        }
+        for (int i = 0; i < toWrite; i++)
+        {
+            b += 251; // largest prime < 256
+            buffer[i] = b;
+        }
+        sram_write(buffer, addr, toWrite);
 
-            sram_write(buffer, addr, 256);
-            addr += 256;
-            i2++;
-
-            if ((i2 % 0x20) == 0)
-            {
-                printch('.');
-            }
-
-        } while (i2 != 0);
+        if (((++gui) % 8) == 0)
+        {
+            printch('.');
+        }
     }
 
     // READ all
     clearln();
-    addr = 0x0;
     b = bs;
-    for (i1 = 0; i1 < 2; i1++)
+    gui = 0;
+    for (UINT32 addr = 0; addr < HIGH_MEM; addr += bufferSize)
     {
-        i2 = 0;
-        do
+        UINT16 toRead = bufferSize;
+        if (addr + toRead > HIGH_MEM)
         {
-            i3 = 0;
-            sram_read(buffer, addr, 256);
-            do
-            {
-                b += 251; // largest prime < 256
-                if (buffer[i3++] != b)
-                {
-                    sprintf(msg, "FAIL #%8lX", addr);
-                    printlnUp(msg);
-                    sprintf(msg, "EXP: %2X, RD: %2X", (int)b, (int)buffer[i3 - 1]);
-                    println(msg);
-                    // HANG
-                    di();
-                    while (1) CLRWDT();
-                }
-            } while (i3 != 0);
-            i2++;
-            addr += 256;
+            toRead = HIGH_MEM - addr;
+        }
 
-            if ((i2 % 0x20) == 0)
+        sram_read(buffer, addr, toRead);
+        for (int i = 0; i < toRead; i++)
+        {
+            b += 251; // largest prime < 256
+            if (buffer[i] != b)
             {
-                printch('%');
+                char msg[16];
+                sprintf(msg, "FAIL #%8lX", addr + i);
+                printlnUp(msg);
+                sprintf(msg, "EXP: %2X, RD: %2X", (int)b, (int)buffer[i]);
+                println(msg);
+                // HANG
+                di();
+                while (1) CLRWDT();
             }
+        }
 
-        } while (i2 != 0);
+        if (((++gui) % 8) == 0)
+        {
+            printch('%');
+        }
     }
 }
 

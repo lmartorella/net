@@ -94,6 +94,8 @@ static void enableInterrupts(void)
 void timer1s(void);
 void sendHelo(void);
 
+static BYTE buffer[31];
+
 void main()
 {
     // Analyze RESET reason
@@ -129,7 +131,7 @@ void main()
 
     wait1s();
     println("ChkRam");
-    sram_test_gui(123);
+    sram_test_gui(123, buffer, sizeof(buffer));
     clearlnUp();
     
     println("IP/DHCP");
@@ -184,27 +186,26 @@ void main()
 
 void timer1s()
 {
-	char buf[17];
-	int dhcpOk;
-	println("");
+    int dhcpOk;
+    println("");
 
-	dhcpOk = DHCPIsBound(0) != 0;
+    dhcpOk = DHCPIsBound(0) != 0;
 
-	if (dhcpOk != s_dhcpOk)
-	{
-		if (dhcpOk)
-		{
-			unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
-			sprintf(buf, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
-			cm1602_setDdramAddr(0x0);
-			cm1602_writeStr(buf);
-			s_dhcpOk = TRUE;
-		}
-		else
-		{
-			s_dhcpOk = FALSE;
-			fatal("DHCP.nok");
-		}
-	}
+    if (dhcpOk != s_dhcpOk)
+    {
+            if (dhcpOk)
+            {
+                    unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
+                    sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
+                    cm1602_setDdramAddr(0x0);
+                    cm1602_writeStr(buffer);
+                    s_dhcpOk = TRUE;
+            }
+            else
+            {
+                    s_dhcpOk = FALSE;
+                    fatal("DHCP.nok");
+            }
+    }
 }
 
