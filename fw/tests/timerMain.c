@@ -4,8 +4,8 @@
 #include <stdio.h>
 
 #define GetPeripheralClock() (25000000/4)
-#define TICKS_PER_SECOND		((GetPeripheralClock()+128ull)/256ull)	// Internal core clock drives timer with 1:256 prescaler
-#define TICK_SECOND				((QWORD)TICKS_PER_SECOND)
+#define TICKS_PER_SECOND     ((GetPeripheralClock()+128ull)/256ull)	// Internal core clock drives timer with 1:256 prescaler
+#define TICK_SECOND          ((QWORD)TICKS_PER_SECOND)
 
 static DWORD s_1sec;
 static DWORD s_10msec;
@@ -14,9 +14,9 @@ static DWORD s_10msec;
 
 static volatile DWORD dwInternalTicks = 0;
 
-void TickUpdate(void)
+void interrupt low_priority low_isr(void)
 {
-    if(INTCONbits.TMR0IF)
+    if (INTCONbits.TMR0IF)
     {
         // Increment internal high tick counter
         dwInternalTicks++;
@@ -26,11 +26,7 @@ void TickUpdate(void)
     }
 }
 
-void interrupt low_priority low_isr(void)
-{
-    // Update ETH module timers at ~23Khz freq
-    TickUpdate();
-}
+DWORD TickGet(void);
 
 void TickInit(void)
 {
@@ -46,44 +42,32 @@ void TickInit(void)
 
     // Timer0 on, 16-bit, internal timer, 1:256 prescalar
     T0CON = 0x87;
-}
 
-// 6-byte value to store Ticks.  Allows for use over longer periods of time.
-static BYTE vTickReading[6];
-
-static void GetTickCopy(void)
-{
-	// Perform an Interrupt safe and synchronized read of the 48-bit
-	// tick value
-	do
-	{
-		INTCONbits.TMR0IE = 1;		// Enable interrupt
-		Nop();
-		INTCONbits.TMR0IE = 0;		// Disable interrupt
-		vTickReading[0] = TMR0L;
-		vTickReading[1] = TMR0H;
-		*((DWORD*)&vTickReading[2]) = dwInternalTicks;
-	} while(INTCONbits.TMR0IF);
-	INTCONbits.TMR0IE = 1;			// Enable interrupt
+    s_1sec = s_10msec = TickGet();
 }
 
 DWORD TickGet(void)
 {
-    GetTickCopy();
+    // 6-byte value to store Ticks.  Allows for use over longer periods of time.
+    BYTE vTickReading[6];
+    // Perform an Interrupt safe and synchronized read of the 48-bit
+    // tick value
+    do
+    {
+        INTCONbits.TMR0IE = 1;		// Enable interrupt
+        Nop();
+        INTCONbits.TMR0IE = 0;		// Disable interrupt
+        vTickReading[0] = TMR0L;
+        vTickReading[1] = TMR0H;
+        *((DWORD*)&vTickReading[2]) = dwInternalTicks;
+    } while(INTCONbits.TMR0IF);
+    INTCONbits.TMR0IE = 1;			// Enable interrupt
     return *((DWORD*)&vTickReading[0]);
 }
 
-void timers_init()
+typedef union
 {
-    // Init ETH Ticks on timer0 (low prio) module
-    TickInit();
-    // Align 1sec to now()
-    s_1sec = s_10msec = TickGet();
-}
-
-typedef struct
-{
-    union
+    struct
     {
         unsigned timer_1s: 1;
         unsigned timer_10ms: 1;
@@ -95,6 +79,7 @@ TIMER_RES timers_check()
 {
     TIMER_RES res;
     res.v = 0;
+    
     DWORD now = TickGet();
     if ((now - s_1sec) >= TICKS_1S)
     {
@@ -126,14 +111,12 @@ void main()
         TIMER_RES res = timers_check();
         if (res.timer_1s)
         {
-            slow++;
-            sprintf(buffer, "%d", slow);
+            sprintf(buffer, "SL:%d", slow++);
             println(buffer);
         }
         if (res.timer_10ms)
         {
-            fast++;
-            sprintf(buffer, "%d", fast);
+            sprintf(buffer, "FA:%d", fast++);
             printlnUp(buffer);
         }
     }

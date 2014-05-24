@@ -6,9 +6,9 @@
 // Init timers stuff
 void timers_init(void);
 
-typedef struct
+typedef union
 {
-    union
+    struct
     {
         unsigned timer_1s: 1;
         unsigned timer_10ms: 1;

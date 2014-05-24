@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Reflection;
 using Lucky.Home.Core;
 using Lucky.Home.Sinks;
@@ -7,7 +8,7 @@ namespace Lucky.Home
 {
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
             //Manager.Register<HelloListener, IHelloListener>();
             Manager.Register<Logger, ILogger>();
@@ -28,7 +29,7 @@ namespace Lucky.Home
                     case "q":
                         return;
                     case "s":
-                        AudioPlayerSink.StartTest();
+                        AudioPlayerSink.DoStartTest(new FileInfo(args[0]));
                         break;
                 }
             }

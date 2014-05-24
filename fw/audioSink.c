@@ -10,7 +10,7 @@
 static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
-static BYTE TEMP_BUFFER[250];       // Less than 256, to call sram_write_8
+static BYTE TEMP_BUFFER[1500];
 static UINT16 _ringStart, _ringEnd;
 #define RING_SIZE 0x10000l          // Only 64Kb, simplify logic
 
@@ -166,28 +166,22 @@ static AUDIO_RESPONSE _startStream()
     return AUDIO_RES_OK;
 }
 
+void audio_pollMp3Player();
+
 static void _processData()
 {
     _dequeueCallCount++;
-    WORD len = TCPIsGetReady(s_listenerSocket);
+    BOOL streamPending = _streamSize > 0;
 
     // If no room, leave the socket unread
-    if (freeSize() >= len)
+    if (streamPending && freeSize() >= sizeof(TEMP_BUFFER))
     {
-        while (len > 0 && _streamSize > 0)
+        // Only dequeue a buffer of data, quick poll to leave room for MP3 poller
+        WORD len = TCPIsGetReady(s_listenerSocket);
+        if (len > 0)
         {
             // Allocate bytes and transfer it to the external RAM ring buffer
-            BYTE toCopy = len > sizeof(TEMP_BUFFER) ? (BYTE)sizeof(TEMP_BUFFER) : (BYTE)len;
-
-            spi_lock(); // really necessary to lock on ringEnd?
-            if (_ringEnd > 0)
-            {
-                UINT16 space = -_ringEnd;
-                if (toCopy > space)
-                {
-                    toCopy = (BYTE)space;
-                }
-            }
+            WORD toCopy = len > sizeof(TEMP_BUFFER) ? sizeof(TEMP_BUFFER) : len;
 
             if (s_flags.disableTcpGet)
             {
@@ -198,26 +192,36 @@ static void _processData()
             {
                 TCPGetArray(s_listenerSocket, TEMP_BUFFER, toCopy);
             }
+            audio_pollMp3Player();
 
-            if (s_flags.disableRamWrite)
-            {
-            }
-            else
+            if (!s_flags.disableRamWrite)
             {
                 // Copy data to Ext RAM
-                sram_write_8(TEMP_BUFFER, _ringEnd, toCopy);
+                UINT16 space = -_ringEnd;
+                if (_ringEnd > 0 && toCopy > space)
+                {
+                    sram_write(TEMP_BUFFER, _ringEnd, space);
+                    audio_pollMp3Player();
+                    sram_write(TEMP_BUFFER + space, 0, toCopy - space);
+                }
+                else
+                {
+                    sram_write(TEMP_BUFFER, _ringEnd, toCopy);
+                }
+
                 //_ringEnd = (_ringEnd + l) % RING_SIZE;
                 _ringEnd += toCopy;
+
+                audio_pollMp3Player();
             }
 
-            spi_release();
-            len -= toCopy;
             _streamSize -= toCopy;
         }
     }
-
-    if (_streamSize == 0)
+    else if (!streamPending)
     {
+        // Only do it if no room or
+
         AUDIO_STREAM_RESPONSE response;
         response.elapsedMs = TickConvertToMilliseconds(TickGet() - _startTime);
         response.res = AUDIO_RES_OK;
@@ -233,7 +237,9 @@ static void _processData()
         }
         
         TCPFlush(s_listenerSocket);
-        TCPDiscard(s_listenerSocket);
+        //TCPDiscard(s_listenerSocket);
+
+        audio_pollMp3Player();
     }
 }
 
@@ -309,31 +315,33 @@ audioStream:
 
 
 #define BLOCK_SIZE 32
-
 void audio_pollMp3Player()
 {
-    if (s_flags.sdiCopyEnabled && !spi_isLocked())
+    char mp3Buffer[BLOCK_SIZE];
+
+    if (s_flags.sdiCopyEnabled)
     {
         UINT16 len = queueSize();
-        if (vs1011_isWaitingData() && len >= BLOCK_SIZE)
+        while (vs1011_isWaitingData() && len >= BLOCK_SIZE)
         {
             UINT16 space = -_ringStart;
             if (_ringStart > 0 && space < BLOCK_SIZE)
             {
-                sram_read_8(TEMP_BUFFER, _ringStart, space);
-                sram_read_8(TEMP_BUFFER + space, 0, BLOCK_SIZE - space);
+                sram_read_8(mp3Buffer, _ringStart, space);
+                sram_read_8(mp3Buffer + space, 0, BLOCK_SIZE - space);
             }
             else
             {
                 // Pull 32 bytes of data
-                sram_read_8(TEMP_BUFFER, _ringStart, BLOCK_SIZE);
+                sram_read_8(mp3Buffer, _ringStart, BLOCK_SIZE);
             }
             
             //_ringStart = (_ringStart + toCopy) % RING_SIZE;
             _ringStart += BLOCK_SIZE;
-
+            len -= BLOCK_SIZE;
+            
             // Flush data to MP3
-            vs1011_streamData(TEMP_BUFFER, BLOCK_SIZE);
+            vs1011_streamData(mp3Buffer, BLOCK_SIZE);
         }
     }
 }

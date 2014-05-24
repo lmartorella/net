@@ -1,9 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
 using Lucky.Home.Core.Serialization;
-using Lucky.Home.Resources;
 
 // ReSharper disable once UnusedMember.Global
 
@@ -102,19 +102,31 @@ namespace Lucky.Home.Sinks
                     {
                         Logger.Log("Bad EnableSdi response at " + this + ": " + ack);
                     }
+
+                    connection.Write(new SetVolumeMessage(25, 25));
+                    ack = connection.Read<ErrorCode>();
+                    if (ack != ErrorCode.Ok)
+                    {
+                        Logger.Log("Bad SetVolume response at " + this + ": " + ack);
+                    }
                 }
 
                 //SineTest();
                 //Mp3Test();
             });
-            StartTestEvent += (o, e) => Mp3Test();
+            StartTestEvent += Mp3Test;
         }
 
-        private void Mp3Test()
+        private void Mp3Test(FileInfo fileInfo)
         {
             using (var connection = Open())
             {
-                byte[] data = ExampleData.PortalEndingTheme_mp3;
+                byte[] data;
+                using (FileStream fileStream = fileInfo.OpenRead())
+                {
+                    data = new byte[fileStream.Length];
+                    fileStream.Read(data, 0, (int)fileStream.Length);
+                }
                 int i = 0;
                 DateTime ts = DateTime.Now;
                 int tdelta = 0;
@@ -208,13 +220,13 @@ namespace Lucky.Home.Sinks
             return true;
         }
 
-        private static event EventHandler StartTestEvent;
+        private static event Action<FileInfo> StartTestEvent;
 
-        public static void StartTest()
+        public static void DoStartTest(FileInfo mp3File)
         {
             if (StartTestEvent != null)
             {
-                StartTestEvent(null, EventArgs.Empty);  
+                StartTestEvent(mp3File);  
             }
         }
     }
