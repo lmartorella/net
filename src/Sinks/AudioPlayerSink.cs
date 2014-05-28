@@ -10,7 +10,7 @@ using Lucky.Home.Core.Serialization;
 namespace Lucky.Home.Sinks
 {
     [DeviceId(AudioSinkId)]
-    class AudioPlayerSink : Sink
+    public class AudioPlayerSink : Sink
     {
         private const int AudioSinkId = 3;
 
@@ -79,7 +79,7 @@ namespace Lucky.Home.Sinks
             public ErrorCode Result;
             public ushort ElapsedMs;
             public ushort CallsCount;
-            public ushort BufferFreeSize;
+            public int BufferFreeSize;
         }
 
         protected override void OnInitialize()
@@ -137,7 +137,7 @@ namespace Lucky.Home.Sinks
 
                 while (i < data.Length)
                 {
-                    const int MAX_PACKET_SIZE = 1500;
+                    const int MAX_PACKET_SIZE = 1499;
                     int l = Math.Min(MAX_PACKET_SIZE, data.Length - i);
 
                     StreamDataMessage msg = new StreamDataMessage(data, i, l);

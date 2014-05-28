@@ -9,7 +9,7 @@ namespace Lucky.Home.Core
     /// <summary>
     /// Base class for sinks
     /// </summary>
-    class Sink : IEquatable<Sink>
+    public class Sink : IEquatable<Sink>
     {
         private IPAddress _host;
         protected readonly Logger Logger = new Logger();
@@ -60,6 +60,7 @@ namespace Lucky.Home.Core
                 stream.Position = 0;
 
                 _clientStream.Write(stream.GetBuffer(), 0, l);
+                _clientStream.Flush();
             }
 
             public T Read<T>()

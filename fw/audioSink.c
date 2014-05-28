@@ -10,19 +10,21 @@
 static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
-static UINT16 _ringStart, _ringEnd;
-#define RING_SIZE 0x8000      // The lower 32Kb
-#define RING_MASK 0x7FFF      // The lower 32Kb
+static unsigned long _ringStart, _ringEnd;
+#define RING_SIZE 0x20000ul
+#define RING_MASK 0x1FFFFul
 
-inline static UINT16 queueSize()
+// Range from 0 to (RING_SIZE - 1)
+inline static long queueSize()
 {
     //return ((_ringEnd - _ringStart) + RING_SIZE) % RING_SIZE;
     return (_ringEnd - _ringStart) & (RING_MASK);
 }
 
-inline static UINT16 freeSize()
+// Range from 0 to (RING_SIZE - 1)
+inline static long freeSize()
 {
-    return RING_SIZE - queueSize();
+    return (RING_SIZE - 1) - queueSize();
 }
 
 static union
@@ -110,7 +112,7 @@ typedef struct
     AUDIO_RESPONSE res;
     UINT16 elapsedMs;
     UINT16 calls;
-    UINT16 freeSize;
+    INT32 freeSize;
 } AUDIO_STREAM_RESPONSE;
 
 static AUDIO_RESPONSE _initAudio()
@@ -173,11 +175,11 @@ static void _processData()
     static BYTE buffer[1500];
 
     // If no room, leave the socket unread
-    if (_streamSize > 0 && freeSize() >= sizeof(buffer))
+    if (_streamSize > 0)
     {
-        // Only dequeue a buffer of data, quick poll to leave room for MP3 poller
         WORD len = TCPIsGetReady(s_listenerSocket);
-        if (len > 0)
+        // Only dequeue a buffer of data, quick poll to leave room for MP3 poller
+        if (len > 0 && freeSize() >= len)
         {
             // Allocate bytes and transfer it to the external RAM ring buffer
             WORD toCopy = len > sizeof(buffer) ? sizeof(buffer) : len;
@@ -198,16 +200,16 @@ static void _processData()
             {
                 // Copy data to Ext RAM
                 // Calc free space (only valid when _ringEnd > 0)
-                UINT16 space = RING_SIZE - _ringEnd;
-                if (_ringEnd > 0 && toCopy > space)
+                long space = RING_SIZE - _ringEnd;
+                if (space < toCopy)
                 {
                     // No room for a single block copy.
                     // Copy in two steps
-                    sram_write(buffer, (UINT32)_ringEnd, space);
+                    sram_write(buffer, _ringEnd, (WORD)space);
                     _ringEnd = 0;
                     audio_pollMp3Player();
-                    sram_write(buffer + space, (UINT32)0, toCopy - space);
-                    _ringEnd = toCopy - space;
+                    sram_write(buffer + (WORD)space, 0, toCopy - (WORD)space);
+                    _ringEnd = toCopy - (WORD)space;
                 }
                 else
                 {
@@ -215,8 +217,7 @@ static void _processData()
                     sram_write(buffer, _ringEnd, toCopy);
                     //_ringEnd = (_ringEnd + l) % RING_SIZE;
                     // It will cropped to 16 bit
-                    _ringEnd += toCopy;
-                    _ringEnd %= RING_MASK;
+                    _ringEnd = (_ringEnd + toCopy) & RING_MASK;
                 }
 
                 audio_pollMp3Player();
@@ -329,25 +330,22 @@ void audio_pollMp3Player()
 
     if (s_flags.sdiCopyEnabled)
     {
-        UINT16 len = queueSize();
+        long len = queueSize();
         while (vs1011_isWaitingData() && len >= sizeof(buffer))
         {
-            // Only valid when _ringStart > 0
-            UINT16 avail = RING_SIZE - _ringStart;
-            if (_ringStart > 0 && sizeof(buffer) > avail)
+            long avail = RING_SIZE - _ringStart;
+            if (sizeof(buffer) > avail)
             {
-                sram_read(buffer, (UINT32)_ringStart, avail);
-                sram_read(buffer + avail, (UINT32)0, sizeof(buffer) - avail);
+                sram_read(buffer, (UINT32)_ringStart, (WORD)avail);
+                sram_read(buffer + avail, (UINT32)0, sizeof(buffer) - (WORD)avail);
             }
             else
             {
                 // Pull 32 bytes of data
-                sram_read(buffer, _ringStart, sizeof(buffer));
+                sram_read(buffer, (UINT32)_ringStart, sizeof(buffer));
             }
             
-            //_ringStart = (_ringStart + toCopy) % RING_SIZE;
-            _ringStart += sizeof(buffer);
-            _ringStart %= RING_MASK;
+            _ringStart = (_ringStart + sizeof(buffer)) & RING_MASK;
             
             len -= sizeof(buffer);
             

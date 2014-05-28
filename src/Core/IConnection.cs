@@ -2,7 +2,7 @@
 
 namespace Lucky.Home.Core
 {
-    interface IConnection : IDisposable
+    public interface IConnection : IDisposable
     {
         void Write<T>(T data);
         T Read<T>();

@@ -2,7 +2,7 @@
 
 namespace Lucky.Home.Core
 {
-    class Logger : ILogger
+    public class Logger : ILogger
     {
         public void Log(string message)
         {
