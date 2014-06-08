@@ -28,7 +28,7 @@
 #pragma config FOSC = HS, FOSC2 = ON
 
 // No debugger
-#pragma config DEBUG = OFF
+#pragma config DEBUG = ON
 // No code protection
 #pragma config CP0 = OFF
 

@@ -47,6 +47,6 @@ void main()
 
     sram_init();
 
-    BYTE b = 0;
-    while (1) sram_test_gui(b++);
+    BYTE buffer[32];
+    while (1) sram_test_gui(buffer, sizeof(buffer));
 }

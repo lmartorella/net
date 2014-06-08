@@ -117,8 +117,8 @@ namespace RamTestPetterns
             RamBank bank = new RamBank(4, 32 * 1024);
             try
             {
-                //Test(bank, new SumGenerator(251), 1500);
-                Test(bank, new RandomGenerator(251), 1500);
+                Test(bank, new SumGenerator(251), 32);
+                //Test(bank, new RandomGenerator(251), 1500);
             }
             catch (Exception exc)
             {

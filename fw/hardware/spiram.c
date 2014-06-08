@@ -128,14 +128,14 @@ void sram_read(BYTE* dest, UINT32 address, UINT16 count)
 #define HIGH_MEM 0x20000
 
 // Use a non-256 multiple to test cross-boundary accesses
-void sram_test_gui(BYTE bs, BYTE* buffer, UINT16 bufferSize)
+void sram_test_gui(BYTE* buffer, UINT16 bufferSize)
 {
     // To use a pseudo-random seq string that spans on all banks
     // write first, read then
 
     // Write all
     clearln();
-    BYTE b = bs;
+    BYTE b = 0;
     BYTE gui = 0;
     for (UINT32 addr = 0; addr < HIGH_MEM; addr += bufferSize)
     {
@@ -151,7 +151,7 @@ void sram_test_gui(BYTE bs, BYTE* buffer, UINT16 bufferSize)
         }
         sram_write(buffer, addr, toWrite);
 
-        if (((++gui) % 8) == 0)
+        if (((++gui) % 32) == 0)
         {
             printch('.');
         }
@@ -159,7 +159,7 @@ void sram_test_gui(BYTE bs, BYTE* buffer, UINT16 bufferSize)
 
     // READ all
     clearln();
-    b = bs;
+    b = 0;
     gui = 0;
     for (UINT32 addr = 0; addr < HIGH_MEM; addr += bufferSize)
     {
@@ -186,7 +186,7 @@ void sram_test_gui(BYTE bs, BYTE* buffer, UINT16 bufferSize)
             }
         }
 
-        if (((++gui) % 8) == 0)
+        if (((++gui) % 32) == 0)
         {
             printch('%');
         }

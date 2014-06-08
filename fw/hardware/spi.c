@@ -9,12 +9,8 @@
 
 static void WaitForDataByte(void)   
 {
-#ifndef __DEBUG
-	while (!SPIRAM_SPI_IF); 
-	ClearSPIDoneFlag();
-#else
-#warning DEBUG CODE
-#endif
+    while (!SPIRAM_SPI_IF);
+    ClearSPIDoneFlag();
 }
 
 #define SPI_ON_BIT     (SPIRAM_SPICON1bits.SSPEN)

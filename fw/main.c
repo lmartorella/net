@@ -94,7 +94,7 @@ static void enableInterrupts(void)
 void timer1s(void);
 void sendHelo(void);
 
-static BYTE buffer[31];
+static BYTE buffer[32];
 
 void main()
 {
@@ -131,7 +131,7 @@ void main()
 
     wait1s();
     println("ChkRam");
-    sram_test_gui(123, buffer, sizeof(buffer));
+    sram_test_gui(buffer, sizeof(buffer));
     clearlnUp();
     
     println("IP/DHCP");

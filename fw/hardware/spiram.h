@@ -12,7 +12,7 @@
 void sram_init(void);
 // Test all 4 banks, displays the ADDR of the failing test and hang if found one
 // bs is the BYTE seed
-void sram_test_gui(BYTE bs, BYTE* buffer, UINT16 bufferSize);
+void sram_test_gui(BYTE* buffer, UINT16 bufferSize);
 
 // Read a vector of bytes in RAM.
 // NOTE: do not support SPI cross-bank access

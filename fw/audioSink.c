@@ -11,8 +11,8 @@ static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
 static unsigned long _ringStart, _ringEnd;
-#define RING_SIZE 0x20000ul
-#define RING_MASK 0x1FFFFul
+#define RING_SIZE 0x08000ul
+#define RING_MASK 0x07FFFul
 
 // Range from 0 to (RING_SIZE - 1)
 inline static long queueSize()
@@ -145,8 +145,8 @@ static AUDIO_RESPONSE _sineTest()
     return AUDIO_RES_OK;
 }
 
-static WORD _streamSize;
-static void _processData();
+static int _streamSize;
+static void _processData(int len);
 static DWORD _startTime;
 static int _dequeueCallCount;
 
@@ -163,26 +163,25 @@ static AUDIO_RESPONSE _startStream()
     _streamSize = msg.packetSize;
 
     // Now read _streamSize BYTES to RAM
-    _processData();
+    _processData(TCPIsGetReady(s_listenerSocket));
     return AUDIO_RES_OK;
 }
 
 void audio_pollMp3Player();
 
-static void _processData()
+static void _processData(int len)
 {
     _dequeueCallCount++;
     static BYTE buffer[1500];
 
     // If no room, leave the socket unread
-    if (_streamSize > 0)
+    if (_streamSize > 0 && len > 0)
     {
-        WORD len = TCPIsGetReady(s_listenerSocket);
         // Only dequeue a buffer of data, quick poll to leave room for MP3 poller
-        if (len > 0 && freeSize() >= len)
+        if (freeSize() >= len)
         {
             // Allocate bytes and transfer it to the external RAM ring buffer
-            WORD toCopy = len > sizeof(buffer) ? sizeof(buffer) : len;
+            int toCopy = len > sizeof(buffer) ? sizeof(buffer) : len;
 
             if (s_flags.disableTcpGet)
             {
@@ -208,8 +207,9 @@ static void _processData()
                     sram_write(buffer, _ringEnd, (WORD)space);
                     _ringEnd = 0;
                     audio_pollMp3Player();
-                    sram_write(buffer + (WORD)space, 0, toCopy - (WORD)space);
-                    _ringEnd = toCopy - (WORD)space;
+                    int l = toCopy - (int)space;
+                    sram_write(buffer + (int)space, 0, l);
+                    _ringEnd = l;
                 }
                 else
                 {
@@ -227,7 +227,7 @@ static void _processData()
         }
     }
 
-    if (_streamSize == 0)
+    if (_streamSize <= 0)
     {
         // Only do it if no other operation was done above
         AUDIO_STREAM_RESPONSE response;
@@ -255,13 +255,12 @@ static void _processData()
 
 static void pollAudioSink()
 {
-	unsigned short s;
 	if (!TCPIsConnected(s_listenerSocket))
 	{
             return;
 	}
 
-	s = TCPIsGetReady(s_listenerSocket);
+	WORD s = TCPIsGetReady(s_listenerSocket);
         if (s_flags.isWaitingForCommand)
         {
             if (s >= sizeof(AUDIO_COMMAND))
@@ -319,7 +318,7 @@ audioStream:
         }
         else
         {
-            _processData();
+            _processData(s);
         }
 }
 

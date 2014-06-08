@@ -117,16 +117,13 @@ namespace Lucky.Home.Sinks
             StartTestEvent += Mp3Test;
         }
 
-        private void Mp3Test(FileInfo fileInfo)
+        private void Mp3Test(Stream mp3Stream)
         {
             using (var connection = Open())
             {
                 byte[] data;
-                using (FileStream fileStream = fileInfo.OpenRead())
-                {
-                    data = new byte[fileStream.Length];
-                    fileStream.Read(data, 0, (int)fileStream.Length);
-                }
+                data = new byte[mp3Stream.Length];
+                mp3Stream.Read(data, 0, (int)mp3Stream.Length);
                 int i = 0;
                 DateTime ts = DateTime.Now;
                 int tdelta = 0;
@@ -137,7 +134,7 @@ namespace Lucky.Home.Sinks
 
                 while (i < data.Length)
                 {
-                    const int MAX_PACKET_SIZE = 1499;
+                    const int MAX_PACKET_SIZE = 512;
                     int l = Math.Min(MAX_PACKET_SIZE, data.Length - i);
 
                     StreamDataMessage msg = new StreamDataMessage(data, i, l);
@@ -220,13 +217,13 @@ namespace Lucky.Home.Sinks
             return true;
         }
 
-        private static event Action<FileInfo> StartTestEvent;
+        private static event Action<Stream> StartTestEvent;
 
-        public static void DoStartTest(FileInfo mp3File)
+        public static void DoStartFileTest(Stream mp3Stream)
         {
             if (StartTestEvent != null)
             {
-                StartTestEvent(mp3File);  
+                StartTestEvent(mp3Stream);
             }
         }
     }
