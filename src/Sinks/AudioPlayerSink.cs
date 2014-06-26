@@ -13,18 +13,19 @@ namespace Lucky.Home.Sinks
     public class AudioPlayerSink : Sink
     {
         private const int AudioSinkId = 3;
+        private TextWriter HighConsole = Console.Out; // StreamWriter.Null;
 
         public enum Command : byte
         {
             Init = 0,
             SetVolume = 1,
             TestSine = 2,
-            StreamData = 3,
+            StreamDataPacket = 3,
             EnableSdi = 4,
+            StreamBegin = 5,
+            StreamEnd = 6,
 
             Test1 = 100,
-            Test2 = 101,
-            Test3 = 102
         }
 
         public enum ErrorCode : byte
@@ -68,7 +69,7 @@ namespace Lucky.Home.Sinks
 
             public StreamDataMessage(byte[] data, int start, int l)
             {
-                Command = Command.StreamData;
+                Command = Command.StreamDataPacket;
                 Data = new byte[l];
                 Array.Copy(data, start, Data, 0, l);
             }
@@ -124,6 +125,7 @@ namespace Lucky.Home.Sinks
                 byte[] data;
                 data = new byte[mp3Stream.Length];
                 mp3Stream.Read(data, 0, (int)mp3Stream.Length);
+
                 int i = 0;
                 DateTime ts = DateTime.Now;
                 int tdelta = 0;
@@ -132,24 +134,37 @@ namespace Lucky.Home.Sinks
                 int recvSamples = 0;
                 int recvBufferSizeAcc = 0;
 
+                connection.Write(Command.StreamBegin);
+                HighConsole.Write("StreamBegin...");
+
+                ErrorCode ack = connection.Read<ErrorCode>();
+                if (ack != ErrorCode.Ok)
+                {
+                    Logger.Log("Bad StreamResponse response at " + this + ": " + ack);
+                    return;
+                }
+                HighConsole.WriteLine("OK");
+
                 while (i < data.Length)
                 {
-                    const int MAX_PACKET_SIZE = 512;
+                    //Thread.Sleep(300);
+                    const int MAX_PACKET_SIZE = 128;
                     int l = Math.Min(MAX_PACKET_SIZE, data.Length - i);
 
-                    StreamDataMessage msg = new StreamDataMessage(data, i, l);
-                    connection.Write(msg);
+                    connection.Write(new StreamDataMessage(data, i, l));
+                    HighConsole.Write("Msg[{0}]", l);
 
-                    StreamResponse ack = connection.Read<StreamResponse>();
-                    if (ack.Result != ErrorCode.Ok)
+                    var resp = connection.Read<StreamResponse>();
+                    if (resp.Result != ErrorCode.Ok)
                     {
-                        Logger.Log("Bad StreamResponse response at " + this + ": " + ack.Result);
+                        Logger.Log("Bad StreamResponse response at " + this + ": " + resp.Result);
                         return;
                     }
+                    HighConsole.WriteLine("OK");
 
-                    recvTimeAcc += ack.ElapsedMs;
-                    recvCallsAcc += ack.CallsCount;
-                    recvBufferSizeAcc += ack.BufferFreeSize;
+                    recvTimeAcc += resp.ElapsedMs;
+                    recvCallsAcc += resp.CallsCount;
+                    recvBufferSizeAcc += resp.BufferFreeSize;
                     recvSamples++;
                     i += l;
                     tdelta += l;
@@ -165,6 +180,14 @@ namespace Lucky.Home.Sinks
                         recvBufferSizeAcc = 0;
                         recvSamples = 0;
                     }
+                }
+
+                connection.Write(Command.StreamEnd);
+                ack = connection.Read<ErrorCode>();
+                if (ack != ErrorCode.Ok)
+                {
+                    Logger.Log("Bad StreamResponse response at " + this + ": " + ack);
+                    return;
                 }
             }
         }

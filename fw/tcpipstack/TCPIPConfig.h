@@ -73,9 +73,6 @@
  */
 #define STACK_CLIENT_MODE
 
-// ETH ram to use for TCP stack
-#define TCP_ETH_RAM_SIZE (3900ul)
-
 /* TCP Socket Memory Allocation
  *   TCP needs memory to buffer incoming and outgoing data.  The
  *   amount and medium of storage can be allocated on a per-socket
@@ -83,9 +80,9 @@
  */
 	// Allocate how much total RAM (in bytes) you want to allocate
 	// for use by your TCP TCBs, RX FIFOs, and TX FIFOs.
-	#define TCP_ETH_RAM_SIZE					(3900ul)
-	#define TCP_PIC_RAM_SIZE					(0ul)
-	#define TCP_SPI_RAM_SIZE					(0ul)
+	#define TCP_ETH_RAM_SIZE				(3900ul)
+	#define TCP_PIC_RAM_SIZE				(0ul)
+	#define TCP_SPI_RAM_SIZE				(0ul)
 	#define TCP_SPI_RAM_BASE_ADDRESS			(0x00)
 
 	// Define names of socket types
@@ -154,8 +151,8 @@
  *   Define the maximum number of available UDP Sockets, and whether
  *   or not to include a checksum on packets being transmitted.
  */
-#define MAX_UDP_SOCKETS     (8u)
-#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600 or PIC32MX6XX/7XX, which have a super fast DMA and incurs virtually no speed pentalty.
+#define MAX_UDP_SOCKETS     (2u)
+//#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600 or PIC32MX6XX/7XX, which have a super fast DMA and incurs virtually no speed pentalty.
 
 /* Berkeley API Sockets Configuration
  *   Note that each Berkeley socket internally uses one TCP or UDP socket
@@ -167,7 +164,7 @@
  *   Berkeley Sockets are disabled.  Set this value as low as your application
  *   requires to avoid waisting RAM.
  */
-#define BSD_SOCKET_COUNT (5u)
+//#define BSD_SOCKET_COUNT (5u)
 
 // =======================================================================
 //   Application-Specific Options
@@ -177,7 +174,7 @@
 
 	// Maximum numbers of simultaneous HTTP connections allowed.
 	// Each connection consumes 2 bytes of RAM and a TCP socket
-	#define MAX_HTTP_CONNECTIONS	(2u)
+	//#define MAX_HTTP_CONNECTIONS	(0u)
 
 #endif
 

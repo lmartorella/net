@@ -68,8 +68,10 @@
 #endif
 
 // Check for potential configuration errors in "TCPIPConfig.h"
+#if STACK_USE_HTTP2_SERVER
 #if (MAX_HTTP_CONNECTIONS <= 0 || MAX_HTTP_CONNECTIONS > 255 )
 #error Invalid MAX_HTTP_CONNECTIONS value specified.
+#endif
 #endif
 
 // Structure to contain a MAC address

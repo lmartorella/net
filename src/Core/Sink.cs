@@ -47,6 +47,8 @@ namespace Lucky.Home.Core
                 _tcpClient = new TcpClient();
                 _tcpClient.Connect(endPoint);
                 _clientStream = _tcpClient.GetStream();
+                //_clientStream.ReadTimeout = 5 * 60 * 1000;
+                //_clientStream.WriteTimeout = 5 * 60 * 1000;
                 _reader = new BinaryReader(_clientStream);
             }
 
