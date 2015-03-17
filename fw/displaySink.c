@@ -70,21 +70,21 @@ static void pollDisplaySink()
                 }
 
                 // TMP
-                s = _ringStart;
-                if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
-                {
-                    fatal("DSP_SND");
-                }
-                s = _ringEnd;
-                if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
-                {
-                    fatal("DSP_SND");
-                }
-                s = _streamSize;
-                if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
-                {
-                    fatal("DSP_SND");
-                }
+                //s = _ringStart;
+                //if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
+                //{
+                //    fatal("DSP_SND");
+                //}
+                //s = _ringEnd;
+                //if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
+                //{
+                //    fatal("DSP_SND");
+                //}
+                //s = _streamSize;
+                //if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
+                //{
+                //    fatal("DSP_SND");
+                //}
 
                 TCPFlush(s_listenerSocket);
 		TCPDiscard(s_listenerSocket);

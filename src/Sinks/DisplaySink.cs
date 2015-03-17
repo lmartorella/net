@@ -52,10 +52,10 @@ namespace Lucky.Home.Sinks
                         return;
                     }
 
-                    ushort ringStart = connection.Read<ushort>();
-                    ushort ringEnd = connection.Read<ushort>();
-                    ushort streamSize = connection.Read<ushort>();
-                    Console.WriteLine("Ring: {0:x4}-{1:x4}, Wait: {2:x4}", ringStart, ringEnd, streamSize);
+                    //ushort ringStart = connection.Read<ushort>();
+                    //ushort ringEnd = connection.Read<ushort>();
+                    //ushort streamSize = connection.Read<ushort>();
+                    //Console.WriteLine("Ring: {0:x4}-{1:x4}, Wait: {2:x4}", ringStart, ringEnd, streamSize);
                 }
                 Schedule();
             }

@@ -23,6 +23,11 @@ namespace Lucky.HomeMock.Sinks
                 {
                     Data(this, new DataEventArgs(str));
                 }
+                using (BinaryWriter writer = new BinaryWriter(stream))
+                {
+                    byte[] errorCode = { 0, 0 };
+                    writer.Write(errorCode);
+                }
             }
         }
 
