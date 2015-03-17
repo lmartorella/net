@@ -2,35 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Core
 {
     class SinkManager : ServiceBase
     {
-        private readonly Dictionary<int, Type> _deviceIds = new Dictionary<int, Type>();
+        private readonly Dictionary<SinkTypes, Type> _sinkTypes = new Dictionary<SinkTypes, Type>();
 
-        internal void RegisterSinkDevice<T>(int deviceId) where T : Sink, new()
+        internal void RegisterSinkDevice<T>(SinkTypes sinkType) where T : Sink, new()
         {
             // Exception if already registered..
-            _deviceIds.Add(deviceId, typeof(T));
+            _sinkTypes.Add(sinkType, typeof(T));
         }
 
         internal void RegisterAssembly(Assembly assembly)
         {
             foreach (Type type in assembly.GetTypes().Where(t => typeof(Sink).IsAssignableFrom(t)))
             {
-                DeviceIdAttribute[] attr = (DeviceIdAttribute[])type.GetCustomAttributes(typeof(DeviceIdAttribute), false);
+                SinkIdAttribute[] attr = (SinkIdAttribute[])type.GetCustomAttributes(typeof(SinkIdAttribute), false);
                 if (attr.Length >= 1)
                 {
-                    _deviceIds.Add(attr[0].DeviceId, type);
+                    _sinkTypes.Add(attr[0].SinkType, type);
                 }
             }
         }
 
-        public Sink CreateSink(int deviceId)
+        public Sink CreateSink(SinkTypes sinkType)
         {
             Type type;
-            if (!_deviceIds.TryGetValue(deviceId, out type))
+            if (!_sinkTypes.TryGetValue(sinkType, out type))
             {
                 // Unknown sink type
                 return null;

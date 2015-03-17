@@ -45,9 +45,8 @@
     <Reference Include="System.Speech" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\DeviceIdAttribute.cs" />
+    <Compile Include="Sinks\SinkIdAttribute.cs" />
     <Compile Include="Core\IConnection.cs" />
-    <Compile Include="Core\IHelloListener.cs" />
     <Compile Include="Core\ILogger.cs" />
     <Compile Include="Core\IServer.cs" />
     <Compile Include="Core\IService.cs" />
@@ -74,6 +73,7 @@
     <Compile Include="Core\Serialization\FlashAckResponse.cs" />
     <Compile Include="Sinks\AudioPlayerSink.cs" />
     <Compile Include="Sinks\RomFlasherSink.cs" />
+    <Compile Include="Sinks\SinkTypes.cs" />
     <Compile Include="Speech\TextToSpeechService.cs" />
   </ItemGroup>
   <ItemGroup>

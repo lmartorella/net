@@ -10,9 +10,9 @@ namespace Lucky.HomeMock.Sinks
     {
         private readonly TcpListener _serviceListener;
 
-        protected SinkBase(ushort port, ushort caps, ushort deviceId)
+        protected SinkBase(ushort startPort, ushort caps, ushort deviceId)
         {
-            Port = port;
+            Port = startPort;
             DeviceCaps = caps;
             DeviceID = deviceId;
 
@@ -21,8 +21,20 @@ namespace Lucky.HomeMock.Sinks
             {
                 throw new InvalidOperationException("Cannot find a public IP address of the host");
             }
-            _serviceListener = new TcpListener(hostAddress, port);
-            _serviceListener.Start();
+
+            while (_serviceListener == null)
+            {
+                try
+                {
+                    _serviceListener = new TcpListener(hostAddress, Port);
+                    _serviceListener.Start();
+                }
+                catch (SocketException)
+                {
+                    Port++;
+                    _serviceListener = null;
+                }
+            }
 
             AsyncCallback handler = null;
             handler = ar =>

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 
 namespace Lucky.HomeMock.Sinks
 {
     class DisplaySink : SinkBase
     {
-        public DisplaySink(ushort port)
-            :base(port, 0, 1)
+        private const int StartPort = 18000;
+
+        public DisplaySink()
+            : base(StartPort, 0, 1)
         {   }
 
         protected override void OnSocketOpened(Stream stream)

@@ -17,8 +17,6 @@ namespace Lucky.HomeMock
         private HomeReceiver _homeReceiver;
         private IPEndPoint _serverEndPoint;
 
-        private const int DisplayPort = 18000;
-        private const int FlasherPort = 18001;
         private readonly DisplaySink _displaySink;
         private readonly FlasherSink _flasherSink;
         private readonly SinkBase[] _sinks;
@@ -28,12 +26,12 @@ namespace Lucky.HomeMock
             InitializeComponent();
 
             EnterInitState();
-            _displaySink = new DisplaySink(DisplayPort);
+            _displaySink = new DisplaySink();
             _displaySink.Data += (o, args) => Dispatcher.Invoke((Action)(() =>
                 {
-                    DisplayBox.Text += args.Str + Environment.NewLine;
+                    DisplayBox.Text = args.Str;
                 }));
-            _flasherSink = new FlasherSink(FlasherPort);
+            _flasherSink = new FlasherSink();
             _sinks = new SinkBase[] { _displaySink, _flasherSink };
         }
 
@@ -71,9 +69,9 @@ namespace Lucky.HomeMock
 
         private void EnterInitState()
         {
-            HeloSender = new HeloSender();
-            HeloSender.Sent += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("Helo sent\n")));
             HomeReceiver = new HomeReceiver();
+            HeloSender = new HeloSender(HomeReceiver.ListenPort);
+            HeloSender.Sent += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("Helo sent\n")));
             HomeReceiver.HomeFound += (o, e) => Dispatcher.Invoke((Action)(EnterHomeFound));
         }
 

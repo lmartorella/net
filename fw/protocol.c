@@ -31,7 +31,8 @@ static PROTOCOL_STATE s_protState = STATE_NOT_INITIALIZED;
 #define HeloProtocolPort 17007
 static UDP_SOCKET s_heloSocket;
 // UDP home listen socket
-#define HomeProtocolPort 17008
+static WORD HomeProtocolPort = 17008;
+
 static UDP_SOCKET s_homeSocket;
 
 #define BASE_SINK_PORT 20000
@@ -66,6 +67,7 @@ __PACK typedef struct
 {
 	char preamble[8];
 	GUID device;
+	WORD ackPort;
 } HOME_REQUEST;
 
 /*
@@ -229,8 +231,9 @@ static void sendHelo()
 		fatal("HELO.rdy");
 	}
 
-	UDPPutString("HOMEHELO");
+	UDPPutString("HOMEHEL2");
 	UDPPutArray((BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
+	UDPPutArray((BYTE*)(&HomeProtocolPort), sizeof(WORD));
 	UDPFlush();
 }
 

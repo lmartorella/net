@@ -12,14 +12,14 @@ namespace Lucky.Home.Sinks
     /// </summary>
     /// <remarks>
     /// Protocol: TCP_OPEN, 
-    ///          -> [word:lenght] + ASCII
+    ///          => [word:lenght] + ASCII
+    ///          <= [2] ErrorCode (0: OK)
     ///           TCP_CLOSE
     /// </remarks>
-    [DeviceId(DisplaySinkid)]
+    [SinkId(SinkTypes.Display)]
     class DisplaySink : Sink
     {
         private Timer _timer;
-        private const int DisplaySinkid = 1;
 
         public DisplaySink()
         {

@@ -5,8 +5,10 @@ namespace Lucky.HomeMock.Sinks
 {
     class FlasherSink : SinkBase
     {
-        public FlasherSink(ushort port)
-            :base(port, 0, 2)
+        private const int StartPort = 18010;
+
+        public FlasherSink()
+            : base(StartPort, 0, 2)
         { }
 
         protected override void OnSocketOpened(Stream stream)

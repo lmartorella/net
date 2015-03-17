@@ -9,7 +9,7 @@ namespace Lucky.Home.Core
     /// <summary>
     /// HELLO UDP service, for discovering devices
     /// </summary>
-    class HelloListener : IHelloListener, IDisposable
+    class HelloListener : IDisposable
     {
         private readonly IPAddress _address;
         private readonly UdpClient _client;
@@ -18,10 +18,9 @@ namespace Lucky.Home.Core
         /// The HELLO port cannot be changed and are part of the protocol
         /// </summary>
         private const int HeloProtocolPort = 17007;
-        private const int HomeProtocolPort = 17008;
 
         private readonly object _lock = new object();
-        private Logger _logger;
+        private readonly Logger _logger;
 
         public HelloListener(IPAddress address)
         {
@@ -39,16 +38,16 @@ namespace Lucky.Home.Core
             {
                 using (BinaryReader reader = new BinaryReader(new MemoryStream(bytes)))
                 {
-                    Guid peerGuid;
-                    bool validMsg = DecodeHelloMessage(reader, remoteEndPoint, out peerGuid);
+                    HeloMessage peerMsg;
+                    bool validMsg = DecodeHelloMessage(reader, out peerMsg);
                     if (validMsg)
                     {
-                        _logger.Log("PeerDiscovered", "ID", peerGuid);
+                        _logger.Log("PeerDiscovered", "ID", peerMsg.DeviceId);
                         if (PeerDiscovered != null)
                         {
-                            PeerDiscovered(this, new PeerDiscoveredEventArgs(new Peer(peerGuid, remoteEndPoint.Address)));
+                            PeerDiscovered(this, new PeerDiscoveredEventArgs(new Peer(peerMsg.DeviceId, remoteEndPoint.Address)));
                         }
-                        SendAck(remoteEndPoint.Address, _address);
+                        SendAck(remoteEndPoint.Address, _address, peerMsg.AckPort);
                     }
                 }
             }
@@ -57,23 +56,21 @@ namespace Lucky.Home.Core
             _client.BeginReceive(OnReceiveData, null);
         }
 
-        private bool DecodeHelloMessage(BinaryReader reader, IPEndPoint remoteEndPoint, out Guid guid)
+        private bool DecodeHelloMessage(BinaryReader reader, out HeloMessage msg)
         {
-            guid = Guid.Empty;
             try
             {
-                HeloMessage msg = NetSerializer<HeloMessage>.Read(reader);
+                msg = NetSerializer<HeloMessage>.Read(reader);
                 if (msg.Preamble != HeloMessage.PreambleValue)
                 {
                     return false;
                 }
-                guid = msg.DeviceId;
-
                 // Good message
                 return true;
             }
             catch (EndOfStreamException)
             {
+                msg = null;
                 return false;
             }
         }
@@ -88,7 +85,7 @@ namespace Lucky.Home.Core
         /// </summary>
         public event EventHandler<PeerDiscoveredEventArgs> PeerDiscovered;
 
-        private void SendAck(IPAddress address, IPAddress hostAddress)
+        private void SendAck(IPAddress address, IPAddress hostAddress, int ackPort)
         {
             lock (_lock)
             {
@@ -109,7 +106,7 @@ namespace Lucky.Home.Core
                         writer.Flush();
 
                         var sender = new UdpClient(AddressFamily.InterNetwork);
-                        IPEndPoint endPoint = new IPEndPoint(address, HomeProtocolPort);
+                        IPEndPoint endPoint = new IPEndPoint(address, ackPort);
                         sender.Send(stream.GetBuffer(), (int)stream.Length, endPoint);
                     }
                 }

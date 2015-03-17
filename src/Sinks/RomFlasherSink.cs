@@ -27,11 +27,10 @@ namespace Lucky.Home.Sinks
     ///  (*) Note: the last row of ROM (1Kb) is not erasable nor writable. It contains the flash procs and PIC configuration
     ///  data.
     /// </remarks>
-    [DeviceId(FlasherSinkId)]
+    [SinkId(SinkTypes.RomFlasher)]
     class RomFlasherSink : Sink
     {
         private Timer _timer;
-        private const int FlasherSinkId = 2;
 
         public RomFlasherSink()
         {

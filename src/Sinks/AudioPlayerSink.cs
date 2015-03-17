@@ -9,11 +9,10 @@ using Lucky.Home.Core.Serialization;
 
 namespace Lucky.Home.Sinks
 {
-    [DeviceId(AudioSinkId)]
+    [SinkId(SinkTypes.AudioPlayer)]
     public class AudioPlayerSink : Sink
     {
-        private const int AudioSinkId = 3;
-        private TextWriter HighConsole = Console.Out; // StreamWriter.Null;
+        private readonly TextWriter HighConsole = Console.Out; // StreamWriter.Null;
 
         public enum Command : byte
         {

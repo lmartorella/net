@@ -13,7 +13,7 @@ namespace Lucky.Home.Core
         private readonly Dictionary<Guid, Peer> _peersByGuid = new Dictionary<Guid, Peer>();
         private readonly Dictionary<IPAddress, Peer> _peersByAddress = new Dictionary<IPAddress, Peer>();
 
-        private const ushort DefaultPort = 17008;
+        private const ushort DefaultPort = 17010;
         private readonly TcpListener[] _serviceListeners;
 
         public Server()
@@ -162,7 +162,7 @@ namespace Lucky.Home.Core
         {
             foreach (var sinkInfo in cmd.Sinks)
             {
-                Sink sink = Manager.GetService<SinkManager>().CreateSink(sinkInfo.DeviceId);
+                Sink sink = Manager.GetService<SinkManager>().CreateSink(sinkInfo.SinkType);
                 if (sink == null)
                 {
                     // Device id unknown!

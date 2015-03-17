@@ -1,4 +1,5 @@
 ﻿using System;
+using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Core.Serialization
 {
@@ -17,7 +18,7 @@ namespace Lucky.Home.Core.Serialization
 
     public class SinkInfo
     {
-        public ushort DeviceId;
+        public SinkTypes SinkType;
         public ushort DeviceCaps;
         public ushort Port;
     }

@@ -9,11 +9,13 @@ namespace Lucky.HomeMock.Core
 {
     class HeloSender : Task
     {
+        private readonly ushort _rcvPort;
         private readonly Timer _timer;
         private const int HeloProtocolPort = 17007;
 
-        public HeloSender()
+        public HeloSender(ushort rcvPort)
         {
+            _rcvPort = rcvPort;
             // Install an auto-repeat timer until closed
             _timer = new Timer(HandleTick, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
         }
@@ -30,9 +32,9 @@ namespace Lucky.HomeMock.Core
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 // Write HOMEHELO
-                writer.Write(Encoding.ASCII.GetBytes("HOMEHELO"));
+                writer.Write(Encoding.ASCII.GetBytes("HOMEHEL2"));
                 writer.Write(Data.DeviceId.ToByteArray());
-
+                writer.Write(BitConverter.GetBytes(_rcvPort));
             }
             byte[] dgram = stream.GetBuffer();
             UdpClient client = new UdpClient();

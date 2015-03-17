@@ -7,10 +7,10 @@ namespace Lucky.Home.Core.Serialization
     {
         [SerializeAsFixedArray(8)]
         public string Preamble;
-
         public Guid DeviceId;
+        public ushort AckPort;
 
-        public const string PreambleValue = "HOMEHELO";
+        public const string PreambleValue = "HOMEHEL2";
     }
 
     public class HeloAckMessage

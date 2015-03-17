@@ -8,12 +8,25 @@ namespace Lucky.HomeMock.Core
 {
     class HomeReceiver : Task
     {
-        private UdpClient _client;
-        private const int HomeProtocolPort = 17008;
+        private readonly UdpClient _client;
+        public ushort ListenPort { get; private set; }
+        private const ushort HomeProtocolPortStart = 17008;
 
         public HomeReceiver()
         {
-            _client = new UdpClient(HomeProtocolPort, AddressFamily.InterNetwork);
+            ListenPort = HomeProtocolPortStart;
+            while (_client == null)
+            {
+                try
+                {
+                    _client = new UdpClient(ListenPort, AddressFamily.InterNetwork);
+                }
+                catch (SocketException)
+                {
+                    ListenPort++;
+                }
+            }
+
             _client.BeginReceive(OnReceiveData, null);
         }
 
