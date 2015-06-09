@@ -1,6 +1,8 @@
-﻿namespace Lucky.Home.Core
+﻿using System;
+
+namespace Lucky.Home.Core
 {
-    public interface IService
+    public interface IService : IDisposable
     {
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Home.Core.Serialization
+namespace Lucky.Home.Core
 {
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     class SelectorAttribute : Attribute

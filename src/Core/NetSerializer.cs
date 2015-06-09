@@ -5,7 +5,7 @@ using System.Net;
 using System.Text;
 using System.Reflection;
 
-namespace Lucky.Home.Core.Serialization
+namespace Lucky.Home.Core
 {
     interface INetSerializer
     {
@@ -21,7 +21,7 @@ namespace Lucky.Home.Core.Serialization
     /// <summary>
     /// Class to serialize/deserialize a complex type
     /// </summary>
-    class NetSerializer<T> : INetSerializer, IPartialSerializer
+    class NetSerializer<T> : INetSerializer, IPartialSerializer where T: class
     {
         private static readonly Tuple<FieldInfo, INetSerializer>[] s_fields;
         private static readonly FieldInfo s_selector;
@@ -301,7 +301,14 @@ namespace Lucky.Home.Core.Serialization
             {
                 retValue = Activator.CreateInstance<T>();
             }
-            Read(ref retValue, reader, 0);
+            try
+            {
+                Read(ref retValue, reader, 0);
+            }
+            catch (EndOfStreamException)
+            {
+                return null;
+            }
             return retValue;
         }
 

@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Lucky.Home.Core;
-using Lucky.Home.Sinks;
+using Lucky.Home.Core.Protocol;
 using Lucky.Home.Speech;
 
 [assembly: InternalsVisibleTo("SpeechTests")]
@@ -14,12 +13,9 @@ namespace Lucky.Home
     {
         static void Main(string[] args)
         {
-            //Manager.Register<HelloListener, IHelloListener>();
-            Manager.Register<Logger, ILogger>();
             Manager.Register<Server, IServer>();
-            Manager.Register<SinkManager, SinkManager>();
-
-            Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
+            //Manager.Register<SinkManager, SinkManager>();
+            //Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
 
             // Start server
             Manager.GetService<IServer>();
@@ -35,7 +31,7 @@ namespace Lucky.Home
                     case "s":
                         using (var fileStream = new FileInfo(args[0]).OpenRead())
                         {
-                            AudioPlayerSink.DoStartFileTest(fileStream);
+                            //AudioPlayerSink.DoStartFileTest(fileStream);
                         }
                         break;
                     case "t":
@@ -46,7 +42,7 @@ namespace Lucky.Home
                         }
                         using (var stream = Manager.GetService<TextToSpeechService>().TextToAudio(text))
                         {
-                            AudioPlayerSink.DoStartFileTest(stream);
+                            //AudioPlayerSink.DoStartFileTest(stream);
                         }
                         break;
                 }

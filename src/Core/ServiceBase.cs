@@ -1,15 +1,16 @@
-﻿using System;
-
+﻿
 namespace Lucky.Home.Core
 {
     class ServiceBase : IService
     {
-        protected ILogger Logger
+        public ServiceBase(string logName)
         {
-            get
-            {
-                return Manager.GetService<ILogger>();
-            }
+            Logger = new ConsoleLogger(logName);
         }
+
+        protected ILogger Logger { get; private set; }
+
+        public virtual void Dispose()
+        { }
     }
 }
