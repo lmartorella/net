@@ -14,6 +14,7 @@ namespace Lucky.Home
         static void Main(string[] args)
         {
             Manager.Register<Server, IServer>();
+            Manager.Register<NodeRegistrar, INodeRegistrar>();
             //Manager.Register<SinkManager, SinkManager>();
             //Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
 

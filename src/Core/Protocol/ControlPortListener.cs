@@ -44,8 +44,8 @@ namespace Lucky.Home.Core.Protocol
             {
                 using (BinaryReader reader = new BinaryReader(new MemoryStream(bytes)))
                 {
-                    HeloMessage peerMsg;
-                    var msgType = DecodeHelloMessage(reader, out peerMsg);
+                    HeloMessage msg;
+                    var msgType = DecodeHelloMessage(reader, out msg);
                     if (msgType == MessageType.Unknown)
                     {
                         _logger.Warning("WRONGMSG");
@@ -53,12 +53,20 @@ namespace Lucky.Home.Core.Protocol
                     else
                     {
                         bool isNew = msgType == MessageType.Hello;
-                        _logger.Log("NodeMessage", "ID", peerMsg.DeviceId, "isNew", isNew);
-                        if (NodeMessage != null)
+                        if (!isNew && msg.DeviceId == Guid.Empty)
                         {
-                            NodeMessage(this, new NodeMessageEventArgs(peerMsg.DeviceId, remoteEndPoint.Address, isNew));
+                            // Heartbeat of a empty node??
+                            _logger.Warning("NOGUID", "addr", remoteEndPoint.Address);
                         }
-                        //SendAck(remoteEndPoint.Address, _address, peerMsg.AckPort);
+                        else
+                        {
+                            _logger.Log("NodeMessage", "ID", msg.DeviceId, "isNew", isNew);
+                            if (NodeMessage != null)
+                            {
+                                NodeMessage(this, new NodeMessageEventArgs(msg.DeviceId, remoteEndPoint.Address, isNew));
+                            }
+                            //SendAck(remoteEndPoint.Address, _address, peerMsg.AckPort);
+                        }
                     }
                 }
             }

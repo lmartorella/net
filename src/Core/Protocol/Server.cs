@@ -8,12 +8,15 @@ namespace Lucky.Home.Core.Protocol
 {
     class Server : ServiceBase, IServer
     {
-        //private readonly Dictionary<Guid, Node> _nodesByGuid = new Dictionary<Guid, Node>();
+        private readonly Dictionary<Guid, Node> _nodes = new Dictionary<Guid, Node>();
         //private readonly Dictionary<IPAddress, Node> _peersByAddress = new Dictionary<IPAddress, Node>();
 
         //private const ushort DefaultPort = 17010;
         //private readonly TcpListener[] _serviceListeners;
         private ControlPortListener[] _helloListeners;
+        private readonly INodeRegistrar _nodeRegistrar;
+
+        private readonly List<IPAddress> _addressInRegistration = new List<IPAddress>();
 
         public Server() 
             :base("Server")
@@ -25,6 +28,7 @@ namespace Lucky.Home.Core.Protocol
                 throw new InvalidOperationException("Cannot find a valid public IP address of the host");
             }
             //Port = DefaultPort;
+            _nodeRegistrar = Manager.GetService<INodeRegistrar>();
 
             _helloListeners = Addresses.Select(address =>
             {
@@ -61,28 +65,82 @@ namespace Lucky.Home.Core.Protocol
 
         private void HandleNodeMessage(Guid guid, IPAddress address, bool isNew)
         {
-            //// Store it.
-            //// Exists same IP?
-            //Peer oldPeer;
-            //if (_peersByAddress.TryGetValue(peer.Address, out oldPeer))
-            //{
-            //    if (!oldPeer.Equals(peer))
-            //    {
-            //        Logger.Log("DuplicatedAddress", "address", peer.Address);
-            //    }
-            //}
+            if (isNew)
+            {
+                // Check if a new empty GUID is about to register to the system
+                if (guid == Guid.Empty)
+                {
+                    RegisterNewNode(address);
+                }
+                else
+                {
+                    RegisterNamedNode(guid, address);
+                }
+            }
+            else
+            {
+                HeartbeatNode(guid, address);
+            }
+        }
 
-            //_peersByAddress[peer.Address] = peer;
+        private void RegisterNamedNode(Guid guid, IPAddress address)
+        {
+            lock (_nodes)
+            {
+                Node node;
+                _nodes.TryGetValue(guid, out node);
+                if (node == null)
+                {
+                    // New node!
+                    node = new Node(guid, address);
+                    _nodes[guid] = node;
+                    _nodeRegistrar.NotifyNewNodeToRegister(node.Id);
+                }
+                else
+                {
+                    // The node was reset
+                    _nodeRegistrar.NotifyNodeReset(node, address);
+                }
+            }
+        }
 
-            //// Exists same GUID?
-            //if (_nodesByGuid.TryGetValue(peer.ID, out oldPeer))
-            //{
-            //    if (!oldPeer.Equals(peer))
-            //    {
-            //        Logger.Log("DuplicatedID", "guid", peer.ID);
-            //    }
-            //}
-            //_nodesByGuid[peer.ID] = peer;
+        private void HeartbeatNode(Guid guid, IPAddress address)
+        {
+            lock (_nodes)
+            {
+                Node node;
+                _nodes.TryGetValue(guid, out node);
+                if (node == null)
+                {
+                    // The server was reset?
+                    node = new Node(guid, address);
+                    _nodes[guid] = node;
+                    _nodeRegistrar.NotifyNewNodeToRegister(node.Id);
+                }
+                else
+                {
+                    // Normal heartbeat
+                    node.Heartbeat(address);
+                }
+            }
+        }
+
+        private async void RegisterNewNode(IPAddress address)
+        {
+            lock (_addressInRegistration)
+            {
+                // Ignore consecutive messages
+                if (_addressInRegistration.Contains(address))
+                {
+                    return;
+                }
+                _addressInRegistration.Add(address);
+            }
+            await _nodeRegistrar.NotifyNewUnknownNodeToRegister(address);
+            lock (_addressInRegistration)
+            {
+                _addressInRegistration.Remove(address);
+            }
         }
 
         //private TcpListener TryCreateListener(IPAddress address)

@@ -8,7 +8,7 @@ namespace Lucky.Home.Core.Protocol
         /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
-        public Guid ID { get; private set; }
+        public Guid Id { get; private set; }
 
         /// <summary>
         /// The remote end-point address
@@ -22,7 +22,7 @@ namespace Lucky.Home.Core.Protocol
                 throw new ArgumentNullException("guid");
             }
 
-            ID = guid;
+            Id = guid;
             Address = address;
 
             //Sinks = new List<Sink>();
@@ -37,5 +37,11 @@ namespace Lucky.Home.Core.Protocol
         //{
         //    return ID == peer.ID && Address.Equals(peer.Address);
         //}
+
+        public void Heartbeat(IPAddress address)
+        {
+            // Update address!
+            Address = address;
+        }
     }
 }

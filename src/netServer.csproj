@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
     <AssemblyName>netServer</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -23,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -32,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="NAudio">
@@ -46,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Constants.cs" />
+    <Compile Include="Core\Protocol\INodeRegistrar.cs" />
+    <Compile Include="Core\Protocol\NodeRegistrar.cs" />
     <Compile Include="Sinks\SinkIdAttribute.cs" />
     <Compile Include="Core\Protocol\IConnection.cs" />
     <Compile Include="Core\ILogger.cs" />
@@ -54,7 +59,7 @@
     <Compile Include="Core\Protocol\ControlPortListener.cs" />
     <Compile Include="Core\ConsoleLogger.cs" />
     <Compile Include="Core\Manager.cs" />
-    <Compile Include="Core\Protocol\Peer.cs" />
+    <Compile Include="Core\Protocol\Node.cs" />
     <Compile Include="Core\Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Core\Protocol\ErrorCode.cs" />
     <Compile Include="Core\Protocol\HeloMessage.cs" />
@@ -80,6 +85,7 @@
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
