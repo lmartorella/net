@@ -14,6 +14,8 @@
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\vssln\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -37,11 +39,18 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Web.XmlTransform">
+      <HintPath>..\vssln\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio">
       <HintPath>..\vssln\packages\NAudio.1.7\lib\net35\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="NAudio.Lame">
       <HintPath>..\vssln\packages\NAudio.Lame.1.0.2\lib\net20\NAudio.Lame.dll</HintPath>
+    </Reference>
+    <Reference Include="NuGet.Core, Version=2.8.60318.667, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\vssln\packages\NuGet.Core.2.8.5\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -49,10 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Constants.cs" />
-    <Compile Include="Core\Protocol\INodeRegistrar.cs" />
-    <Compile Include="Core\Protocol\NodeRegistrar.cs" />
-    <Compile Include="Sinks\SinkIdAttribute.cs" />
-    <Compile Include="Core\Protocol\IConnection.cs" />
+    <Compile Include="Core\INodeRegistrar.cs" />
+    <Compile Include="Core\NodeRegistrar.cs" />
+    <Compile Include="Core\Protocol\INode.cs" />
+    <Compile Include="Core\SinkIdAttribute.cs" />
+    <Compile Include="Core\Protocol\TcpConnection.cs" />
     <Compile Include="Core\ILogger.cs" />
     <Compile Include="Core\Protocol\IServer.cs" />
     <Compile Include="Core\IService.cs" />
@@ -71,35 +81,32 @@
     <Compile Include="Core\Protocol\ServerErrorCode.cs" />
     <Compile Include="Core\Protocol\Server.cs" />
     <Compile Include="Core\ServiceBase.cs" />
-    <Compile Include="Core\Protocol\Sink.cs" />
-    <Compile Include="Core\Protocol\SinkManager.cs" />
+    <Compile Include="Core\Sink.cs" />
+    <Compile Include="Core\SinkManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Sinks\AudioPlayerSink.cs" />
     <Compile Include="Sinks\RomFlasherSink.cs" />
-    <Compile Include="Sinks\SinkTypes.cs" />
     <Compile Include="Speech\TextToSpeechService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="libmp3lame.32.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="libmp3lame.64.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem copy "$(TargetPath)" \\mule\backup</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

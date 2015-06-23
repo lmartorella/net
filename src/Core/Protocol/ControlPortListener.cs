@@ -63,9 +63,8 @@ namespace Lucky.Home.Core.Protocol
                             _logger.Log("NodeMessage", "ID", msg.DeviceId, "isNew", isNew);
                             if (NodeMessage != null)
                             {
-                                NodeMessage(this, new NodeMessageEventArgs(msg.DeviceId, remoteEndPoint.Address, isNew));
+                                NodeMessage(this, new NodeMessageEventArgs(msg.DeviceId, remoteEndPoint.Address, isNew, msg.ControlPort));
                             }
-                            //SendAck(remoteEndPoint.Address, _address, peerMsg.AckPort);
                         }
                     }
                 }
@@ -97,33 +96,6 @@ namespace Lucky.Home.Core.Protocol
         /// Event raised when a node is started/powered and says HELLO, or regular heartbeat
         /// </summary>
         public event EventHandler<NodeMessageEventArgs> NodeMessage;
-
-        //private void SendAck(IPAddress address, IPAddress hostAddress, int ackPort)
-        //{
-        //    lock (_lock)
-        //    {
-        //        IServer server = Manager.GetService<IServer>();
-
-        //        // Forge a HERE packet
-        //        HeloAckMessage msg = new HeloAckMessage();
-        //        msg.Preamble = HeloAckMessage.PreambleValue;
-        //        msg.ServerAddress = hostAddress;
-        //        msg.ServerPort = server.Port;
-
-        //        // Send a HERE packet
-        //        using (MemoryStream stream = new MemoryStream())
-        //        {
-        //            using (BinaryWriter writer = new BinaryWriter(stream))
-        //            {
-        //                NetSerializer<HeloAckMessage>.Write(msg, writer);
-        //                writer.Flush();
-
-        //                var sender = new UdpClient(AddressFamily.InterNetwork);
-        //                IPEndPoint endPoint = new IPEndPoint(address, ackPort);
-        //                sender.Send(stream.GetBuffer(), (int)stream.Length, endPoint);
-        //            }
-        //        }
-        //    }
     }
 }
 

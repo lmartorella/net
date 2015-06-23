@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,15 +9,16 @@ namespace Lucky.Home.Core.Protocol
 {
     class Server : ServiceBase, IServer
     {
-        private readonly Dictionary<Guid, Node> _nodes = new Dictionary<Guid, Node>();
-        //private readonly Dictionary<IPAddress, Node> _peersByAddress = new Dictionary<IPAddress, Node>();
+        private readonly Dictionary<Guid, INode> _nodes = new Dictionary<Guid, INode>();
+        private readonly List<IPAddress> _addressInRegistration = new List<IPAddress>();
 
-        //private const ushort DefaultPort = 17010;
-        //private readonly TcpListener[] _serviceListeners;
+        private readonly TcpListener[] _tcpListeners;
         private ControlPortListener[] _helloListeners;
         private readonly INodeRegistrar _nodeRegistrar;
+        private readonly object _nodeLock = new object();
 
-        private readonly List<IPAddress> _addressInRegistration = new List<IPAddress>();
+        // Find a free TCP port
+        private int _tcpPort = 17010;
 
         public Server() 
             :base("Server")
@@ -32,23 +34,26 @@ namespace Lucky.Home.Core.Protocol
 
             _helloListeners = Addresses.Select(address =>
             {
-                //TcpListener listener = TryCreateListener(address);
-                //listener.Start();
-                //AsyncCallback handler = null;
-                //handler = ar =>
-                //{
-                //    var tcpClient = listener.EndAcceptTcpClient(ar);
-                //    HandleServiceSocketAccepted(tcpClient);
-                //    listener.BeginAcceptTcpClient(handler, null);
-                //};
-                //listener.BeginAcceptTcpClient(handler, null);
-
-                //return listener;
-
                 // Start HELLO listener
                 var helloListener = new ControlPortListener(address);
                 helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.Guid, e.Address, e.IsNew);
                 return helloListener;
+            }).ToArray();
+
+            _tcpListeners = Addresses.Select(address =>
+            {
+                // Start TCP listener
+                TcpListener listener = TryCreateListener(address);
+                listener.Start();
+                AsyncCallback handler = null;
+                handler = ar =>
+                {
+                    var tcpClient = listener.EndAcceptTcpClient(ar);
+                    HandleServiceSocketAccepted(tcpClient);
+                    listener.BeginAcceptTcpClient(handler, null);
+                };
+                listener.BeginAcceptTcpClient(handler, null);
+                return listener;
             }).ToArray();
 
             Logger.Log("Opened Server", "hosts", string.Join(";", Addresses.Select(a => a.ToString())));
@@ -85,37 +90,33 @@ namespace Lucky.Home.Core.Protocol
 
         private void RegisterNamedNode(Guid guid, IPAddress address)
         {
-            lock (_nodes)
+            lock (_nodeLock)
             {
-                Node node;
+                INode node;
                 _nodes.TryGetValue(guid, out node);
                 if (node == null)
                 {
                     // New node!
-                    node = new Node(guid, address);
-                    _nodes[guid] = node;
-                    _nodeRegistrar.NotifyNewNodeToRegister(node.Id);
+                    _nodes[guid] = _nodeRegistrar.LoginNode(guid, address);
                 }
                 else
                 {
                     // The node was reset
-                    _nodeRegistrar.NotifyNodeReset(node, address);
+                    node.Relogin(address);
                 }
             }
         }
 
         private void HeartbeatNode(Guid guid, IPAddress address)
         {
-            lock (_nodes)
+            lock (_nodeLock)
             {
-                Node node;
+                INode node;
                 _nodes.TryGetValue(guid, out node);
                 if (node == null)
                 {
                     // The server was reset?
-                    node = new Node(guid, address);
-                    _nodes[guid] = node;
-                    _nodeRegistrar.NotifyNewNodeToRegister(node.Id);
+                    _nodes[guid] = _nodeRegistrar.LoginNode(guid, address);
                 }
                 else
                 {
@@ -127,7 +128,7 @@ namespace Lucky.Home.Core.Protocol
 
         private async void RegisterNewNode(IPAddress address)
         {
-            lock (_addressInRegistration)
+            lock (_nodeLock)
             {
                 // Ignore consecutive messages
                 if (_addressInRegistration.Contains(address))
@@ -136,28 +137,29 @@ namespace Lucky.Home.Core.Protocol
                 }
                 _addressInRegistration.Add(address);
             }
-            await _nodeRegistrar.NotifyNewUnknownNodeToRegister(address);
-            lock (_addressInRegistration)
+            var newNode = await _nodeRegistrar.RegisterBlankNode(address);
+            lock (_nodeLock)
             {
                 _addressInRegistration.Remove(address);
+                _nodes[newNode.Id] = newNode;
             }
         }
 
-        //private TcpListener TryCreateListener(IPAddress address)
-        //{
-        //    do
-        //    {
-        //        try
-        //        {
-        //            return new TcpListener(address, Port);
-        //        }
-        //        catch (SocketException)
-        //        {
-        //            Logger.Log("TCPPortBusy", "port", address + ":" + Port, "trying", Port + 1);
-        //            Port++;
-        //        }
-        //    } while (true);
-        //}
+        private TcpListener TryCreateListener(IPAddress address)
+        {
+            do
+            {
+                try
+                {
+                    return new TcpListener(address, _tcpPort);
+                }
+                catch (SocketException)
+                {
+                    Logger.Log("TCPPortBusy", "port", address + ":" + _tcpPort, "trying", _tcpPort + 1);
+                    _tcpPort++;
+                }
+            } while (true);
+        }
 
         #region IServer interface implementation
 
@@ -166,94 +168,19 @@ namespace Lucky.Home.Core.Protocol
         /// </summary>
         public IPAddress[] Addresses { get; private set; }
 
-        ///// <summary>
-        ///// Get the public host service port (TCP)
-        ///// </summary>
-        //public ushort Port { get; private set; }
-
         #endregion
 
-        //private void HandleServiceSocketAccepted(TcpClient tcpClient)
-        //{
-        //    using (Stream stream = tcpClient.GetStream())
-        //    {
-        //        using (BinaryReader reader = new BinaryReader(stream))
-        //        {
-        //            IPAddress peerAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
-        //            Peer peer;
-        //            ServiceResponse response = new ServiceResponse();
-        //            response.ErrCode = ServerErrorCode.Ok;
-
-        //            if (!_peersByAddress.TryGetValue(peerAddress, out peer))
-        //            {
-        //                // Unknown peer!
-        //                Logger.Log("UnknownPeerAddress", "address", peerAddress);
-        //                response.ErrCode = ServerErrorCode.UnknownAddress;
-        //            }
-        //            else
-        //            {
-        //                ServiceCommand cmd = NetSerializer<ServiceCommand>.Read(reader);
-        //                if (cmd is ServiceRegisterCommand)
-        //                {
-        //                    ReadSinkData(peer, (ServiceRegisterCommand)cmd, ref response);
-        //                }
-        //                else
-        //                {
-        //                    // ERROR, unknown command
-        //                    Logger.Log("UnknownCommand", "cmd", cmd.Command);
-        //                    response.ErrCode = ServerErrorCode.UnknownMessage;
-        //                }
-        //            }
-
-        //            // Write response
-        //            using (BinaryWriter writer = new BinaryWriter(stream))
-        //            {
-        //                NetSerializer<ServiceResponse>.Write(response, writer);
-        //            }
-        //        }
-        //    }
-        //    tcpClient.Close();
-        //}
-
-        ///// <summary>
-        ///// Peer started, says device capatibilities
-        ///// </summary>
-        //private void ReadSinkData(Peer peer, ServiceRegisterCommand cmd, ref ServiceResponse responseData)
-        //{
-        //    foreach (var sinkInfo in cmd.Sinks)
-        //    {
-        //        Sink sink = Manager.GetService<SinkManager>().CreateSink(sinkInfo.SinkType);
-        //        if (sink == null)
-        //        {
-        //            // Device id unknown!
-        //            responseData.ErrCode = ServerErrorCode.UnknownSinkType;
-        //            continue;
-        //        }
-
-        //        sink.Initialize(peer, sinkInfo.DeviceCaps, sinkInfo.Port);
-        //        peer.Sinks.Add(sink);
-        //    }
-
-        //    if (peer.ID == Guid.Empty)
-        //    {
-        //        responseData = new ServiceResponseWithGuid();
-        //        // Assign new GUID
-        //        responseData.ErrCode = ServerErrorCode.AssignGuid;
-        //        var guid = ((ServiceResponseWithGuid)responseData).NewGuid = CreateNewGuid();
-
-        //        Logger.Log("AssignedNewID", "id", guid, "address", peer.Address);
-        //    }
-        //}
-
-        private static Guid CreateNewGuid()
+        private void HandleServiceSocketAccepted(TcpClient tcpClient)
         {
-            // Avoid 55aa string
-            Guid ret;
-            do
+            //IPAddress peerAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
+            using (Stream stream = tcpClient.GetStream())
             {
-                ret = Guid.NewGuid();
-            } while (ret.ToString().ToLower().Contains("55aa") || ret.ToString().ToLower().Contains("55-aa"));
-            return ret;
+                using (new BinaryReader(stream))
+                {
+                    throw new NotSupportedException("Tcp port not supported yet");
+                }
+            }
+            //tcpClient.Close();
         }
     }
 }

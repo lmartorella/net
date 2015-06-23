@@ -9,7 +9,7 @@ using Lucky.Home.Speech;
 
 namespace Lucky.Home
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {

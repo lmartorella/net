@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 
 // ReSharper disable UnassignedField.Global
 
@@ -30,19 +29,8 @@ namespace Lucky.Home.Core.Protocol
         public Guid DeviceId;
 
         /// <summary>
-        /// Control port
+        /// Control TCP port
         /// </summary>
-        public ushort AckPort;
+        public ushort ControlPort;
     }
-
-    //public class HeloAckMessage
-    //{
-    //    [SerializeAsFixedArray(8)]
-    //    public string Preamble;
-
-    //    public IPAddress ServerAddress;
-    //    public ushort ServerPort;
-
-    //    public const string PreambleValue = "HOMEHERE";
-    //}
 }
