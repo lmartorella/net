@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -9,13 +8,9 @@ namespace Lucky.Home.Core.Protocol
 {
     class Server : ServiceBase, IServer
     {
-        private readonly Dictionary<Guid, INode> _nodes = new Dictionary<Guid, INode>();
-        private readonly List<IPAddress> _addressInRegistration = new List<IPAddress>();
-
         private readonly TcpListener[] _tcpListeners;
         private ControlPortListener[] _helloListeners;
         private readonly INodeRegistrar _nodeRegistrar;
-        private readonly object _nodeLock = new object();
 
         // Find a free TCP port
         private int _tcpPort = 17010;
@@ -36,7 +31,7 @@ namespace Lucky.Home.Core.Protocol
             {
                 // Start HELLO listener
                 var helloListener = new ControlPortListener(address);
-                helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.Guid, e.Address, e.IsNew);
+                helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.Guid, e.Address, e.MessageType);
                 return helloListener;
             }).ToArray();
 
@@ -68,80 +63,20 @@ namespace Lucky.Home.Core.Protocol
             _helloListeners = new ControlPortListener[0];
         }
 
-        private void HandleNodeMessage(Guid guid, IPAddress address, bool isNew)
+        private void HandleNodeMessage(Guid guid, TcpNodeAddress address, PingMessageType messageType)
         {
-            if (isNew)
+            // Messages from level-0
+            switch (messageType)
             {
-                // Check if a new empty GUID is about to register to the system
-                if (guid == Guid.Empty)
-                {
-                    RegisterNewNode(address);
-                }
-                else
-                {
-                    RegisterNamedNode(guid, address);
-                }
-            }
-            else
-            {
-                HeartbeatNode(guid, address);
-            }
-        }
-
-        private void RegisterNamedNode(Guid guid, IPAddress address)
-        {
-            lock (_nodeLock)
-            {
-                INode node;
-                _nodes.TryGetValue(guid, out node);
-                if (node == null)
-                {
-                    // New node!
-                    _nodes[guid] = _nodeRegistrar.LoginNode(guid, address);
-                }
-                else
-                {
-                    // The node was reset
-                    node.Relogin(address);
-                }
-            }
-        }
-
-        private void HeartbeatNode(Guid guid, IPAddress address)
-        {
-            lock (_nodeLock)
-            {
-                INode node;
-                _nodes.TryGetValue(guid, out node);
-                if (node == null)
-                {
-                    // The server was reset?
-                    _nodes[guid] = _nodeRegistrar.LoginNode(guid, address);
-                }
-                else
-                {
-                    // Normal heartbeat
-                    node.Heartbeat(address);
-                }
-            }
-        }
-
-        private async void RegisterNewNode(IPAddress address)
-        {
-            lock (_nodeLock)
-            {
-                // Ignore consecutive messages
-                if (_addressInRegistration.Contains(address))
-                {
-                    return;
-                }
-                _addressInRegistration.Add(address);
-            }
-            var newNode = await _nodeRegistrar.RegisterBlankNode(address);
-            lock (_nodeLock)
-            {
-                _addressInRegistration.Remove(address);
-                _nodes[newNode.Id] = newNode;
+                case PingMessageType.Hello:
+                    _nodeRegistrar.RegisterNode(guid, address);
+                    break;
+                case PingMessageType.Heartbeat:
+                    _nodeRegistrar.HeartbeatNode(guid, address);
+                    break;
+                case PingMessageType.SubNodeChanged:
+                    _nodeRegistrar.RefetchSubNodes(guid, address);
+                    break;
             }
         }
 

@@ -1,24 +1,22 @@
 ﻿using System;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Lucky.Home.Core.Protocol
 {
-    class Node : INode
+    class TcpNode : ITcpNode
     {
-        private ushort _controlPort;
-
         /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
         public Guid Id { get; private set; }
 
-        /// <summary>
-        /// The remote end-point address
-        /// </summary>
-        private IPAddress _address;
+        private TcpNodeAddress _address;
 
-        internal Node(Guid guid, IPAddress address, ushort controlPort)
+        private readonly object _lockObject = new object();
+        private bool _inFetchSinkData;
+        private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
+
+        internal TcpNode(Guid guid, TcpNodeAddress address)
         {
             if (guid == Guid.Empty)
             {
@@ -27,23 +25,29 @@ namespace Lucky.Home.Core.Protocol
 
             Id = guid;
             _address = address;
-            _controlPort = controlPort;
         }
 
-        public void Heartbeat(IPAddress address, ushort controlPort)
+        private ILogger Logger
+        {
+            get
+            {
+                return Manager.GetService<ILogger>();
+            }
+        }
+
+        public void Heartbeat(TcpNodeAddress address)
         {
             // Update address!
             lock (_address)
             {
                 _address = address;
-                _controlPort = controlPort;
             }
         }
 
         /// <summary>
         /// An already logged-in node relogs in (e.g. after node reset)
         /// </summary>
-        public Task Relogin(IPAddress address)
+        public Task Relogin(TcpNodeAddress address)
         {
             // Update address!
             lock (_address)
@@ -51,6 +55,11 @@ namespace Lucky.Home.Core.Protocol
                 _address = address;
             }
             return FetchSinkData();
+        }
+
+        public void RefetchChildren(TcpNodeAddress address)
+        {
+            throw new NotImplementedException();
         }
 
         private class CloseMessage
@@ -71,68 +80,72 @@ namespace Lucky.Home.Core.Protocol
             public Guid[] Guids;
         }
 
-        internal Task FetchSinkData()
+        internal async Task FetchSinkData()
+        {
+            lock (_lockObject)
+            {
+                if (_inFetchSinkData)
+                {
+                    return;
+                }
+                _inFetchSinkData = true;
+            }
+            while (!await FetchSinkDataSingle())
+            {
+                Task.Delay(RetryTime);
+            }
+            lock (_lockObject)
+            {
+                _inFetchSinkData = false;
+            }
+        }
+
+        private async Task<bool> FetchSinkDataSingle()
         {
             // Init a METADATA fetch connection
-            IPAddress address;
-            ushort controlPort;
+            TcpNodeAddress address;
             lock (_address)
             {
-                address = _address;
-                controlPort = _controlPort;
+                address = _address.Clone();
             }
 
-            using (var connection = new TcpConnection(address, controlPort))
+            try
             {
-                connection.Write(new GetChildrenMessage());
-                var children = connection.Read<GetChildrenMessageResponse>();
+                using (var connection = new TcpConnection(address.Address, address.ControlPort))
+                {
+                    connection.Write(new GetChildrenMessage());
+                    var childNodes = connection.Read<GetChildrenMessageResponse>();
 
-                connection.Write(new CloseMessage());
+                    for (int index = 0; index < childNodes.Guids.Length; index++)
+                    {
+                        var childGuid = childNodes.Guids[index];
+                        if (index == 0)
+                        {
+                            // Mine
+                            if (childGuid != Id)
+                            {
+                                // ERROR
+                                Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
+                            }
+                        }
+                        else
+                        {
+                            // Register a subnode
+                            yield Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                            Store it (for future warm registration)
+                        }
+                    }
+
+                    connection.Write(new CloseMessage());
+                }
+            }
+            catch (Exception exc)
+            {
+                Logger.Exception(exc);
+                return false;
             }
 
-            //// Send a HERE packet
-            //using (MemoryStream stream = new MemoryStream())
-            //{
-            //    using (BinaryWriter writer = new BinaryWriter(stream))
-            //    {
-            //        NetSerializer<HeloAckMessage>.Write(msg, writer);
-            //        writer.Flush();
-
-            //        var sender = new UdpClient(AddressFamily.InterNetwork);
-            //        IPEndPoint endPoint = new IPEndPoint(address, ackPort);
-            //        sender.Send(stream.GetBuffer(), (int)stream.Length, endPoint);
-            //    }
-            //}
-
-            ///// <summary>
-            ///// Peer started, says device capatibilities
-            ///// </summary>
-            //private void ReadSinkData(Peer peer, ServiceRegisterCommand cmd, ref ServiceResponse responseData)
-            //{
-            //    foreach (var sinkInfo in cmd.Sinks)
-            //    {
-            //        Sink sink = Manager.GetService<SinkManager>().CreateSink(sinkInfo.SinkType);
-            //        if (sink == null)
-            //        {
-            //            // Device id unknown!
-            //            responseData.ErrCode = ServerErrorCode.UnknownSinkType;
-            //            continue;
-            //        }
-
-            //        sink.Initialize(peer, sinkInfo.DeviceCaps, sinkInfo.Port);
-            //        peer.Sinks.Add(sink);
-            //    }
-
-            //    if (peer.ID == Guid.Empty)
-            //    {
-            //        responseData = new ServiceResponseWithGuid();
-            //        // Assign new GUID
-            //        responseData.ErrCode = ServerErrorCode.AssignGuid;
-            //        var guid = ((ServiceResponseWithGuid)responseData).NewGuid = CreateNewGuid();
-
-            //        Logger.Log("AssignedNewID", "id", guid, "address", peer.Address);
-            //    }
-            //}
+            return true;
         }
 
         internal Task Rename()

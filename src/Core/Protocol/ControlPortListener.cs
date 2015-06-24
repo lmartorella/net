@@ -29,13 +29,6 @@ namespace Lucky.Home.Core.Protocol
             _client.Close();
         }
 
-        private enum MessageType
-        {
-            Unknown,
-            Hello,
-            Heartebeat
-        }
-
         private void OnReceiveData(IAsyncResult result)
         {
             IPEndPoint remoteEndPoint = new IPEndPoint(0, 0);
@@ -46,26 +39,15 @@ namespace Lucky.Home.Core.Protocol
                 {
                     HeloMessage msg;
                     var msgType = DecodeHelloMessage(reader, out msg);
-                    if (msgType == MessageType.Unknown)
+                    var tcpNodeAddress = new TcpNodeAddress(remoteEndPoint.Address, msg.ControlPort, 0);
+                    switch (msgType)
                     {
-                        _logger.Warning("WRONGMSG");
-                    }
-                    else
-                    {
-                        bool isNew = msgType == MessageType.Hello;
-                        if (!isNew && msg.DeviceId == Guid.Empty)
-                        {
-                            // Heartbeat of a empty node??
-                            _logger.Warning("NOGUID", "addr", remoteEndPoint.Address);
-                        }
-                        else
-                        {
-                            _logger.Log("NodeMessage", "ID", msg.DeviceId, "isNew", isNew);
-                            if (NodeMessage != null)
-                            {
-                                NodeMessage(this, new NodeMessageEventArgs(msg.DeviceId, remoteEndPoint.Address, isNew, msg.ControlPort));
-                            }
-                        }
+                        case PingMessageType.Unknown:
+                            _logger.Warning("WRONGMSG");
+                            break;
+                        default:
+                            RaiseNodeMessageEvent(msgType, msg.DeviceId, tcpNodeAddress);
+                            break;
                     }
                 }
             }
@@ -74,21 +56,40 @@ namespace Lucky.Home.Core.Protocol
             _client.BeginReceive(OnReceiveData, null);
         }
 
-        private MessageType DecodeHelloMessage(BinaryReader reader, out HeloMessage msg)
+        private void RaiseNodeMessageEvent(PingMessageType messageType, Guid id, TcpNodeAddress address)
+        {
+            if ((messageType != PingMessageType.Hello) && id == Guid.Empty)
+            {
+                // Heartbeat of a empty node??
+                _logger.Warning("NOGUID", "addr", address);
+            }
+            else
+            {
+                _logger.Log("NodeMessage", "ID", id, "messageType", messageType);
+                if (NodeMessage != null)
+                {
+                    NodeMessage(this, new NodeMessageEventArgs(id, address, messageType));
+                }
+            }
+        }
+
+        private PingMessageType DecodeHelloMessage(BinaryReader reader, out HeloMessage msg)
         {
             msg = NetSerializer<HeloMessage>.Read(reader);
             if (msg == null || msg.Preamble != HeloMessage.PreambleValue)
             {
-                return MessageType.Unknown;
+                return PingMessageType.Unknown;
             }
             switch (msg.MessageCode)
             {
                 case HeloMessage.HeartbeatMessageCode:
-                    return MessageType.Heartebeat;
+                    return PingMessageType.Heartbeat;
                 case HeloMessage.HeloMessageCode:
-                    return MessageType.Hello;
+                    return PingMessageType.Hello;
+                case HeloMessage.SubNodeChanged:
+                    return PingMessageType.SubNodeChanged;
                 default:
-                    return MessageType.Unknown;
+                    return PingMessageType.Unknown;
             }
         }
 

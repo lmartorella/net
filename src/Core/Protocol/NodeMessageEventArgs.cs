@@ -6,14 +6,12 @@ namespace Lucky.Home.Core.Protocol
     class NodeMessageEventArgs : EventArgs
     {
         public Guid Guid { get; private set; }
-        public IPAddress Address { get; private set; }
-        public bool IsNew { get; private set; }
-        public ushort ControlPort { get; private set; }
+        public TcpNodeAddress Address { get; private set; }
+        public PingMessageType MessageType { get; private set; }
 
-        public NodeMessageEventArgs(Guid guid, IPAddress address, bool isNew, ushort controlPort)
+        public NodeMessageEventArgs(Guid guid, TcpNodeAddress address, PingMessageType messageType)
         {
-            IsNew = isNew;
-            ControlPort = controlPort;
+            MessageType = messageType;
             Guid = guid;
             Address = address;
         }

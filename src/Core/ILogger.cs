@@ -10,5 +10,6 @@ namespace Lucky.Home.Core
         void Warning(string message);
         void Warning(string message, string param1, object value1);
         void Warning(string message, string param1, object value1, string param2, object value2);
+        void Exception(Exception exc);
     }
 }
