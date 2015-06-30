@@ -16,6 +16,7 @@ namespace Lucky.Home.Core.Protocol
         private readonly object _lockObject = new object();
         private bool _inFetchSinkData;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
+        private ILogger _logger;
 
         internal TcpNode(Guid guid, TcpNodeAddress address)
         {
@@ -26,13 +27,14 @@ namespace Lucky.Home.Core.Protocol
 
             Id = guid;
             _address = address;
+            _logger = new ConsoleLogger("Node:" + guid);
         }
 
         private ILogger Logger
         {
             get
             {
-                return Manager.GetService<ILogger>();
+                return _logger;
             }
         }
 
@@ -196,12 +198,15 @@ namespace Lucky.Home.Core.Protocol
 
         private void RegisterSinks(string[] sinks)
         {
-            throw new NotImplementedException();
+            foreach (var sink in sinks)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         internal Task Rename()
         {
-            return new Task(() => { });
+            return Task.Run(() => { });
         }
     }
 }

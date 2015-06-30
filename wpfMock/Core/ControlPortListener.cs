@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using System.Windows.Threading;
 
 namespace Lucky.HomeMock.Core
 {
@@ -63,40 +63,89 @@ namespace Lucky.HomeMock.Core
             }
         }
 
-        private string ReadCommand(BinaryReader reader)
+        class ControlSession : IDisposable
         {
-            byte[] buffer = new byte[4];
-            reader.Read(buffer, 0, 4);
-            return Encoding.ASCII.GetString(buffer);
-        }
+            private readonly Action<string> _logger;
+            private readonly BinaryWriter _writer;
+            private readonly BinaryReader _reader;
+            private int _nodeIdx = 0;
 
-        private void RunServer(BinaryReader reader, BinaryWriter writer)
-        {
-            string command = ReadCommand(reader);
-            switch (command)
+            public ControlSession(Stream stream, Action<string> logger)
             {
-                case "CLOS":
-                    return;
-
-                default:
-                    throw new InvalidOperationException("Unknown protocol command: " + command);
+                _logger = logger;
+                _writer = new BinaryWriter(stream);
+                _reader = new BinaryReader(stream);
             }
 
-            // Write RGST command header
-            writer.Write(Encoding.ASCII.GetBytes("RGST"));
-            // Num of peers
-            writer.Write((short)_sinks.Length);
-
-            foreach (ControlPortListener sink in _sinks)
+            public void Dispose()
             {
-                // Peer device ID
-                writer.Write(sink.DeviceID);
-                // Peer device capatibilities
-                writer.Write(sink.DeviceCaps);
-                // PORT
-                writer.Write(sink.Port);
+                _writer.Dispose();
+                _reader.Dispose();
             }
 
+            private string ReadCommand()
+            {
+                byte[] buffer = new byte[4];
+                _reader.Read(buffer, 0, 4);
+                return Encoding.ASCII.GetString(buffer);
+            }
+
+            private bool RunServer()
+            {
+                string command = ReadCommand();
+                switch (command)
+                {
+                    case "CLOS":
+                        return false;
+                    case "CHIL":
+                        Write(1);
+                        Write(Data.DeviceId);
+                        break;
+                    case "SELE":
+                        _nodeIdx = ReadUint16();
+                        break;
+                    case "SINK":
+                        Write(0);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unknown protocol command: " + command);
+                }
+
+                return true;
+            }
+
+            private ushort ReadUint16()
+            {
+                return _reader.ReadUInt16();
+            }
+
+            private void Write(ushort i)
+            {
+                _writer.Write(BitConverter.GetBytes(i));
+            }
+
+            private void Write(Guid guid)
+            {
+                _writer.Write(guid.ToByteArray());
+            }
+
+            public void Run()
+            {
+                try
+                {
+                    while (true)
+                    {
+                        if (!RunServer())
+                        {
+                            break;
+                        }
+                    }
+                }
+                catch (Exception exc)
+                {
+                    _logger("EXC: " + exc.Message + exc.StackTrace);
+                }
+            }
         }
 
         private void HandleServiceSocketAccepted(TcpClient tcpClient)
@@ -106,19 +155,9 @@ namespace Lucky.HomeMock.Core
                 Log("Incoming connection from: " + tcpClient.Client.RemoteEndPoint);
 
                 // Now sends message
-                using (BinaryWriter writer = new BinaryWriter(stream))
+                using (var session = new ControlSession(stream, Log))
                 {
-                    using (BinaryReader reader = new BinaryReader(stream))
-                    {
-                        try
-                        {
-                            RunServer(reader, writer);
-                        }
-                        catch (Exception exc)
-                        {
-                            Log("EXC: " + exc.Message + exc.StackTrace);
-                        }
-                    }
+                    session.Run();
                 }
             }
         }
