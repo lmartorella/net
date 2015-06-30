@@ -25,14 +25,17 @@ namespace Lucky.HomeMock.Core
             _timer.Dispose();
         }
 
+        public bool Registered { get; set; }
+
         private void HandleTick(object state)
         {
             // Send a broacast HELO message to port 17007
             MemoryStream stream = new MemoryStream();
+            var msg = (Registered ? "HTBT" : "HEL3");
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 // Write HOMEHELO
-                writer.Write(Encoding.ASCII.GetBytes("HOMEHEL2"));
+                writer.Write(Encoding.ASCII.GetBytes("HOME" + msg));
                 writer.Write(Data.DeviceId.ToByteArray());
                 writer.Write(BitConverter.GetBytes(_rcvPort));
             }
@@ -42,10 +45,10 @@ namespace Lucky.HomeMock.Core
 
             if (Sent != null)
             {
-                Sent(this, EventArgs.Empty);
+                Sent(this, new ItemEventArgs<string>(msg));
             }
         }
 
-        public event EventHandler Sent;
+        public event EventHandler<ItemEventArgs<string>> Sent;
     }
 }

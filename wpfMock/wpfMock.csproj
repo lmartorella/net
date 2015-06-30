@@ -50,10 +50,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Core\ItemEventArgs.cs" />
     <Compile Include="Sinks\DataEventArgs.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Sinks\FlasherSink.cs" />
-    <Compile Include="Sinks\SinkBase.cs" />
+    <Compile Include="Core\ControlPortListener.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -64,7 +65,6 @@
     </Compile>
     <Compile Include="Core\Data.cs" />
     <Compile Include="Core\HeloSender.cs" />
-    <Compile Include="Core\HomeReceiver.cs" />
     <Compile Include="Core\Task.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

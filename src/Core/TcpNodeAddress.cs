@@ -19,6 +19,14 @@ namespace Lucky.Home.Core
             Index = index;
         }
 
+        public bool IsSubNode
+        {
+            get
+            {
+                return Index > 0;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             return Equals((TcpNodeAddress)obj);

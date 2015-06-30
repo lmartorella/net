@@ -52,73 +52,69 @@ namespace Lucky.Home.Core
 
         private static INetSerializer BuildFieldItem(ICustomAttributeProvider fieldInfo, Type fieldType)
         {
-            bool isString = fieldType == typeof(string);
-            if (fieldType.IsArray || isString)
+            if (fieldType.IsArray)
             {
-                INetSerializer elSerializer;
-                Type elType;
-                if (isString)
-                {
-                    elType = typeof(char);
-                    elSerializer = new AsciiCharSerializer();
-                }
-                else
-                {
-                    elType = fieldType.GetElementType();
-                    elSerializer = BuildFieldItem(fieldInfo, elType);
-                }
+                var elType = fieldType.GetElementType();
+                var elSerializer = BuildFieldItem(fieldInfo, elType);
 
-                if (fieldInfo != null && fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Length >= 1)
+                if (fieldInfo == null || fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Length < 1)
                 {
-                    return new ArraySerializer(elSerializer, elType, isString);
+                    throw new NotSupportedException("Array type not annoted: " + fieldInfo);
                 }
-                else
-                {
-                    SerializeAsFixedArrayAttribute attr = null;
-                    if (fieldInfo != null)
-                    {
-                        attr = fieldInfo.GetCustomAttributes(typeof(SerializeAsFixedArrayAttribute), false).Cast<SerializeAsFixedArrayAttribute>().FirstOrDefault();
-                    }
-                    if (attr == null)
-                    {
-                        throw new NotSupportedException("Array type not annoted: " + fieldInfo);
-                    }
-                    return new FixedArrayFieldItem(elSerializer, elType, attr.Size, isString);
-                }
+                return new ArraySerializer(elSerializer, elType, false);
             }
+            
+            if (fieldType == typeof(string))
+            {
+                var elType = typeof(char);
+                INetSerializer elSerializer = new AsciiCharSerializer();
+
+                SerializeAsFixedStringAttribute attr = null;
+                if (fieldInfo != null)
+                {
+                    attr = fieldInfo.GetCustomAttributes(typeof(SerializeAsFixedStringAttribute), false).Cast<SerializeAsFixedStringAttribute>().FirstOrDefault();
+                }
+                if (attr == null)
+                {
+                    throw new NotSupportedException("Array type not annoted: " + fieldInfo);
+                }
+                return new FixedStringFieldItem(elSerializer, elType, attr.Size);
+            }
+            
             if (fieldType.IsEnum)
             {
                 fieldType = fieldType.GetEnumUnderlyingType();
             }
-            if (fieldType == typeof(byte))
+
+            else if (fieldType == typeof(byte))
             {
                 return new ByteSerializer();
             }
-            if (fieldType == typeof(ushort))
+            else if (fieldType == typeof(ushort))
             {
                 return new BitConverterItem<ushort>(2, BitConverter.GetBytes, a => BitConverter.ToUInt16(a, 0));
             }
-            if (fieldType == typeof(short))
+            else if (fieldType == typeof(short))
             {
                 return new BitConverterItem<short>(2, BitConverter.GetBytes, a => BitConverter.ToInt16(a, 0));
             }
-            if (fieldType == typeof(uint))
+            else if (fieldType == typeof(uint))
             {
                 return new BitConverterItem<uint>(4, BitConverter.GetBytes, a => BitConverter.ToUInt32(a, 0));
             }
-            if (fieldType == typeof(int))
+            else if (fieldType == typeof(int))
             {
                 return new BitConverterItem<int>(4, BitConverter.GetBytes, a => BitConverter.ToInt32(a, 0));
             }
-            if (fieldType == typeof(Guid))
+            else if (fieldType == typeof(Guid))
             {
                 return new GuidFieldItem();
             }
-            if (fieldType == typeof(IPAddress))
+            else if (fieldType == typeof(IPAddress))
             {
                 return new IpAddressFieldItem();
             }
-            if (fieldType.IsClass)
+            else if (fieldType.IsClass)
             {
                 // Build nested class
                 Type serType = typeof(NetSerializer<>).MakeGenericType(fieldType);
@@ -178,10 +174,10 @@ namespace Lucky.Home.Core
             }
         }
 
-        private class FixedArrayFieldItem : ArraySerializer
+        private class FixedStringFieldItem : ArraySerializer
         {
-            public FixedArrayFieldItem(INetSerializer elementSerializer, Type elType, int size, bool isString)
-                :base(elementSerializer, elType, isString)
+            public FixedStringFieldItem(INetSerializer elementSerializer, Type elType, int size)
+                :base(elementSerializer, elType, true)
             {
                 if (size <= 0)
                 {

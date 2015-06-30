@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using TaskExtensions = NuGet.TaskExtensions;
 
 namespace Lucky.Home.Core.Protocol
 {
@@ -47,16 +48,19 @@ namespace Lucky.Home.Core.Protocol
         /// <summary>
         /// An already logged-in node relogs in (e.g. after node reset)
         /// </summary>
-        public Task Relogin(TcpNodeAddress address)
+        public async Task Relogin(TcpNodeAddress address)
         {
             // Update address!
             lock (_address)
             {
                 _address = address;
             }
-            return FetchSinkData();
+            await FetchSinkData();
         }
 
+        /// <summary>
+        /// Children node collection changed (e.g. new node). Check differences
+        /// </summary>
         public void RefetchChildren(TcpNodeAddress address)
         {
             throw new NotImplementedException();
@@ -64,13 +68,13 @@ namespace Lucky.Home.Core.Protocol
 
         private class CloseMessage
         {
-            [SerializeAsFixedArray(4)]
+            [SerializeAsFixedString(4)]
             public string Cmd = "CLOS";
         }
 
         private class GetChildrenMessage
         {
-            [SerializeAsFixedArray(4)]
+            [SerializeAsFixedString(4)]
             public string Cmd = "CHIL";
         }
 
@@ -78,6 +82,32 @@ namespace Lucky.Home.Core.Protocol
         {
             [SerializeAsDynArray]
             public Guid[] Guids;
+        }
+
+        private class SelectNodeMessage
+        {
+            [SerializeAsFixedString(4)]
+            public string Cmd = "SELE";
+
+            public short Index;
+
+            public SelectNodeMessage(int index)
+            {
+                Index = (short)index;
+            }
+        }
+
+        private class GetSinksMessage
+        {
+            [SerializeAsFixedString(4)] 
+            public string Cmd = "SINK";
+        }
+
+        private class GetSinksMessageResponse
+        {
+            [SerializeAsDynArray]
+            [SerializeAsFixedString(4)]
+            public string[] Sinks;
         }
 
         internal async Task FetchSinkData()
@@ -90,9 +120,9 @@ namespace Lucky.Home.Core.Protocol
                 }
                 _inFetchSinkData = true;
             }
-            while (!await FetchSinkDataSingle())
+            while (!await TryFetchSinkData())
             {
-                Task.Delay(RetryTime);
+                await Task.Delay(RetryTime);
             }
             lock (_lockObject)
             {
@@ -100,52 +130,73 @@ namespace Lucky.Home.Core.Protocol
             }
         }
 
-        private async Task<bool> FetchSinkDataSingle()
+        private async Task<bool> TryFetchSinkData()
         {
-            // Init a METADATA fetch connection
-            TcpNodeAddress address;
-            lock (_address)
+            return await Task.Run(() =>
             {
-                address = _address.Clone();
-            }
-
-            try
-            {
-                using (var connection = new TcpConnection(address.Address, address.ControlPort))
+                // Init a METADATA fetch connection
+                TcpNodeAddress address;
+                lock (_address)
                 {
-                    connection.Write(new GetChildrenMessage());
-                    var childNodes = connection.Read<GetChildrenMessageResponse>();
+                    address = _address.Clone();
+                }
 
-                    for (int index = 0; index < childNodes.Guids.Length; index++)
+                string[] sinks;
+
+                try
+                {
+                    using (var connection = new TcpConnection(address.Address, address.ControlPort))
                     {
-                        var childGuid = childNodes.Guids[index];
-                        if (index == 0)
+                        if (!address.IsSubNode)
                         {
-                            // Mine
-                            if (childGuid != Id)
+                            // Ask for subnodes
+                            connection.Write(new GetChildrenMessage());
+                            var childNodes = connection.Read<GetChildrenMessageResponse>();
+
+                            for (int index = 0; index < childNodes.Guids.Length; index++)
                             {
-                                // ERROR
-                                Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
+                                var childGuid = childNodes.Guids[index];
+                                if (index == 0)
+                                {
+                                    // Mine
+                                    if (childGuid != Id)
+                                    {
+                                        // ERROR
+                                        Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
+                                    }
+                                }
+                                else
+                                {
+                                    // Register a subnode
+                                    Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                                }
                             }
                         }
-                        else
-                        {
-                            // Register a subnode
-                            yield Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
-                            Store it (for future warm registration)
-                        }
+
+                        // Then ask for sinks
+                        connection.Write(new SelectNodeMessage(address.Index));
+                        connection.Write(new GetSinksMessage());
+                        sinks = connection.Read<GetSinksMessageResponse>().Sinks;
+
+                        connection.Write(new CloseMessage());
                     }
-
-                    connection.Write(new CloseMessage());
                 }
-            }
-            catch (Exception exc)
-            {
-                Logger.Exception(exc);
-                return false;
-            }
+                catch (Exception exc)
+                {
+                    Logger.Exception(exc);
+                    return false;
+                }
 
-            return true;
+                // Now register sinks
+                RegisterSinks(sinks);
+
+                return true;
+            });
+        }
+
+        private void RegisterSinks(string[] sinks)
+        {
+            throw new NotImplementedException();
         }
 
         internal Task Rename()

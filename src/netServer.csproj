@@ -76,7 +76,7 @@
     <Compile Include="Core\Protocol\HeloMessage.cs" />
     <Compile Include="Core\NetSerializer.cs" />
     <Compile Include="Core\SelectorAttribute.cs" />
-    <Compile Include="Core\SerializeAsFixedArrayAttribute.cs" />
+    <Compile Include="Core\SerializeAsFixedStringAttribute.cs" />
     <Compile Include="Core\SerializeAsDynArrayAttribute.cs" />
     <Compile Include="Core\Protocol\ServiceCommand.cs" />
     <Compile Include="Core\Protocol\ServerErrorCode.cs" />

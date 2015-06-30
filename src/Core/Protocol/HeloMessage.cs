@@ -9,7 +9,7 @@ namespace Lucky.Home.Core.Protocol
         /// <summary>
         /// HOME
         /// </summary>
-        [SerializeAsFixedArray(4)]
+        [SerializeAsFixedString(4)]
         public string Preamble;
 
         internal const string PreambleValue = "HOME";
@@ -17,7 +17,7 @@ namespace Lucky.Home.Core.Protocol
         /// <summary>
         /// HEL3 or HTBT
         /// </summary>
-        [SerializeAsFixedArray(4)]
+        [SerializeAsFixedString(4)]
         public string MessageCode;
 
         internal const string HeloMessageCode = "HEL3";

@@ -3,9 +3,9 @@
 namespace Lucky.Home.Core
 {
     [AttributeUsage(AttributeTargets.Field)]
-    class SerializeAsFixedArrayAttribute : Attribute
+    class SerializeAsFixedStringAttribute : Attribute
     {
-        public SerializeAsFixedArrayAttribute(int size)
+        public SerializeAsFixedStringAttribute(int size)
         {
             Size = size;
         }
