@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace Lucky.HomeMock.Core
@@ -93,6 +92,7 @@ namespace Lucky.HomeMock.Core
             private bool RunServer()
             {
                 string command = ReadCommand();
+                _logger("Msg: " + command);
                 switch (command)
                 {
                     case "CLOS":
@@ -107,6 +107,13 @@ namespace Lucky.HomeMock.Core
                     case "SINK":
                         Write(0);
                         break;
+                    case "GUID":
+                        lock (Data.LockObject)
+                        {
+                            Data.DeviceId = ReadGuid();
+                        }
+                        _logger("New guid: " + Data.DeviceId);
+                        break;
                     default:
                         throw new InvalidOperationException("Unknown protocol command: " + command);
                 }
@@ -117,6 +124,11 @@ namespace Lucky.HomeMock.Core
             private ushort ReadUint16()
             {
                 return _reader.ReadUInt16();
+            }
+
+            private Guid ReadGuid()
+            {
+                return new Guid(_reader.ReadBytes(16));
             }
 
             private void Write(ushort i)

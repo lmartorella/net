@@ -105,6 +105,19 @@ namespace Lucky.Home.Core.Protocol
             public string Cmd = "SINK";
         }
 
+        private class NewGuidMessage
+        {
+            [SerializeAsFixedString(4)]
+            public string Cmd = "GUID";
+
+            public readonly Guid Guid;
+
+            public NewGuidMessage(Guid guid)
+            {
+                Guid = guid;
+            }
+        }
+
         private class GetSinksMessageResponse
         {
             [SerializeAsDynArray]
@@ -132,60 +145,71 @@ namespace Lucky.Home.Core.Protocol
             }
         }
 
+        private bool MakeConnection(Action<TcpConnection, TcpNodeAddress> handler)
+        {
+            // Init a METADATA fetch connection
+            TcpNodeAddress address;
+            lock (_address)
+            {
+                address = _address.Clone();
+            }
+
+            using (var connection = new TcpConnection(address.Address, address.ControlPort))
+            {
+                try
+                {
+                    handler(connection, address);
+                    connection.Write(new CloseMessage());
+                }
+                catch (Exception exc)
+                {
+                    Logger.Exception(exc);
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private async Task<bool> TryFetchSinkData()
         {
             return await Task.Run(() =>
             {
                 // Init a METADATA fetch connection
-                TcpNodeAddress address;
-                lock (_address)
+                string[] sinks = null;
+                if (!MakeConnection((connection, address) =>
                 {
-                    address = _address.Clone();
-                }
-
-                string[] sinks;
-
-                try
-                {
-                    using (var connection = new TcpConnection(address.Address, address.ControlPort))
+                    if (!address.IsSubNode)
                     {
-                        if (!address.IsSubNode)
-                        {
-                            // Ask for subnodes
-                            connection.Write(new GetChildrenMessage());
-                            var childNodes = connection.Read<GetChildrenMessageResponse>();
+                        // Ask for subnodes
+                        connection.Write(new GetChildrenMessage());
+                        var childNodes = connection.Read<GetChildrenMessageResponse>();
 
-                            for (int index = 0; index < childNodes.Guids.Length; index++)
+                        for (int index = 0; index < childNodes.Guids.Length; index++)
+                        {
+                            var childGuid = childNodes.Guids[index];
+                            if (index == 0)
                             {
-                                var childGuid = childNodes.Guids[index];
-                                if (index == 0)
+                                // Mine
+                                if (childGuid != Id)
                                 {
-                                    // Mine
-                                    if (childGuid != Id)
-                                    {
-                                        // ERROR
-                                        Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
-                                    }
-                                }
-                                else
-                                {
-                                    // Register a subnode
-                                    Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                                    // ERROR
+                                    Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
                                 }
                             }
+                            else
+                            {
+                                // Register a subnode
+                                Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                            }
                         }
-
-                        // Then ask for sinks
-                        connection.Write(new SelectNodeMessage(address.Index));
-                        connection.Write(new GetSinksMessage());
-                        sinks = connection.Read<GetSinksMessageResponse>().Sinks;
-
-                        connection.Write(new CloseMessage());
                     }
-                }
-                catch (Exception exc)
+
+                    // Then ask for sinks
+                    connection.Write(new SelectNodeMessage(address.Index));
+                    connection.Write(new GetSinksMessage());
+                    sinks = connection.Read<GetSinksMessageResponse>().Sinks;
+                }))
                 {
-                    Logger.Exception(exc);
                     return false;
                 }
 
@@ -204,9 +228,16 @@ namespace Lucky.Home.Core.Protocol
             }
         }
 
-        internal Task Rename()
+        internal async Task Rename()
         {
-            return Task.Run(() => { });
+            await Task.Run(() =>
+            {
+                MakeConnection((connection, address) =>
+                {
+                    connection.Write(new SelectNodeMessage(address.Index));
+                    connection.Write(new NewGuidMessage(Id));
+                });
+            });
         }
     }
 }

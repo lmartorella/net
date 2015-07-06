@@ -25,7 +25,16 @@ namespace Lucky.HomeMock.Core
             _timer.Dispose();
         }
 
-        public bool Registered { get; set; }
+        public bool Registered
+        {
+            get
+            {
+                lock (Data.LockObject)
+                {
+                    return Data.DeviceId != Guid.Empty;
+                }
+            }
+        }
 
         private void HandleTick(object state)
         {
