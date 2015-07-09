@@ -39,8 +39,10 @@
   <ItemGroup>
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\ILogger.cs" />
+    <Compile Include="Core\ILoggerFactory.cs" />
     <Compile Include="Core\IService.cs" />
     <Compile Include="Core\Manager.cs" />
+    <Compile Include="Core\ServiceBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

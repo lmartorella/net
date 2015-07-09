@@ -17,6 +17,7 @@ namespace Lucky.Home
             Manager.Register<NodeRegistrar, INodeRegistrar>();
             Manager.Register<SinkManager>();
             Manager.Register<AppService>();
+            Manager.Register<ConsoleLoggerFactory, ILoggerFactory>();
 
             // Register known sinks
             Manager.Register<SinkManager>();

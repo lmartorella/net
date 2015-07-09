@@ -20,7 +20,7 @@ namespace Lucky.Home.Protocol
         public UdpControlPortListener(IPAddress address)
         {
             //_address = address;
-            _logger = new ConsoleLogger("UdpControlPortListener");
+            _logger = Manager.GetService<ILoggerFactory>().Create("UdpControlPortListener");
             _client = new UdpClient(new IPEndPoint(address, Constants.UdpControlPort));
             _client.BeginReceive(OnReceiveData, null);
         }

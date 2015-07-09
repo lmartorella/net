@@ -47,7 +47,7 @@ namespace Lucky.Home.Protocol
 
             Id = guid;
             _address = address;
-            _logger = new ConsoleLogger("Node:" + guid);
+            _logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
         }
 
         private ILogger Logger

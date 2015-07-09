@@ -77,7 +77,6 @@
     <Compile Include="Core\SerializeAsFixedStringAttribute.cs" />
     <Compile Include="Core\SerializeAsDynArrayAttribute.cs" />
     <Compile Include="Protocol\Server.cs" />
-    <Compile Include="Core\ServiceBase.cs" />
     <Compile Include="Core\Sink.cs" />
     <Compile Include="Core\SinkManager.cs" />
     <Compile Include="Protocol\TcpNodeAddress.cs" />
