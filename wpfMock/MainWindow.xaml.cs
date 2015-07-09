@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Windows;
 using System.Windows.Threading;
 using Lucky.HomeMock.Core;
 using Lucky.HomeMock.Sinks;
@@ -54,21 +55,28 @@ namespace Lucky.HomeMock
             }
         }
 
+        private void LogLine(string line)
+        {
+            Dispatcher.Invoke(() => LogBox.AppendText(line + Environment.NewLine));
+        }
+
         private void EnterInitState()
         {
             _displaySink = new DisplaySink();
             _displaySink.Data += (sender, args) =>
             {
-                Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                Dispatcher.Invoke(() =>
                 {
                     DisplayBox.Text = args.Item;
-                }));
+                });
             };
 
             ControlPort = new ControlPortListener(new SinkBase[] { _displaySink} );
             HeloSender = new HeloSender(ControlPort.Port);
-            HeloSender.Sent += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText(e.Item + " sent" + Environment.NewLine)));
-            ControlPort.LogLine += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("CTRL: " + e.Item + Environment.NewLine)));
+            HeloSender.Sent += (o, e) => LogLine(e.Item + " sent");
+            ControlPort.LogLine += (o, e) => LogLine("CTRL: " + e.Item);
+
+            LogLine("Started instance " + App.Current.InstanceIndex);
         }
     }
 }

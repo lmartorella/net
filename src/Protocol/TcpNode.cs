@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
-// ReSharper disable NotAccessedField.Local
+
 #pragma warning disable 414
 #pragma warning disable 649
 #pragma warning disable 169
 
 // ReSharper disable ClassNeverInstantiated.Local
 // ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable NotAccessedField.Local
 
 namespace Lucky.Home.Protocol
 {
@@ -26,6 +27,11 @@ namespace Lucky.Home.Protocol
         private bool _inFetchSinkData;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
         private readonly ILogger _logger;
+
+        /// <summary>
+        /// If some active connection action was previously failed, and not yet restored by a heartbeat
+        /// </summary>
+        private bool _isZombie;
 
         /// <summary>
         /// Valid sinks
@@ -59,6 +65,7 @@ namespace Lucky.Home.Protocol
             {
                 _address = address;
             }
+            _isZombie = false;
         }
 
         /// <summary>
@@ -71,6 +78,7 @@ namespace Lucky.Home.Protocol
             {
                 _address = address;
             }
+            _isZombie = false;
             await FetchSinkData();
         }
 
@@ -172,6 +180,12 @@ namespace Lucky.Home.Protocol
 
         private bool MakeConnection(Action<TcpConnection, TcpNodeAddress> handler)
         {
+            if (_isZombie)
+            {
+                // Avoid thrashing the network
+                return false;
+            }
+
             // Init a METADATA fetch connection
             TcpNodeAddress address;
             lock (_address)
@@ -190,6 +204,8 @@ namespace Lucky.Home.Protocol
             catch (Exception exc)
             {
                 Logger.Exception(exc);
+                // Mark it as a zombie
+                _isZombie = true;
                 return false;
             }
             return true;

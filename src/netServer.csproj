@@ -72,7 +72,7 @@
     <Compile Include="Protocol\UdpControlPortListener.cs" />
     <Compile Include="Core\ConsoleLogger.cs" />
     <Compile Include="Core\Manager.cs" />
-    <Compile Include="Protocol\Node.cs" />
+    <Compile Include="Protocol\TcpNode.cs" />
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Protocol\HeloMessage.cs" />
     <Compile Include="Core\NetSerializer.cs" />
