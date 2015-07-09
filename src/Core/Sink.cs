@@ -8,11 +8,21 @@ namespace Lucky.Home.Core
     /// </summary>
     internal class Sink : IDisposable, ISink
     {
-        public virtual void Dispose()
+        private Guid _nodeGuid;
+        private int _index;
+
+        public void Init(Guid nodeGuid, int index)
+        {
+            _nodeGuid = nodeGuid;
+            _index = index;
+            OnInitialize();
+        }
+
+        protected virtual void OnInitialize()
         { }
 
-        public Guid NodeGuid { get; set; }
-        public int Index { get; set; }
+        public virtual void Dispose()
+        { }
 
         public string FourCc
         {
@@ -21,13 +31,26 @@ namespace Lucky.Home.Core
                 return SinkManager.GetSinkFourCc(GetType());
             }
         }
+        
+        protected byte[] ReadBytes()
+        {
+            var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
+            if (node != null)
+            {
+                return node.ReadFromSink(_index);
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         protected bool WriteBytes(byte[] data)
         {
-            var node = Manager.GetService<NodeRegistrar>().FindNode(NodeGuid);
+            var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
             {
-                return node.WriteToSink(data, Index);
+                return node.WriteToSink(data, _index);
             }
             else
             {

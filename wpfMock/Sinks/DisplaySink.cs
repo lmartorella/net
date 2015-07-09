@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Lucky.HomeMock.Core;
 
@@ -14,6 +15,7 @@ namespace Lucky.HomeMock.Sinks
         }
 
         public abstract void Read(byte[] data);
+        public abstract byte[] Write();
     }
 
     class DisplaySink : SinkBase
@@ -29,6 +31,14 @@ namespace Lucky.HomeMock.Sinks
             {
                 Data(this, new ItemEventArgs<string>(str));
             }
+        }
+
+        public override byte[] Write()
+        {
+            List<byte> retValue = new List<byte>();
+            retValue.AddRange(BitConverter.GetBytes((short)1));
+            retValue.AddRange(BitConverter.GetBytes((short)20));
+            return retValue.ToArray();
         }
 
         public event EventHandler<ItemEventArgs<string>> Data;

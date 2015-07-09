@@ -38,19 +38,18 @@ namespace Lucky.Home.Core
             return type.GetCustomAttribute<SinkIdAttribute>().SinkFourCC;
         }
 
-        public Sink CreateSink(string sinkFourCc, Guid ndoeGuid, int index)
+        public Sink CreateSink(string sinkFourCc, Guid nodeGuid, int index)
         {
             Type type;
             if (!_sinkTypes.TryGetValue(sinkFourCc, out type))
             {
                 // Unknown sink type
-                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", ndoeGuid);
+                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", nodeGuid);
                 return null;
             }
 
             var sink = (Sink)Activator.CreateInstance(type);
-            sink.NodeGuid = ndoeGuid;
-            sink.Index = index;
+            sink.Init(nodeGuid, index);
 
             lock (_sinks)
             {

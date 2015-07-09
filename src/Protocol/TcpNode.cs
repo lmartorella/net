@@ -158,6 +158,20 @@ namespace Lucky.Home.Protocol
             public byte[] Data;
         }
 
+        private class ReadDataMessage
+        {
+            [SerializeAsFixedString(4)]
+            public string Cmd = "READ";
+
+            public short SinkIndex;
+        }
+
+        private class ReadDataMessageReponse
+        {
+            [SerializeAsDynArray]
+            public byte[] Data;
+        }
+
         internal async Task FetchSinkData()
         {
             lock (_lockObject)
@@ -322,6 +336,23 @@ namespace Lucky.Home.Protocol
                 // Open stream
                 connection.Write(new WriteDataMessage {SinkIndex = (short) sinkId, Data = data});
             });
+        }
+
+        public byte[] ReadFromSink(int sinkId)
+        {
+            byte[] data = null;
+            if (!MakeConnection((connection, address) =>
+            {
+                // Select subnode
+                connection.Write(new SelectNodeMessage(address.Index));
+                // Open stream
+                connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
+                data = connection.Read<ReadDataMessageReponse>().Data;
+            }))
+            {
+                data = null;
+            }
+            return data;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using Lucky.Home.Core;
 
 // ReSharper disable once UnusedMember.Global
@@ -14,6 +15,23 @@ namespace Lucky.Home.Sinks
     [SinkId("LINE")]
     class DisplaySink : Sink, IDisplaySink
     {
+        protected override void OnInitialize()
+        {
+            base.OnInitialize();
+            byte[] msg = ReadBytes();
+            var metadata = NetSerializer<ReadCapMessageResponse>.Read(new BinaryReader(new MemoryStream(msg)));
+
+            LineCount = metadata.LineCount;
+            CharCount = metadata.CharCount;
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class ReadCapMessageResponse
+        {
+            public short LineCount;
+            public short CharCount;
+        }
+
         public void Write(string line)
         {
             WriteBytes(Encoding.ASCII.GetBytes(line));

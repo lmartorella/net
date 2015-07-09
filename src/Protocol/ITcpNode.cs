@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Lucky.Home.Protocol
@@ -27,5 +26,10 @@ namespace Lucky.Home.Protocol
         /// Open sink communication for write
         /// </summary>
         bool WriteToSink(byte[] data, int sinkId);
+
+        /// <summary>
+        /// Open sink communication for read
+        /// </summary>
+        byte[] ReadFromSink(int sinkId);
     }
 }
