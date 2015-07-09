@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Windows;
+using Lucky.Home.Core;
 
 namespace Lucky.HomeMock
 {
@@ -16,6 +17,7 @@ namespace Lucky.HomeMock
             }
         }
 
+        // ReSharper disable once NotAccessedField.Local
         private Semaphore _semaphore;
 
         protected override void OnStartup(StartupEventArgs e)
@@ -23,10 +25,13 @@ namespace Lucky.HomeMock
             base.OnStartup(e);
 
             // Get the instance name, accessing the other process names and assigning a progressive number
-            InstanceIndex = GetInstanceIndex("Home_WpfMock");
+            _instanceIndex = GetInstanceIndex("Home_WpfMock");
+
+            Manager.Register<GuiLoggerFactory, ILoggerFactory>();
+            Manager.GetService<ILoggerFactory>().Create("App").Log("Started", "instance", _instanceIndex);
         }
 
-        public int InstanceIndex { get; private set; }
+        private int _instanceIndex;
 
         private int GetInstanceIndex(string prefix)
         {

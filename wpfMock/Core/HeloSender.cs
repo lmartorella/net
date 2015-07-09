@@ -12,9 +12,11 @@ namespace Lucky.HomeMock.Core
     {
         private readonly ushort _rcvPort;
         private readonly Timer _timer;
+        private ILogger _logger;
 
         public HeloSender(ushort rcvPort)
         {
+            _logger = Manager.GetService<ILoggerFactory>().Create("HeloSender");
             _rcvPort = rcvPort;
             // Install an auto-repeat timer until closed
             _timer = new Timer(HandleTick, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
@@ -52,12 +54,7 @@ namespace Lucky.HomeMock.Core
             UdpClient client = new UdpClient();
             client.Send(dgram, dgram.Length, new IPEndPoint(IPAddress.Broadcast, Constants.UdpControlPort));
 
-            if (Sent != null)
-            {
-                Sent(this, new ItemEventArgs<string>(msg));
-            }
+            _logger.Log(msg + " sent");
         }
-
-        public event EventHandler<ItemEventArgs<string>> Sent;
     }
 }

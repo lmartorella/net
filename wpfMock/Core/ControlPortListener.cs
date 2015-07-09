@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Lucky.Home.Core;
 using Lucky.HomeMock.Sinks;
 
 namespace Lucky.HomeMock.Core
@@ -13,9 +14,11 @@ namespace Lucky.HomeMock.Core
     {
         private readonly TcpListener _serviceListener;
         private readonly SinkBase[] _sinks;
+        private readonly ILogger _logger;
 
         public ControlPortListener(IEnumerable<SinkBase> sinks)
         {
+            _logger = Manager.GetService<ILoggerFactory>().Create("Listener");
             _sinks = sinks.ToArray();
             Port = (ushort)new Random().Next(17000, 18000);
 
@@ -56,25 +59,15 @@ namespace Lucky.HomeMock.Core
             _serviceListener.Stop();
         }
 
-        public event EventHandler<ItemEventArgs<string>> LogLine;
-
-        private void Log(string str)
-        {
-            if (LogLine != null)
-            {
-                LogLine(this, new ItemEventArgs<string>(str));
-            }
-        }
-
         class ControlSession : IDisposable
         {
-            private readonly Action<string> _logger;
+            private readonly ILogger _logger;
             private readonly ControlPortListener _listener;
             private readonly BinaryWriter _writer;
             private readonly BinaryReader _reader;
             private int _nodeIdx = 0;
 
-            public ControlSession(Stream stream, Action<string> logger, ControlPortListener listener)
+            public ControlSession(Stream stream, ILogger logger, ControlPortListener listener)
             {
                 _logger = logger;
                 _listener = listener;
@@ -98,7 +91,7 @@ namespace Lucky.HomeMock.Core
             private bool RunServer()
             {
                 string command = ReadCommand();
-                _logger("Msg: " + command);
+                _logger.Log("Msg: " + command);
                 switch (command)
                 {
                     case "CLOS":
@@ -122,7 +115,7 @@ namespace Lucky.HomeMock.Core
                         {
                             Data.DeviceId = ReadGuid();
                         }
-                        _logger("New guid: " + Data.DeviceId);
+                        _logger.Log("New guid: " + Data.DeviceId);
                         break;
                     case "WRIT":
                         var sinkIdx = ReadUint16();
@@ -176,7 +169,7 @@ namespace Lucky.HomeMock.Core
                 }
                 catch (Exception exc)
                 {
-                    _logger("EXC: " + exc.Message + exc.StackTrace);
+                    _logger.Exception(exc);
                 }
             }
         }
@@ -185,10 +178,10 @@ namespace Lucky.HomeMock.Core
         {
             using (Stream stream = tcpClient.GetStream())
             {
-                Log("Incoming connection from: " + tcpClient.Client.RemoteEndPoint);
+                _logger.Log("Incoming connection", "from", tcpClient.Client.RemoteEndPoint);
 
                 // Now sends message
-                using (var session = new ControlSession(stream, Log, this))
+                using (var session = new ControlSession(stream, _logger, this))
                 {
                     session.Run();
                 }
