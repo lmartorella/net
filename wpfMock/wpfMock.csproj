@@ -51,7 +51,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Core\ItemEventArgs.cs" />
-    <Compile Include="Sinks\DataEventArgs.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Sinks\FlasherSink.cs" />
     <Compile Include="Core\ControlPortListener.cs" />

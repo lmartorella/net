@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -9,38 +10,53 @@ namespace Lucky.Home.Core
     class SinkManager : ServiceBase
     {
         private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
-
+        private readonly ObservableCollection<ISink> _sinks = new ObservableCollection<ISink>();
+ 
         public SinkManager()
             : base("SinkManager")
         { }
 
-        internal void RegisterSinkDevice<T>(string sinkType) where T : Sink, new()
+        public void RegisterAssembly(Assembly assembly)
         {
-            // Exception if already registered..
-            _sinkTypes.Add(sinkType, typeof(T));
-        }
-
-        internal void RegisterAssembly(Assembly assembly)
-        {
-            foreach (Type type in assembly.GetTypes().Where(t => typeof(Sink).IsAssignableFrom(t)))
+            foreach (var type in assembly.GetTypes().Where(type => typeof(Sink).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
             {
-                SinkIdAttribute[] attr = (SinkIdAttribute[])type.GetCustomAttributes(typeof(SinkIdAttribute), false);
-                if (attr.Length >= 1)
-                {
-                    _sinkTypes.Add(attr[0].SinkFourCC, type);
-                }
+                // Exception if already registered..
+                _sinkTypes.Add(GetSinkFourCc(type), type);
             }
         }
 
-        public Sink CreateSink(string sinkFourCc)
+        public IEnumerable<T> SinksOfType<T>() where T : ISink
+        {
+            lock (_sinks)
+            {
+                return _sinks.OfType<T>().ToArray();
+            }
+        }
+
+        internal static string GetSinkFourCc(Type type)
+        {
+            return type.GetCustomAttribute<SinkIdAttribute>().SinkFourCC;
+        }
+
+        public Sink CreateSink(string sinkFourCc, Guid ndoeGuid, int index)
         {
             Type type;
             if (!_sinkTypes.TryGetValue(sinkFourCc, out type))
             {
                 // Unknown sink type
+                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", ndoeGuid);
                 return null;
             }
-            return (Sink)Activator.CreateInstance(type);
+
+            var sink = (Sink)Activator.CreateInstance(type);
+            sink.NodeGuid = ndoeGuid;
+            sink.Index = index;
+
+            lock (_sinks)
+            {
+                _sinks.Add(sink);
+            }
+            return sink;
         }
     }
 }

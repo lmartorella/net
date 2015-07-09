@@ -1,7 +1,7 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
+using Lucky.Home.Core;
 
-namespace Lucky.Home.Core.Protocol
+namespace Lucky.Home.Protocol
 {
     interface IServer : IService
     {

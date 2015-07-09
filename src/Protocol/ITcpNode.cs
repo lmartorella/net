@@ -1,7 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Protocol
 {
     internal interface ITcpNode
     {
@@ -21,5 +22,10 @@ namespace Lucky.Home.Core
         /// An already logged-in node changed its children (e.g. RS485 push-button)
         /// </summary>
         void RefetchChildren(TcpNodeAddress address);
+
+        /// <summary>
+        /// Open sink communication for write
+        /// </summary>
+        bool WriteToSink(byte[] data, int sinkId);
     }
 }

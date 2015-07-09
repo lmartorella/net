@@ -1,4 +1,4 @@
-﻿namespace Lucky.Home.Core.Protocol
+﻿namespace Lucky.Home.Protocol
 {
     internal enum PingMessageType
     {

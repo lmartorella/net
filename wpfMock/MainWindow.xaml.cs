@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
+using System.Windows.Threading;
 using Lucky.HomeMock.Core;
 using Lucky.HomeMock.Sinks;
 
@@ -16,6 +14,7 @@ namespace Lucky.HomeMock
         private HeloSender _heloSender;
         private ControlPortListener _controlPort;
         private IPEndPoint _serverEndPoint;
+        private DisplaySink _displaySink;
 
         public MainWindow()
         {
@@ -57,7 +56,16 @@ namespace Lucky.HomeMock
 
         private void EnterInitState()
         {
-            ControlPort = new ControlPortListener();
+            _displaySink = new DisplaySink();
+            _displaySink.Data += (sender, args) =>
+            {
+                Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                {
+                    DisplayBox.Text = args.Item;
+                }));
+            };
+
+            ControlPort = new ControlPortListener(new SinkBase[] { _displaySink} );
             HeloSender = new HeloSender(ControlPort.Port);
             HeloSender.Sent += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText(e.Item + " sent" + Environment.NewLine)));
             ControlPort.LogLine += (o, e) => Dispatcher.Invoke((Action)(() => LogBox.AppendText("CTRL: " + e.Item + Environment.NewLine)));

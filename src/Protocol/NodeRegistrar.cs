@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Lucky.Home.Core.Protocol;
+using Lucky.Home.Core;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Protocol
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     class NodeRegistrar : ServiceBase, INodeRegistrar
@@ -131,6 +131,13 @@ namespace Lucky.Home.Core
                 ret = Guid.NewGuid();
             } while (ret.ToString().ToLower().Contains("55aa") || ret.ToString().ToLower().Contains("55-aa"));
             return ret;
+        }
+
+        public ITcpNode FindNode(Guid guid)
+        {
+            ITcpNode node;
+            _nodes.TryGetValue(guid, out node);
+            return node;
         }
     }
 }

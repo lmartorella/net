@@ -1,8 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using TaskExtensions = NuGet.TaskExtensions;
+using Lucky.Home.Core;
+// ReSharper disable NotAccessedField.Local
+#pragma warning disable 414
+#pragma warning disable 649
+#pragma warning disable 169
 
-namespace Lucky.Home.Core.Protocol
+// ReSharper disable ClassNeverInstantiated.Local
+// ReSharper disable MemberCanBePrivate.Local
+
+namespace Lucky.Home.Protocol
 {
     class TcpNode : ITcpNode
     {
@@ -16,7 +25,12 @@ namespace Lucky.Home.Core.Protocol
         private readonly object _lockObject = new object();
         private bool _inFetchSinkData;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
-        private ILogger _logger;
+        private readonly ILogger _logger;
+
+        /// <summary>
+        /// Valid sinks
+        /// </summary>
+        private readonly List<Sink> _sinks = new List<Sink>();
 
         internal TcpNode(Guid guid, TcpNodeAddress address)
         {
@@ -125,6 +139,17 @@ namespace Lucky.Home.Core.Protocol
             public string[] Sinks;
         }
 
+        private class WriteDataMessage
+        {
+            [SerializeAsFixedString(4)]
+            public string Cmd = "WRIT";
+
+            public short SinkIndex;
+
+            [SerializeAsDynArray]
+            public byte[] Data;
+        }
+
         internal async Task FetchSinkData()
         {
             lock (_lockObject)
@@ -154,18 +179,18 @@ namespace Lucky.Home.Core.Protocol
                 address = _address.Clone();
             }
 
-            using (var connection = new TcpConnection(address.Address, address.ControlPort))
+            try
             {
-                try
+                using (var connection = new TcpConnection(address.Address, address.ControlPort))
                 {
                     handler(connection, address);
                     connection.Write(new CloseMessage());
                 }
-                catch (Exception exc)
-                {
-                    Logger.Exception(exc);
-                    return false;
-                }
+            }
+            catch (Exception exc)
+            {
+                Logger.Exception(exc);
+                return false;
             }
             return true;
         }
@@ -222,9 +247,41 @@ namespace Lucky.Home.Core.Protocol
 
         private void RegisterSinks(string[] sinks)
         {
-            foreach (var sink in sinks)
+            var sinkManager = Manager.GetService<SinkManager>();
+
+            // Identity of sink is due to its position in the sink array.
+            // Null sink are valid, it means no sink at that position. Useful for dynamic add/remove of sinks.
+            lock (_sinks)
             {
-                throw new NotImplementedException();
+                // Make _sink size equal to new size
+                // Trim excess
+                while (_sinks.Count > sinks.Length)
+                {
+                    _sinks.Last().Dispose();
+                    _sinks.RemoveAt(_sinks.Count - 1);
+                }
+
+                // Now check for new pos
+                while (_sinks.Count < sinks.Length)
+                {
+                    _sinks.Add(null);
+                }
+
+                for (int i = 0; i < sinks.Length; i++)
+                {
+                    var oldSink = _sinks[i];
+                    if (oldSink != null)
+                    {
+                        if (oldSink.FourCc == sinks[i])
+                        {
+                            // Ok, same sink
+                            continue;
+                        }
+                        // Dispose the old one
+                        oldSink.Dispose();
+                    }
+                    _sinks[i] = sinkManager.CreateSink(sinks[i], Id, i);
+                }
             }
         }
 
@@ -237,6 +294,17 @@ namespace Lucky.Home.Core.Protocol
                     connection.Write(new SelectNodeMessage(address.Index));
                     connection.Write(new NewGuidMessage(Id));
                 });
+            });
+        }
+
+        public bool WriteToSink(byte[] data, int sinkId)
+        {
+            return MakeConnection((connection, address) =>
+            {
+                // Select subnode
+                connection.Write(new SelectNodeMessage(address.Index));
+                // Open stream
+                connection.Write(new WriteDataMessage {SinkIndex = (short) sinkId, Data = data});
             });
         }
     }

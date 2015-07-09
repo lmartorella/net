@@ -1,6 +1,7 @@
 ﻿using System;
+using Lucky.Home.Core;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Protocol
 {
     interface INodeRegistrar : IService
     {

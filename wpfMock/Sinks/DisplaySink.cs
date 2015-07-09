@@ -1,35 +1,36 @@
-﻿//using System;
-//using System.IO;
-//using System.Text;
+﻿using System;
+using System.Text;
+using Lucky.HomeMock.Core;
 
-//namespace Lucky.HomeMock.Sinks
-//{
-//    class DisplaySink : SinkBase
-//    {
-//        private const int StartPort = 18000;
+namespace Lucky.HomeMock.Sinks
+{
+    abstract class SinkBase
+    {
+        public readonly string FourCc;
 
-//        public DisplaySink()
-//            : base(StartPort, 0, 1)
-//        {   }
+        protected SinkBase(string fourCc)
+        {
+            FourCc = fourCc;
+        }
 
-//        protected override void OnSocketOpened(Stream stream)
-//        {
-//            using (BinaryReader reader = new BinaryReader(stream))
-//            {
-//                int l = reader.ReadInt16();
-//                string str = ASCIIEncoding.ASCII.GetString(reader.ReadBytes(l));
-//                if (Data != null)
-//                {
-//                    Data(this, new DataEventArgs(str));
-//                }
-//                using (BinaryWriter writer = new BinaryWriter(stream))
-//                {
-//                    byte[] errorCode = { 0, 0 };
-//                    writer.Write(errorCode);
-//                }
-//            }
-//        }
+        public abstract void Read(byte[] data);
+    }
 
-//        public event EventHandler<DataEventArgs> Data;
-//    }
-//}
+    class DisplaySink : SinkBase
+    {
+        public DisplaySink()
+            : base("LINE")
+        { }
+
+        public override void Read(byte[] data)
+        {
+            string str = Encoding.ASCII.GetString(data);
+            if (Data != null)
+            {
+                Data(this, new ItemEventArgs<string>(str));
+            }
+        }
+
+        public event EventHandler<ItemEventArgs<string>> Data;
+    }
+}

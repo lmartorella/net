@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Lucky.HomeMock.Sinks;
 
 namespace Lucky.HomeMock.Core
 {
     class ControlPortListener : IDisposable
     {
         private readonly TcpListener _serviceListener;
+        private readonly SinkBase[] _sinks;
 
-        public ControlPortListener()
+        public ControlPortListener(IEnumerable<SinkBase> sinks)
         {
+            _sinks = sinks.ToArray();
             Port = (ushort)new Random().Next(17000, 18000);
 
             IPAddress hostAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
@@ -65,13 +69,15 @@ namespace Lucky.HomeMock.Core
         class ControlSession : IDisposable
         {
             private readonly Action<string> _logger;
+            private readonly ControlPortListener _listener;
             private readonly BinaryWriter _writer;
             private readonly BinaryReader _reader;
             private int _nodeIdx = 0;
 
-            public ControlSession(Stream stream, Action<string> logger)
+            public ControlSession(Stream stream, Action<string> logger, ControlPortListener listener)
             {
                 _logger = logger;
+                _listener = listener;
                 _writer = new BinaryWriter(stream);
                 _reader = new BinaryReader(stream);
             }
@@ -105,7 +111,11 @@ namespace Lucky.HomeMock.Core
                         _nodeIdx = ReadUint16();
                         break;
                     case "SINK":
-                        Write(0);
+                        Write((ushort)_listener._sinks.Length);
+                        foreach (var sink in _listener._sinks)
+                        {
+                            Write(sink.FourCc);
+                        }
                         break;
                     case "GUID":
                         lock (Data.LockObject)
@@ -113,6 +123,12 @@ namespace Lucky.HomeMock.Core
                             Data.DeviceId = ReadGuid();
                         }
                         _logger("New guid: " + Data.DeviceId);
+                        break;
+                    case "WRIT":
+                        var sinkIdx = ReadUint16();
+                        var size = ReadUint16();
+                        byte[] data = _reader.ReadBytes(size);
+                        _listener._sinks[sinkIdx].Read(data);
                         break;
                     default:
                         throw new InvalidOperationException("Unknown protocol command: " + command);
@@ -134,6 +150,11 @@ namespace Lucky.HomeMock.Core
             private void Write(ushort i)
             {
                 _writer.Write(BitConverter.GetBytes(i));
+            }
+
+            private void Write(string data)
+            {
+                _writer.Write(Encoding.ASCII.GetBytes(data));
             }
 
             private void Write(Guid guid)
@@ -167,7 +188,7 @@ namespace Lucky.HomeMock.Core
                 Log("Incoming connection from: " + tcpClient.Client.RemoteEndPoint);
 
                 // Now sends message
-                using (var session = new ControlSession(stream, Log))
+                using (var session = new ControlSession(stream, Log, this))
                 {
                     session.Run();
                 }

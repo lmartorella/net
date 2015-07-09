@@ -2,8 +2,9 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Lucky.Home.Core;
 
-namespace Lucky.Home.Core.Protocol
+namespace Lucky.Home.Protocol
 {
     internal class TcpConnection : IDisposable
     {

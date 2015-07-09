@@ -2,13 +2,14 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Lucky.Home.Core;
 
-namespace Lucky.Home.Core.Protocol
+namespace Lucky.Home.Protocol
 {
     /// <summary>
     /// Home UDP control service, for discovering devices
     /// </summary>
-    internal class ControlPortListener : IDisposable
+    internal class UdpControlPortListener : IDisposable
     {
         //private readonly IPAddress _address;
         private readonly UdpClient _client;
@@ -16,10 +17,10 @@ namespace Lucky.Home.Core.Protocol
         //private readonly object _lock = new object();
         private readonly ILogger _logger;
 
-        public ControlPortListener(IPAddress address)
+        public UdpControlPortListener(IPAddress address)
         {
             //_address = address;
-            _logger = new ConsoleLogger("ControlPortListener");
+            _logger = new ConsoleLogger("UdpControlPortListener");
             _client = new UdpClient(new IPEndPoint(address, Constants.UdpControlPort));
             _client.BeginReceive(OnReceiveData, null);
         }

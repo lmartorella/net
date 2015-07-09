@@ -1,8 +1,9 @@
 ﻿using System;
+using Lucky.Home.Core;
 
 // ReSharper disable UnassignedField.Global
 
-namespace Lucky.Home.Core.Protocol
+namespace Lucky.Home.Protocol
 {
     public class HeloMessage
     {

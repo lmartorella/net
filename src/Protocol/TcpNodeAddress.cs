@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Protocol
 {
     internal class TcpNodeAddress : IEquatable<TcpNodeAddress>
     {

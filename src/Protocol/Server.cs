@@ -3,13 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using Lucky.Home.Core;
 
-namespace Lucky.Home.Core.Protocol
+namespace Lucky.Home.Protocol
 {
     class Server : ServiceBase, IServer
     {
         private readonly TcpListener[] _tcpListeners;
-        private ControlPortListener[] _helloListeners;
+        private UdpControlPortListener[] _helloListeners;
         private readonly INodeRegistrar _nodeRegistrar;
 
         // Find a free TCP port
@@ -30,7 +31,7 @@ namespace Lucky.Home.Core.Protocol
             _helloListeners = Addresses.Select(address =>
             {
                 // Start HELLO listener
-                var helloListener = new ControlPortListener(address);
+                var helloListener = new UdpControlPortListener(address);
                 helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.Guid, e.Address, e.MessageType);
                 return helloListener;
             }).ToArray();
@@ -60,7 +61,7 @@ namespace Lucky.Home.Core.Protocol
             {
                 serviceListener.Dispose();
             }
-            _helloListeners = new ControlPortListener[0];
+            _helloListeners = new UdpControlPortListener[0];
         }
 
         private void HandleNodeMessage(Guid guid, TcpNodeAddress address, PingMessageType messageType)
