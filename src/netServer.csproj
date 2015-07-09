@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
-    <AssemblyName>netServer</AssemblyName>
+    <AssemblyName>Home.Server</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -66,12 +66,9 @@
     <Compile Include="Protocol\PingMessageType.cs" />
     <Compile Include="Core\SinkIdAttribute.cs" />
     <Compile Include="Protocol\TcpConnection.cs" />
-    <Compile Include="Core\ILogger.cs" />
     <Compile Include="Protocol\IServer.cs" />
-    <Compile Include="Core\IService.cs" />
     <Compile Include="Protocol\UdpControlPortListener.cs" />
     <Compile Include="Core\ConsoleLogger.cs" />
-    <Compile Include="Core\Manager.cs" />
     <Compile Include="Protocol\TcpNode.cs" />
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Protocol\HeloMessage.cs" />
@@ -98,6 +95,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{b13f0047-1cee-4463-baf6-a943e225d875}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

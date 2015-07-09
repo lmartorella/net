@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Lucky.Home.Core;
 
 namespace Lucky.HomeMock.Core
 {
@@ -11,7 +12,6 @@ namespace Lucky.HomeMock.Core
     {
         private readonly ushort _rcvPort;
         private readonly Timer _timer;
-        private const int HeloProtocolPort = 17007;
 
         public HeloSender(ushort rcvPort)
         {
@@ -50,7 +50,7 @@ namespace Lucky.HomeMock.Core
             }
             byte[] dgram = stream.GetBuffer();
             UdpClient client = new UdpClient();
-            client.Send(dgram, dgram.Length, new IPEndPoint(IPAddress.Broadcast, HeloProtocolPort));
+            client.Send(dgram, dgram.Length, new IPEndPoint(IPAddress.Broadcast, Constants.UdpControlPort));
 
             if (Sent != null)
             {

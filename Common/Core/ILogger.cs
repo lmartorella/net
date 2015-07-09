@@ -2,7 +2,7 @@
 
 namespace Lucky.Home.Core
 {
-    interface ILogger : IService
+    public interface ILogger : IService
     {
         void Log(string message);
         void Log(string message, string param1, object value1);
