@@ -31,10 +31,7 @@ namespace Lucky.HomeMock.Core
         {
             get
             {
-                lock (Data.LockObject)
-                {
-                    return Data.DeviceId != Guid.Empty;
-                }
+                return Manager.GetService<ControlPortListener>().State.DeviceId != Guid.Empty;
             }
         }
 
@@ -47,7 +44,7 @@ namespace Lucky.HomeMock.Core
             {
                 // Write HOMEHELO
                 writer.Write(Encoding.ASCII.GetBytes("HOME" + msg));
-                writer.Write(Data.DeviceId.ToByteArray());
+                writer.Write(Manager.GetService<ControlPortListener>().State.DeviceId.ToByteArray());
                 writer.Write(BitConverter.GetBytes(_rcvPort));
             }
             byte[] dgram = stream.GetBuffer();

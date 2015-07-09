@@ -10,6 +10,11 @@ namespace Lucky.Home.Core
         private static readonly Dictionary<Type, object> Instances = new Dictionary<Type, object>();
         private static readonly object LockObject = new object();
 
+        static Manager()
+        {
+            Register<JsonIsolatedStoragePersistenceService, IPersistenceService>();
+        }
+
         public static T GetService<T>() where T : IService
         {
             lock (LockObject)

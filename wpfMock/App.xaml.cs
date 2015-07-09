@@ -24,10 +24,12 @@ namespace Lucky.HomeMock
         {
             base.OnStartup(e);
 
+            Manager.Register<GuiLoggerFactory, ILoggerFactory>();
             // Get the instance name, accessing the other process names and assigning a progressive number
             _instanceIndex = GetInstanceIndex("Home_WpfMock");
 
-            Manager.Register<GuiLoggerFactory, ILoggerFactory>();
+            Manager.GetService<IPersistenceService>().InitAppRoot("Wpf.Mock_" + _instanceIndex);
+
             Manager.GetService<ILoggerFactory>().Create("App").Log("Started", "instance", _instanceIndex);
         }
 

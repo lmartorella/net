@@ -11,7 +11,6 @@ namespace Lucky.HomeMock
     public partial class MainWindow : ILogger
     {
         private HeloSender _heloSender;
-        private ControlPortListener _controlPort;
         private DisplaySink _displaySink;
 
         public MainWindow()
@@ -36,22 +35,6 @@ namespace Lucky.HomeMock
             }
         }
 
-        private ControlPortListener ControlPort
-        {
-            get
-            {
-                return _controlPort;
-            }
-            set
-            {
-                if (_controlPort != null)
-                {
-                    _controlPort.Dispose();
-                }
-                _controlPort = value;
-            }
-        }
-
         private void LogLine(string line)
         {
             Dispatcher.Invoke(() => LogBox.AppendText(line + Environment.NewLine));
@@ -68,8 +51,9 @@ namespace Lucky.HomeMock
                 });
             };
 
-            ControlPort = new ControlPortListener(new SinkBase[] { _displaySink} );
-            HeloSender = new HeloSender(ControlPort.Port);
+            var controlPort = Manager.GetService<ControlPortListener>();
+            controlPort.InitSinks(new SinkBase[] { _displaySink });
+            HeloSender = new HeloSender(controlPort.Port);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
         }

@@ -10,16 +10,15 @@ using Lucky.HomeMock.Sinks;
 
 namespace Lucky.HomeMock.Core
 {
-    class ControlPortListener : IDisposable
+    // ReSharper disable once ClassNeverInstantiated.Global
+    class ControlPortListener : ServiceBaseWithData<Data>
     {
         private readonly TcpListener _serviceListener;
-        private readonly SinkBase[] _sinks;
-        private readonly ILogger _logger;
+        private SinkBase[] _sinks;
 
-        public ControlPortListener(IEnumerable<SinkBase> sinks)
+        public ControlPortListener()
+            :base("ControlPortListener")
         {
-            _logger = Manager.GetService<ILoggerFactory>().Create("Listener");
-            _sinks = sinks.ToArray();
             Port = (ushort)new Random().Next(17000, 18000);
 
             IPAddress hostAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
@@ -52,9 +51,14 @@ namespace Lucky.HomeMock.Core
             _serviceListener.BeginAcceptTcpClient(handler, null);
         }
 
+        public void InitSinks(IEnumerable<SinkBase> sinks)
+        {
+            _sinks = sinks.ToArray();
+        }
+
         public ushort Port { get; private set; }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _serviceListener.Stop();
         }
@@ -98,7 +102,7 @@ namespace Lucky.HomeMock.Core
                         return false;
                     case "CHIL":
                         Write(1);
-                        Write(Data.DeviceId);
+                        Write(_listener.State.DeviceId);
                         break;
                     case "SELE":
                         _nodeIdx = ReadUint16();
@@ -111,11 +115,8 @@ namespace Lucky.HomeMock.Core
                         }
                         break;
                     case "GUID":
-                        lock (Data.LockObject)
-                        {
-                            Data.DeviceId = ReadGuid();
-                        }
-                        _logger.Log("New guid: " + Data.DeviceId);
+                        _listener.State = new Data { DeviceId = ReadGuid() };
+                        _logger.Log("New guid: " + _listener.State.DeviceId);
                         break;
                     case "WRIT":
                         var sinkIdx = ReadUint16();
@@ -178,10 +179,10 @@ namespace Lucky.HomeMock.Core
         {
             using (Stream stream = tcpClient.GetStream())
             {
-                _logger.Log("Incoming connection", "from", tcpClient.Client.RemoteEndPoint);
+                Logger.Log("Incoming connection", "from", tcpClient.Client.RemoteEndPoint);
 
                 // Now sends message
-                using (var session = new ControlSession(stream, _logger, this))
+                using (var session = new ControlSession(stream, Logger, this))
                 {
                     session.Run();
                 }

@@ -13,11 +13,13 @@ namespace Lucky.Home
     {
         static void Main()
         {
+            Manager.Register<ConsoleLoggerFactory, ILoggerFactory>();
+            Manager.GetService<IPersistenceService>().InitAppRoot("Server");
+
             Manager.Register<Server, IServer>();
             Manager.Register<NodeRegistrar, INodeRegistrar>();
             Manager.Register<SinkManager>();
             Manager.Register<AppService>();
-            Manager.Register<ConsoleLoggerFactory, ILoggerFactory>();
 
             // Register known sinks
             Manager.Register<SinkManager>();
