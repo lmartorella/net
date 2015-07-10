@@ -30,52 +30,6 @@ __PACK typedef struct
 	WORD controlPort;
 } HOME_REQUEST;
 
-/*
-	Peer descriptor item
-__PACK typedef struct
-{
-	WORD deviceId;
-	WORD deviceCaps;
-	WORD devicePort;
-} PEER_DESCRIPTOR;
-*/
-
-/*
-	REGISTER message
-__PACK typedef struct
-{
-	char preamble[4];
-	WORD peerCount;
-	//PEER_DESCRIPTOR peerDescs[0];
-} SERVER_REGISTER;
-*/
-
-/*
-typedef enum
-{
-    RGST_OK = 0,
-    RGST_UNKNOWN_MESSAGE = 1,
-    RGST_ERRCODE_NEWGUID = 2,
-    RGST_UNKNOWN_SINKTYPE = 3,
-    RGST_UNKNOWN_ADDRESS = 4
-} RGST_ERRCODE_t;
-*/
-/*
-	REGISTER response
-__PACK typedef struct
-{
-    union
-    {
-	RGST_ERRCODE_t errCode;
-        UINT16 val;
-    };
-} SERVER_REGISTER_RESPONSE;
-__PACK typedef struct
-{
-	GUID newGuid;
-} SERVER_REGISTER_NEWGUID_RESPONSE;
-*/
-
 static void sendHelo(void);
 static void pollControlPort(void);
 //static void waitForRegisterConnection(void);
@@ -125,26 +79,6 @@ void ip_prot_poll()
     if (s_dhcpOk)
     {
         pollControlPort();
-/*        unsigned int i;
-        switch (s_protState)
-        {
-        case STATE_HELO:
-            checkHelo();
-            break;
-        case STATE_REGISTER_CONNECTING:
-            waitForRegisterConnection();
-            break;
-        case STATE_REGISTER_ACK:
-            waitForRegisterResponse();
-            break;
-        case STATE_REGISTERED:
-        case STATE_REGISTERED_NEW_GUID:
-            for (i = 0; i < AllSinksCount; i++)
-            {
-                AllSinks[i]->pollHandler();
-            }
-        }
- * */
     }
 }
 
@@ -155,12 +89,43 @@ static void CLOS_command()
     TCPDisconnect(s_controlSocket);
 }
 
+static void SELE_command()
+{
+    // Select subnode. Ignores it.
+    WORD w;
+    if (TCPGetArray(s_controlSocket, (BYTE*)&w, sizeof(WORD)) != sizeof(WORD)) {
+        fatal("SELE.undr");
+    }
+}
+
 static void CHIL_command()
 {
     // Only 1 children: me
     TCPPutW(s_controlSocket, 1);
 	TCPPutArray(s_controlSocket, (BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
     TCPFlush(s_controlSocket);
+}
+
+static void SINK_command()
+{
+    // Fake: 0 sinks
+    TCPPutW(s_controlSocket, 0);
+    TCPFlush(s_controlSocket);
+}
+
+static void GUID_command()
+{
+    GUID guid;
+    PersistentData persistence;
+    
+    if (TCPGetArray(s_controlSocket, (BYTE*)&guid, sizeof(GUID)) != sizeof(GUID)) {
+        fatal("GUID.undr");
+    }
+
+    boot_getUserData(&persistence);
+    persistence.deviceId = guid;
+    // Have new GUID! Program it.
+    boot_updateUserData(&persistence);
 }
 
 static void peekCommand()
@@ -170,8 +135,17 @@ static void peekCommand()
     if (strncmp(msg, "CLOS", 4) == 0) {
         CLOS_command();
     } 
+    else if (strncmp(msg, "SELE", 4) == 0) {
+        SELE_command();
+    } 
+    else if (strncmp(msg, "SINK", 4) == 0) {
+        SINK_command();
+    } 
     else if (strncmp(msg, "CHIL", 4) == 0) {
         CHIL_command();
+    } 
+    else if (strncmp(msg, "GUID", 4) == 0) {
+        GUID_command();
     } 
     else {
         fatal("CMD.unkn");
@@ -232,46 +206,6 @@ void ip_prot_slowTimer()
     }
 }
 
-/*
-static void checkHelo()
-{
-	// Socket opened
-	// Check if HOME socket answered
-	WORD l = UDPIsGetReady(s_homeSocket);
-	if (l >= sizeof(HOME_RESPONSE))
-	{
-		HOME_RESPONSE response;
-
-		UDPGetArray((BYTE*)&response, sizeof(HOME_RESPONSE));
-		UDPDiscard();
-
-		// Have HOME
-		if (memcmp(response.preamble, "HOMEHERE", 8) == 0)
-		{
-			// Now contact the server!
-			s_homeIp = response.homeIp;
-			s_homePort = response.homePort;
-
-			UDPClose(s_heloSocket);
-			UDPClose(s_homeSocket);
-
-			// Open the client TCP channel
-			s_serverSocket = TCPOpen(s_homeIp.Val, TCP_OPEN_IP_ADDRESS, s_homePort, TCP_PURPOSE_GENERIC_TCP_CLIENT);
-			if (INVALID_SOCKET == s_serverSocket)
-			{
-				fatal("SRV.opn1");
-			}
-			s_protState = STATE_REGISTER_CONNECTING;
-			return;
-		}
-		else
-		{
-			fatal("HELO.rcv");
-		}
-	}
-}
- */
-
 static void sendHelo()
 {
 	// Still no HOME? Ping HELO
@@ -303,7 +237,7 @@ static void waitForRegisterConnection()
 		TCPPutArray(s_serverSocket, (BYTE*)"RGST", 4);
 
 		// Put device count (2, DISPLAY and FLASHER)
-                i = AllSinksCount;
+        i = AllSinksCount;
 		TCPPutArray(s_serverSocket, (BYTE*)&i, sizeof(unsigned int));
 
 		for (i = 0; i < AllSinksCount; i++)
@@ -327,45 +261,6 @@ static void waitForRegisterConnection()
 	}
 }
 
-static void waitForRegisterResponse()
-{
-	// Wait for data
-	WORD size = TCPIsGetReady(s_serverSocket);
-	if (size >= sizeof(SERVER_REGISTER_RESPONSE))
-	{
-		SERVER_REGISTER_RESPONSE response;
-		TCPGetArray(s_serverSocket, (BYTE*)&response, sizeof(response));
-
-		switch (response.errCode)
-		{
-                case RGST_OK:
-                    s_protState = STATE_REGISTERED;
-                    break;
-                case RGST_ERRCODE_NEWGUID:
-                    if (size < sizeof(SERVER_REGISTER_RESPONSE) + sizeof(SERVER_REGISTER_NEWGUID_RESPONSE))
-                    {
-                        fatal("RgRespSz");
-                    }
-                    // Read the GUID response
-                    SERVER_REGISTER_NEWGUID_RESPONSE data;
-                    PersistentData persistence;
-                    TCPGetArray(s_serverSocket, (BYTE*)&data, sizeof(data));
-
-                    boot_getUserData(&persistence);
-                    persistence.deviceId = data.newGuid;
-                    // Have new GUID! Program it.
-                    boot_updateUserData(&persistence);
-
-                    s_protState = STATE_REGISTERED_NEW_GUID;
-                    break;
-                default:
-                    sprintf(s_errMsg, "RG:%x", (int)response.errCode);
-                    break;
-                }
-
-		TCPClose(s_serverSocket);
-	}
-}
  */
 
 #endif // HAS_IP
