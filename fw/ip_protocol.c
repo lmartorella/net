@@ -32,10 +32,6 @@ __PACK typedef struct
 
 static void sendHelo(void);
 static void pollControlPort(void);
-//static void waitForRegisterConnection(void);
-//static void waitForRegisterResponse(void);
-
-//static char s_errMsg[6] = { 0 };
 
 void ip_prot_init()
 {
@@ -106,10 +102,20 @@ static void CHIL_command()
     TCPFlush(s_controlSocket);
 }
 
+const rom Sink* AllSinks[] = { &g_displaySink };
+#define AllSinksSize 1
+
 static void SINK_command()
 {
-    // Fake: 0 sinks
-    TCPPutW(s_controlSocket, 0);
+    int i = AllSinksSize;
+    TCPPutW(s_controlSocket, i);
+
+    for (; i >= 0; i--)
+    {
+        const Sink* sink = AllSinks[i]; 
+        // Put device ID
+        TCPPutROMArray(s_controlSocket, (BYTE*)&sink->fourCc, 4);
+    }
     TCPFlush(s_controlSocket);
 }
 
@@ -220,47 +226,5 @@ static void sendHelo()
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();
 }
-
-/*
-static void waitForRegisterConnection()
-{
-	if (TCPIsConnected(s_serverSocket))
-	{
-		unsigned int i;
-		// Connected? Then Register.
-		if (TCPIsPutReady(s_serverSocket) < sizeof(SERVER_REGISTER))
-		{
-			fatal("SRV.rdy");
-		}
-
-		// Preamble
-		TCPPutArray(s_serverSocket, (BYTE*)"RGST", 4);
-
-		// Put device count (2, DISPLAY and FLASHER)
-        i = AllSinksCount;
-		TCPPutArray(s_serverSocket, (BYTE*)&i, sizeof(unsigned int));
-
-		for (i = 0; i < AllSinksCount; i++)
-		{
-			const Sink* sink = AllSinks[i]; 
-			unsigned int port = BASE_SINK_PORT + sink->deviceId;
-			// Put device ID
-			TCPPutROMArray(s_serverSocket, (BYTE*)&sink->deviceId, sizeof(unsigned int));
-			// Put device CAPS
-			TCPPutROMArray(s_serverSocket, (BYTE*)&sink->caps, sizeof(unsigned int));
-			// Put device CAPS
-			TCPPutArray(s_serverSocket, (BYTE*)&port, sizeof(unsigned int));
-
-			// start sink
-			sink->createHandler();
-		}
-
-		TCPFlush(s_serverSocket);
-
-		s_protState = STATE_REGISTER_ACK;
-	}
-}
-
- */
 
 #endif // HAS_IP

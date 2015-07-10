@@ -7,48 +7,32 @@
 
 #ifdef HAS_CM1602
 
-static void createDisplaySink(void);
-static void destroyDisplaySink(void);
-static void pollDisplaySink(void);
+static void readHandler(BYTE* data, WORD length);
+static WORD writeHandler(BYTE* data);
 
 const rom Sink g_displaySink = { "LINE",
-                                 //&createDisplaySink,
-                                 //&destroyDisplaySink,
-                                 //&pollDisplaySink 
+                                 &readHandler,
+                                 &writeHandler
 };
 
-//extern WORD _ringStart, _ringEnd, _streamSize;
-
-static void readData()
+static void readHandler(BYTE* data, WORD length)
 {
-    char buffer[16];
-    WORD s;
-    Read((BYTE*)&s, sizeof(WORD));
-    if (s > 15)
+    if (length > 15)
     {
-        s = 15;
+        length = 15;
     }
-    Read((BYTE*)buffer, s);
-    buffer[s] = '\0';
+    data[length] = '\0';
     // Write it
-    printlnUp(buffer);
+    printlnUp(data);
+}
 
-            // TMP
-            //s = _ringStart;
-            //if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
-            //{
-            //    fatal("DSP_SND");
-            //}
-            //s = _ringEnd;
-            //if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
-            //{
-            //    fatal("DSP_SND");
-            //}
-            //s = _streamSize;
-            //if (TCPPutArray(s_listenerSocket, (BYTE*)&s, 2) != 2)
-            //{
-            //    fatal("DSP_SND");
-            //}
+static WORD writeHandler(BYTE* data)
+{
+    // Num of lines
+    ((WORD*)data)[0] = 1;
+    // Num of columns
+    ((WORD*)data)[1] = 15;
+    return sizeof(WORD) * 2;
 }
 
 #endif
