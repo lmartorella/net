@@ -77,6 +77,7 @@ __PACK typedef struct
 */
 
 static void sendHelo(void);
+static void pollControlPort(void);
 //static void waitForRegisterConnection(void);
 //static void waitForRegisterResponse(void);
 
@@ -101,14 +102,14 @@ void ip_prot_init()
 	s_heloSocket = UDPOpenEx(NULL, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
 	if (s_heloSocket == INVALID_UDP_SOCKET)
 	{
-		fatal("HELO.opn1");
+		fatal("SOCK.opn1");
 	}
 
     // Open the sever TCP channel
 	s_controlSocket = TCPOpen(0, TCP_OPEN_SERVER, CLIENT_TCP_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
 	if (s_controlSocket == INVALID_SOCKET)
 	{
-		fatal("DSP_SRV");
+		fatal("SOCK.opn2");
 	}
 }
 
@@ -123,6 +124,7 @@ void ip_prot_poll()
     StackApplications();
     if (s_dhcpOk)
     {
+        pollControlPort();
 /*        unsigned int i;
         switch (s_protState)
         {
@@ -144,6 +146,52 @@ void ip_prot_poll()
         }
  * */
     }
+}
+
+static void CLOS_command()
+{
+    // Returns in listening state
+    TCPDiscard(s_controlSocket);
+    TCPDisconnect(s_controlSocket);
+}
+
+static void CHIL_command()
+{
+    // Only 1 children: me
+    TCPPutW(s_controlSocket, 1);
+	TCPPutArray(s_controlSocket, (BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
+    TCPFlush(s_controlSocket);
+}
+
+static void peekCommand()
+{
+    char msg[4];
+    TCPGetArray(s_controlSocket, (BYTE*)&msg, sizeof(msg));
+    if (strncmp(msg, "CLOS", 4) == 0) {
+        CLOS_command();
+    } 
+    else if (strncmp(msg, "CHIL", 4) == 0) {
+        CHIL_command();
+    } 
+    else {
+        fatal("CMD.unkn");
+    }
+}
+
+static void pollControlPort()
+{
+    unsigned short s;
+    if (!TCPIsConnected(s_controlSocket))
+	{
+		return;
+	}
+
+    s = TCPIsGetReady(s_controlSocket);
+	if (s >= 4)
+	{
+        peekCommand();
+    }
+    // Otherwise wait for data
 }
 
 /*
@@ -176,7 +224,7 @@ void ip_prot_slowTimer()
     if (s_dhcpOk)
     {
         //char buffer[16];
-        // Ping server
+        // Ping server every second
         sendHelo();
 
         //sprintf(buffer, "STA:%x,%s", (int)s_protState, s_errMsg);

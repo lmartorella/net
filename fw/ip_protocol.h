@@ -19,11 +19,11 @@ typedef struct SinkStruct
 	// Device ID
 	const char fourCc[4];
 	// Pointer to create function
-	Action createHandler;
+	//Action createHandler;
 	// Pointer to destroy function
-	Action destroyHandler;
+	//Action destroyHandler;
 	// Pointer to POLL
-	Action pollHandler;
+	//Action pollHandler;
 } Sink;
 
 #endif //#ifdef HAS_IP

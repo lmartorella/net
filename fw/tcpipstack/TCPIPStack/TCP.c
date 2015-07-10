@@ -1128,6 +1128,17 @@ WORD TCPIsPutReady(TCP_SOCKET hTCP)
 		return MyTCBStub.txTail - MyTCBStub.txHead - 1;
 }
 
+static void checkHalfFullTx(TCP_SOCKET hTCP, WORD wFreeTXSpace)
+{
+	// Send all current bytes if we are crossing half full
+	// This is required to improve performance with the delayed
+	// acknowledgement algorithm
+	if((!MyTCBStub.Flags.bHalfFullFlush) && (wFreeTXSpace <= ((MyTCBStub.bufferRxStart-MyTCBStub.bufferTxStart)>>1)))
+	{
+		TCPFlush(hTCP);
+		MyTCBStub.Flags.bHalfFullFlush = TRUE;
+	}
+}
 
 /*****************************************************************************
   Function:
@@ -1164,14 +1175,7 @@ BOOL TCPPut(TCP_SOCKET hTCP, BYTE byte)
 	else if(wFreeTXSpace == 1u) // About to run out of space, lets transmit so the remote node might send an ACK back faster
 		TCPFlush(hTCP);
 
-	// Send all current bytes if we are crossing half full
-	// This is required to improve performance with the delayed
-	// acknowledgement algorithm
-	if((!MyTCBStub.Flags.bHalfFullFlush) && (wFreeTXSpace <= ((MyTCBStub.bufferRxStart-MyTCBStub.bufferTxStart)>>1)))
-	{
-		TCPFlush(hTCP);
-		MyTCBStub.Flags.bHalfFullFlush = TRUE;
-	}
+    checkHalfFullTx(hTCP, wFreeTXSpace);
 
 	#if defined(STACK_USE_SSL)
 	if(MyTCBStub.sslStubID != SSL_INVALID_ID)
@@ -1195,6 +1199,80 @@ BOOL TCPPut(TCP_SOCKET hTCP, BYTE byte)
 
 	// Send the last byte as a separate packet (likely will make the remote node send back ACK faster)
 	if(wFreeTXSpace == 1u)
+	{
+		TCPFlush(hTCP);
+	}
+	// If not already enabled, start a timer so this data will
+	// eventually get sent even if the application doens't call
+	// TCPFlush()
+	else if(!MyTCBStub.Flags.bTimer2Enabled)
+	{
+		MyTCBStub.Flags.bTimer2Enabled = TRUE;
+		MyTCBStub.eventTime2 = (WORD)TickGetDiv256() + TCP_AUTO_TRANSMIT_TIMEOUT_VAL/256ull;
+	}
+
+	return TRUE;
+}
+
+/*****************************************************************************
+  Function:
+	BOOL TCPPutW(TCP_SOCKET hTCP, WORD byte)
+
+  Description:
+	Writes a word to a TCP socket, little-endian.
+
+  Precondition:
+	TCP is initialized.
+
+  Parameters:
+	hTCP - The socket to which data is to be written.
+	byte - The word (16-bit) to write.
+
+  Return Values:
+	TRUE - The bytes was written to the transmit buffer.
+	FALSE - The transmit buffer was full, or the socket is not connected.
+  ***************************************************************************/
+BOOL TCPPutW(TCP_SOCKET hTCP, WORD data)
+{
+	WORD wFreeTXSpace;
+
+	if(hTCP >= TCP_SOCKET_COUNT)
+    {
+        return 0;
+    }
+
+	SyncTCBStub(hTCP);
+
+	wFreeTXSpace = TCPIsPutReady(hTCP);
+	if(wFreeTXSpace < 2)
+		return FALSE;
+	else if (wFreeTXSpace == 2) // About to run out of space, lets transmit so the remote node might send an ACK back faster
+		TCPFlush(hTCP);
+
+    checkHalfFullTx(hTCP, wFreeTXSpace);
+
+	#if defined(STACK_USE_SSL)
+	if(MyTCBStub.sslStubID != SSL_INVALID_ID)
+	{
+		TCPRAMCopy(MyTCBStub.sslTxHead, MyTCBStub.vMemoryMedium, (PTR_BASE)&data, TCP_PIC_RAM, sizeof(WORD));
+		if((MyTCBStub.sslTxHead += 2) >= MyTCBStub.bufferRxStart)
+			MyTCBStub.sslTxHead = MyTCBStub.bufferTxStart;
+	}
+	else
+	{
+		TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, (PTR_BASE)&data, TCP_PIC_RAM, sizeof(WORD));
+		if((MyTCBStub.txHead += 2) >= MyTCBStub.bufferRxStart)
+			MyTCBStub.txHead = MyTCBStub.bufferTxStart;
+	}
+	#else
+	TCPRAMCopy(MyTCBStub.txHead, MyTCBStub.vMemoryMedium, (BYTE*)&data, TCP_PIC_RAM, sizeof(WORD));
+	if((MyTCBStub.txHead += 2) >= MyTCBStub.bufferRxStart)
+		MyTCBStub.txHead = MyTCBStub.bufferTxStart;
+	#endif
+
+
+	// Send the last byte as a separate packet (likely will make the remote node send back ACK faster)
+	if(wFreeTXSpace <= 2)
 	{
 		TCPFlush(hTCP);
 	}
@@ -1253,14 +1331,7 @@ WORD TCPPutArray(TCP_SOCKET hTCP, BYTE* data, WORD len)
 	if(wFreeTXSpace > len)
 		wActualLen = len;
 
-	// Send all current bytes if we are crossing half full
-	// This is required to improve performance with the delayed
-	// acknowledgement algorithm
-	if((!MyTCBStub.Flags.bHalfFullFlush) && (wFreeTXSpace <= ((MyTCBStub.bufferRxStart-MyTCBStub.bufferTxStart)>>1)))
-	{
-		TCPFlush(hTCP);
-		MyTCBStub.Flags.bHalfFullFlush = TRUE;
-	}
+    checkHalfFullTx(hTCP, wFreeTXSpace);
 
 	#if defined(STACK_USE_SSL)
 	if(MyTCBStub.sslStubID != SSL_INVALID_ID)
