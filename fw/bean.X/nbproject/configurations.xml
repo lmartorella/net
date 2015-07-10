@@ -55,11 +55,11 @@
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
       <itemPath>../persistence.h</itemPath>
-      <itemPath>../protocol.h</itemPath>
       <itemPath>../timers.h</itemPath>
       <itemPath>../ver.h</itemPath>
       <itemPath>../displaySink.h</itemPath>
       <itemPath>../audioSink.h</itemPath>
+      <itemPath>../ip_protocol.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

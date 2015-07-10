@@ -11,39 +11,28 @@ static void createDisplaySink(void);
 static void destroyDisplaySink(void);
 static void pollDisplaySink(void);
 
-#define DISPLAY_SINK_PORT (SINK_DISPLAY_TYPE + BASE_SINK_PORT)
-const rom Sink g_displaySink = { SINK_DISPLAY_TYPE,
-                                 0,
-                                 DISPLAY_SINK_PORT,
+//#define DISPLAY_SINK_PORT (SINK_DISPLAY_TYPE + BASE_SINK_PORT)
+const rom Sink g_displaySink = { "LINE",
                                  &createDisplaySink,
                                  &destroyDisplaySink,
                                  &pollDisplaySink };
 
 // The TCP client socket of display listener
-static TCP_SOCKET s_listenerSocket = INVALID_SOCKET;
+//static TCP_SOCKET s_listenerSocket = INVALID_SOCKET;
 
 static void createDisplaySink()
 {
-	// Open the sever TCP channel
-	s_listenerSocket = TCPOpen(0, TCP_OPEN_SERVER, DISPLAY_SINK_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
-	if (s_listenerSocket == INVALID_SOCKET)
-	{
-		fatal("DSP_SRV");
-	}
 }
 
 static void destroyDisplaySink()
 {
-	if (s_listenerSocket != INVALID_SOCKET)
-	{
-		TCPClose(s_listenerSocket);
-	}
 }
 
 extern WORD _ringStart, _ringEnd, _streamSize;
 
 static void pollDisplaySink()
 {
+    /*
 	unsigned short s;
 	if (!TCPIsConnected(s_listenerSocket))
 	{
@@ -91,6 +80,7 @@ static void pollDisplaySink()
                 TCPFlush(s_listenerSocket);
 		TCPDiscard(s_listenerSocket);
 	}
+     * */
 }
 
 #endif

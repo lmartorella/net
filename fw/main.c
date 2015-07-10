@@ -4,10 +4,9 @@
 #include "hardware/spiram.h"
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
-#include "protocol.h"
+#include "ip_protocol.h"
 #include "timers.h"
 #include "appio.h"
-#include "TCPIPStack/TCPIP.h"
 #include "audioSink.h"
 #include <stdio.h>
 
@@ -33,9 +32,6 @@ static const char* g_reasonMsgs[] = {
 				"STK",
 				"RST",
 				"EXC:"  };
-
-APP_CONFIG AppConfig;
-static BOOL s_dhcpOk = FALSE;
 
 // Check RCON and STKPTR register for anormal reset cause
 static void storeResetReason(void)
@@ -91,11 +87,6 @@ static void enableInterrupts(void)
 	INTCONbits.GIEH = 1;
 }
 
-void timer1s(void);
-void sendHelo(void);
-
-static BYTE buffer[32];
-
 void main()
 {
     // Analyze RESET reason
@@ -132,25 +123,11 @@ void main()
     wait1s();
     clearlnUp();
     
-    println("IP/DHCP");
-    memset(&AppConfig, 0, sizeof(AppConfig));
-    AppConfig.Flags.bIsDHCPEnabled = 1;
-    AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
-    AppConfig.MyMACAddr.v[1] = MY_DEFAULT_MAC_BYTE2;
-    AppConfig.MyMACAddr.v[2] = MY_DEFAULT_MAC_BYTE3;
-    AppConfig.MyMACAddr.v[3] = MY_DEFAULT_MAC_BYTE4;
-    AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
-    AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
-
     enableInterrupts();
     timers_init();
 
-    // Start IP
-    DHCPInit(0);
-    DHCPEnable(0);
-
-    println("Waiting..");
-
+    ip_prot_init();
+    
     // I'm alive
     while (1)
     {
@@ -158,54 +135,18 @@ void main()
 
             if (timers.timer_10ms)
             {
-                // Do ETH stuff
-                StackTask();
-                // This tasks invokes each of the core stack application tasks
-                StackApplications();
-                if (s_dhcpOk)
-                {
-                    prot_poll();
-                }
+               ip_prot_poll();
             }
 
             if (timers.timer_1s)
             {
-                timer1s();
-                if (s_dhcpOk)
-                {
-                    prot_slowTimer();
-                }
+                ip_prot_slowTimer();
             }
 
 #if HAS_VS1011
             audio_pollMp3Player();
 #endif
             ClrWdt();
-    }
-}
-
-void timer1s()
-{
-    int dhcpOk;
-    println("");
-
-    dhcpOk = DHCPIsBound(0) != 0;
-
-    if (dhcpOk != s_dhcpOk)
-    {
-            if (dhcpOk)
-            {
-                    unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
-                    sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
-                    cm1602_setDdramAddr(0x0);
-                    cm1602_writeStr(buffer);
-                    s_dhcpOk = TRUE;
-            }
-            else
-            {
-                    s_dhcpOk = FALSE;
-                    fatal("DHCP.nok");
-            }
     }
 }
 

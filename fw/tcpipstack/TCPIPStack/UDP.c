@@ -775,6 +775,41 @@ BOOL UDPPut(BYTE v)
 
 /*****************************************************************************
   Function:
+	BOOL UDPPutW(WORD w)
+
+  Summary:
+	Writes two bytes to the currently active socket, little endian.
+
+  Precondition:
+	UDPIsPutReady() was previously called to specify the current socket.
+
+  Parameters:
+	w - The word to be loaded into the transmit buffer.
+
+  Return Values:
+  	TRUE - The bytes was successfully written to the socket.
+  	FALSE - The transmit buffer is already full and so the write failed.
+  ***************************************************************************/
+BOOL UDPPutW(WORD w)
+{
+	// See if we are out of transmit space.
+	if(wPutOffset >= (MAC_TX_BUFFER_SIZE - sizeof(IP_HEADER) - sizeof(UDP_HEADER) - 1))
+	{
+		return FALSE;
+	}
+
+    // Load application data byte
+    MACPut((BYTE)w);
+    MACPut((BYTE)(w >> 8));
+	wPutOffset += 2;
+	if(wPutOffset > UDPTxCount)
+		UDPTxCount = wPutOffset;
+
+    return TRUE;
+}
+
+/*****************************************************************************
+  Function:
 	WORD UDPPutArray(BYTE *cData, WORD wDataLen)
 
   Summary:

@@ -8,7 +8,7 @@
 #ifndef DISPLAYSINK_H
 #define	DISPLAYSINK_H
 
-#include "protocol.h"
+#include "ip_protocol.h"
 // The public sink descriptor
 extern const Sink g_displaySink;
 

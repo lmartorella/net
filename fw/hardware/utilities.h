@@ -9,4 +9,6 @@ extern void wait2ms();
 extern void wait100us();
 extern void wait40us();
 
+typedef void (*Action)(void);
+
 #endif
