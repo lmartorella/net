@@ -2,6 +2,8 @@
 #include "utilities.h"
 #include "spi.h"
 
+#ifdef HAS_VS1011
+
 typedef enum
 {
     SCI_MODE = 0x0,
@@ -163,7 +165,7 @@ void vs1011_streamData(BYTE* buffer, BYTE size)
 	spi_release();
 }
 
-void vs1011_setup()
+void vs1011_init()
 {
     // Don't reset the device
     VS1011_PORTBITS.VS1011_RESET = 1;
@@ -201,3 +203,9 @@ VS1011_MODEL vs1011_reset(BOOL enableStream)
     return (VS1011_MODEL)((v >> 4) & 0x7);
 }
 
+#else
+void vs1011_init()
+{
+}
+
+#endif //#ifdef HAS_VS1011

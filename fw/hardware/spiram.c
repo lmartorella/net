@@ -4,6 +4,8 @@
 #include "../appio.h"
 #include <stdio.h>
 
+#ifdef HAS_SPI_RAM
+
 #define MEM_CSTRIS0	MEM_TRISBITS.MEM_BANK0_CS
 #define MEM_CSTRIS1	MEM_TRISBITS.MEM_BANK1_CS
 #define MEM_CSTRIS2	MEM_TRISBITS.MEM_BANK2_CS
@@ -65,7 +67,7 @@ void sram_init()
 
 	disableAll();
 
-        spi_lock();
+    spi_lock();
 	for (b = 0; b < 4; b++)
 	{
 		enableBank(b);
@@ -74,7 +76,10 @@ void sram_init()
 		spi_shift(ST_SEQMODE | HOLD_DIS);
 		disableAll();
 	}
-        spi_release();
+    spi_release();
+    
+    println("ChkRam");
+    sram_test_gui(buffer, sizeof(buffer));
 }
 
 // Write a vector of bytes in RAM.
@@ -193,3 +198,7 @@ void sram_test_gui(BYTE* buffer, UINT16 bufferSize)
     }
 }
 
+#else
+void sram_init()
+{}
+#endif // HAS_SPI_RAM

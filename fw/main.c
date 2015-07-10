@@ -127,11 +127,9 @@ void main()
     spi_init(SPI_SMP_END | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
 
     sram_init();
-    vs1011_setup();
+    vs1011_init();
 
     wait1s();
-    println("ChkRam");
-    sram_test_gui(buffer, sizeof(buffer));
     clearlnUp();
     
     println("IP/DHCP");
@@ -179,7 +177,9 @@ void main()
                 }
             }
 
+#if HAS_VS1011
             audio_pollMp3Player();
+#endif
             ClrWdt();
     }
 }

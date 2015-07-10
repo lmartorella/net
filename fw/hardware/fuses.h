@@ -8,6 +8,7 @@
 // ******* 
 // DISPLAY
 // ******* 
+#define HAS_CM1602
 #define CM1602_PORT 		PORTE
 #define CM1602_TRIS 		TRISE
 #define CM1602_PORTADDR         0xF84;
@@ -36,6 +37,7 @@
 // ******* 
 // MP3
 // ******* 
+#undef HAS_VS1011
 #define VS1011_PORT  	PORTB
 #define VS1011_PORTBITS PORTBbits
 #define VS1011_TRISBITS TRISBbits
@@ -56,3 +58,18 @@
 #define ROM_BLOCK_SIZE		64
 #define CONFIGURATION_SIZE 	8
 #endif
+
+// ******
+// SPI
+// ******
+#undef HAS_SPI
+
+// ******
+// SPI RAM
+// ******
+#undef HAS_SPI_RAM
+
+// ******
+// IP
+// ******
+#define HAS_IP

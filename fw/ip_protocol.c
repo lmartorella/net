@@ -8,6 +8,8 @@
 #include "TCPIPStack/TCPIP.h"
 #include "Compiler.h"
 
+#ifdef HAS_IP
+
 // Protocol Engine State
 typedef enum PROTOCOL_STATE_enum
 {	
@@ -45,9 +47,13 @@ static WORD s_homePort;
 static TCP_SOCKET s_serverSocket;
 
 // Array of all sinks
-static const Sink* AllSinks[] = { &g_displaySink, &g_audioSink };
+static const Sink* AllSinks[] = { &g_displaySink
+#ifdef HAS_VS1011
+        , &g_audioSink
+#endif
+};
 //#define AllSinksCount (sizeof(AllSinks) / sizeof(Sink*))
-#define AllSinksCount 2
+#define AllSinksCount 1
 
 
 /*
@@ -315,3 +321,5 @@ static void waitForRegisterResponse()
 		TCPClose(s_serverSocket);
 	}
 }
+
+#endif // HAS_IP

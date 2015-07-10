@@ -2,6 +2,8 @@
 #include "fuses.h"
 #include "utilities.h"
 
+#ifdef HAS_CM1602
+
 #define CMD_CLEAR 		0x1
 #define CMD_HOME 		0x2
 #define CMD_ENTRY 		0x4
@@ -241,3 +243,6 @@ void cm1602_writeStr(const char* data)
 		data++;
 	}
 }
+
+#endif //#ifdef HAS_CM1602
+

@@ -5,6 +5,8 @@
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
 
+#ifdef HAS_CM1602
+
 static void createDisplaySink(void);
 static void destroyDisplaySink(void);
 static void pollDisplaySink(void);
@@ -90,3 +92,5 @@ static void pollDisplaySink()
 		TCPDiscard(s_listenerSocket);
 	}
 }
+
+#endif

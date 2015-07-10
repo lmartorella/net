@@ -14,7 +14,7 @@ typedef enum
 } VS1011_MODEL;
 
 // Setup hardware pins
-void vs1011_setup();
+void vs1011_init();
 
 // Init/reset chip and returns the VS1011 MODEL
 VS1011_MODEL vs1011_reset(BOOL enableStream);

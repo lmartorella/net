@@ -7,6 +7,8 @@
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
 
+#ifdef HAS_VS1011
+
 static void createAudioSink(void);
 static void destroyAudioSink(void);
 static void pollAudioSink(void);
@@ -374,3 +376,5 @@ void audio_pollMp3Player()
         }
     }
 }
+
+#endif

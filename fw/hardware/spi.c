@@ -1,6 +1,8 @@
 #include "fuses.h"
 #include "spi.h"
 
+#ifdef HAS_SPI
+
 #define SPIRAM_SPI_IF (PIR1bits.SSP1IF)
 
 //#pragma code spi_section
@@ -83,3 +85,9 @@ void spi_shift_repeat_8(BYTE data, BYTE size)
     }
     spi_release();
 }
+
+#else
+void spi_init(enum SPI_INIT value)
+{ }
+#endif //#ifdef HAS_SPI
+

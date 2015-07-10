@@ -12,7 +12,6 @@
         <itemPath>../hardware/spiram.h</itemPath>
         <itemPath>../hardware/utilities.h</itemPath>
         <itemPath>../hardware/vs1011e.h</itemPath>
-        <itemPath>../audioSink.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -60,6 +59,7 @@
       <itemPath>../timers.h</itemPath>
       <itemPath>../ver.h</itemPath>
       <itemPath>../displaySink.h</itemPath>
+      <itemPath>../audioSink.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -94,11 +94,11 @@
       <itemPath>../appio.c</itemPath>
       <itemPath>../main.c</itemPath>
       <itemPath>../persistence.c</itemPath>
-      <itemPath>../protocol.c</itemPath>
       <itemPath>../timers.c</itemPath>
       <itemPath>../persistence2.c</itemPath>
       <itemPath>../displaySink.c</itemPath>
       <itemPath>../audioSink.c</itemPath>
+      <itemPath>../ip_protocol.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -119,7 +119,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>1.31</languageToolchainVersion>
+        <languageToolchainVersion>1.34</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <compileType>
@@ -127,8 +127,11 @@
           <linkerLibItems>
           </linkerLibItems>
         </linkerTool>
+        <archiverTool>
+        </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
+          <parseOnProdLoad>false</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>
