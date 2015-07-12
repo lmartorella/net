@@ -1232,7 +1232,7 @@ BOOL TCPPut(TCP_SOCKET hTCP, BYTE byte)
 	TRUE - The bytes was written to the transmit buffer.
 	FALSE - The transmit buffer was full, or the socket is not connected.
   ***************************************************************************/
-BOOL TCPPutW(TCP_SOCKET hTCP, WORD data)
+/*BOOL TCPPutW(TCP_SOCKET hTCP, WORD data)
 {
 	WORD wFreeTXSpace;
 
@@ -1287,6 +1287,7 @@ BOOL TCPPutW(TCP_SOCKET hTCP, WORD data)
 
 	return TRUE;
 }
+*/
 
 /*****************************************************************************
   Function:

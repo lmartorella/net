@@ -790,7 +790,7 @@ BOOL UDPPut(BYTE v)
   	TRUE - The bytes was successfully written to the socket.
   	FALSE - The transmit buffer is already full and so the write failed.
   ***************************************************************************/
-BOOL UDPPutW(WORD w)
+/*BOOL UDPPutW(WORD w)
 {
 	// See if we are out of transmit space.
 	if(wPutOffset >= (MAC_TX_BUFFER_SIZE - sizeof(IP_HEADER) - sizeof(UDP_HEADER) - 1))
@@ -807,7 +807,7 @@ BOOL UDPPutW(WORD w)
 
     return TRUE;
 }
-
+*/
 /*****************************************************************************
   Function:
 	WORD UDPPutArray(BYTE *cData, WORD wDataLen)

@@ -3,8 +3,8 @@
 #include "displaySink.h"
 #include "audioSink.h"
 #include "persistence.h"
-#include "hardware/cm1602.h"
 #include "hardware/fuses.h"
+#include "hardware/cm1602.h"
 #include "TCPIPStack/TCPIP.h"
 #include "Compiler.h"
 
@@ -78,28 +78,74 @@ void ip_prot_poll()
     }
 }
 
-static void CLOS_command()
+// Close the control port listener
+static void ip_control_close()
 {
     // Returns in listening state
     TCPDiscard(s_controlSocket);
     TCPDisconnect(s_controlSocket);
 }
 
+static void CLOS_command()
+{
+	ip_control_close();
+}
+
+static BOOL ip_control_readW(WORD* w)
+{
+    WORD l = TCPIsGetReady(s_controlSocket);
+	if (l < 2) 
+		return FALSE;
+	TCPGetArray(s_controlSocket, (BYTE*)w, sizeof(WORD));
+	return TRUE;
+}
+
+static BOOL ip_control_read(void* data, WORD size)
+{
+    WORD l = TCPIsGetReady(s_controlSocket);
+	if (l < size)
+		return FALSE;
+	TCPGetArray(s_controlSocket, (BYTE*)data, size);
+	return TRUE;
+}
+
+static void ip_control_writeW(WORD w)
+{
+    TCPPutArray(s_controlSocket, (BYTE*)&w, sizeof(WORD));
+}
+
+static void ip_control_write(void* data, WORD size)
+{
+    TCPPutArray(s_controlSocket, (BYTE*)&data, size);
+}
+
+static void ip_control_writeROM(ROM void* data, WORD size)
+{
+    TCPPutROMArray(s_controlSocket, (ROM BYTE*)&data, size);
+}
+
+static void ip_control_flush()
+{
+    TCPFlush(s_controlSocket);
+}
+
 static void SELE_command()
 {
     // Select subnode. Ignores it.
     WORD w;
-    if (TCPGetArray(s_controlSocket, (BYTE*)&w, sizeof(WORD)) != sizeof(WORD)) {
+    if (!ip_control_readW(&w)) {
         fatal("SELE.undr");
     }
+    // Select subnode.
+    // TODO: Ignore when no subnodes
 }
 
 static void CHIL_command()
 {
     // Only 1 children: me
-    TCPPutW(s_controlSocket, 1);
-	TCPPutArray(s_controlSocket, (BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
-    TCPFlush(s_controlSocket);
+    ip_control_writeW(1);
+    ip_control_write(&g_persistentData.deviceId, sizeof(GUID));
+    ip_control_flush();
 }
 
 const rom Sink* AllSinks[] = { &g_displaySink };
@@ -108,15 +154,15 @@ const rom Sink* AllSinks[] = { &g_displaySink };
 static void SINK_command()
 {
     int i = AllSinksSize;
-    TCPPutW(s_controlSocket, i);
+    ip_control_writeW(i);
 
     for (; i >= 0; i--)
     {
         const Sink* sink = AllSinks[i]; 
         // Put device ID
-        TCPPutROMArray(s_controlSocket, (BYTE*)&sink->fourCc, 4);
+        ip_control_writeROM(&sink->fourCc, 4);
     }
-    TCPFlush(s_controlSocket);
+    ip_control_flush();
 }
 
 static void GUID_command()
@@ -124,7 +170,7 @@ static void GUID_command()
     GUID guid;
     PersistentData persistence;
     
-    if (TCPGetArray(s_controlSocket, (BYTE*)&guid, sizeof(GUID)) != sizeof(GUID)) {
+    if (!ip_control_read(&guid, sizeof(GUID))) {
         fatal("GUID.undr");
     }
 
@@ -134,42 +180,62 @@ static void GUID_command()
     boot_updateUserData(&persistence);
 }
 
-static void peekCommand()
+// TODO: Limitation: both the command and its data should be in the read buffer
+// at the same time
+static void parseCommandAndData()
 {
     char msg[4];
-    TCPGetArray(s_controlSocket, (BYTE*)&msg, sizeof(msg));
-    if (strncmp(msg, "CLOS", 4) == 0) {
-        CLOS_command();
-    } 
-    else if (strncmp(msg, "SELE", 4) == 0) {
-        SELE_command();
-    } 
-    else if (strncmp(msg, "SINK", 4) == 0) {
-        SINK_command();
-    } 
-    else if (strncmp(msg, "CHIL", 4) == 0) {
-        CHIL_command();
-    } 
-    else if (strncmp(msg, "GUID", 4) == 0) {
-        GUID_command();
-    } 
-    else {
-        fatal("CMD.unkn");
+    ip_control_read(&msg, sizeof(msg));
+	switch (msg[0])
+	{
+		case 'C':
+			if (strncmp(msg + 1, "LOS", 3) == 0) {
+				return CLOS_command();
+			} 
+			else if (strncmp(msg + 1, "HIL", 3) == 0) {
+				return CHIL_command();
+			} 
+			break;
+		case 'S':
+			if (strncmp(msg + 1, "ELE", 3) == 0) {
+				return SELE_command();
+			} 
+			else if (strncmp(msg + 1, "INK", 3) == 0) {
+				return SINK_command();
+			} 
+			break;
+		default:
+			if (strncmp(msg, "GUID", 4) == 0) {
+				return GUID_command();
+			} 
     }
+    fatal("CMD.unkn");
+}
+
+static void ip_control_isListening()
+{
+    return TCPIsConnected(s_controlSocket);
+}
+
+static WORD ip_control_getDataSize()
+{
+    return TCPIsGetReady(s_controlSocket);
 }
 
 static void pollControlPort()
 {
     unsigned short s;
-    if (!TCPIsConnected(s_controlSocket))
+    if (!ip_control_isListening())
 	{
 		return;
 	}
 
-    s = TCPIsGetReady(s_controlSocket);
-	if (s >= 4)
+    s = ip_control_getDataSize();
+	if (s >= 4) // Minimum msg size
 	{
-        peekCommand();
+		// This can even peek only one command.
+		// Until not closed by server, or CLOS command sent, the channel can stay open.
+        parseCommandAndData();
     }
     // Otherwise wait for data
 }
