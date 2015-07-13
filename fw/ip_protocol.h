@@ -12,11 +12,11 @@ void prot_pollControlPort(void);
 void ip_prot_slowTimer(void);
 
 // Process read data
-typedef void (*Sink_ReadHandler)(BYTE* data, WORD length);
+typedef void (*Sink_ReadHandler)(void* data, WORD length);
 // Send data?
-typedef WORD (*Sink_WriteHandler)(BYTE* data);
+typedef WORD (*Sink_WriteHandler)(void* data);
 
-#define SINK_TX_BUFFER_SIZE 32
+#define SINK_BUFFER_SIZE 32
 
 // Class virtual pointers
 typedef struct SinkStruct

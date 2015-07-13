@@ -14,6 +14,10 @@
 static BOOL s_registered = FALSE;
 static BOOL s_dhcpOk = FALSE;
 
+const rom Sink* AllSinks[] = { &g_displaySink };
+#define AllSinksSize 1
+
+
 /*
 	HOME request
 */
@@ -52,9 +56,6 @@ static void CHIL_command()
     ip_control_flush();
 }
 
-const rom Sink* AllSinks[] = { &g_displaySink };
-#define AllSinksSize 1
-
 static void SINK_command()
 {
     int i = AllSinksSize;
@@ -82,6 +83,35 @@ static void GUID_command()
     persistence.deviceId = guid;
     // Have new GUID! Program it.
     boot_updateUserData(&persistence);
+}
+
+static BYTE buf[SINK_BUFFER_SIZE];
+
+static void READ_command()
+{
+    // Get sink# and msg size
+    WORD sink, length;
+
+    if (!ip_control_readW(&sink) || !ip_control_readW(&length) || !ip_control_read(buf, length))
+    {
+        fatal("READ.undr");
+    }
+    // Address sink
+    AllSinks[sink]->readHandler(buf, length);
+}
+
+static void WRIT_command()
+{
+    WORD sink, length;
+
+    if (!ip_control_readW(&sink))
+    {
+        fatal("WRIT.undr");
+    }
+    // Address sink
+    length = AllSinks[sink]->writeHandler(buf);
+    ip_control_writeW(length);
+    ip_control_write(buf, length);
 }
 
 // TODO: Limitation: both the command and its data should be in the read buffer
@@ -112,6 +142,18 @@ static void parseCommandAndData()
                 return;
 			} 
 			break;
+        case 'R':
+			if (strncmp(msg + 1, "EAD", 3) == 0) {
+				READ_command();
+                return;
+			} 
+            break;
+        case 'W':
+			if (strncmp(msg + 1, "RIT", 3) == 0) {
+				WRIT_command();
+                return;
+			} 
+            break;
 		default:
 			if (strncmp(msg, "GUID", 4) == 0) {
 				GUID_command();
