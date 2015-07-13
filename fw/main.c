@@ -4,6 +4,7 @@
 #include "hardware/spiram.h"
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
+#include "hardware/ip.h"
 #include "ip_protocol.h"
 #include "timers.h"
 #include "appio.h"

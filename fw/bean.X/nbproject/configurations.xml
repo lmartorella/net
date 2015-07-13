@@ -12,6 +12,7 @@
         <itemPath>../hardware/spiram.h</itemPath>
         <itemPath>../hardware/utilities.h</itemPath>
         <itemPath>../hardware/vs1011e.h</itemPath>
+        <itemPath>../hardware/ip.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -75,6 +76,7 @@
         <itemPath>../hardware/spi.c</itemPath>
         <itemPath>../hardware/spiram.c</itemPath>
         <itemPath>../hardware/vs1011e.c</itemPath>
+        <itemPath>../hardware/ip.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>
