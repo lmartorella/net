@@ -121,7 +121,7 @@ static void parseCommandAndData()
     fatal("CMD.unkn");
 }
 
-static void pollControlPort()
+void prot_pollControlPort()
 {
     unsigned short s;
     if (!ip_control_isListening())
