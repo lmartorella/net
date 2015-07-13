@@ -190,29 +190,34 @@ static void parseCommandAndData()
 	{
 		case 'C':
 			if (strncmp(msg + 1, "LOS", 3) == 0) {
-				return CLOS_command();
+				CLOS_command();
+                return;
 			} 
 			else if (strncmp(msg + 1, "HIL", 3) == 0) {
-				return CHIL_command();
+				CHIL_command();
+                return;
 			} 
 			break;
 		case 'S':
 			if (strncmp(msg + 1, "ELE", 3) == 0) {
-				return SELE_command();
+				SELE_command();
+                return;
 			} 
 			else if (strncmp(msg + 1, "INK", 3) == 0) {
-				return SINK_command();
+				SINK_command();
+                return;
 			} 
 			break;
 		default:
 			if (strncmp(msg, "GUID", 4) == 0) {
-				return GUID_command();
+				GUID_command();
+                return;
 			} 
     }
     fatal("CMD.unkn");
 }
 
-static void ip_control_isListening()
+static BOOL ip_control_isListening()
 {
     return TCPIsConnected(s_controlSocket);
 }

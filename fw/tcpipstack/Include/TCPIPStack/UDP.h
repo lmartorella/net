@@ -154,7 +154,7 @@ void UDPSetTxBuffer(WORD wOffset);
 void UDPSetRxBuffer(WORD wOffset);
 WORD UDPIsPutReady(UDP_SOCKET s);
 BOOL UDPPut(BYTE v);
-//BOOL UDPPutW(WORD w);
+BOOL UDPPutW(WORD w);
 WORD UDPPutArray(const BYTE *cData, WORD wDataLen);
 BYTE* UDPPutString(const BYTE *strData);
 void UDPFlush(void);
