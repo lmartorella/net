@@ -6,10 +6,8 @@
 #define SERVER_CONTROL_UDP_PORT 17007
 #define CLIENT_TCP_PORT 20000
 
-void prot_pollControlPort(void);
-
-// Manage slow timer (1sec) activities
-void ip_prot_slowTimer(void);
+void prot_poll(void);
+void prot_slowTimer(void);
 
 // Process read data
 typedef void (*Sink_ReadHandler)(void* data, WORD length);

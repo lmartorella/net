@@ -9,6 +9,7 @@ extern UDP_SOCKET s_heloSocket;  // TODO: static
 // Manage poll activities
 void ip_prot_init(void);
 void ip_prot_poll(void);
+void ip_prot_slowTimer(void);
 void ip_control_close(void);
 
 BOOL ip_control_readW(WORD* w);

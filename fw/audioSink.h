@@ -7,7 +7,7 @@
 #ifndef AUDIO_SINK_H
 #define	AUDIO_SINK_H
 
-#include "ip_protocol.h"
+#include "protocol.h"
 // The public sink descriptor
 extern const Sink g_audioSink;
 

@@ -5,7 +5,7 @@
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
 #include "hardware/ip.h"
-#include "ip_protocol.h"
+#include "protocol.h"
 #include "timers.h"
 #include "appio.h"
 #include "audioSink.h"

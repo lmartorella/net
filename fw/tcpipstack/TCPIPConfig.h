@@ -149,7 +149,7 @@
  *   Define the maximum number of available UDP Sockets, and whether
  *   or not to include a checksum on packets being transmitted.
  */
-#define MAX_UDP_SOCKETS     (1u)
+#define MAX_UDP_SOCKETS     (2u)    // DHCP consumes 1 socket!
 //#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600 or PIC32MX6XX/7XX, which have a super fast DMA and incurs virtually no speed pentalty.
 
 /* Berkeley API Sockets Configuration

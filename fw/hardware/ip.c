@@ -1,8 +1,9 @@
 #include "fuses.h"
 #include "ip.h"
-#include "../ip_protocol.h"
+#include "../protocol.h"
 #include "../TCPIPStack/TCPIP.h"
 #include "../appio.h"
+#include "cm1602.h"
 
 #ifdef HAS_IP
 
@@ -55,7 +56,7 @@ void ip_prot_poll()
     StackApplications();
     if (s_dhcpOk)
     {
-        prot_pollControlPort();
+        prot_poll();
     }
 }
 
@@ -113,6 +114,39 @@ BOOL ip_control_isListening()
 WORD ip_control_getDataSize()
 {
     return TCPIsGetReady(s_controlSocket);
+}
+
+/*
+	Manage slow timer (state transitions)
+*/
+void ip_prot_slowTimer()
+{
+    char buffer[16];
+    int dhcpOk;
+    println("");
+
+    dhcpOk = DHCPIsBound(0) != 0;
+
+    if (dhcpOk != s_dhcpOk)
+    {
+            if (dhcpOk)
+            {
+                    unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
+                    sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
+                    cm1602_setDdramAddr(0x0);
+                    cm1602_writeStr(buffer);
+                    s_dhcpOk = TRUE;
+            }
+            else
+            {
+                    s_dhcpOk = FALSE;
+                    fatal("DHCP.nok");
+            }
+    }
+    if (s_dhcpOk)
+    {
+        prot_slowTimer();
+    }
 }
 
 #endif

@@ -1,4 +1,4 @@
-#include "ip_protocol.h"
+#include "protocol.h"
 #include "appio.h"
 #include "displaySink.h"
 #include "audioSink.h"
@@ -12,7 +12,6 @@
 #ifdef HAS_IP
 
 static BOOL s_registered = FALSE;
-static BOOL s_dhcpOk = FALSE;
 
 const rom Sink* AllSinks[] = { &g_displaySink };
 #define AllSinksSize 1
@@ -163,7 +162,7 @@ static void parseCommandAndData()
     fatal("CMD.unkn");
 }
 
-void prot_pollControlPort()
+void prot_poll()
 {
     unsigned short s;
     if (!ip_control_isListening())
@@ -184,39 +183,14 @@ void prot_pollControlPort()
 /*
 	Manage slow timer (state transitions)
 */
-void ip_prot_slowTimer()
+void prot_slowTimer()
 {
-    char buffer[16];
-    int dhcpOk;
-    println("");
+    //char buffer[16];
+    // Ping server every second
+    sendHelo();
 
-    dhcpOk = DHCPIsBound(0) != 0;
-
-    if (dhcpOk != s_dhcpOk)
-    {
-            if (dhcpOk)
-            {
-                    unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
-                    sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
-                    cm1602_setDdramAddr(0x0);
-                    cm1602_writeStr(buffer);
-                    s_dhcpOk = TRUE;
-            }
-            else
-            {
-                    s_dhcpOk = FALSE;
-                    fatal("DHCP.nok");
-            }
-    }
-    if (s_dhcpOk)
-    {
-        //char buffer[16];
-        // Ping server every second
-        sendHelo();
-
-        //sprintf(buffer, "STA:%x,%s", (int)s_protState, s_errMsg);
-        //println(buffer);
-    }
+    //sprintf(buffer, "STA:%x,%s", (int)s_protState, s_errMsg);
+    //println(buffer);
 }
 
 static void sendHelo()
