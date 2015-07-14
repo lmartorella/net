@@ -20,7 +20,7 @@
  *   To clear EEPROM, hold BUTTON0, reset the board, and continue
  *   holding until the LEDs flash.  Release, and reset again.
  */
-#define MY_DEFAULT_HOST_NAME			"MCHPBOARD"
+//#define MY_DEFAULT_HOST_NAME			"MCHPBOARD"
 
 #define MY_DEFAULT_MAC_BYTE1            (0x00)	// Use the default of 00-04-A3-00-00-00
 #define MY_DEFAULT_MAC_BYTE2            (0x04)	// if using an ENCX24J600, MRF24WB0M, or
@@ -64,7 +64,7 @@
  *   requires them otherwise, enable them here.
  */
 #define STACK_USE_TCP
-//#define STACK_USE_UDP
+#define STACK_USE_UDP
 
 /* Client Mode Configuration
  *   Uncomment following line if this stack will be used in CLIENT
@@ -124,12 +124,10 @@
 			WORD wRXBufferSize;
 		} TCPSocketInitializer[] =
 		{
-                        // server client conn
-			{TCP_PURPOSE_GENERIC_TCP_CLIENT, TCP_ETH_RAM, 125, 100},
+            // Control port
+			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 128, 128},
+			//{TCP_PURPOSE_GENERIC_TCP_CLIENT, TCP_ETH_RAM, 125, 100},
 			// Sinks
-			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 20, 100},
-			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 20, 100},
-			{TCP_PURPOSE_STREAM_TCP_SERVER, TCP_ETH_RAM, 20, 1500},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
@@ -151,7 +149,7 @@
  *   Define the maximum number of available UDP Sockets, and whether
  *   or not to include a checksum on packets being transmitted.
  */
-#define MAX_UDP_SOCKETS     (2u)
+#define MAX_UDP_SOCKETS     (1u)
 //#define UDP_USE_TX_CHECKSUM		// This slows UDP TX performance by nearly 50%, except when using the ENCX24J600 or PIC32MX6XX/7XX, which have a super fast DMA and incurs virtually no speed pentalty.
 
 /* Berkeley API Sockets Configuration

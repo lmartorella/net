@@ -7,26 +7,26 @@
 
 #ifdef HAS_CM1602
 
-static void readHandler(BYTE* data, WORD length);
-static WORD writeHandler(BYTE* data);
+static void readHandler(void* data, WORD length);
+static WORD writeHandler(void* data);
 
 const rom Sink g_displaySink = { "LINE",
                                  &readHandler,
                                  &writeHandler
 };
 
-static void readHandler(BYTE* data, WORD length)
+static void readHandler(void* data, WORD length)
 {
     if (length > 15)
     {
         length = 15;
     }
-    data[length] = '\0';
+    ((BYTE*)data)[length] = '\0';
     // Write it
     printlnUp(data);
 }
 
-static WORD writeHandler(BYTE* data)
+static WORD writeHandler(void* data)
 {
     // Num of lines
     ((WORD*)data)[0] = 1;

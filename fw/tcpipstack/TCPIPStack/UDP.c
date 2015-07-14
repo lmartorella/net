@@ -792,7 +792,7 @@ BOOL UDPPut(BYTE v)
   ***************************************************************************/
 BOOL UDPPutW(WORD w)
 {
-    return UDPPutArray(&w, sizeof(WORD)) == sizeof(WORD);
+    return UDPPutArray((BYTE*)&w, sizeof(WORD)) == sizeof(WORD);
 }
 
 /*****************************************************************************
