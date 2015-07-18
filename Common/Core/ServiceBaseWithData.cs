@@ -4,8 +4,7 @@ namespace Lucky.Home.Core
     {
         private T _state;
 
-        protected ServiceBaseWithData(string logName)
-            : base(logName)
+        protected ServiceBaseWithData()
         { }
 
         /// <summary>

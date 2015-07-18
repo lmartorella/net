@@ -17,7 +17,6 @@ namespace Lucky.HomeMock.Core
         private SinkBase[] _sinks;
 
         public ControlPortListener()
-            :base("ControlPortListener")
         {
             Port = (ushort)new Random().Next(17000, 18000);
 

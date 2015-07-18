@@ -11,11 +11,6 @@ namespace Lucky.Home.Speech
 {
     class TextToSpeechService : ServiceBase
     {
-        public TextToSpeechService()
-            : base("TextToSpeech")
-        {
-        }
-
         public CultureInfo CultureInfo { get; set; }
 
         public Stream TextToAudio(string text)

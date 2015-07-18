@@ -12,10 +12,6 @@ namespace Lucky.Home.Core
         private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
         private readonly ObservableCollection<ISink> _sinks = new ObservableCollection<ISink>();
  
-        public SinkManager()
-            : base("SinkManager")
-        { }
-
         public void RegisterAssembly(Assembly assembly)
         {
             foreach (var type in assembly.GetTypes().Where(type => typeof(Sink).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))

@@ -3,12 +3,7 @@
 namespace Lucky.Home.Core
 {
     internal class ConsoleLoggerFactory : ServiceBase, ILoggerFactory
-    {
-        public ConsoleLoggerFactory()
-            : base(null)
-        {
-        }
-        
+    {        
         private class ConsoleLogger : ILogger
         {
             private readonly string _name;

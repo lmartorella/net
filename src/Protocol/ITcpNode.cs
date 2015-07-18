@@ -6,10 +6,18 @@ namespace Lucky.Home.Protocol
     internal interface ITcpNode
     {
         /// <summary>
+        /// Current address
+        /// </summary>
+        TcpNodeAddress Address { get; }
+
+        /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
         Guid Id { get; }
 
+        /// <summary>
+        /// Manage heartbeat
+        /// </summary>
         void Heartbeat(TcpNodeAddress address);
 
         /// <summary>

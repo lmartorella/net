@@ -12,10 +12,6 @@ namespace Lucky.Home.Protocol
         private readonly HashSet<TcpNodeAddress> _addressInRegistration = new HashSet<TcpNodeAddress>();
         private readonly object _nodeLock = new object();
 
-        public NodeRegistrar()
-            :base("NodeRegistrar")
-        { }
-
         public void RegisterNode(Guid guid, TcpNodeAddress address)
         {
             if (guid == Guid.Empty)

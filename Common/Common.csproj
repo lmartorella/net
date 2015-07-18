@@ -35,7 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Core\Constants.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Core\ILogger.cs" />
     <Compile Include="Core\ILoggerFactory.cs" />
     <Compile Include="Core\IPersistenceService.cs" />
@@ -44,9 +44,11 @@
     <Compile Include="Core\Manager.cs" />
     <Compile Include="Core\ServiceBase.cs" />
     <Compile Include="Core\ServiceBaseWithData.cs" />
+    <Compile Include="Net\TcpService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.XML" />
   </ItemGroup>

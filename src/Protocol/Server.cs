@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Lucky.Home.Core;
+using Lucky.Home.Net;
 
 namespace Lucky.Home.Protocol
 {
@@ -14,10 +15,9 @@ namespace Lucky.Home.Protocol
         private readonly INodeRegistrar _nodeRegistrar;
 
         // Find a free TCP port
-        private int _tcpPort = 17010;
+        private const int DEFAULT_PORT = 17010;
 
         public Server() 
-            :base("Server")
         {
             // Find the public IP
             Addresses = Dns.GetHostAddresses(Dns.GetHostName()).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip)).ToArray();
@@ -36,21 +36,7 @@ namespace Lucky.Home.Protocol
                 return helloListener;
             }).ToArray();
 
-            _tcpListeners = Addresses.Select(address =>
-            {
-                // Start TCP listener
-                TcpListener listener = TryCreateListener(address);
-                listener.Start();
-                AsyncCallback handler = null;
-                handler = ar =>
-                {
-                    var tcpClient = listener.EndAcceptTcpClient(ar);
-                    HandleServiceSocketAccepted(tcpClient);
-                    listener.BeginAcceptTcpClient(handler, null);
-                };
-                listener.BeginAcceptTcpClient(handler, null);
-                return listener;
-            }).ToArray();
+            _tcpListeners = Addresses.Select(address => Manager.GetService<TcpService>().CreateListener(address, DEFAULT_PORT, "HomeServer", HandleServiceSocketAccepted)).ToArray();
 
             Logger.Log("Opened Server", "hosts", string.Join(";", Addresses.Select(a => a.ToString())));
         }
@@ -79,22 +65,6 @@ namespace Lucky.Home.Protocol
                     _nodeRegistrar.RefetchSubNodes(guid, address);
                     break;
             }
-        }
-
-        private TcpListener TryCreateListener(IPAddress address)
-        {
-            do
-            {
-                try
-                {
-                    return new TcpListener(address, _tcpPort);
-                }
-                catch (SocketException)
-                {
-                    Logger.Log("TCPPortBusy", "port", address + ":" + _tcpPort, "trying", _tcpPort + 1);
-                    _tcpPort++;
-                }
-            } while (true);
         }
 
         #region IServer interface implementation

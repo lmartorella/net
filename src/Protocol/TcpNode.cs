@@ -38,6 +38,8 @@ namespace Lucky.Home.Protocol
         /// </summary>
         private readonly List<Sink> _sinks = new List<Sink>();
 
+        private TcpNodeAddress _address1;
+
         internal TcpNode(Guid guid, TcpNodeAddress address)
         {
             if (guid == Guid.Empty)
@@ -48,6 +50,11 @@ namespace Lucky.Home.Protocol
             Id = guid;
             _address = address;
             _logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
+        }
+
+        public TcpNodeAddress Address
+        {
+            get { return _address; }
         }
 
         private ILogger Logger

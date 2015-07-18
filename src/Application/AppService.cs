@@ -12,10 +12,6 @@ namespace Lucky.Home.Application
         // ReSharper disable once NotAccessedField.Local
         private Timer _timer;
 
-        public AppService()
-            : base("App")
-        { }
-
         //private void CommandLine()
         //{
             //while (true)

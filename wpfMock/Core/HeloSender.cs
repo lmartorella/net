@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Lucky.Home;
 using Lucky.Home.Core;
 
 namespace Lucky.HomeMock.Core

@@ -9,10 +9,6 @@ namespace Lucky.Home.Core
     {
         private string _isolatedStorageFolder;
 
-        public JsonIsolatedStoragePersistenceService() 
-            :base("JsonIsolatedStorage")
-        { }
-
         public void InitAppRoot(string appRoot)
         {
             _isolatedStorageFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);

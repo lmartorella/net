@@ -10,10 +10,6 @@ namespace Lucky.HomeMock
         private ILogger _masterLogger;
         private List<Action> _delayedLogs = new List<Action>();
 
-        public GuiLoggerFactory() 
-            :base(null)
-        { }
-
         public ILogger Create(string name)
         {
             return new Logger(name, this);

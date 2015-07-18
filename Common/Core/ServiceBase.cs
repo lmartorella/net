@@ -1,16 +1,21 @@
-﻿
+﻿using System.Linq;
+
 namespace Lucky.Home.Core
 {
     public class ServiceBase : IService
     {
         protected readonly string LogName;
 
-        protected ServiceBase(string logName)
+        protected ServiceBase()
         {
-            LogName = logName;
-            if (logName != null)
+            if (!GetType().GetInterfaces().Any(t => t == typeof(ILoggerFactory)))
             {
-                Logger = Manager.GetService<ILoggerFactory>().Create(logName);
+                LogName = GetType().Name;
+                if (LogName.EndsWith("Service"))
+                {
+                    LogName = LogName.Substring(0, LogName.Length - "Service".Length);
+                }
+                Logger = Manager.GetService<ILoggerFactory>().Create(LogName);
             }
         }
 
