@@ -313,7 +313,7 @@ void StackTask(void)
 	UDPTask();
 	#endif
 
-	// Process as many incomming packets as we can
+	// Process as many incoming packets as we can
 	while(1)
 	{
 		//if using the random module, generate entropy

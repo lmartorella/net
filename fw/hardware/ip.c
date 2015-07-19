@@ -28,8 +28,7 @@ void ip_prot_init()
     AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
     // Start IP
-    DHCPInit(0);
-    DHCPEnable(0);
+    StackInit();  
 
 	s_heloSocket = UDPOpenEx(NULL, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
 	if (s_heloSocket == INVALID_UDP_SOCKET)

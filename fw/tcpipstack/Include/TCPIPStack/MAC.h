@@ -153,7 +153,7 @@ __ALIGN2PACK typedef struct
 #else	// ENC28J60 or PIC18F97J60 family internal Ethernet controller
 	#define RAMSIZE			(8*1024ul)
 	#define TXSTART 		(RAMSIZE - (1ul+1518ul+7ul) - TCP_ETH_RAM_SIZE - RESERVED_HTTP_MEMORY - RESERVED_SSL_MEMORY)
-	#define RXSTART			(0ul)						// Should be an even memory address; must be 0 for errata
+	#define RXSTART			0                           // Should be an even memory address; must be 0 for errata
 	#define	RXSTOP			((TXSTART-2ul) | 0x0001ul)	// Odd for errata workaround
 	#define RXSIZE			(RXSTOP-RXSTART+1ul)
 	#define BASE_TX_ADDR	(TXSTART + 1ul)

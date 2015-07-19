@@ -10,10 +10,12 @@
 static void readHandler(void* data, WORD length);
 static WORD writeHandler(void* data);
 
+#pragma warning disable 340
 const rom Sink g_displaySink = { "LINE",
                                  &readHandler,
                                  &writeHandler
 };
+#pragma warning enable 340
 
 static void readHandler(void* data, WORD length)
 {

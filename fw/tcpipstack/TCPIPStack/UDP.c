@@ -237,15 +237,14 @@ Remarks:
 	socket and delete the handle.
 
 *****************************************************************************/
+// Local temp port numbers (persistent to restart)
+static WORD __persistent NextPort;
+
 UDP_SOCKET UDPOpenEx(DWORD remoteHost, BYTE remoteHostType, UDP_PORT localPort,
 		UDP_PORT remotePort)
 {
 	UDP_SOCKET s;
 	UDP_SOCKET_INFO *p;
-
-	// Local temp port numbers.
-	static __PERSISTENT WORD NextPort;
-
 
 	p = UDPSocketInfo;
 	for ( s = 0; s < MAX_UDP_SOCKETS; s++ )

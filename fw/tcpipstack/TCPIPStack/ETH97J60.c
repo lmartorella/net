@@ -333,11 +333,11 @@ void MACDiscardRx(void)
 	// RX buffer wrapping must be taken into account if the
 	// NextPacketLocation is precisely RXSTART.
 	NewRXRDLocation.Val = NextPacketLocation.Val - 1;
-//#if RXSTART == 0
-//	if(NewRXRDLocation.Val > RXSTOP)
-//#else
+#if RXSTART == 0
+	if(NewRXRDLocation.Val > RXSTOP)
+#else
 	if(NewRXRDLocation.Val < RXSTART || NewRXRDLocation.Val > RXSTOP)
-//#endif
+#endif
 	{
 		NewRXRDLocation.Val = RXSTOP;
 	}
