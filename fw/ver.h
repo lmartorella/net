@@ -5,7 +5,7 @@
 #include <GenericTypeDefs.h>
 
 // Update this at every build
-#define APP_VER "0.1"
+//#define APP_VER "0.1"
 
 typedef struct 
 {

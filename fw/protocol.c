@@ -64,7 +64,7 @@ static void SINK_command()
     {
         const Sink* sink = AllSinks[i]; 
         // Put device ID
-        ip_control_writeROM(&sink->fourCc, 4);
+        ip_control_write(sink->fourCc, 4);
     }
     ip_control_flush();
 }

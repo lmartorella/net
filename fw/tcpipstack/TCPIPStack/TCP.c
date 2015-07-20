@@ -1768,7 +1768,7 @@ BOOL TCPGet(TCP_SOCKET hTCP, BYTE* byte)
 
   Returns:
 	The number of bytes read from the socket.  If less than len, the
-	RX FIFO buffer became empty or the socket is not conected.
+	RX FIFO buffer became empty or the socket is not connected.
   ***************************************************************************/
 WORD TCPGetArray(TCP_SOCKET hTCP, BYTE* buffer, WORD len)
 {

@@ -16,7 +16,6 @@ BOOL ip_control_readW(WORD* w);
 BOOL ip_control_read(void* data, WORD size);
 void ip_control_writeW(WORD w);
 void ip_control_write(void* data, WORD size);
-void ip_control_writeROM(ROM void* data, WORD size);
 void ip_control_flush(void);
 
 WORD ip_control_getDataSize(void);
