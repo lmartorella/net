@@ -92,7 +92,8 @@ void ip_control_writeW(WORD w)
 
 void ip_control_write(void* data, WORD size)
 {
-    TCPPutArray(s_controlSocket, (BYTE*)data, size);
+    // If I remove & from here, ip_control_read stop working!!
+    TCPPutArray(s_controlSocket, (BYTE*)&data, size);
 }
 
 void ip_control_flush()

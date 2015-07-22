@@ -64,7 +64,7 @@ static void SINK_command()
     {
         const Sink* sink = AllSinks[i]; 
         // Put device ID
-        ip_control_write(sink->fourCc, 4);
+        ip_control_write(&sink->fourCc, sizeof(FOURCC));
     }
     ip_control_flush();
 }
@@ -117,44 +117,44 @@ static void WRIT_command()
 // at the same time
 static void parseCommandAndData()
 {
-    char msg[4];
-    ip_control_read(&msg, sizeof(msg));
-	switch (msg[0])
+    FOURCC msg;
+    ip_control_read(&msg, sizeof(FOURCC));
+	switch (msg.str[0])
 	{
 		case 'C':
-			if (strncmp(msg + 1, "LOS", 3) == 0) {
+			if (strncmp(msg.str + 1, "LOS", 3) == 0) {
 				CLOS_command();
                 return;
 			} 
-			else if (strncmp(msg + 1, "HIL", 3) == 0) {
+			else if (strncmp(msg.str + 1, "HIL", 3) == 0) {
 				CHIL_command();
                 return;
 			} 
 			break;
 		case 'S':
-			if (strncmp(msg + 1, "ELE", 3) == 0) {
+			if (strncmp(msg.str + 1, "ELE", 3) == 0) {
 				SELE_command();
                 return;
 			} 
-			else if (strncmp(msg + 1, "INK", 3) == 0) {
+			else if (strncmp(msg.str + 1, "INK", 3) == 0) {
 				SINK_command();
                 return;
 			} 
 			break;
         case 'R':
-			if (strncmp(msg + 1, "EAD", 3) == 0) {
+			if (strncmp(msg.str + 1, "EAD", 3) == 0) {
 				READ_command();
                 return;
 			} 
             break;
         case 'W':
-			if (strncmp(msg + 1, "RIT", 3) == 0) {
+			if (strncmp(msg.str + 1, "RIT", 3) == 0) {
 				WRIT_command();
                 return;
 			} 
             break;
 		default:
-			if (strncmp(msg, "GUID", 4) == 0) {
+			if (strncmp(msg.str, "GUID", 4) == 0) {
 				GUID_command();
                 return;
 			} 

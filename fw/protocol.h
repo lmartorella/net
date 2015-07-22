@@ -2,6 +2,7 @@
 #define _PROT_H_APP_
 
 #include <GenericTypeDefs.h>
+#include "ver.h"
 
 #define SERVER_CONTROL_UDP_PORT 17007
 #define CLIENT_TCP_PORT 20000
@@ -20,7 +21,7 @@ typedef WORD (*Sink_WriteHandler)(void* data);
 typedef struct SinkStruct
 {	
 	// Device ID
-	const char fourCc[4];
+	FOURCC fourCc;
 	// Pointer to RX function
 	Sink_ReadHandler readHandler;
 	// Pointer to TX function
