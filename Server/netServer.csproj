@@ -66,7 +66,7 @@
     <Compile Include="Protocol\TcpConnection.cs" />
     <Compile Include="Protocol\IServer.cs" />
     <Compile Include="Protocol\UdpControlPortListener.cs" />
-    <Compile Include="Core\ConsoleLogger.cs" />
+    <Compile Include="ConsoleLogger.cs" />
     <Compile Include="Protocol\TcpNode.cs" />
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Protocol\HeloMessage.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Lucky.Home.Admin;
 using Lucky.Home.Application;
 using Lucky.Home.Core;
 using Lucky.Home.Protocol;
@@ -27,7 +28,10 @@ namespace Lucky.Home
 
             // Start server
             Manager.GetService<IServer>();
-            Console.Write("Server started. Ctrl+C to quit.");
+            Console.WriteLine("Server started. Ctrl+C to quit.");
+
+            // Start Admin connection
+            Manager.GetService<AdminListener>();
 
             // Start app
             Manager.GetService<AppService>().Run();

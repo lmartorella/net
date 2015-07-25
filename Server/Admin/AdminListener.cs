@@ -14,7 +14,7 @@ namespace Lucky.Home.Admin
         private TcpListener _listener;
         public AdminListener()
         {
-            var loopbackAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && IPAddress.IsLoopback(ip));
+            var loopbackAddress = Dns.GetHostAddresses("localhost").FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
             if (loopbackAddress == null)
             {
                 Logger.Exception(new InvalidOperationException("Cannot find the loopback address of the host for admin connections"));
@@ -52,6 +52,7 @@ namespace Lucky.Home.Admin
         private void Send<T>(Stream stream, T message)
         {
             new DataContractSerializer(message.GetType()).WriteObject(stream, message);
+            stream.Flush();
         }
 
         private T Receive<T>(Stream stream)

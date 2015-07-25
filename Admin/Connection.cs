@@ -16,13 +16,14 @@ namespace Lucky.Home
         public Connection()
         {
             StatusText = "Connecting...";
-
-            // Start listener
             _client = new TcpClient();
-            _client.BeginConnect("localhost", Constants.DefaultAdminPort, ar =>
-            {
-                Task.Run(() => HandleConnected());
-            }, null);
+        }
+
+        public async void Connect()
+        {
+            // Start listener
+            await _client.ConnectAsync("localhost", Constants.DefaultAdminPort);
+            await Task.Run(() => HandleConnected());
         }
 
         private bool Connected
@@ -64,6 +65,7 @@ namespace Lucky.Home
         private void Send<T>(T message)
         {
             new DataContractSerializer(message.GetType()).WriteObject(_stream, message);
+            _stream.Flush();
         }
 
         private T Receive<T>()

@@ -51,7 +51,7 @@
       <Project>{B13F0047-1CEE-4463-BAF6-A943E225D875}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\netServer.csproj">
+    <ProjectReference Include="..\..\Server\netServer.csproj">
       <Project>{9da13c11-2457-42b0-8e6e-db1b0d3317bf}</Project>
       <Name>netServer</Name>
     </ProjectReference>

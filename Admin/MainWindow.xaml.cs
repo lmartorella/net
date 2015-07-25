@@ -15,6 +15,7 @@ namespace Lucky.Home
             DataContext = this;
 
             Connection = new Connection();
+            Connection.Connect();
         }
     }
 }
