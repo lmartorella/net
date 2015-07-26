@@ -3,7 +3,8 @@
 namespace Lucky.Home.Admin
 {
     [DataContract]
-    public class AdminMessage
+    [ServiceK]
+    public abstract class AdminMessage
     {
 
     }

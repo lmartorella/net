@@ -4,7 +4,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Text;
+using System.Threading.Tasks;
 using Lucky.Home.Core;
+using Lucky.Home.IO;
 using Lucky.Home.Net;
 
 namespace Lucky.Home.Admin
@@ -25,17 +28,18 @@ namespace Lucky.Home.Admin
             }
         }
 
-        private void HandleConnection(TcpClient client)
+        private async void HandleConnection(TcpClient client)
         {
             using (var stream = client.GetStream())
             {
-                var msg = Receive<AdminMessage>(stream);
+                var channel = new MessageChannel(stream);
+                var msg = await Receive<AdminMessage>(channel);
                 if (msg is GetTopologyMessage)
                 {
                     // Returns the topology
                     var ret = new GetTopologyMessage.Response();
                     ret.Roots = BuildTree();
-                    Send(stream, ret);
+                    Send(channel, ret);
                 }
             }
             client.Close();
@@ -49,15 +53,22 @@ namespace Lucky.Home.Admin
             };
         }
 
-        private void Send<T>(Stream stream, T message)
+        private void Send<T>(MessageChannel stream, T message)
         {
-            new DataContractSerializer(message.GetType()).WriteObject(stream, message);
-            stream.Flush();
+            using (MemoryStream ms = new MemoryStream())
+            {
+                new DataContractSerializer(message.GetType()).WriteObject(ms, message);
+                ms.Flush();
+                stream.WriteMessage(ms.GetBuffer());
+            }
         }
 
-        private T Receive<T>(Stream stream)
+        private async Task<T> Receive<T>(MessageChannel stream)
         {
-            return (T)new DataContractSerializer(typeof(T)).ReadObject(stream);
+            using (MemoryStream ms = new MemoryStream(await stream.ReadMessage()))
+            {
+                return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
+            }
         }
     }
 }

@@ -1,8 +1,11 @@
-﻿using System.Net.Sockets;
+﻿using System.IO;
+using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Lucky.Home.Admin;
+using Lucky.Home.IO;
 
 namespace Lucky.Home
 {
@@ -10,7 +13,7 @@ namespace Lucky.Home
     {
         private readonly TcpClient _client;
         private bool _connected;
-        private NetworkStream _stream;
+        private MessageChannel _channel;
         private GetTopologyMessage.Node[] _topology;
 
         public Connection()
@@ -39,13 +42,13 @@ namespace Lucky.Home
             }
         }
 
-        private void HandleConnected()
+        private async void HandleConnected()
         {
             Connected = true;
-            using (_stream = _client.GetStream())
+            using (_channel = new MessageChannel(_client.GetStream()))
             {
                 Send(new GetTopologyMessage());
-                var topology = Receive<GetTopologyMessage.Response>().Roots;
+                var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
                 Dispatcher.Invoke(() => Topology = topology);
             }
         }
@@ -64,13 +67,20 @@ namespace Lucky.Home
 
         private void Send<T>(T message)
         {
-            new DataContractSerializer(message.GetType()).WriteObject(_stream, message);
-            _stream.Flush();
+            using (var ms = new MemoryStream())
+            {
+                new DataContractSerializer(message.GetType()).WriteObject(ms, message);
+                ms.Flush();
+                _channel.WriteMessage(ms.GetBuffer());
+            }
         }
 
-        private T Receive<T>()
+        private async Task<T> Receive<T>()
         {
-            return (T)new DataContractSerializer(typeof(T)).ReadObject(_stream);
+            using (var ms = new MemoryStream(await _channel.ReadMessage()))
+            {
+                return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
+            }
         }
 
         #region Dependency properties
