@@ -47,7 +47,7 @@ namespace Lucky.Home
             Connected = true;
             using (_channel = new MessageChannel(_client.GetStream()))
             {
-                Send(new GetTopologyMessage());
+                Send(new Container { Message = new GetTopologyMessage() });
                 var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
                 Dispatcher.Invoke(() => Topology = topology);
             }

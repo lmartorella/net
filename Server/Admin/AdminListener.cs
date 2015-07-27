@@ -33,8 +33,8 @@ namespace Lucky.Home.Admin
             using (var stream = client.GetStream())
             {
                 var channel = new MessageChannel(stream);
-                var msg = await Receive<AdminMessage>(channel);
-                if (msg is GetTopologyMessage)
+                var msg = await Receive<Container>(channel);
+                if (msg.Message is GetTopologyMessage)
                 {
                     // Returns the topology
                     var ret = new GetTopologyMessage.Response();

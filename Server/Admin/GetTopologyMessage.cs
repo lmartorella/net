@@ -12,6 +12,7 @@ namespace Lucky.Home.Admin
         [DataContract]
         public class Response
         {
+            [DataMember]
             public Node[] Roots;
         }
 

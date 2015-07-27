@@ -3,8 +3,15 @@
 namespace Lucky.Home.Admin
 {
     [DataContract]
-    [ServiceK]
-    public abstract class AdminMessage
+    [KnownType(typeof(GetTopologyMessage))]
+    public class Container
+    {
+        [DataMember]
+        public AdminMessage Message;
+    }
+
+    [DataContract]
+    public class AdminMessage
     {
 
     }
