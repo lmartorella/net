@@ -14,6 +14,7 @@ namespace Lucky.Home
     {
         static void Main()
         {
+
             Manager.Register<ConsoleLoggerFactory, ILoggerFactory>();
             Manager.GetService<IPersistenceService>().InitAppRoot("Server");
 

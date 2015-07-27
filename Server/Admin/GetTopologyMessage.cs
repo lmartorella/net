@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
 namespace Lucky.Home.Admin
 {
@@ -14,13 +13,6 @@ namespace Lucky.Home.Admin
         {
             [DataMember]
             public Node[] Roots;
-        }
-
-        [DataContract]
-        public class Node
-        {
-            public Guid Id;
-            public Node[] Children;
         }
     }
 }

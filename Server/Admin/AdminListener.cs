@@ -4,17 +4,19 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
 using Lucky.Home.IO;
 using Lucky.Home.Net;
+using Lucky.Home.Protocol;
 
 namespace Lucky.Home.Admin
 {
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
+        private NodeRegistrar _registrar;
+
         public AdminListener()
         {
             var loopbackAddress = Dns.GetHostAddresses("localhost").FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
@@ -26,6 +28,8 @@ namespace Lucky.Home.Admin
             {
                 _listener = Manager.GetService<TcpService>().CreateListener(loopbackAddress, Constants.DefaultAdminPort, "Admin", HandleConnection);
             }
+
+            _registrar = Manager.GetService<NodeRegistrar>();
         }
 
         private async void HandleConnection(TcpClient client)
@@ -45,12 +49,18 @@ namespace Lucky.Home.Admin
             client.Close();
         }
 
-        private GetTopologyMessage.Node[] BuildTree()
+        private Node[] BuildTree()
         {
-            return new[]
+            var roots = _registrar.Nodes.Where(n => !n.Address.IsSubNode).Select(n => new Node(n)).ToList();
+            foreach (var node in _registrar.Nodes.Where(n => n.Address.IsSubNode))
             {
-                new GetTopologyMessage.Node {Children = new GetTopologyMessage.Node[0], Id = Guid.NewGuid()}
-            };
+                var root = roots.FirstOrDefault(r => r.TcpNode.Address.Equals(node.Address.SubNode(0)));
+                if (root != null)
+                {
+                    root.Children.Add(new Node(node));
+                }
+            }
+            return roots.ToArray();
         }
 
         private void Send<T>(MessageChannel stream, T message)

@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using Lucky.Home.Admin;
@@ -14,11 +15,10 @@ namespace Lucky.Home
         private readonly TcpClient _client;
         private bool _connected;
         private MessageChannel _channel;
-        private GetTopologyMessage.Node[] _topology;
 
         public Connection()
         {
-            StatusText = "Connecting...";
+            Connected = false;
             _client = new TcpClient();
         }
 
@@ -38,30 +38,24 @@ namespace Lucky.Home
             set
             {
                 _connected = value;
-                Dispatcher.Invoke(() => StatusText = "Connected");
+                Dispatcher.Invoke(() => StatusText = _connected ? "Connected" : "Disconnected");
             }
         }
 
         private async void HandleConnected()
         {
             Connected = true;
-            using (_channel = new MessageChannel(_client.GetStream()))
+            try
             {
-                Send(new Container { Message = new GetTopologyMessage() });
-                var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
-                Dispatcher.Invoke(() => Topology = topology);
+                using (_channel = new MessageChannel(_client.GetStream()))
+                {
+                    Send(new Container { Message = new GetTopologyMessage() });
+                    var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
+                    Dispatcher.Invoke(() => Nodes = new ObservableCollection<Node>(topology));
+                }
             }
-        }
-
-        public GetTopologyMessage.Node[] Topology
-        {
-            get
+            catch (Exception)
             {
-                return _topology;
-            }
-            set
-            {
-                _topology = value;
             }
         }
 
@@ -86,7 +80,7 @@ namespace Lucky.Home
         #region Dependency properties
 
         public static readonly DependencyProperty StatusTextProperty = DependencyProperty.Register(
-            "StatusText", typeof(string), typeof(MainWindow), new PropertyMetadata(default(string)));
+            "StatusText", typeof(string), typeof(Connection));
 
         public string StatusText
         {
@@ -95,5 +89,14 @@ namespace Lucky.Home
         }
 
         #endregion
+
+        public static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
+            "Nodes", typeof (ObservableCollection<Node>), typeof(Connection));
+
+        public ObservableCollection<Node> Nodes
+        {
+            get { return (ObservableCollection<Node>)GetValue(NodesProperty); }
+            set { SetValue(NodesProperty, value); }
+        }
     }
 }

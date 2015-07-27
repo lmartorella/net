@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
 
@@ -134,6 +136,17 @@ namespace Lucky.Home.Protocol
             ITcpNode node;
             _nodes.TryGetValue(guid, out node);
             return node;
+        }
+
+        public IEnumerable<ITcpNode> Nodes
+        {
+            get
+            {
+                lock (_nodeLock)
+                {
+                    return _nodes.Values.ToArray();                    
+                }
+            }
         }
     }
 }

@@ -55,6 +55,7 @@
     <Compile Include="Admin\AdminListener.cs" />
     <Compile Include="Admin\AdminMessage.cs" />
     <Compile Include="Admin\GetTopologyMessage.cs" />
+    <Compile Include="Admin\Node.cs" />
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\ISink.cs" />
