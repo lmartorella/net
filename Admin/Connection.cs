@@ -10,13 +10,13 @@ using Lucky.Home.IO;
 
 namespace Lucky.Home
 {
-    public class Connection : DependencyObject
+    public class TcpConnection : Connection
     {
         private readonly TcpClient _client;
         private bool _connected;
         private MessageChannel _channel;
 
-        public Connection()
+        public TcpConnection()
         {
             Connected = false;
             _client = new TcpClient();
@@ -76,6 +76,14 @@ namespace Lucky.Home
                 return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
             }
         }
+    }
+
+    public class Connection : DependencyObject
+    {
+        public Connection()
+        {
+            Nodes = new ObservableCollection<Node>();
+        }
 
         #region Dependency properties
 
@@ -91,7 +99,7 @@ namespace Lucky.Home
         #endregion
 
         public static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
-            "Nodes", typeof (ObservableCollection<Node>), typeof(Connection));
+            "Nodes", typeof(ObservableCollection<Node>), typeof(Connection));
 
         public ObservableCollection<Node> Nodes
         {

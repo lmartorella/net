@@ -19,10 +19,13 @@ namespace Lucky.Home
         public MainWindow()
         {
             InitializeComponent();
-            Connection = new Connection();
-            Connection.Connect();
-
             DataContext = this;
+
+            var connection = new TcpConnection();
+            connection.Connect();
+            Connection = connection;
+
+            //Connection = new Design.SampleData1();
         }
     }
 }

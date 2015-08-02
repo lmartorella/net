@@ -1,0 +1,20 @@
+﻿<home:Connection x:Class="Lucky.Home.Design.SampleData"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:admin="clr-namespace:Lucky.Home.Admin;assembly=Home.Server" 
+                 xmlns:home="clr-namespace:Lucky.Home" StatusText="Connected">
+    <home:Connection.Nodes>
+        <admin:Node Id="root1">
+            <admin:Node.Children>
+                <admin:Node Id="Child1" />
+                <admin:Node Id="Child2" />
+            </admin:Node.Children>
+        </admin:Node>
+        <admin:Node Id="root2">
+            <admin:Node.Children>
+                <admin:Node Id="Child1b" />
+                <admin:Node Id="Child2b" />
+            </admin:Node.Children>
+        </admin:Node>
+    </home:Connection.Nodes>
+</home:Connection>
+    
