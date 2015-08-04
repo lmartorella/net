@@ -10,9 +10,9 @@
 static void readHandler(void* data, WORD length);
 static WORD writeHandler(void* data);
 
-const rom Sink g_displaySink = { { 'L', 'I', 'N', 'E' },
-                                 &readHandler,
-                                 &writeHandler
+const Sink g_displaySink = { { "LINE" },
+                             &readHandler,
+                             &writeHandler
 };
 
 static void readHandler(void* data, WORD length)

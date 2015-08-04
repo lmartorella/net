@@ -13,7 +13,7 @@
 
 static BOOL s_registered = FALSE;
 
-const rom Sink* AllSinks[] = { &g_displaySink };
+const Sink* AllSinks[] = { &g_displaySink };
 #define AllSinksSize 1
 
 
@@ -49,22 +49,28 @@ static void SELE_command()
 
 static void CHIL_command()
 {
+    GUID guid;
+    memcpy(&guid, &g_persistentData.deviceId, sizeof(GUID));
+    
     // Only 1 children: me
     ip_control_writeW(1);
-    ip_control_write(&g_persistentData.deviceId, sizeof(GUID));
+    ip_control_write(&guid, sizeof(GUID));
     ip_control_flush();
 }
 
 static void SINK_command()
 {
+    FOURCC fourcc;
     int i = AllSinksSize;
     ip_control_writeW(i);
-
-    for (; i >= 0; i--)
+    while (i > 0)
     {
-        const Sink* sink = AllSinks[i]; 
+        i--;
+        Sink* sink = AllSinks[i]; 
+        memcpy(&fourcc, &sink->fourCc, sizeof(FOURCC));
+        
         // Put device ID
-        ip_control_write(&sink->fourCc, sizeof(FOURCC));
+        ip_control_write(&fourcc, sizeof(FOURCC));
     }
     ip_control_flush();
 }
@@ -88,29 +94,29 @@ static BYTE buf[SINK_BUFFER_SIZE];
 
 static void READ_command()
 {
-    // Get sink# and msg size
-    WORD sink, length;
-
-    if (!ip_control_readW(&sink) || !ip_control_readW(&length) || !ip_control_read(buf, length))
-    {
-        fatal("READ.undr");
-    }
-    // Address sink
-    AllSinks[sink]->readHandler(buf, length);
-}
-
-static void WRIT_command()
-{
     WORD sink, length;
 
     if (!ip_control_readW(&sink))
     {
-        fatal("WRIT.undr");
+        fatal("READ.undr");
     }
     // Address sink
     length = AllSinks[sink]->writeHandler(buf);
     ip_control_writeW(length);
     ip_control_write(buf, length);
+}
+
+static void WRIT_command()
+{
+    // Get sink# and msg size
+    WORD sink, length;
+
+    if (!ip_control_readW(&sink) || !ip_control_readW(&length) || !ip_control_read(buf, length))
+    {
+        fatal("WRIT.undr");
+    }
+    // Address sink
+    AllSinks[sink]->readHandler(buf, length);
 }
 
 // TODO: Limitation: both the command and its data should be in the read buffer

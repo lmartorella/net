@@ -51,7 +51,7 @@ namespace Lucky.Home.Protocol
             {
                 _clientStream.Flush();
                 _reader.Close();
-                _tcpClient.Close();
+                //_tcpClient.Close();
                 _tcpClient = null;
             }
         }
