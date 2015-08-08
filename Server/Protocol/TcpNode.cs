@@ -86,7 +86,7 @@ namespace Lucky.Home.Protocol
                 _address = address;
             }
             _isZombie = false;
-            await FetchSinkData();
+            await FetchMetadata();
         }
 
         /// <summary>
@@ -179,7 +179,7 @@ namespace Lucky.Home.Protocol
             public byte[] Data;
         }
 
-        internal async Task FetchSinkData()
+        internal async Task FetchMetadata()
         {
             lock (_lockObject)
             {
@@ -189,7 +189,7 @@ namespace Lucky.Home.Protocol
                 }
                 _inFetchSinkData = true;
             }
-            while (!await TryFetchSinkData())
+            while (!await TryFetchMetadata())
             {
                 await Task.Delay(RetryTime);
             }
@@ -199,7 +199,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private bool MakeConnection(Action<TcpConnection, TcpNodeAddress> handler)
+        private bool OpenNodeSession(Action<TcpConnection, TcpNodeAddress> handler)
         {
             if (_isZombie)
             {
@@ -218,6 +218,7 @@ namespace Lucky.Home.Protocol
             {
                 using (var connection = new TcpConnection(address.Address, address.ControlPort))
                 {
+                    connection.Write(new SelectNodeMessage(address.Index));
                     handler(connection, address);
                     connection.Write(new CloseMessage());
                 }
@@ -232,13 +233,13 @@ namespace Lucky.Home.Protocol
             return true;
         }
 
-        private async Task<bool> TryFetchSinkData()
+        private async Task<bool> TryFetchMetadata()
         {
             return await Task.Run(() =>
             {
                 // Init a METADATA fetch connection
                 string[] sinks = null;
-                if (!MakeConnection((connection, address) =>
+                if (!OpenNodeSession((connection, address) =>
                 {
                     if (!address.IsSubNode)
                     {
@@ -267,7 +268,6 @@ namespace Lucky.Home.Protocol
                     }
 
                     // Then ask for sinks
-                    connection.Write(new SelectNodeMessage(address.Index));
                     connection.Write(new GetSinksMessage());
                     sinks = connection.Read<GetSinksMessageResponse>().Sinks;
                 }))
@@ -326,7 +326,7 @@ namespace Lucky.Home.Protocol
         {
             await Task.Run(() =>
             {
-                MakeConnection((connection, address) =>
+                OpenNodeSession((connection, address) =>
                 {
                     connection.Write(new SelectNodeMessage(address.Index));
                     connection.Write(new NewGuidMessage(Id));
@@ -336,7 +336,7 @@ namespace Lucky.Home.Protocol
 
         public bool WriteToSink(byte[] data, int sinkId)
         {
-            return MakeConnection((connection, address) =>
+            return OpenNodeSession((connection, address) =>
             {
                 // Select subnode
                 connection.Write(new SelectNodeMessage(address.Index));
@@ -348,7 +348,7 @@ namespace Lucky.Home.Protocol
         public byte[] ReadFromSink(int sinkId)
         {
             byte[] data = null;
-            if (!MakeConnection((connection, address) =>
+            if (!OpenNodeSession((connection, address) =>
             {
                 // Select subnode
                 connection.Write(new SelectNodeMessage(address.Index));

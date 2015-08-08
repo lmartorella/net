@@ -1,27 +1,89 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 using Lucky.Home.Core;
 
 namespace Lucky.Home.Protocol
 {
     internal class TcpConnection : IDisposable
     {
-        private TcpClient _tcpClient;
-        private readonly Stream _clientStream;
+        private static readonly Dictionary<IPEndPoint, Client> s_instances = new Dictionary<IPEndPoint, Client>();
+        private Client _client;
+        private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(4);
 
-        private readonly BinaryReader _reader;
+        private class Client
+        {
+            private readonly IPEndPoint _endPoint;
+            private TcpClient _tcpClient;
+            public readonly Stream Stream;
+            public readonly BinaryReader Reader;
+            private readonly object _lock = new object();
+            private CancellationTokenSource _cancellationToken;
+
+            public Client(IPEndPoint endPoint)
+            {
+                _endPoint = endPoint;
+                _tcpClient = new TcpClient();
+                _tcpClient.Connect(endPoint);
+                Stream = _tcpClient.GetStream();
+                //Stream.ReadTimeout = 5 * 60 * 1000;
+                //Stream.WriteTimeout = 5 * 60 * 1000;
+                Reader = new BinaryReader(Stream);
+            }
+
+            public void Dispose()
+            {
+                if (_tcpClient != null)
+                {
+                    Stream.Flush();
+                    Reader.Close();
+                    //_tcpClient.Close();
+                    _tcpClient = null;
+                }
+            }
+
+            public void Acquire()
+            {
+                _cancellationToken.Cancel();
+                Monitor.Enter(_lock);
+            }
+
+            public void Release()
+            {
+                Monitor.Exit(_lock);
+                // Start timeout auto-disposal timer
+                _cancellationToken = new CancellationTokenSource();
+                Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
+                {
+                    lock (s_instances)
+                    {
+                        Dispose();
+                        s_instances.Remove(_endPoint);
+                    }
+                }, _cancellationToken.Token).Start();
+            }
+        }
 
         public TcpConnection(IPAddress address, ushort port)
         {
             IPEndPoint endPoint = new IPEndPoint(address, port);
-            _tcpClient = new TcpClient();
-            _tcpClient.Connect(endPoint);
-            _clientStream = _tcpClient.GetStream();
-            //_clientStream.ReadTimeout = 5 * 60 * 1000;
-            //_clientStream.WriteTimeout = 5 * 60 * 1000;
-            _reader = new BinaryReader(_clientStream);
+            lock (s_instances)
+            {
+                if (!s_instances.TryGetValue(endPoint, out _client))
+                {
+                    _client = new Client(endPoint);
+                    s_instances[endPoint] = _client;
+                }
+                else
+                {
+                    // Locking
+                    _client.Acquire();
+                }
+            }
         }
 
         public void Write<T>(T data) where T : class
@@ -33,13 +95,13 @@ namespace Lucky.Home.Protocol
             int l = (int) stream.Position;
             stream.Position = 0;
 
-            _clientStream.Write(stream.GetBuffer(), 0, l);
-            _clientStream.Flush();
+            _client.Stream.Write(stream.GetBuffer(), 0, l);
+            _client.Stream.Flush();
         }
 
         public T Read<T>() where T : class
         {
-            return NetSerializer<T>.Read(_reader);
+            return NetSerializer<T>.Read(_client.Reader);
         }
 
         /// <summary>
@@ -47,12 +109,10 @@ namespace Lucky.Home.Protocol
         /// </summary>
         public void Dispose()
         {
-            if (_tcpClient != null)
+            if (_client != null)
             {
-                _clientStream.Flush();
-                _reader.Close();
-                //_tcpClient.Close();
-                _tcpClient = null;
+                _client.Release();
+                _client = null;
             }
         }
     }

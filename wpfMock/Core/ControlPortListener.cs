@@ -23,7 +23,9 @@ namespace Lucky.HomeMock.Core
             IPAddress hostAddress = Dns.GetHostAddresses(Dns.GetHostName()).FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip));
             if (hostAddress == null)
             {
-                throw new InvalidOperationException("Cannot find a public IP address of the host");
+                hostAddress = new IPAddress(0x0100007f);
+                LocalhostMode = true;
+                Logger.Warning("Cannot find a public IP address of the host. Using loopback.");
             }
 
             while (_serviceListener == null)
@@ -56,6 +58,7 @@ namespace Lucky.HomeMock.Core
         }
 
         public ushort Port { get; private set; }
+        public bool LocalhostMode { get; private set; }
 
         public override void Dispose()
         {

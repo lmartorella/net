@@ -106,7 +106,7 @@ namespace Lucky.Home.Protocol
         {
             var node = new TcpNode(guid, address);
             // Start data fetch asynchrously
-            node.FetchSinkData();
+            node.FetchMetadata();
             return node;
         }
 
@@ -116,7 +116,7 @@ namespace Lucky.Home.Protocol
             // Give the node the new name
             await node.Rename();
             // Start data fetch asynchrously
-            node.FetchSinkData();
+            node.FetchMetadata();
             return node;
         }
 

@@ -23,7 +23,8 @@ namespace Lucky.Home.Protocol
             Addresses = Dns.GetHostAddresses(Dns.GetHostName()).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip)).ToArray();
             if (!Addresses.Any())
             {
-                throw new InvalidOperationException("Cannot find a valid public IP address of the host");
+                Addresses = new[] { new IPAddress(0x0100007f) };
+                Logger.Warning("Cannot find a valid public IP address of the host. Using IPv4 loopback.");
             }
             //Port = DefaultPort;
             _nodeRegistrar = Manager.GetService<INodeRegistrar>();

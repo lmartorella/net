@@ -53,7 +53,7 @@ namespace Lucky.HomeMock
 
             var controlPort = Manager.GetService<ControlPortListener>();
             controlPort.InitSinks(new SinkBase[] { _displaySink });
-            HeloSender = new HeloSender(controlPort.Port);
+            HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
         }

@@ -12,13 +12,15 @@ namespace Lucky.HomeMock.Core
     class HeloSender : Task
     {
         private readonly ushort _rcvPort;
+        private readonly bool _localhostMode;
         private readonly Timer _timer;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
-        public HeloSender(ushort rcvPort)
+        public HeloSender(ushort rcvPort, bool localhostMode)
         {
             _logger = Manager.GetService<ILoggerFactory>().Create("HeloSender");
             _rcvPort = rcvPort;
+            _localhostMode = localhostMode;
             // Install an auto-repeat timer until closed
             _timer = new Timer(HandleTick, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
         }
@@ -50,7 +52,8 @@ namespace Lucky.HomeMock.Core
             }
             byte[] dgram = stream.GetBuffer();
             UdpClient client = new UdpClient();
-            client.Send(dgram, dgram.Length, new IPEndPoint(IPAddress.Broadcast, Constants.UdpControlPort));
+            var ipAddress = _localhostMode ? new IPAddress(0x0100007f) : IPAddress.Broadcast;
+            client.Send(dgram, dgram.Length, new IPEndPoint(ipAddress, Constants.UdpControlPort));
 
             _logger.Log(msg + " sent");
         }
