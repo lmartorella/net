@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Lucky.HomeMock.Core;
 
@@ -14,8 +15,8 @@ namespace Lucky.HomeMock.Sinks
             FourCc = fourCc;
         }
 
-        public abstract void Read(byte[] data);
-        public abstract byte[] Write();
+        public abstract void Read(BinaryReader reader);
+        public abstract void Write(BinaryWriter writer);
     }
 
     class DisplaySink : SinkBase
@@ -24,21 +25,20 @@ namespace Lucky.HomeMock.Sinks
             : base("LINE")
         { }
 
-        public override void Read(byte[] data)
+        public override void Read(BinaryReader reader)
         {
-            string str = Encoding.ASCII.GetString(data);
+            var l = reader.ReadInt16();
+            string str = Encoding.ASCII.GetString(reader.ReadBytes(l));
             if (Data != null)
             {
                 Data(this, new ItemEventArgs<string>(str));
             }
         }
 
-        public override byte[] Write()
+        public override void Write(BinaryWriter writer)
         {
-            List<byte> retValue = new List<byte>();
-            retValue.AddRange(BitConverter.GetBytes((short)1));
-            retValue.AddRange(BitConverter.GetBytes((short)20));
-            return retValue.ToArray();
+            writer.Write((short)1);
+            writer.Write((short)20);
         }
 
         public event EventHandler<ItemEventArgs<string>> Data;

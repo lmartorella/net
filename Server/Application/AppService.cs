@@ -51,8 +51,8 @@ namespace Lucky.Home.Application
                 {
                     sink.Write("Time: " + DateTime.Now.ToLongTimeString());
                 }
-                _timer.Change(1000, Timeout.Infinite);
-            }, null, 1000, Timeout.Infinite);
+                _timer.Change(10000, Timeout.Infinite);
+            }, null, 10000, Timeout.Infinite);
         }
 
         public void Run()

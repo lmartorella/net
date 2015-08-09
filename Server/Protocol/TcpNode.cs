@@ -97,12 +97,6 @@ namespace Lucky.Home.Protocol
             throw new NotImplementedException();
         }
 
-        private class CloseMessage
-        {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "CLOS";
-        }
-
         private class GetChildrenMessage
         {
             [SerializeAsFixedString(4)]
@@ -160,9 +154,6 @@ namespace Lucky.Home.Protocol
             public string Cmd = "WRIT";
 
             public short SinkIndex;
-
-            [SerializeAsDynArray]
-            public byte[] Data;
         }
 
         private class ReadDataMessage
@@ -171,12 +162,6 @@ namespace Lucky.Home.Protocol
             public string Cmd = "READ";
 
             public short SinkIndex;
-        }
-
-        private class ReadDataMessageReponse
-        {
-            [SerializeAsDynArray]
-            public byte[] Data;
         }
 
         internal async Task FetchMetadata()
@@ -218,15 +203,18 @@ namespace Lucky.Home.Protocol
             {
                 using (var connection = new TcpConnection(address.Address, address.ControlPort))
                 {
+                    // Connecion can be recycled
                     connection.Write(new SelectNodeMessage(address.Index));
                     handler(connection, address);
-                    connection.Write(new CloseMessage());
                 }
             }
             catch (Exception exc)
             {
+                // Forbicly close the channel
+                TcpConnection.Close(address.Address, address.ControlPort);
+                // Log exc
                 Logger.Exception(exc);
-                // Mark it as a zombie
+                // Mark the node as a zombie
                 _isZombie = true;
                 return false;
             }
@@ -328,38 +316,31 @@ namespace Lucky.Home.Protocol
             {
                 OpenNodeSession((connection, address) =>
                 {
-                    connection.Write(new SelectNodeMessage(address.Index));
                     connection.Write(new NewGuidMessage(Id));
                 });
             });
         }
 
-        public bool WriteToSink(byte[] data, int sinkId)
+        public bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
         {
             return OpenNodeSession((connection, address) =>
             {
-                // Select subnode
-                connection.Write(new SelectNodeMessage(address.Index));
                 // Open stream
-                connection.Write(new WriteDataMessage {SinkIndex = (short) sinkId, Data = data});
+                connection.Write(new WriteDataMessage { SinkIndex = (short) sinkId });
+                // Now the channel is owned by the sink driver
+                // Returns when done, and the protocol should leave the channel clean
+                writeHandler(connection);
             });
         }
 
-        public byte[] ReadFromSink(int sinkId)
+        public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
         {
-            byte[] data = null;
-            if (!OpenNodeSession((connection, address) =>
+            return OpenNodeSession((connection, address) =>
             {
-                // Select subnode
-                connection.Write(new SelectNodeMessage(address.Index));
                 // Open stream
                 connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
-                data = connection.Read<ReadDataMessageReponse>().Data;
-            }))
-            {
-                data = null;
-            }
-            return data;
+                readHandler(connection);
+            });
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 using Lucky.Home.Core;
 
 // ReSharper disable once UnusedMember.Global
@@ -18,11 +17,12 @@ namespace Lucky.Home.Sinks
         protected override void OnInitialize()
         {
             base.OnInitialize();
-            byte[] msg = ReadBytes();
-            var metadata = NetSerializer<ReadCapMessageResponse>.Read(new BinaryReader(new MemoryStream(msg)));
-
-            LineCount = metadata.LineCount;
-            CharCount = metadata.CharCount;
+            Read(reader =>
+            {
+                var metadata = reader.Read<ReadCapMessageResponse>();
+                LineCount = metadata.LineCount;
+                CharCount = metadata.CharCount;
+            });
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -32,9 +32,18 @@ namespace Lucky.Home.Sinks
             public short CharCount;
         }
 
+        private class LineMessage
+        {
+            [SerializeAsDynArray]
+            public byte[] Data;
+        }
+
         public void Write(string line)
         {
-            WriteBytes(Encoding.ASCII.GetBytes(line));
+            Write(writer =>
+            {
+                writer.Write(new LineMessage { Data = Encoding.ASCII.GetBytes(line)});
+            });
         }
 
         public int LineCount { get; private set; }

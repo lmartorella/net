@@ -34,7 +34,7 @@ namespace Lucky.Home.Protocol
         {
             IPEndPoint remoteEndPoint = new IPEndPoint(0, 0);
             byte[] bytes = _client.EndReceive(result, ref remoteEndPoint);
-            if (bytes.Length > 0 && !IPAddress.IsLoopback(remoteEndPoint.Address))
+            if (bytes.Length > 0)
             {
                 using (BinaryReader reader = new BinaryReader(new MemoryStream(bytes)))
                 {

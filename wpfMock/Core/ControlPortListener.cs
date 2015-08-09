@@ -99,7 +99,6 @@ namespace Lucky.HomeMock.Core
                 string command = ReadCommand();
                 _logger.Log("Msg: " + command);
                 ushort sinkIdx;
-                byte[] data;
                 switch (command)
                 {
                     case "CLOS":
@@ -124,15 +123,11 @@ namespace Lucky.HomeMock.Core
                         break;
                     case "WRIT":
                         sinkIdx = ReadUint16();
-                        var size = ReadUint16();
-                        data = _reader.ReadBytes(size);
-                        _listener._sinks[sinkIdx].Read(data);
+                        _listener._sinks[sinkIdx].Read(_reader);
                         break;
                     case "READ":
                         sinkIdx = ReadUint16();
-                        data = _listener._sinks[sinkIdx].Write();
-                        _writer.Write((ushort)data.Length);
-                        _writer.Write(data);
+                        _listener._sinks[sinkIdx].Write(_writer);
                         break;
                     default:
                         throw new InvalidOperationException("Unknown protocol command: " + command);

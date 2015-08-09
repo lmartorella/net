@@ -33,11 +33,11 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Open sink communication for write
         /// </summary>
-        bool WriteToSink(byte[] data, int sinkId);
+        bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler);
 
         /// <summary>
         /// Open sink communication for read
         /// </summary>
-        byte[] ReadFromSink(int sinkId);
+        bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler);
     }
 }

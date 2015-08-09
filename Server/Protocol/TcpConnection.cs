@@ -9,11 +9,27 @@ using Lucky.Home.Core;
 
 namespace Lucky.Home.Protocol
 {
-    internal class TcpConnection : IDisposable
+    public interface IConnectionReader
+    {
+        T Read<T>() where T : class;
+    }
+
+    public interface IConnectionWriter
+    {
+        void Write<T>(T data) where T : class;
+    }
+
+    internal class TcpConnection : IDisposable, IConnectionReader, IConnectionWriter
     {
         private static readonly Dictionary<IPEndPoint, Client> s_instances = new Dictionary<IPEndPoint, Client>();
         private Client _client;
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(4);
+
+        private class CloseMessage
+        {
+            [SerializeAsFixedString(4)]
+            public string Cmd = "CLOS";
+        }
 
         private class Client
         {
@@ -21,7 +37,7 @@ namespace Lucky.Home.Protocol
             private TcpClient _tcpClient;
             public readonly Stream Stream;
             public readonly BinaryReader Reader;
-            private readonly object _lock = new object();
+            private readonly Semaphore _semaphore = new Semaphore(1, 1);
             private CancellationTokenSource _cancellationToken;
 
             public Client(IPEndPoint endPoint)
@@ -35,36 +51,74 @@ namespace Lucky.Home.Protocol
                 Reader = new BinaryReader(Stream);
             }
 
-            public void Dispose()
+            public void Dispose(bool destroying)
             {
-                if (_tcpClient != null)
+                lock (this)
                 {
-                    Stream.Flush();
-                    Reader.Close();
-                    //_tcpClient.Close();
-                    _tcpClient = null;
+                    if (_tcpClient != null)
+                    {
+                        if (!destroying)
+                        {
+                            Write(new CloseMessage());
+                        }
+
+                        Stream.Flush();
+                        Reader.Close();
+                        //_tcpClient.Close();
+                        _tcpClient = null;
+                    }
                 }
             }
 
             public void Acquire()
             {
-                _cancellationToken.Cancel();
-                Monitor.Enter(_lock);
+                lock (this)
+                {
+                    if (_cancellationToken != null)
+                    {
+                        _cancellationToken.Cancel();
+                    }
+                    _semaphore.WaitOne();
+                }
             }
 
             public void Release()
             {
-                Monitor.Exit(_lock);
-                // Start timeout auto-disposal timer
-                _cancellationToken = new CancellationTokenSource();
-                Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
+                lock (this)
                 {
-                    lock (s_instances)
+                    _cancellationToken = new CancellationTokenSource();
+                    _semaphore.Release();
+                    // Start timeout auto-disposal timer
+                    Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
                     {
-                        Dispose();
-                        s_instances.Remove(_endPoint);
-                    }
-                }, _cancellationToken.Token).Start();
+                        lock (s_instances)
+                        {
+                            Dispose(false);
+                            s_instances.Remove(_endPoint);
+                        }
+                    }, _cancellationToken.Token);
+                }
+            }
+
+            public void Write<T>(T data) where T : class
+            {
+                byte[] raw = data as byte[];
+                if (raw != null)
+                {
+                    Stream.Write(raw, 0, raw.Length);
+                }
+                else
+                {
+                    MemoryStream stream = new MemoryStream();
+                    var writer = new BinaryWriter(stream);
+                    NetSerializer<T>.Write(data, writer);
+                    writer.Flush();
+                    int l = (int)stream.Position;
+                    stream.Position = 0;
+
+                    Stream.Write(stream.GetBuffer(), 0, l);
+                }
+                Stream.Flush();
             }
         }
 
@@ -78,25 +132,14 @@ namespace Lucky.Home.Protocol
                     _client = new Client(endPoint);
                     s_instances[endPoint] = _client;
                 }
-                else
-                {
-                    // Locking
-                    _client.Acquire();
-                }
+                // Locking
+                _client.Acquire();
             }
         }
 
         public void Write<T>(T data) where T : class
         {
-            MemoryStream stream = new MemoryStream();
-            var writer = new BinaryWriter(stream);
-            NetSerializer<T>.Write(data, writer);
-            writer.Flush();
-            int l = (int) stream.Position;
-            stream.Position = 0;
-
-            _client.Stream.Write(stream.GetBuffer(), 0, l);
-            _client.Stream.Flush();
+            _client.Write(data);
         }
 
         public T Read<T>() where T : class
@@ -113,6 +156,21 @@ namespace Lucky.Home.Protocol
             {
                 _client.Release();
                 _client = null;
+            }
+        }
+
+        public static void Close(IPAddress address, ushort port)
+        {
+            IPEndPoint endPoint = new IPEndPoint(address, port);
+            lock (s_instances)
+            {
+                Client client;
+                if (s_instances.TryGetValue(endPoint, out client))
+                {
+                    // Destroy the channel
+                    client.Dispose(true);
+                    s_instances.Remove(endPoint);
+                }
             }
         }
     }

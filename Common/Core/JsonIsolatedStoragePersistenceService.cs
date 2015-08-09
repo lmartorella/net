@@ -25,7 +25,19 @@ namespace Lucky.Home.Core
             if (file.Exists)
             {
                 DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
-                return (T)serializer.ReadObject(file.OpenRead());
+                Stream stream = null;
+                try
+                {
+                    stream = file.OpenRead();
+                    return (T) serializer.ReadObject(stream);
+                }
+                catch
+                {
+                    // Broken file.
+                    if (stream != null) stream.Dispose();
+                    file.Delete();
+                    return new T();
+                }
             }
             else
             {

@@ -32,25 +32,25 @@ namespace Lucky.Home.Core
             }
         }
         
-        protected byte[] ReadBytes()
+        protected bool Read(Action<IConnectionReader> readHandler)
         {
             var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
             {
-                return node.ReadFromSink(_index);
+                return node.ReadFromSink(_index, readHandler);
             }
             else
             {
-                return null;
+                return false;
             }
         }
 
-        protected bool WriteBytes(byte[] data)
+        protected bool Write(Action<IConnectionWriter> writeHandler)
         {
             var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
             {
-                return node.WriteToSink(data, _index);
+                return node.WriteToSink(_index, writeHandler);
             }
             else
             {
