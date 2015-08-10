@@ -3,8 +3,8 @@
 #include "hardware/cm1602.h"
 #include <string.h>
 
-// The pointer is pointing to ROM space, otherwise after the RESET
-// the volatile content can be lost.
+// The pointer is pointing to RAM space that will not be reset
+// otherwise after the RESET the variable content can be lost.
 static persistent char s_lastErr[8];
 
 static void _clr(BYTE addr)
@@ -58,8 +58,7 @@ void fatal(const char* str)
     RESET();
 }
 
-const char* getLastFatal()
+char* sys_getLastFatal()
 {
     return s_lastErr;
 }
-

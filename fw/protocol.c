@@ -13,10 +13,6 @@
 
 static BOOL s_registered = FALSE;
 
-const Sink* AllSinks[] = { &g_displaySink };
-#define AllSinksSize 1
-
-
 /*
 	HOME request
 */

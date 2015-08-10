@@ -5,8 +5,18 @@
 #include <p18f87j60.h>
 #include "utilities.h"
 
+// PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
+// PORTB: 0/7, interrupt on change. RB6/7 used by ICSP. RB0/5 used by Mp3
+// PORTC: 0/7, RC3/4 used by I2C. 1/2 and 6/7 used by EXTRAM I2C. Used by REED modules.
+// PORTD: 0/2
+// PORTE: 0/5: Used by CM1602 module (0 and 2/7)
+// PORTF: 0/7: digital and analog. Used by REED modules.
+// PORTG: 4
+
+
 // ******* 
 // DISPLAY
+// Uses PORTE, 0, 2-7
 // ******* 
 #define HAS_CM1602
 #define CM1602_PORT 		PORTE
@@ -23,7 +33,7 @@
 #define CM1602_FONT_HEIGHT 	7
 
 // ******* 
-// MEMORY
+// MEMORY, uses PORTC 1, 2 6 and 7 + I2C
 // ******* 
 #define MEM_PORT	 PORTC
 #define MEM_PORTBITS PORTCbits
@@ -35,7 +45,7 @@
 #define MEM_BANK_CS_MASK 0b11000110
 
 // ******* 
-// MP3
+// MP3, uses PORTB 0/5
 // ******* 
 #undef HAS_VS1011
 #define VS1011_PORT  	PORTB
@@ -70,6 +80,24 @@
 #undef HAS_SPI_RAM
 
 // ******
-// IP
+// IP: uses PORTA0,1 (leds)
 // ******
 #define HAS_IP
+
+// ******
+// REED: uses PORTC and PORTF full
+// ******
+#define HAS_REED
+
+
+
+
+
+
+#ifdef HAS_REED
+#ifdef HAS_SPI
+#error Cannot use SPI and REED togheter
+#elif HAS_SPI_RAM
+#error Cannot use SPI RAM and REED togheter
+#endif
+#endif

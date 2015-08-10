@@ -1,5 +1,9 @@
+
+
 #ifndef _APPIO_INCLUDE_
 #define _APPIO_INCLUDE_
+
+#include "ver.h"
 
 // Clear the upper row (status)
 void clearlnUp();
@@ -15,6 +19,11 @@ void printch(char ch);
 // Reset the device with fatal error
 void fatal(const char* msg);
 // Retrieve last fatal error
-const char* getLastFatal(void);
+char* sys_getLastFatal(void);
+
+// Get last reset reason as 3 char code
+void sys_storeResetReason();
+const char* sys_getResetReasonStr();
+BOOL sys_isResetReasonExc();
 
 #endif

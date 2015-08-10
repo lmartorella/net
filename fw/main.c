@@ -11,74 +11,7 @@
 #include "audioSink.h"
 #include <stdio.h>
 
-// The smallest type capable of representing all values in the enumeration type.
-enum RESET_REASON
-{
-	RESET_POWER = 0,  // Power-on reset
-	RESET_BROWNOUT,
-	RESET_CONFIGMISMATCH,
-	RESET_WATCHDOG,
-	RESET_STACKFAIL,
-	RESET_MCLR,
-	RESET_EXC
-};
-static enum RESET_REASON _reason;
-
 static const char* msg1 = "Hi world! ";
-static const char* g_reasonMsgs[] = { 
-				"POR",
-				"BOR",
-				"CFG",
-				"WDT",
-				"STK",
-				"RST",
-				"EXC:"  };
-
-// Check RCON and STKPTR register for anormal reset cause
-static void storeResetReason(void)
-{
-	if (!RCONbits.NOT_RI)
-	{
-		// Software exception. 
-		// Obtain last reason from appio.h 
-		_reason = RESET_EXC;
-	}
-	else if (!RCONbits.NOT_POR)
-	{
-		// Normal Power-on startup. Ok.
-		_reason = RESET_POWER;
-	}
-	else if (!RCONbits.NOT_BOR)
-	{
-		// Brown-out reset. Low voltage.
-		_reason = RESET_BROWNOUT;
-	}
-/*
-	else if (!RCONbits.NOT_CM)
-	{
-		// Configuration mismatch reset. EEPROM fail.
-		_reason = RESET_CONFIGMISMATCH;
-	}
-*/
-	else if (!RCONbits.NOT_TO)
-	{
-		// Watchdog reset. Loop detected.
-		_reason = RESET_WATCHDOG;
-	}
-	else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
-	{
-		// Stack underrun/overrun reset. 
-		_reason = RESET_STACKFAIL;
-	}
-	else
-	{
-		// Else it was reset manually (MCLR)
-		_reason = RESET_MCLR;
-	}
-	RCON = RCON | 0x33;	// reset all flags
-	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
-}
-
 
 static void enableInterrupts(void)
 {
@@ -90,8 +23,10 @@ static void enableInterrupts(void)
 
 void main()
 {
+    const char* errMsg;
+    
     // Analyze RESET reason
-    storeResetReason();
+    sys_storeResetReason();
 
     // reset display
     cm1602_reset();
@@ -101,11 +36,12 @@ void main()
 
     cm1602_setDdramAddr(0);
     cm1602_writeStr(msg1);
-    cm1602_writeStr(g_reasonMsgs[_reason]);
-    if (_reason == RESET_EXC)
+    errMsg = sys_getResetReasonStr();
+    cm1602_writeStr(errMsg);
+    if (sys_isResetReasonExc())
     {
         cm1602_setDdramAddr(0x40);
-        cm1602_writeStr(getLastFatal());
+        cm1602_writeStr(sys_getLastFatal());
     }
 
     wait1s();

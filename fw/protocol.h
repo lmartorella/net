@@ -27,5 +27,8 @@ typedef struct SinkStruct
 	Sink_WriteHandler writeHandler;
 } Sink;
 
+extern const Sink* AllSinks[];
+extern int AllSinksSize;
+
 #endif //#ifdef HAS_IP
 
