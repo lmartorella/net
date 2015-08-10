@@ -30,6 +30,8 @@ __PACK typedef struct
 
 static void sendHelo(void);
 static void pollControlPort(void);
+#define NO_SINK 0xffff;
+static WORD s_inReadSink = NO_SINK;
 
 static void CLOS_command()
 {
@@ -66,7 +68,7 @@ static void SINK_command()
     while (i > 0)
     {
         i--;
-        Sink* sink = AllSinks[i]; 
+        const Sink* sink = AllSinks[i]; 
         memcpy(&fourcc, &sink->fourCc, sizeof(FOURCC));
         
         // Put device ID
@@ -90,33 +92,36 @@ static void GUID_command()
     boot_updateUserData(&persistence);
 }
 
-static BYTE buf[SINK_BUFFER_SIZE];
-
 static void READ_command()
 {
-    WORD sink, length;
-
+    WORD sink;
     if (!ip_control_readW(&sink))
     {
         fatal("READ.undr");
     }
+
     // Address sink
-    length = AllSinks[sink]->writeHandler(buf);
-    ip_control_writeW(length);
-    ip_control_write(buf, length);
+    AllSinks[sink]->writeHandler();
+    ip_control_flush();
+}
+
+static void readSink()
+{
+    if (!AllSinks[s_inReadSink]->readHandler())
+    {
+        s_inReadSink = NO_SINK;
+    }
 }
 
 static void WRIT_command()
 {
     // Get sink# and msg size
-    WORD sink, length;
-
-    if (!ip_control_readW(&sink) || !ip_control_readW(&length) || !ip_control_read(buf, length))
+    if (!ip_control_readW(&s_inReadSink))
     {
         fatal("WRIT.undr");
     }
     // Address sink
-    AllSinks[sink]->readHandler(buf, length);
+    readSink();
 }
 
 // TODO: Limitation: both the command and its data should be in the read buffer
@@ -177,7 +182,11 @@ void prot_poll()
 	}
 
     s = ip_control_getDataSize();
-	if (s >= 4) // Minimum msg size
+	if (s_inReadSink) 
+    {
+        readSink();
+    } 
+    else if (s >= 4) // Minimum msg size
 	{
 		// This can even peek only one command.
 		// Until not closed by server, or CLOS command sent, the channel can stay open.

@@ -90,4 +90,3 @@ void spi_shift_repeat_8(BYTE data, BYTE size)
 void spi_init(enum SPI_INIT value)
 { }
 #endif //#ifdef HAS_SPI
-

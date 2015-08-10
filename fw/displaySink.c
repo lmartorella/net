@@ -4,35 +4,47 @@
 #include "hardware/cm1602.h"
 #include <string.h>
 #include "TCPIPStack/TCPIP.h"
+#include "hardware/ip.h"
 
 #ifdef HAS_CM1602
 
-static void readHandler(void* data, WORD length);
-static WORD writeHandler(void* data);
+static BOOL readHandler();
+static void writeHandler();
 
 const Sink g_displaySink = { { "LINE" },
                              &readHandler,
                              &writeHandler
 };
 
-static void readHandler(void* data, WORD length)
+static BOOL readHandler()
 {
+    // Only single packet messages are supported
+    WORD length, p = 0;
+    BYTE buf[16];
+    ip_control_readW(&length);
     if (length > 15)
     {
+        p = length - 15;
         length = 15;
     }
-    ((BYTE*)data)[length] = '\0';
+    ip_control_read(buf, length);
+    while (p > 0)
+    {
+        ip_control_read(buf + 15, 1);
+        p--;
+    }
+    buf[length] = '\0';
     // Write it
-    printlnUp(data);
+    printlnUp(buf);
+    return FALSE;
 }
 
-static WORD writeHandler(void* data)
+static void writeHandler()
 {
     // Num of lines
-    ((WORD*)data)[0] = 1;
+    ip_control_writeW(1);
     // Num of columns
-    ((WORD*)data)[1] = 15;
-    return sizeof(WORD) * 2;
+    ip_control_writeW(15);
 }
 
 #endif

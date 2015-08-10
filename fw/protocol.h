@@ -10,12 +10,11 @@
 void prot_poll(void);
 void prot_slowTimer(void);
 
-// Process read data
-typedef void (*Sink_ReadHandler)(void* data, WORD length);
-// Send data?
-typedef WORD (*Sink_WriteHandler)(void* data);
-
-#define SINK_BUFFER_SIZE 32
+// Process WRIT message: read data for sink
+// Return TRUE to continue to read, FALSE if read process finished
+typedef BOOL (*Sink_ReadHandler)();
+// Process READ message: write data from sink in one go
+typedef void (*Sink_WriteHandler)();
 
 // Class virtual pointers
 typedef struct SinkStruct
