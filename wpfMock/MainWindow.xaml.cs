@@ -12,6 +12,7 @@ namespace Lucky.HomeMock
     {
         private HeloSender _heloSender;
         private DisplaySink _displaySink;
+        private SystemSink _systemSink;
 
         public MainWindow()
         {
@@ -43,6 +44,7 @@ namespace Lucky.HomeMock
         private void EnterInitState()
         {
             _displaySink = new DisplaySink();
+            _systemSink = new SystemSink();
             _displaySink.Data += (sender, args) =>
             {
                 Dispatcher.Invoke(() =>
@@ -52,7 +54,7 @@ namespace Lucky.HomeMock
             };
 
             var controlPort = Manager.GetService<ControlPortListener>();
-            controlPort.InitSinks(new SinkBase[] { _displaySink });
+            controlPort.InitSinks(new SinkBase[] { _displaySink, _systemSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);

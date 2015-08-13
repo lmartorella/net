@@ -82,10 +82,13 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
-    <Compile Include="Sinks\AudioPlayerSink.cs" />
+    <Compile Include="Sinks\Fourcc.cs" />
+    <Compile Include="Sinks\ISystemSink.cs" />
+    <Compile Include="Sinks\NodeStatus.cs" />
+    <Compile Include="Sinks\Old\AudioPlayerSink.cs" />
     <Compile Include="Sinks\IDisplaySink.cs" />
-    <Compile Include="Sinks\NullSink.cs" />
-    <Compile Include="Sinks\RomFlasherSink.cs" />
+    <Compile Include="Sinks\Old\RomFlasherSink.cs" />
+    <Compile Include="Sinks\SystemSink.cs" />
     <Compile Include="Speech\TextToSpeechService.cs" />
   </ItemGroup>
   <ItemGroup>

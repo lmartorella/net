@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Lucky.Home.Protocol;
 
 namespace Lucky.Home.Core
@@ -32,7 +33,7 @@ namespace Lucky.Home.Core
             }
         }
         
-        protected bool Read(Action<IConnectionReader> readHandler)
+        protected Task<bool> Read(Action<IConnectionReader> readHandler)
         {
             var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
@@ -41,11 +42,11 @@ namespace Lucky.Home.Core
             }
             else
             {
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-        protected bool Write(Action<IConnectionWriter> writeHandler)
+        protected Task<bool> Write(Action<IConnectionWriter> writeHandler)
         {
             var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
@@ -54,7 +55,7 @@ namespace Lucky.Home.Core
             }
             else
             {
-                return false;
+                return Task.FromResult(false);
             }
         }
     }

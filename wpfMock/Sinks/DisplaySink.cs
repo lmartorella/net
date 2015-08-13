@@ -1,22 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Lucky.HomeMock.Core;
 
 namespace Lucky.HomeMock.Sinks
 {
-    abstract class SinkBase
+    internal class SystemSink : SinkBase
     {
-        public readonly string FourCc;
+        public SystemSink()
+            : base("SYS ")
+        { }
 
-        protected SinkBase(string fourCc)
+        public override void Read(BinaryReader reader)
         {
-            FourCc = fourCc;
+            throw new NotImplementedException();
         }
 
-        public abstract void Read(BinaryReader reader);
-        public abstract void Write(BinaryWriter writer);
+        public override void Write(BinaryWriter writer)
+        {
+            WriteFourcc(writer, "REST");
+            writer.Write((ushort)1);    // Brown-out reset
+            WriteFourcc(writer, "EOMD");
+        }
     }
 
     class DisplaySink : SinkBase

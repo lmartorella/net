@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Reflection;
+// ReSharper disable StaticMemberInGenericType
 
 namespace Lucky.Home.Core
 {
@@ -13,41 +14,16 @@ namespace Lucky.Home.Core
         object Deserialize(BinaryReader reader);
     }
 
-    interface IPartialSerializer
-    {
-        object Deserialize(object firstPart, int fields, BinaryReader reader);
-    }
-
     /// <summary>
     /// Class to serialize/deserialize a complex type
     /// </summary>
-    class NetSerializer<T> : INetSerializer, IPartialSerializer where T: class
+    class NetSerializer<T> : INetSerializer
     {
-        private static readonly Tuple<FieldInfo, INetSerializer>[] s_fields;
-        private static readonly FieldInfo s_selector;
         private static readonly INetSerializer s_directSerializer;
 
         static NetSerializer()
         {
-            if (typeof(T).IsClass && !typeof(T).IsArray)
-            {
-                s_fields = typeof (T)
-                    .GetFields(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderBy(fi => fi.MetadataToken) // undocumented, to have the source definition order
-                    .Select(fi => new Tuple<FieldInfo, INetSerializer>(fi, BuildFieldItem(fi, fi.FieldType))).ToArray();
-                var selectors = s_fields.Select(t => t.Item1)
-                    .Where(fi => fi.DeclaringType == typeof (T))
-                    .Where(fi => fi.GetCustomAttributes(typeof (SelectorAttribute), false).Length > 0);
-                if (selectors.Count() > 1)
-                {
-                    throw new NotSupportedException("Too many selectors on type " + typeof (T));
-                }
-                s_selector = selectors.FirstOrDefault();
-            }
-            else
-            {
-                s_directSerializer = BuildFieldItem(null, typeof(T));
-            }
+            s_directSerializer = BuildFieldItem(null, typeof(T));
         }
 
         private static INetSerializer BuildFieldItem(ICustomAttributeProvider fieldInfo, Type fieldType)
@@ -117,10 +93,82 @@ namespace Lucky.Home.Core
             else if (fieldType.IsClass)
             {
                 // Build nested class
-                Type serType = typeof(NetSerializer<>).MakeGenericType(fieldType);
+                Type serType = typeof(ClassConverter);
                 return (INetSerializer)Activator.CreateInstance(serType);
             }
             throw new NotSupportedException("Type not supported: " + fieldType);
+        }
+
+        private class ClassConverter : INetSerializer
+        {
+            private readonly Tuple<FieldInfo, INetSerializer>[] _fields;
+            //private readonly FieldInfo _selector;
+
+            public ClassConverter()
+            {
+                _fields = typeof(T)
+                    .GetFields(BindingFlags.Public | BindingFlags.Instance)
+                    .OrderBy(fi => fi.MetadataToken) // undocumented, to have the source definition order
+                    .Select(fi => new Tuple<FieldInfo, INetSerializer>(fi, BuildFieldItem(fi, fi.FieldType))).ToArray();
+                //var selectors = _fields.Select(t => t.Item1)
+                //    .Where(fi => fi.DeclaringType == typeof(T))
+                //    .Where(fi => fi.GetCustomAttributes(typeof(SelectorAttribute), false).Length > 0)
+                //    .ToArray();
+                //if (selectors.Count() > 1)
+                //{
+                //    throw new NotSupportedException("Too many selectors on type " + typeof(T));
+                //}
+                //_selector = selectors.FirstOrDefault();
+            }
+
+            public void Serialize(object source, BinaryWriter writer)
+            {
+                foreach (var tuple in _fields)
+                {
+                    FieldInfo fi = tuple.Item1;
+                    INetSerializer ser = tuple.Item2;
+                    object fieldValue = fi.GetValue(source);
+                    ser.Serialize(fieldValue, writer);
+                }
+            }
+
+            public object Deserialize(BinaryReader reader)
+            {
+                T retValue = Activator.CreateInstance<T>();
+                foreach (var tuple in _fields)
+                {
+                    FieldInfo fi = tuple.Item1;
+                    INetSerializer ser = tuple.Item2;
+                    fi.SetValue(retValue, ser.Deserialize(reader));
+                }
+                //if (_selector != null)
+                //{
+                //    retValue = ProcessSelector(retValue, reader);
+                //}
+                return retValue;
+            }
+
+            //private T ProcessSelector(T value, BinaryReader reader)
+            //{
+            //    object currValue = _selector.GetValue(value);
+            //    SelectorAttribute[] attrs = (SelectorAttribute[])_selector.GetCustomAttributes(typeof(SelectorAttribute), false);
+            //    foreach (var attr in attrs)
+            //    {
+            //        if (attr.SelectorValue.Equals(currValue))
+            //        {
+            //            Type newType = attr.Type;
+            //            if (newType.BaseType != typeof(T))
+            //            {
+            //                throw new NotSupportedException("Type not directly assignable in selector");
+            //            }
+
+            //            // Create new NetSerializer
+            //            IPartialSerializer deser = (IPartialSerializer)Activator.CreateInstance(typeof(NetSerializer<>).MakeGenericType(newType));
+            //            value = (T)deser.Deserialize(value, _fields.Length, reader);
+            //        }
+            //    }
+            //    return value;
+            //}
         }
 
         private class BitConverterItem<TD> : INetSerializer where TD : struct
@@ -292,84 +340,35 @@ namespace Lucky.Home.Core
 
         public static T Read(BinaryReader reader)
         {
-            T retValue = default(T);
-            if (typeof(T).IsClass)
-            {
-                retValue = Activator.CreateInstance<T>();
-            }
             try
             {
-                Read(ref retValue, reader, 0);
+                return (T)s_directSerializer.Deserialize(reader);
             }
             catch (EndOfStreamException)
             {
-                return null;
-            }
-            return retValue;
-        }
-
-        private static void Read(ref T retValue, BinaryReader reader, int firstField)
-        {
-            if (s_directSerializer != null)
-            {
-                retValue = (T)s_directSerializer.Deserialize(reader);
-            }
-            else
-            {
-                foreach (var tuple in s_fields.Skip(firstField))
-                {
-                    FieldInfo fi = tuple.Item1;
-                    INetSerializer ser = tuple.Item2;
-                    fi.SetValue(retValue, ser.Deserialize(reader));
-                }
-                if (s_selector != null)
-                {
-                    retValue = ProcessSelector(retValue, reader);
-                }
+                return default(T);
             }
         }
 
-        private static T ProcessSelector(T value, BinaryReader reader)
-        {
-            object currValue = s_selector.GetValue(value);
-            SelectorAttribute[] attrs = (SelectorAttribute[])s_selector.GetCustomAttributes(typeof(SelectorAttribute), false);
-            foreach (var attr in attrs)
-            {
-                if (attr.SelectorValue.Equals(currValue))
-                {
-                    Type newType = attr.Type;
-                    if (newType.BaseType != typeof(T))
-                    {
-                        throw new NotSupportedException("Type not directly assignable in selector");
-                    }
+        //object IPartialSerializer.Deserialize(object firstPart, int fields, BinaryReader reader)
+        //{
+        //    // Copy all field values of the base type there
+        //    T newValue = default(T);
+        //    if (typeof(T).IsClass)
+        //    {
+        //        newValue = Activator.CreateInstance<T>();
+        //    }
 
-                    // Create new NetSerializer
-                    IPartialSerializer deser = (IPartialSerializer)Activator.CreateInstance(typeof(NetSerializer<>).MakeGenericType(newType));
-                    value = (T)deser.Deserialize(value, s_fields.Length, reader);
-                }
-            }
-            return value;
-        }
+        //    foreach (var fieldInfo in s_fields.Take(fields).Select(t => t.Item1))
+        //    {
+        //        object v = fieldInfo.GetValue(firstPart);
+        //        fieldInfo.SetValue(newValue, v);
+        //    }
 
-        object IPartialSerializer.Deserialize(object firstPart, int fields, BinaryReader reader)
-        {
-            // Copy all field values of the base type there
-            T newValue = default(T);
-            if (typeof(T).IsClass)
-            {
-                newValue = Activator.CreateInstance<T>();
-            }
-
-            foreach (var fieldInfo in s_fields.Take(fields).Select(t => t.Item1))
-            {
-                object v = fieldInfo.GetValue(firstPart);
-                fieldInfo.SetValue(newValue, v);
-            }
-
-            // Now go on with deserialization
-            Read(ref newValue, reader, fields);
-            return newValue;
-        }
+        //    // Now go on with deserialization
+        //    Read(ref newValue, reader, fields);
+        //    return newValue;
+        //}
 
         object INetSerializer.Deserialize(BinaryReader reader)
         {
@@ -386,20 +385,7 @@ namespace Lucky.Home.Core
 
         void INetSerializer.Serialize(object source, BinaryWriter writer)
         {
-            if (s_directSerializer != null)
-            {
-                s_directSerializer.Serialize(source, writer);
-            }
-            else
-            {
-                foreach (var tuple in s_fields)
-                {
-                    FieldInfo fi = tuple.Item1;
-                    INetSerializer ser = tuple.Item2;
-                    object fieldValue = fi.GetValue(source);
-                    ser.Serialize(fieldValue, writer);
-                }
-            }
+            s_directSerializer.Serialize(source, writer);
         }
     }
 }

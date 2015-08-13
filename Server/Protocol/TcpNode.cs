@@ -184,12 +184,12 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private bool OpenNodeSession(Action<TcpConnection, TcpNodeAddress> handler)
+        private Task<bool> OpenNodeSession(Action<TcpConnection, TcpNodeAddress> handler)
         {
             if (_isZombie)
             {
                 // Avoid thrashing the network
-                return false;
+                return Task.FromResult(false);
             }
 
             // Init a METADATA fetch connection
@@ -216,58 +216,55 @@ namespace Lucky.Home.Protocol
                 Logger.Exception(exc);
                 // Mark the node as a zombie
                 _isZombie = true;
-                return false;
+                return Task.FromResult(false);
             }
-            return true;
+            return Task.FromResult(true);
         }
 
         private async Task<bool> TryFetchMetadata()
         {
-            return await Task.Run(() =>
+            // Init a METADATA fetch connection
+            string[] sinks = null;
+            if (!await OpenNodeSession((connection, address) =>
             {
-                // Init a METADATA fetch connection
-                string[] sinks = null;
-                if (!OpenNodeSession((connection, address) =>
+                if (!address.IsSubNode)
                 {
-                    if (!address.IsSubNode)
-                    {
-                        // Ask for subnodes
-                        connection.Write(new GetChildrenMessage());
-                        var childNodes = connection.Read<GetChildrenMessageResponse>();
+                    // Ask for subnodes
+                    connection.Write(new GetChildrenMessage());
+                    var childNodes = connection.Read<GetChildrenMessageResponse>();
 
-                        for (int index = 0; index < childNodes.Guids.Length; index++)
+                    for (int index = 0; index < childNodes.Guids.Length; index++)
+                    {
+                        var childGuid = childNodes.Guids[index];
+                        if (index == 0)
                         {
-                            var childGuid = childNodes.Guids[index];
-                            if (index == 0)
+                            // Mine
+                            if (childGuid != Id)
                             {
-                                // Mine
-                                if (childGuid != Id)
-                                {
-                                    // ERROR
-                                    Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
-                                }
-                            }
-                            else
-                            {
-                                // Register a subnode
-                                Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                                // ERROR
+                                Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
                             }
                         }
+                        else
+                        {
+                            // Register a subnode
+                            Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                        }
                     }
-
-                    // Then ask for sinks
-                    connection.Write(new GetSinksMessage());
-                    sinks = connection.Read<GetSinksMessageResponse>().Sinks;
-                }))
-                {
-                    return false;
                 }
 
-                // Now register sinks
-                RegisterSinks(sinks);
+                // Then ask for sinks
+                connection.Write(new GetSinksMessage());
+                sinks = connection.Read<GetSinksMessageResponse>().Sinks;
+            }))
+            {
+                return false;
+            }
 
-                return true;
-            });
+            // Now register sinks
+            RegisterSinks(sinks);
+
+            return true;
         }
 
         private void RegisterSinks(string[] sinks)
@@ -321,7 +318,7 @@ namespace Lucky.Home.Protocol
             });
         }
 
-        public bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
+        public Task<bool> WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
         {
             return OpenNodeSession((connection, address) =>
             {
@@ -333,7 +330,7 @@ namespace Lucky.Home.Protocol
             });
         }
 
-        public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
+        public Task<bool> ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
         {
             return OpenNodeSession((connection, address) =>
             {

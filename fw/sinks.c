@@ -32,7 +32,7 @@ static BOOL sysSink_read()
 // The smallest type capable of representing all values in the enumeration type.
 enum RESET_REASON
 {
-	RESET_POWER = 0,  // Power-on reset
+	RESET_POWER = 1,  // Power-on reset
 	RESET_BROWNOUT,
 	RESET_CONFIGMISMATCH,
 	RESET_WATCHDOG,
@@ -54,7 +54,7 @@ static const char* g_reasonMsgs[] = {
 #endif
 
 const FOURCC ResetCode = "REST";
-const FOURCC ExceptionText = "EXCT";
+const FOURCC ExceptionText = "EXCM";
 const FOURCC EndOfMetadataText = "EOMD";
 
 // Check RCON and STKPTR register for anormal reset cause

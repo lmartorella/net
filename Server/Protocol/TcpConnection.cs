@@ -11,12 +11,12 @@ namespace Lucky.Home.Protocol
 {
     public interface IConnectionReader
     {
-        T Read<T>() where T : class;
+        T Read<T>();
     }
 
     public interface IConnectionWriter
     {
-        void Write<T>(T data) where T : class;
+        void Write<T>(T data);
     }
 
     internal class TcpConnection : IDisposable, IConnectionReader, IConnectionWriter
@@ -100,7 +100,7 @@ namespace Lucky.Home.Protocol
                 }
             }
 
-            public void Write<T>(T data) where T : class
+            public void Write<T>(T data)
             {
                 byte[] raw = data as byte[];
                 if (raw != null)
@@ -120,6 +120,11 @@ namespace Lucky.Home.Protocol
                 }
                 Stream.Flush();
             }
+
+            public T Read<T>()
+            {
+                return NetSerializer<T>.Read(Reader);
+            }
         }
 
         public TcpConnection(IPAddress address, ushort port)
@@ -137,14 +142,14 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public void Write<T>(T data) where T : class
+        public void Write<T>(T data)
         {
             _client.Write(data);
         }
 
-        public T Read<T>() where T : class
+        public T Read<T>()
         {
-            return NetSerializer<T>.Read(_client.Reader);
+            return _client.Read<T>();
         }
 
         /// <summary>
