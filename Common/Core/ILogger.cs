@@ -10,6 +10,7 @@ namespace Lucky.Home.Core
     public static class LoggerExtensions
     {
         private const string WARN = "WARN";
+        private const string ERROR = "ERR ";
         private const string INFO = "info";
         private const string EXC = "EXC ";
 
@@ -41,6 +42,21 @@ namespace Lucky.Home.Core
         public static void Warning(this ILogger logger, string message, string param1, object value1, string param2, object value2)
         {
             logger.LogFormat(WARN, "{0} [{1}]: {2} [{3}]: {4}", message, param1, value1, param2, value2);
+        }
+
+        public static void Error(this ILogger logger, string message, string param1, object value1, string param2, object value2)
+        {
+            logger.LogFormat(ERROR, "{0} [{1}]: {2} [{3}]: {4}", message, param1, value1, param2, value2);
+        }
+
+        public static void Error(this ILogger logger, string message)
+        {
+            logger.LogFormat(ERROR, message);
+        }
+
+        public static void Error(this ILogger logger, string message, string param1, object value1)
+        {
+            logger.LogFormat(ERROR, "{0} [{1}]: {2}", message, param1, value1);
         }
 
         public static void Exception(this ILogger logger, Exception exc)

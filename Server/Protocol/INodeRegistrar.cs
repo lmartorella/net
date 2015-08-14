@@ -8,5 +8,6 @@ namespace Lucky.Home.Protocol
         void RegisterNode(Guid guid, TcpNodeAddress address);
         void HeartbeatNode(Guid guid, TcpNodeAddress address);
         void RefetchSubNodes(Guid guid, TcpNodeAddress address);
+        ITcpNode FindNode(Guid guid);
     }
 }

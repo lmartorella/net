@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
+using Lucky.Home.Sinks;
 
 #pragma warning disable 414
 #pragma warning disable 649
@@ -20,6 +21,8 @@ namespace Lucky.Home.Protocol
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
         public Guid Id { get; private set; }
+
+        public bool ShouldBeRenamed { get; private set; }
 
         private TcpNodeAddress _address;
 
@@ -39,8 +42,9 @@ namespace Lucky.Home.Protocol
         private readonly List<Sink> _sinks = new List<Sink>();
 
         private TcpNodeAddress _address1;
+        private NodeStatus _nodeStatus;
 
-        internal TcpNode(Guid guid, TcpNodeAddress address)
+        internal TcpNode(Guid guid, TcpNodeAddress address, bool shouldBeRenamed = false)
         {
             if (guid == Guid.Empty)
             {
@@ -48,6 +52,7 @@ namespace Lucky.Home.Protocol
             }
 
             Id = guid;
+            ShouldBeRenamed = shouldBeRenamed;
             _address = address;
             _logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
         }
@@ -86,7 +91,6 @@ namespace Lucky.Home.Protocol
                 _address = address;
             }
             _isZombie = false;
-            await FetchMetadata();
         }
 
         /// <summary>
@@ -267,9 +271,11 @@ namespace Lucky.Home.Protocol
             return true;
         }
 
-        private void RegisterSinks(string[] sinks)
+        private async void RegisterSinks(string[] sinks)
         {
             var sinkManager = Manager.GetService<SinkManager>();
+
+            List<ISink> newSinks = new List<ISink>();
 
             // Identity of sink is due to its position in the sink array.
             // Null sink are valid, it means no sink at that position. Useful for dynamic add/remove of sinks.
@@ -303,7 +309,26 @@ namespace Lucky.Home.Protocol
                         oldSink.Dispose();
                     }
                     _sinks[i] = sinkManager.CreateSink(sinks[i], Id, i);
+                    newSinks.Add(_sinks[i]);
                 }
+            }
+
+            // If system sink fetch node status
+            var systemSink = newSinks.OfType<ISystemSink>().FirstOrDefault();
+            if (systemSink != null)
+            {
+                try
+                {
+                    _nodeStatus = await systemSink.GetBootStatus();
+                }
+                catch (Exception exc)
+                {
+                    Logger.Exception(exc);
+                }
+            }
+            else
+            {
+                Logger.Warning("No system sink", "node", Id);
             }
         }
 
@@ -315,10 +340,11 @@ namespace Lucky.Home.Protocol
                 {
                     connection.Write(new NewGuidMessage(Id));
                 });
+                ShouldBeRenamed = false;
             });
         }
 
-        public Task<bool> WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
+        public Task WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
         {
             return OpenNodeSession((connection, address) =>
             {
@@ -330,7 +356,7 @@ namespace Lucky.Home.Protocol
             });
         }
 
-        public Task<bool> ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
+        public Task ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
         {
             return OpenNodeSession((connection, address) =>
             {

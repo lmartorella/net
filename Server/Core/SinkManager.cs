@@ -49,8 +49,10 @@ namespace Lucky.Home.Core
 
             lock (_sinks)
             {
+                // Communicate new sink to API
                 _sinks.Add(sink);
             }
+
             return sink;
         }
     }

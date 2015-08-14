@@ -18,7 +18,7 @@ namespace Lucky.Home.Sinks
                     switch (code)
                     {
                         case "REST":
-                            status.ResetReason = (ResetReason)reader.Read<ushort>();
+                            status.ResetReason = (ResetReason) reader.Read<ushort>();
                             break;
                         case "EXCM":
                             status.ExceptionMessage = reader.Read<string>();

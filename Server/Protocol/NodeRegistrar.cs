@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Lucky.Home.Core;
 
 namespace Lucky.Home.Protocol
@@ -10,28 +8,38 @@ namespace Lucky.Home.Protocol
     // ReSharper disable once ClassNeverInstantiated.Global
     class NodeRegistrar : ServiceBase, INodeRegistrar
     {
-        private readonly Dictionary<Guid, ITcpNode> _nodes = new Dictionary<Guid, ITcpNode>();
+        private readonly Dictionary<Guid, TcpNode> _nodes = new Dictionary<Guid, TcpNode>();
         private readonly HashSet<TcpNodeAddress> _addressInRegistration = new HashSet<TcpNodeAddress>();
         private readonly object _nodeLock = new object();
 
         public void RegisterNode(Guid guid, TcpNodeAddress address)
         {
+            TcpNode node;
             if (guid == Guid.Empty)
             {
-                RegisterNewNode(address);
+                node = RegisterNewNode(address);
             }
             else
             {
-                RegisterNamedNode(guid, address);
+                node = RegisterNamedNode(guid, address);
+            }
+
+            if (node != null)
+            {
+                if (node.ShouldBeRenamed)
+                {
+                    node.Rename();
+                }
+                // Start data fetch asynchrously
+                node.FetchMetadata();
             }
         }
 
-        private void RegisterNamedNode(Guid guid, TcpNodeAddress address)
+        private TcpNode RegisterNamedNode(Guid guid, TcpNodeAddress address)
         {
             lock (_nodeLock)
             {
-                ITcpNode node;
-                _nodes.TryGetValue(guid, out node);
+                TcpNode node = FindNode(guid);
                 if (node == null)
                 {
                     // New node!
@@ -42,6 +50,8 @@ namespace Lucky.Home.Protocol
                     // The node was reset
                     node.Relogin(address);
                 }
+
+                return node;
             }
         }
 
@@ -49,12 +59,14 @@ namespace Lucky.Home.Protocol
         {
             lock (_nodeLock)
             {
-                ITcpNode node;
+                TcpNode node;
                 _nodes.TryGetValue(guid, out node);
                 if (node == null)
                 {
                     // The server was reset?
                     _nodes[guid] = LoginNode(guid, address);
+                    // Async task
+                    _nodes[guid].FetchMetadata();
                 }
                 else
                 {
@@ -68,7 +80,7 @@ namespace Lucky.Home.Protocol
         {
             lock (_nodeLock)
             {
-                ITcpNode node;
+                TcpNode node;
                 _nodes.TryGetValue(guid, out node);
                 if (node == null)
                 {
@@ -83,41 +95,34 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private async void RegisterNewNode(TcpNodeAddress address)
+        private TcpNode RegisterNewNode(TcpNodeAddress address)
         {
             lock (_nodeLock)
             {
                 // Ignore consecutive messages
                 if (_addressInRegistration.Contains(address))
                 {
-                    return;
+                    return null;
                 }
                 _addressInRegistration.Add(address);
             }
-            var newNode = await RegisterBlankNode(address);
+            var newNode = RegisterBlankNode(address);
             lock (_nodeLock)
             {
                 _addressInRegistration.Remove(address);
                 _nodes[newNode.Id] = newNode;
             }
+            return newNode;
         }
 
-        private ITcpNode LoginNode(Guid guid, TcpNodeAddress address)
+        private TcpNode LoginNode(Guid guid, TcpNodeAddress address)
         {
-            var node = new TcpNode(guid, address);
-            // Start data fetch asynchrously
-            node.FetchMetadata();
-            return node;
+            return new TcpNode(guid, address);
         }
 
-        private async Task<ITcpNode> RegisterBlankNode(TcpNodeAddress address)
+        private TcpNode RegisterBlankNode(TcpNodeAddress address)
         {
-            var node = new TcpNode(CreateNewGuid(), address);
-            // Give the node the new name
-            await node.Rename();
-            // Start data fetch asynchrously
-            node.FetchMetadata();
-            return node;
+            return new TcpNode(CreateNewGuid(), address, true);
         }
 
         private static Guid CreateNewGuid()
@@ -131,9 +136,16 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
-        public ITcpNode FindNode(Guid guid)
+        private TcpNode FindNode(Guid guid)
         {
-            ITcpNode node;
+            TcpNode node;
+            _nodes.TryGetValue(guid, out node);
+            return node;
+        }
+
+        ITcpNode INodeRegistrar.FindNode(Guid guid)
+        {
+            TcpNode node;
             _nodes.TryGetValue(guid, out node);
             return node;
         }

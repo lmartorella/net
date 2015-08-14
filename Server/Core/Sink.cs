@@ -33,29 +33,29 @@ namespace Lucky.Home.Core
             }
         }
         
-        protected Task<bool> Read(Action<IConnectionReader> readHandler)
+        protected Task Read(Action<IConnectionReader> readHandler)
         {
-            var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
+            var node = Manager.GetService<INodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
             {
                 return node.ReadFromSink(_index, readHandler);
             }
             else
             {
-                return Task.FromResult(false);
+                throw new InvalidOperationException("Node not found/unregistered");
             }
         }
 
-        protected Task<bool> Write(Action<IConnectionWriter> writeHandler)
+        protected Task Write(Action<IConnectionWriter> writeHandler)
         {
-            var node = Manager.GetService<NodeRegistrar>().FindNode(_nodeGuid);
+            var node = Manager.GetService<INodeRegistrar>().FindNode(_nodeGuid);
             if (node != null)
             {
                 return node.WriteToSink(_index, writeHandler);
             }
             else
             {
-                return Task.FromResult(false);
+                throw new InvalidOperationException("Node not found/unregistered");
             }
         }
     }
