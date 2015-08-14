@@ -63,6 +63,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Connection.cs" />
+    <Compile Include="Converters\NodeStatusToTextConverter.cs" />
     <Compile Include="Design\SampleData1.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

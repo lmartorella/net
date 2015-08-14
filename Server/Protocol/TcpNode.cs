@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
-using Lucky.Home.Sinks;
 
 #pragma warning disable 414
 #pragma warning disable 649
@@ -42,7 +41,6 @@ namespace Lucky.Home.Protocol
         private readonly List<Sink> _sinks = new List<Sink>();
 
         private TcpNodeAddress _address1;
-        private NodeStatus _nodeStatus;
 
         internal TcpNode(Guid guid, TcpNodeAddress address, bool shouldBeRenamed = false)
         {
@@ -312,24 +310,6 @@ namespace Lucky.Home.Protocol
                     newSinks.Add(_sinks[i]);
                 }
             }
-
-            // If system sink fetch node status
-            var systemSink = newSinks.OfType<ISystemSink>().FirstOrDefault();
-            if (systemSink != null)
-            {
-                try
-                {
-                    _nodeStatus = await systemSink.GetBootStatus();
-                }
-                catch (Exception exc)
-                {
-                    Logger.Exception(exc);
-                }
-            }
-            else
-            {
-                Logger.Warning("No system sink", "node", Id);
-            }
         }
 
         internal async Task Rename()
@@ -364,6 +344,14 @@ namespace Lucky.Home.Protocol
                 connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
                 readHandler(connection);
             });
+        }
+
+        public T Sink<T>() where T : ISink
+        {
+            lock (_sinks)
+            {
+                return _sinks.OfType<T>().FirstOrDefault();
+            }
         }
     }
 }

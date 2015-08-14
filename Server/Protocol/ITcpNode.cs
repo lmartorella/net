@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Lucky.Home.Core;
 
 namespace Lucky.Home.Protocol
 {
@@ -40,5 +41,10 @@ namespace Lucky.Home.Protocol
         /// </summary>
         /// <returns>True if communication succeded</returns>
         Task ReadFromSink(int sinkId, Action<IConnectionReader> readHandler);
+
+        /// <summary>
+        /// Get the sink with the given type
+        /// </summary>
+        T Sink<T>() where T : ISink;
     }
 }

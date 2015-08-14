@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Lucky.Home.Protocol;
+using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Admin
 {
@@ -13,6 +14,9 @@ namespace Lucky.Home.Admin
         [DataMember]
         public List<Node> Children { get; set; }
 
+        [DataMember]
+        public NodeStatus Status { get; set; }
+
         public Node()
         {
             Children = new List<Node>();
@@ -23,6 +27,7 @@ namespace Lucky.Home.Admin
         {
             TcpNode = tcpNode;
             Id = tcpNode.Id.ToString();
+            Status = tcpNode.Sink<ISystemSink>().Status;
         }
 
         internal ITcpNode TcpNode { get; private set; }

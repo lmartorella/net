@@ -7,7 +7,15 @@ namespace Lucky.Home.Sinks
     [SinkId("SYS ")]
     class SystemSink : Sink, ISystemSink
     {
-        async public Task<NodeStatus> GetBootStatus()
+        public NodeStatus Status { get; private set; }
+
+        protected override async void OnInitialize()
+        {
+            base.OnInitialize();
+            Status = await GetBootStatus();
+        }
+
+        private async Task<NodeStatus> GetBootStatus()
         {
             NodeStatus status = new NodeStatus();
             await Read(reader =>
