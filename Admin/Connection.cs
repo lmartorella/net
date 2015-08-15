@@ -49,23 +49,24 @@ namespace Lucky.Home
             {
                 using (_channel = new MessageChannel(_client.GetStream()))
                 {
-                    Send(new Container { Message = new GetTopologyMessage() });
+                    await Send(new Container {Message = new GetTopologyMessage()});
                     var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
                     Dispatcher.Invoke(() => Nodes = new ObservableCollection<Node>(topology));
                 }
             }
             catch (Exception)
             {
+                Connected = false;
             }
         }
 
-        private void Send<T>(T message)
+        private async Task Send<T>(T message)
         {
             using (var ms = new MemoryStream())
             {
                 new DataContractSerializer(message.GetType()).WriteObject(ms, message);
                 ms.Flush();
-                _channel.WriteMessage(ms.GetBuffer());
+                await _channel.WriteMessage(ms.GetBuffer());
             }
         }
 

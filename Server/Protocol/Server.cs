@@ -77,17 +77,12 @@ namespace Lucky.Home.Protocol
 
         #endregion
 
-        private void HandleServiceSocketAccepted(TcpClient tcpClient)
+        private void HandleServiceSocketAccepted(NetworkStream stream)
         {
-            //IPAddress peerAddress = ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address;
-            using (Stream stream = tcpClient.GetStream())
+            using (new BinaryReader(stream))
             {
-                using (new BinaryReader(stream))
-                {
-                    throw new NotSupportedException("Tcp port not supported yet");
-                }
+                throw new NotSupportedException("Tcp port not supported yet");
             }
-            //tcpClient.Close();
         }
     }
 }

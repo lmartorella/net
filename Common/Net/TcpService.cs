@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Lucky.Home.Core;
 
 namespace Lucky.Home.Net
@@ -26,17 +27,27 @@ namespace Lucky.Home.Net
             } while (true);
         }
 
-        public TcpListener CreateListener(IPAddress address, int startPort, string portName, Action<TcpClient> incomingHandler)
+        public TcpListener CreateListener(IPAddress address, int startPort, string portName, Action<NetworkStream> incomingHandler)
         {
             var listener = TryCreateListener(address, ref startPort);
-            Logger.Log("Opened", "socket", portName, "address", address.ToString() + ":" + startPort);
+            Logger.Log("Opened", "socket", portName, "address", address + ":" + startPort);
 
             listener.Start();
             AsyncCallback handler = null;
             handler = ar =>
             {
                 var tcpClient = listener.EndAcceptTcpClient(ar);
-                incomingHandler(tcpClient);
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        incomingHandler(tcpClient.GetStream());
+                    }
+                    catch (Exception exc)
+                    {
+                        Logger.Exception(exc);
+                    }
+                });
                 listener.BeginAcceptTcpClient(handler, null);
             };
             listener.BeginAcceptTcpClient(handler, null);

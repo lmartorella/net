@@ -32,21 +32,16 @@ namespace Lucky.Home.Admin
             _registrar = Manager.GetService<NodeRegistrar>();
         }
 
-        private async void HandleConnection(TcpClient client)
+        private async void HandleConnection(NetworkStream stream)
         {
-            using (var stream = client.GetStream())
+            var channel = new MessageChannel(stream);
+            var msg = await Receive<Container>(channel);
+            if (msg.Message is GetTopologyMessage)
             {
-                var channel = new MessageChannel(stream);
-                var msg = await Receive<Container>(channel);
-                if (msg.Message is GetTopologyMessage)
-                {
-                    // Returns the topology
-                    var ret = new GetTopologyMessage.Response();
-                    ret.Roots = BuildTree();
-                    Send(channel, ret);
-                }
+                // Returns the topology
+                var ret = new GetTopologyMessage.Response { Roots = BuildTree() };
+                await Send(channel, ret);
             }
-            client.Close();
         }
 
         private Node[] BuildTree()
@@ -63,13 +58,13 @@ namespace Lucky.Home.Admin
             return roots.ToArray();
         }
 
-        private void Send<T>(MessageChannel stream, T message)
+        private async Task Send<T>(MessageChannel stream, T message)
         {
             using (MemoryStream ms = new MemoryStream())
             {
                 new DataContractSerializer(message.GetType()).WriteObject(ms, message);
                 ms.Flush();
-                stream.WriteMessage(ms.GetBuffer());
+                await stream.WriteMessage(ms.GetBuffer());
             }
         }
 

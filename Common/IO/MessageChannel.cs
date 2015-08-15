@@ -14,7 +14,7 @@ namespace Lucky.Home.IO
             _stream = stream;
         }
 
-        public async void WriteMessage(byte[] buffer)
+        public async Task WriteMessage(byte[] buffer)
         {
             await Task.Run(() =>
             {
@@ -28,7 +28,7 @@ namespace Lucky.Home.IO
         {
             return await Task.Run(() =>
             {
-                List<byte> buffer = new List<byte>(1000);
+                List<byte> buffer = new List<byte>(128);
                 do
                 {
                     byte ch = (byte)_stream.ReadByte();
