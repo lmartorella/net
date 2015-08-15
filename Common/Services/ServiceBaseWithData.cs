@@ -1,4 +1,4 @@
-namespace Lucky.Home.Core
+namespace Lucky.Services
 {
     public abstract class ServiceBaseWithData<T> : ServiceBase where T : class, new()
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lucky.Home.Protocol;
+using Lucky.Services;
 
 namespace Lucky.Home.Core
 {

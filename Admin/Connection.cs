@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using Lucky.Home.Admin;
-using Lucky.Home.IO;
+using Lucky.IO;
 
 namespace Lucky.Home
 {

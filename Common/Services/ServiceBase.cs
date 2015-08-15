@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Lucky.Home.Core
+namespace Lucky.Services
 {
     public class ServiceBase : IService
     {

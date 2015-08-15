@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Home.Core;
 using Lucky.Home.Sinks;
+using Lucky.Services;
 
 namespace Lucky.Home.Application
 {

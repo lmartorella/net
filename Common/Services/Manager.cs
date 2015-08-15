@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lucky.Home.Core
+namespace Lucky.Services
 {
     public static class Manager
     {

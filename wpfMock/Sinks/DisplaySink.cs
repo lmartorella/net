@@ -5,25 +5,6 @@ using Lucky.HomeMock.Core;
 
 namespace Lucky.HomeMock.Sinks
 {
-    internal class SystemSink : SinkBase
-    {
-        public SystemSink()
-            : base("SYS ")
-        { }
-
-        public override void Read(BinaryReader reader)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(BinaryWriter writer)
-        {
-            WriteFourcc(writer, "REST");
-            writer.Write((ushort)1);    // Brown-out reset
-            WriteFourcc(writer, "EOMD");
-        }
-    }
-
     class DisplaySink : SinkBase
     {
         public DisplaySink()

@@ -25,5 +25,12 @@ namespace Lucky.HomeMock.Sinks
             }
             writer.Write(bytes, 0, 4);
         }
+
+        protected void WriteString(BinaryWriter writer, string str)
+        {
+            var buffer = Encoding.ASCII.GetBytes(str);
+            writer.Write((ushort)buffer.Length);
+            writer.Write(buffer);
+        }
     }
 }

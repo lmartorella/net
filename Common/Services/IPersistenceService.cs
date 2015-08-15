@@ -1,4 +1,4 @@
-﻿namespace Lucky.Home.Core
+﻿namespace Lucky.Services
 {
     public interface IPersistenceService : IService
     {

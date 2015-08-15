@@ -5,17 +5,17 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Lucky.Home.Core;
-using Lucky.Home.IO;
-using Lucky.Home.Net;
 using Lucky.Home.Protocol;
+using Lucky.IO;
+using Lucky.Net;
+using Lucky.Services;
 
 namespace Lucky.Home.Admin
 {
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
-        private NodeRegistrar _registrar;
+        private readonly NodeRegistrar _registrar;
 
         public AdminListener()
         {

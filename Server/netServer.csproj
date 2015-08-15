@@ -58,6 +58,7 @@
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Core\Constants.cs" />
+    <Compile Include="Core\DynamicString.cs" />
     <Compile Include="Core\ISink.cs" />
     <Compile Include="Protocol\INodeRegistrar.cs" />
     <Compile Include="Protocol\NodeRegistrar.cs" />
@@ -72,7 +73,6 @@
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Protocol\HeloMessage.cs" />
     <Compile Include="Core\NetSerializer.cs" />
-    <Compile Include="Core\SelectorAttribute.cs" />
     <Compile Include="Core\SerializeAsFixedStringAttribute.cs" />
     <Compile Include="Core\SerializeAsDynArrayAttribute.cs" />
     <Compile Include="Protocol\Server.cs" />

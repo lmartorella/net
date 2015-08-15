@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
-using Lucky.Home.Core;
 using Lucky.Home.Speech;
+using Lucky.Services;
 
 namespace SpeechTests
 {

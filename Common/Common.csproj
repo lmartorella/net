@@ -8,7 +8,7 @@
     <ProjectGuid>{B13F0047-1CEE-4463-BAF6-A943E225D875}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lucky.Home</RootNamespace>
+    <RootNamespace>Lucky</RootNamespace>
     <AssemblyName>Home.Common</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
@@ -35,15 +35,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Constants.cs" />
-    <Compile Include="Core\ILogger.cs" />
-    <Compile Include="Core\ILoggerFactory.cs" />
-    <Compile Include="Core\IPersistenceService.cs" />
-    <Compile Include="Core\IService.cs" />
-    <Compile Include="Core\JsonIsolatedStoragePersistenceService.cs" />
-    <Compile Include="Core\Manager.cs" />
-    <Compile Include="Core\ServiceBase.cs" />
-    <Compile Include="Core\ServiceBaseWithData.cs" />
+    <Compile Include="Home\Constants.cs" />
+    <Compile Include="Services\ILogger.cs" />
+    <Compile Include="Services\ILoggerFactory.cs" />
+    <Compile Include="Services\IPersistenceService.cs" />
+    <Compile Include="Services\IService.cs" />
+    <Compile Include="Services\JsonIsolatedStoragePersistenceService.cs" />
+    <Compile Include="Services\Manager.cs" />
+    <Compile Include="Services\ServiceBase.cs" />
+    <Compile Include="Services\ServiceBaseWithData.cs" />
+    <Compile Include="Home\ResetReason.cs" />
     <Compile Include="IO\MessageChannel.cs" />
     <Compile Include="Net\TcpService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

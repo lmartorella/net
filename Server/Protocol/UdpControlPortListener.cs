@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Lucky.Home.Core;
+using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
 using System.Speech.Synthesis;
-using Lucky.Home.Core;
+using Lucky.Services;
 using NAudio.Lame;
 using NAudio.Wave;
 

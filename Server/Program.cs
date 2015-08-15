@@ -5,6 +5,7 @@ using Lucky.Home.Admin;
 using Lucky.Home.Application;
 using Lucky.Home.Core;
 using Lucky.Home.Protocol;
+using Lucky.Services;
 
 [assembly: InternalsVisibleTo("SpeechTests")]
 

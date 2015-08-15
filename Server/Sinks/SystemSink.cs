@@ -29,7 +29,7 @@ namespace Lucky.Home.Sinks
                             status.ResetReason = (ResetReason) reader.Read<ushort>();
                             break;
                         case "EXCM":
-                            status.ExceptionMessage = reader.Read<string>();
+                            status.ExceptionMessage = reader.Read<DynamicString>().Str;
                             break;
                         case "EOMD":
                             return;

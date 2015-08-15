@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Home.Core
+namespace Lucky.Services
 {
     public interface IService : IDisposable
     {

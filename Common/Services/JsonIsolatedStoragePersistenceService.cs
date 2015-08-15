@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization.Json;
 
-namespace Lucky.Home.Core
+namespace Lucky.Services
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     internal class JsonIsolatedStoragePersistenceService : ServiceBase, IPersistenceService

@@ -2,8 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Reflection;
+using System.Text;
+
 // ReSharper disable StaticMemberInGenericType
 
 namespace Lucky.Home.Core
@@ -42,19 +43,27 @@ namespace Lucky.Home.Core
             
             if (fieldType == typeof(string))
             {
-                var elType = typeof(char);
                 INetSerializer elSerializer = new AsciiCharSerializer();
 
-                SerializeAsFixedStringAttribute attr = null;
+                SerializeAsFixedStringAttribute fixedAttr = null;
+                SerializeAsDynArrayAttribute dyndAttr = null;
                 if (fieldInfo != null)
                 {
-                    attr = fieldInfo.GetCustomAttributes(typeof(SerializeAsFixedStringAttribute), false).Cast<SerializeAsFixedStringAttribute>().FirstOrDefault();
+                    fixedAttr = fieldInfo.GetCustomAttributes(typeof(SerializeAsFixedStringAttribute), false).Cast<SerializeAsFixedStringAttribute>().FirstOrDefault();
+                    dyndAttr = fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Cast<SerializeAsDynArrayAttribute>().FirstOrDefault();
                 }
-                if (attr == null)
+                if (fixedAttr != null)
+                {
+                    return new FixedStringFieldItem(elSerializer, typeof(char), fixedAttr.Size);
+                }
+                else if (dyndAttr != null)
+                {
+                    return new DynStringFieldItem(elSerializer, typeof(char));
+                }
+                else
                 {
                     throw new NotSupportedException("Array type not annoted: " + fieldInfo);
                 }
-                return new FixedStringFieldItem(elSerializer, elType, attr.Size);
             }
             
             if (fieldType.IsEnum)
@@ -233,6 +242,13 @@ namespace Lucky.Home.Core
                 }
                 ForcedSize = size;
             }
+        }
+
+        private class DynStringFieldItem : ArraySerializer
+        {
+            public DynStringFieldItem(INetSerializer elementSerializer, Type elType)
+                : base(elementSerializer, elType, true)
+            { }
         }
 
         private class IpAddressFieldItem : INetSerializer

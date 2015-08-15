@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Lucky.Home.Core;
+using Lucky.Services;
 
-namespace Lucky.Home.Net
+namespace Lucky.Net
 {
     /// <summary>
     /// Helper class
