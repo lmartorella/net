@@ -15,17 +15,33 @@ namespace Lucky.HomeMock
     {
         private HeloSender _heloSender;
         private DisplaySink _displaySink;
-        private SystemSink _systemSink;
+        private readonly SystemSink _systemSink;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            _displaySink = new DisplaySink();
+            _systemSink = new SystemSink();
+
             ResetReasons = Enum.GetValues(typeof(ResetReason)).Cast<ResetReason>().ToArray();
-            ResetReason = ResetReason.Power;
+            ResetReason = _systemSink.ResetReason;
+            ExcMsg = _systemSink.ExcMsg;
             DataContext = this;
 
-            EnterInitState();
+            _displaySink.Data += (sender, args) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    DisplayBox.Text = args.Item;
+                });
+            };
+
+            var controlPort = Manager.GetService<ControlPortListener>();
+            controlPort.InitSinks(new SinkBase[] { _displaySink, _systemSink });
+            HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
+
+            Manager.GetService<GuiLoggerFactory>().Register(this);
         }
 
         private HeloSender HeloSender
@@ -47,25 +63,6 @@ namespace Lucky.HomeMock
         private void LogLine(string line)
         {
             Dispatcher.Invoke(() => LogBox.AppendText(line + Environment.NewLine));
-        }
-
-        private void EnterInitState()
-        {
-            _displaySink = new DisplaySink();
-            _systemSink = new SystemSink();
-            _displaySink.Data += (sender, args) =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    DisplayBox.Text = args.Item;
-                });
-            };
-
-            var controlPort = Manager.GetService<ControlPortListener>();
-            controlPort.InitSinks(new SinkBase[] { _displaySink, _systemSink });
-            HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
-
-            Manager.GetService<GuiLoggerFactory>().Register(this);
         }
 
         public void LogFormat(string type, string message, params object[] args)

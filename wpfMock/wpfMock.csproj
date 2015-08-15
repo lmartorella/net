@@ -42,6 +42,7 @@
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
@@ -60,6 +61,7 @@
     <Compile Include="Sinks\FlasherSink.cs" />
     <Compile Include="Core\ControlPortListener.cs" />
     <Compile Include="Sinks\SinkBase.cs" />
+    <Compile Include="Sinks\SinkStateManager.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

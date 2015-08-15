@@ -84,7 +84,6 @@
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Sinks\Fourcc.cs" />
     <Compile Include="Sinks\ISystemSink.cs" />
-    <Compile Include="Sinks\NodeStatus.cs" />
     <Compile Include="Sinks\Old\AudioPlayerSink.cs" />
     <Compile Include="Sinks\IDisplaySink.cs" />
     <Compile Include="Sinks\Old\RomFlasherSink.cs" />

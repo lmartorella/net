@@ -21,7 +21,7 @@
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type admin:Node}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Id}" />
-                        <TextBlock Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
+                        <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
                     </StackPanel>
                 </HierarchicalDataTemplate>
             </TreeView.Resources>

@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Home\Constants.cs" />
+    <Compile Include="Home\NodeStatus.cs" />
     <Compile Include="Services\ILogger.cs" />
     <Compile Include="Services\ILoggerFactory.cs" />
     <Compile Include="Services\IPersistenceService.cs" />

@@ -1,19 +1,78 @@
 ﻿using System;
 using System.IO;
 using Lucky.Home;
+using Lucky.Services;
 
 namespace Lucky.HomeMock.Sinks
 {
     internal class SystemSink : SinkBase
     {
+        private ResetReason _resetReason;
+        private string _excMsg;
+        private readonly bool _initialized;
+
         public SystemSink()
             : base("SYS ")
         {
-            ResetReason = ResetReason.Power;
+            NodeStatus = Manager.GetService<SinkStateManager>().NodeStatus;
+            _initialized = true;
         }
 
-        public ResetReason ResetReason { get; set; }
-        public string ExcMsg { get; set; }
+        private NodeStatus NodeStatus
+        {
+            get
+            {
+                return new NodeStatus
+                {
+                    ExceptionMessage = ExcMsg,
+                    ResetReason = ResetReason
+                };
+            }
+            set
+            {
+                if (value != null)
+                {
+                    ExcMsg = value.ExceptionMessage;
+                    ResetReason = value.ResetReason;
+                }
+                else
+                {
+                    ResetReason = ResetReason.Power;
+                }
+            }
+        }
+
+        public ResetReason ResetReason
+        {
+            get
+            {
+                return _resetReason;
+            }
+            set
+            {
+                _resetReason = value;
+                if (_initialized)
+                {
+                    Manager.GetService<SinkStateManager>().NodeStatus = NodeStatus;
+                }
+            }
+        }
+
+        public string ExcMsg
+        {
+            get
+            {
+                return _excMsg;
+            }
+            set
+            {
+                _excMsg = value;
+                if (_initialized)
+                {
+                    Manager.GetService<SinkStateManager>().NodeStatus = NodeStatus;
+                }
+            }
+        }
 
         public override void Read(BinaryReader reader)
         {

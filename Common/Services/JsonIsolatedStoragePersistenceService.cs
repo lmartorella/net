@@ -38,6 +38,10 @@ namespace Lucky.Services
                     file.Delete();
                     return new T();
                 }
+                finally
+                {
+                    if (stream != null) stream.Dispose();
+                }
             }
             else
             {
@@ -49,7 +53,10 @@ namespace Lucky.Services
         {
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
             FileInfo file = new FileInfo(Path.Combine(_isolatedStorageFolder, serviceName + ".json"));
-            serializer.WriteObject(file.OpenWrite(), value);
+            using (var fileStream = file.OpenWrite())
+            {
+                serializer.WriteObject(fileStream, value);
+            }
         }
     }
 }

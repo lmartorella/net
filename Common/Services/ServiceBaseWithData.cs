@@ -4,9 +4,6 @@ namespace Lucky.Services
     {
         private T _state;
 
-        protected ServiceBaseWithData()
-        { }
-
         /// <summary>
         /// Serializable state
         /// </summary>
