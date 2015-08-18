@@ -102,9 +102,9 @@
       <Project>{b13f0047-1cee-4463-baf6-a943e225d875}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Server\netServer.csproj">
+    <ProjectReference Include="..\Server\Server.csproj">
       <Project>{9da13c11-2457-42b0-8e6e-db1b0d3317bf}</Project>
-      <Name>netServer</Name>
+      <Name>Server</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

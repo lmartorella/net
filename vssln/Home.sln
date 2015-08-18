@@ -1,10 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "netServer", "..\Server\netServer.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "..\Server\Server.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wpfMock", "..\wpfMock\wpfMock.csproj", "{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mock.UI", "..\wpfMock\Mock.UI.csproj", "{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{6283E909-84F7-403A-B977-F32CFF8BCB60}"
 EndProject
@@ -22,7 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5FF129
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "..\Common\Common.csproj", "{B13F0047-1CEE-4463-BAF6-A943E225D875}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admin", "..\Admin\Admin.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admin.UI", "..\Admin\Admin.UI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Security.Plugin", "..\Security.Plugin\Security.Plugin.csproj", "{5AB94888-2686-48DA-8D36-9CB03CB4709E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +96,16 @@ Global
 		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|x86.ActiveCfg = Release|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5AB94888-2686-48DA-8D36-9CB03CB4709E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -60,6 +60,7 @@
     <Compile Include="Core\Constants.cs" />
     <Compile Include="Core\DynamicString.cs" />
     <Compile Include="Core\ISink.cs" />
+    <Compile Include="Plugin\HomePluginBase.cs" />
     <Compile Include="Protocol\INodeRegistrar.cs" />
     <Compile Include="Protocol\NodeRegistrar.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
