@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Lucky.Home.Plugin;
 using Lucky.Home.Security.Actuators;
@@ -10,18 +9,21 @@ namespace Lucky.Home.Security
 {
     class SecurityPlugin : HomePluginBase
     {
-        private readonly List<IActuator> _actuators = new List<IActuator>();
-        private readonly List<ISensor> _sensors = new List<ISensor>();
-        private ISensor[] _engagedSensors = new ISensor[0];
+        private readonly ActuatorBase[] _actuators;
+        private readonly SensorBase[] _sensors;
+
+        private readonly Dictionary<SensorBase, bool> _engagedSensors = new Dictionary<SensorBase, bool>();
+        
         private bool _isEngaged;
         private AlarmStatus _alarmStatus;
+        private SensorBase _nodeInPrealarm ;
 
-        public SecurityPlugin(IEnumerable<IActuator> actuators, IEnumerable<ISensor> sensors)
+        public SecurityPlugin(IEnumerable<ActuatorBase> actuators, IEnumerable<SensorBase> sensors)
         {
-            _actuators.AddRange(actuators);
-            _sensors.AddRange(sensors);
+            _actuators = actuators.ToArray();
+            _sensors = sensors.ToArray();
             IsEngaged = false;
-            AlarmStatus = AlarmStatus.Stale;
+            AlarmStatus = AlarmStatus.Unarmed;
         }
 
         public override void Dispose()
@@ -30,44 +32,79 @@ namespace Lucky.Home.Security
             base.Dispose();
         }
 
-        private void SubscribeEvents(IEnumerable<ISensor> toEngage)
+        private void Engage()
         {
-            // Do not subscribe opened switches, they can float during the engaged state
-            _engagedSensors = toEngage.ToArray();
-            foreach (var doorSwitch in _engagedSensors)
+            foreach (var tuple in _engagedSensors.Keys)
             {
-                doorSwitch.StatusChanged += HandleSwitchChanged;
+                tuple.IsArmed = true;
+                tuple.StatusChanged += HandleSwitchChanged;
             }
+            _nodeInPrealarm = null;
         }
 
         private void Disengage()
         {
-            foreach (var doorSwitch in _engagedSensors)
+            foreach (var tuple in _engagedSensors.Keys)
             {
-                doorSwitch.StatusChanged -= HandleSwitchChanged;
+                tuple.StatusChanged -= HandleSwitchChanged;
+                tuple.IsArmed = false;
             }
             foreach (var actuator in _actuators)
             {
-                actuator.Disable();
+                actuator.Status = NodeStatus.Normal;
             }
-            _engagedSensors = new ISensor[0];
+            _engagedSensors.Clear();
         }
 
         private void HandleSwitchChanged(object sender, EventArgs e)
         {
-            ISensor ds = (ISensor)sender;
-            Debug.Assert(_engagedSensors.Count(s => s == ds) == 1);
+            SensorBase ds = (SensorBase)sender;
 
-            // Fire alarm, if the switch changed status, opened or closed
-            FireAlarm();
-        }
-
-        private void FireAlarm()
-        {
-            AlarmStatus = AlarmStatus.Active;
-            foreach (var actuator in _actuators)
+            var nodeStatus = ds.Status;
+            if (_engagedSensors[ds])
             {
-                actuator.Trigger();
+                // Node started in pre-alarm. Treat "normal/prealarm" transitions as ignored
+                if (nodeStatus == NodeStatus.PreAlarm)
+                {
+                    nodeStatus = NodeStatus.Normal;
+                }
+            }
+
+            switch (nodeStatus)
+            {
+                case NodeStatus.Normal:
+                    if (ds == _nodeInPrealarm)
+                    {
+                        // Disable prealarm
+                        if (AlarmStatus == AlarmStatus.PreAlarm)
+                        {
+                            AlarmStatus = AlarmStatus.Armed;
+                        }
+                        _nodeInPrealarm = null;
+                    }
+                    break;
+                case NodeStatus.PreAlarm:
+                    // Alarm if 2 or more in prealarm
+                    switch (AlarmStatus)
+                    {
+                        case AlarmStatus.PreAlarm:
+                            if (ds != _nodeInPrealarm)
+                            {
+                                // Go in alarm state
+                                AlarmStatus = AlarmStatus.Alarm;
+                            }
+                            break;
+                        case AlarmStatus.Armed:
+                            _nodeInPrealarm = ds;
+                            AlarmStatus = AlarmStatus.PreAlarm;
+                            break;
+                    }
+                    break;
+                case NodeStatus.Offline:
+                case NodeStatus.Alarm:
+                    // Go in alarm state
+                    AlarmStatus = AlarmStatus.Alarm;
+                    break;
             }
         }
 
@@ -84,21 +121,32 @@ namespace Lucky.Home.Security
                     _isEngaged = value;
                     if (IsEngaged)
                     {
-                        AlarmStatus = AlarmStatus.Engaged;
-                        SubscribeEvents(GetValidSensors());
+                        AlarmStatus = AlarmStatus.Armed;
+                        // Do not subscribe opened switches, they can float during the engaged state
+                        GetValidSensors();
+                        Engage();
                     }
                     else
                     {
-                        AlarmStatus = AlarmStatus.Stale;
+                        AlarmStatus = AlarmStatus.Unarmed;
                         Disengage();
                     }
                 }
             }
         }
 
-        private IEnumerable<ISensor> GetValidSensors()
+        private void GetValidSensors()
         {
-            return _sensors.Where(s => s.Status == SwitchStatus.Closed);
+            // Node in alarm will be disabled!
+            foreach (var sensor in _sensors.Where(s => s.Status == NodeStatus.Normal || s.Status == NodeStatus.PreAlarm))
+            {
+                _engagedSensors[sensor] = sensor.Status == NodeStatus.PreAlarm;
+            }
+        }
+
+        public IEnumerable<SensorBase> GetSensorInError()
+        {
+            return _sensors.Where(s => s.Status == NodeStatus.Offline|| s.Status == NodeStatus.PreAlarm || s.Status == NodeStatus.Alarm);
         }
 
         public AlarmStatus AlarmStatus
@@ -116,7 +164,28 @@ namespace Lucky.Home.Security
                     {
                         AlarmStatusChanged(this, EventArgs.Empty);
                     }
+
+                    foreach (var actuator in _actuators)
+                    {
+                        actuator.Status = Cvt(AlarmStatus);
+                    }
                 }
+            }
+        }
+
+        private static NodeStatus Cvt(AlarmStatus alarmStatus)
+        {
+            switch (alarmStatus)
+            {
+                case AlarmStatus.Unarmed:
+                case AlarmStatus.Armed:
+                    return NodeStatus.Normal;
+                case AlarmStatus.PreAlarm:
+                    return NodeStatus.PreAlarm;
+                case AlarmStatus.Alarm:
+                    return NodeStatus.Alarm;
+                default:
+                    throw new ArgumentOutOfRangeException("alarmStatus", alarmStatus, null);
             }
         }
 
