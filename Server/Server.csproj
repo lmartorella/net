@@ -57,11 +57,15 @@
     <Compile Include="Admin\GetTopologyMessage.cs" />
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Application\AppService.cs" />
+    <Compile Include="Devices\DeviceBase.cs" />
+    <Compile Include="Devices\DeviceManager.cs" />
+    <Compile Include="Devices\LineDevice.cs" />
+    <Compile Include="Devices\SinkPath.cs" />
+    <Compile Include="Devices\SupportsAttribute.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
     <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Plugin\HomePluginBase.cs" />
-    <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Protocol\INodeRegistrar.cs" />
     <Compile Include="Protocol\NodeRegistrar.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
@@ -78,7 +82,7 @@
     <Compile Include="Serialization\SerializeAsFixedStringAttribute.cs" />
     <Compile Include="Serialization\SerializeAsDynArrayAttribute.cs" />
     <Compile Include="Protocol\Server.cs" />
-    <Compile Include="Sinks\Sink.cs" />
+    <Compile Include="Sinks\SinkBase.cs" />
     <Compile Include="Sinks\SinkManager.cs" />
     <Compile Include="Protocol\TcpNodeAddress.cs" />
     <Compile Include="Program.cs" />

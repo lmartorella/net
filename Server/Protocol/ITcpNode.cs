@@ -17,6 +17,11 @@ namespace Lucky.Home.Protocol
         Guid Id { get; }
 
         /// <summary>
+        /// If some active connection action was previously failed, and not yet restored by a heartbeat
+        /// </summary>
+        bool IsZombie { get; }
+
+        /// <summary>
         /// Manage heartbeat
         /// </summary>
         void Heartbeat(TcpNodeAddress address);

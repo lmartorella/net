@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Lucky.Home.Admin;
 using Lucky.Home.Application;
+using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
 using Lucky.Services;
@@ -26,6 +27,10 @@ namespace Lucky.Home
             // Register known sinks
             Manager.Register<SinkManager>();
             Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
+
+            // Register devices
+            Manager.Register<DeviceManager>();
+            Manager.GetService<DeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
 
             // Start server
             Manager.GetService<IServer>();

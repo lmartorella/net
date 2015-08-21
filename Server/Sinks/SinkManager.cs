@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Lucky.Home.Devices;
 using Lucky.Services;
 
 namespace Lucky.Home.Sinks
@@ -12,10 +14,16 @@ namespace Lucky.Home.Sinks
     {
         private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
         private readonly ObservableCollection<ISink> _sinks = new ObservableCollection<ISink>();
- 
+        public object LockObject { get; private set; }
+
+        public SinkManager()
+        {
+            LockObject = new object();
+        }
+
         public void RegisterAssembly(Assembly assembly)
         {
-            foreach (var type in assembly.GetTypes().Where(type => typeof(Sink).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
+            foreach (var type in assembly.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
             {
                 // Exception if already registered..
                 _sinkTypes.Add(GetSinkFourCc(type), type);
@@ -24,7 +32,7 @@ namespace Lucky.Home.Sinks
 
         public IEnumerable<T> SinksOfType<T>() where T : ISink
         {
-            lock (_sinks)
+            lock (LockObject)
             {
                 return _sinks.OfType<T>().ToArray();
             }
@@ -32,10 +40,10 @@ namespace Lucky.Home.Sinks
 
         internal static string GetSinkFourCc(Type type)
         {
-            return type.GetCustomAttribute<SinkIdAttribute>().SinkFourCC;
+            return type.GetCustomAttribute<SinkIdAttribute>().SinkFourCc;
         }
 
-        public Sink CreateSink(string sinkFourCc, Guid nodeGuid, int index)
+        public SinkBase CreateSink(string sinkFourCc, Guid nodeGuid, int index)
         {
             Type type;
             if (!_sinkTypes.TryGetValue(sinkFourCc, out type))
@@ -45,16 +53,49 @@ namespace Lucky.Home.Sinks
                 return null;
             }
 
-            var sink = (Sink)Activator.CreateInstance(type);
+            var sink = (SinkBase)Activator.CreateInstance(type);
             sink.Init(nodeGuid, index);
 
-            lock (_sinks)
+            lock (LockObject)
             {
                 // Communicate new sink to API
                 _sinks.Add(sink);
+                if (CollectionChanged != null)
+                {
+                    CollectionChanged(this, new CollectionChangeEventArgs(CollectionChangeAction.Add, sink));
+                }
             }
 
             return sink;
         }
+
+        public void DestroySink(SinkBase sink)
+        {
+            lock (LockObject)
+            {
+                // Communicate new sink to API
+                if (_sinks.Remove(sink))
+                {
+                    if (CollectionChanged != null)
+                    {
+                        CollectionChanged(this, new CollectionChangeEventArgs(CollectionChangeAction.Remove, sink));
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unexpected sink remove");
+                }
+            }
+        }
+
+        public ISink FindSink(SinkPath sinkPath)
+        {
+            lock (LockObject)
+            {
+                return _sinks.FirstOrDefault(s => s.Path.Equals(sinkPath));
+            }
+        }
+
+        public event EventHandler<CollectionChangeEventArgs> CollectionChanged;
     }
 }

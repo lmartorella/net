@@ -1,6 +1,6 @@
 ﻿namespace Lucky.Home.Sinks
 {
-    public interface ISystemSink : ISink
+    internal interface ISystemSink : ISink
     {
         NodeStatus Status { get; }
     }

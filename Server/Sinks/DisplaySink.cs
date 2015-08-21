@@ -12,7 +12,7 @@ namespace Lucky.Home.Sinks
     /// Protocol: WRITE: raw ASCII data, no ending zero
     /// </remarks>
     [SinkId("LINE")]
-    class DisplaySink : Sink, IDisplaySink
+    class DisplaySink : SinkBase, IDisplaySink
     {
         protected override void OnInitialize()
         {

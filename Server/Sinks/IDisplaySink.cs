@@ -1,6 +1,6 @@
 ﻿namespace Lucky.Home.Sinks
 {
-    public interface IDisplaySink : ISink
+    internal interface IDisplaySink : ISink
     {
         /// <summary>
         /// Immediately write a text line to the display

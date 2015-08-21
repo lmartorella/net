@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Services;
 
@@ -8,7 +9,7 @@ namespace Lucky.Home.Sinks
     /// <summary>
     /// Base class for sinks
     /// </summary>
-    internal class Sink : IDisposable, ISink
+    internal class SinkBase : IDisposable, ISink
     {
         private Guid _nodeGuid;
         private int _index;
@@ -26,6 +27,22 @@ namespace Lucky.Home.Sinks
         public virtual void Dispose()
         { }
 
+        public SinkPath Path
+        {
+            get
+            {
+                return new SinkPath(_nodeGuid, FourCc);
+            }
+        }
+
+        public ITcpNode Node
+        {
+            get
+            {
+                return Manager.GetService<INodeRegistrar>().FindNode(_nodeGuid);
+            }
+        }
+
         public string FourCc
         {
             get
@@ -33,10 +50,10 @@ namespace Lucky.Home.Sinks
                 return SinkManager.GetSinkFourCc(GetType());
             }
         }
-        
+
         protected Task Read(Action<IConnectionReader> readHandler)
         {
-            var node = Manager.GetService<INodeRegistrar>().FindNode(_nodeGuid);
+            var node = Node;
             if (node != null)
             {
                 return node.ReadFromSink(_index, readHandler);

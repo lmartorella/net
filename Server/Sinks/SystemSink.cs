@@ -5,7 +5,7 @@ using Lucky.Home.Serialization;
 namespace Lucky.Home.Sinks
 {
     [SinkId("SYS ")]
-    class SystemSink : Sink, ISystemSink
+    class SystemSink : SinkBase, ISystemSink
     {
         public NodeStatus Status { get; private set; }
 

@@ -1,8 +1,10 @@
 ﻿
 using System.Diagnostics;
+using System.Runtime.Serialization;
 
 namespace Lucky.Home.Serialization
 {
+    [DataContract]
     public class Fourcc
     {
         public Fourcc()
@@ -14,7 +16,18 @@ namespace Lucky.Home.Serialization
             Code = code;
         }
 
+        [DataMember]
         [SerializeAsFixedString(4)]
         public string Code;
+
+        public override bool Equals(object obj)
+        {
+            return Code == ((Fourcc)obj).Code;
+        }
+
+        public override int GetHashCode()
+        {
+            return Code.GetHashCode();
+        }
     }
 }

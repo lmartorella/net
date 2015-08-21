@@ -23,6 +23,11 @@ namespace Lucky.Home.Protocol
         /// </summary>
         public Guid Id { get; private set; }
 
+        /// <summary>
+        /// If some active connection action was previously failed, and not yet restored by a heartbeat
+        /// </summary>
+        public bool IsZombie { get; private set; }
+
         public bool ShouldBeRenamed { get; private set; }
 
         private TcpNodeAddress _address;
@@ -33,14 +38,9 @@ namespace Lucky.Home.Protocol
         private readonly ILogger _logger;
 
         /// <summary>
-        /// If some active connection action was previously failed, and not yet restored by a heartbeat
-        /// </summary>
-        private bool _isZombie;
-
-        /// <summary>
         /// Valid sinks
         /// </summary>
-        private readonly List<Sink> _sinks = new List<Sink>();
+        private readonly List<SinkBase> _sinks = new List<SinkBase>();
 
         private TcpNodeAddress _address1;
 
@@ -77,7 +77,7 @@ namespace Lucky.Home.Protocol
             {
                 _address = address;
             }
-            _isZombie = false;
+            IsZombie = false;
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Lucky.Home.Protocol
             {
                 _address = address;
             }
-            _isZombie = false;
+            IsZombie = false;
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace Lucky.Home.Protocol
 
         private Task<bool> OpenNodeSession(Action<TcpConnection, TcpNodeAddress> handler)
         {
-            if (_isZombie)
+            if (IsZombie)
             {
                 // Avoid thrashing the network
                 return Task.FromResult(false);
@@ -219,7 +219,7 @@ namespace Lucky.Home.Protocol
                 // Log exc
                 Logger.Exception(exc);
                 // Mark the node as a zombie
-                _isZombie = true;
+                IsZombie = true;
                 return Task.FromResult(false);
             }
             return Task.FromResult(true);
@@ -271,46 +271,30 @@ namespace Lucky.Home.Protocol
             return true;
         }
 
-        private async void RegisterSinks(string[] sinks)
+        private void RegisterSinks(string[] sinks)
         {
             var sinkManager = Manager.GetService<SinkManager>();
-
-            List<ISink> newSinks = new List<ISink>();
 
             // Identity of sink is due to its position in the sink array.
             // Null sink are valid, it means no sink at that position. Useful for dynamic add/remove of sinks.
             lock (_sinks)
             {
-                // Make _sink size equal to new size
-                // Trim excess
-                while (_sinks.Count > sinks.Length)
-                {
-                    _sinks.Last().Dispose();
-                    _sinks.RemoveAt(_sinks.Count - 1);
-                }
+                ClearSinks();
+                _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, Id, i)));
+            }
+        }
 
-                // Now check for new pos
-                while (_sinks.Count < sinks.Length)
-                {
-                    _sinks.Add(null);
-                }
+        private void ClearSinks()
+        {
+            var sinkManager = Manager.GetService<SinkManager>();
 
-                for (int i = 0; i < sinks.Length; i++)
+            lock (_sinks)
+            {
+                foreach (var sink in _sinks)
                 {
-                    var oldSink = _sinks[i];
-                    if (oldSink != null)
-                    {
-                        if (oldSink.FourCc == sinks[i])
-                        {
-                            // Ok, same sink
-                            continue;
-                        }
-                        // Dispose the old one
-                        oldSink.Dispose();
-                    }
-                    _sinks[i] = sinkManager.CreateSink(sinks[i], Id, i);
-                    newSinks.Add(_sinks[i]);
+                    sinkManager.DestroySink(sink);
                 }
+                _sinks.Clear();
             }
         }
 

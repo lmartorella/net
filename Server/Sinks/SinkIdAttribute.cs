@@ -5,11 +5,11 @@ namespace Lucky.Home.Sinks
     [AttributeUsage(AttributeTargets.Class)]
     public class SinkIdAttribute : Attribute
     {
-        public SinkIdAttribute(string sinkFourCC)
+        public SinkIdAttribute(string sinkFourCc)
         {
-            SinkFourCC = sinkFourCC;
+            SinkFourCc = sinkFourCc;
         }
 
-        public string SinkFourCC { get; private set; }
+        public string SinkFourCc { get; private set; }
     }
 }

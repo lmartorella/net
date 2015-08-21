@@ -1,6 +1,12 @@
-﻿namespace Lucky.Home.Sinks
+﻿using Lucky.Home.Devices;
+using Lucky.Home.Protocol;
+
+namespace Lucky.Home.Sinks
 {
-    public interface ISink
+    internal interface ISink
     {
+        SinkPath Path { get; }
+        ITcpNode Node { get; }
+        string FourCc { get; }
     }
 }
