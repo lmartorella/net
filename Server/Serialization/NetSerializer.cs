@@ -7,7 +7,7 @@ using System.Text;
 
 // ReSharper disable StaticMemberInGenericType
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Serialization
 {
     interface INetSerializer
     {

@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Lucky.Home.Core;
+using Lucky.Home.Serialization;
 
 // ReSharper disable once UnusedMember.Global
 

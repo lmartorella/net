@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Lucky.Home.Core;
+using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Protocol
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Serialization
 {
     /// <summary>
     /// Array with UINT16 lenght at head

@@ -1,5 +1,5 @@
 ﻿using System;
-using Lucky.Home.Core;
+using Lucky.Home.Serialization;
 
 // ReSharper disable UnassignedField.Global
 
@@ -10,16 +10,14 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// HOME
         /// </summary>
-        [SerializeAsFixedString(4)]
-        public string Preamble;
+        public Fourcc Preamble;
 
         internal const string PreambleValue = "HOME";
 
         /// <summary>
         /// HEL3 or HTBT
         /// </summary>
-        [SerializeAsFixedString(4)]
-        public string MessageCode;
+        public Fourcc MessageCode;
 
         internal const string HeloMessageCode = "HEL3";
         internal const string HeartbeatMessageCode = "HTBT";

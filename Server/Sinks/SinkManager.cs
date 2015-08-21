@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Lucky.Services;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Sinks
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     class SinkManager : ServiceBase

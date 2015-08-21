@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Lucky.Home.Core;
+using Lucky.Home.Serialization;
 
 namespace Lucky.Home.Protocol
 {
@@ -27,8 +27,7 @@ namespace Lucky.Home.Protocol
 
         private class CloseMessage
         {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "CLOS";
+            public Fourcc Cmd = new Fourcc("CLOS");
         }
 
         private class Client

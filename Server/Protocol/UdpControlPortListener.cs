@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using Lucky.Home.Core;
+using Lucky.Home.Serialization;
 using Lucky.Services;
 
 namespace Lucky.Home.Protocol
@@ -78,11 +78,11 @@ namespace Lucky.Home.Protocol
         private PingMessageType DecodeHelloMessage(BinaryReader reader, out HeloMessage msg)
         {
             msg = NetSerializer<HeloMessage>.Read(reader);
-            if (msg == null || msg.Preamble != HeloMessage.PreambleValue)
+            if (msg == null || msg.Preamble.Code != HeloMessage.PreambleValue)
             {
                 return PingMessageType.Unknown;
             }
-            switch (msg.MessageCode)
+            switch (msg.MessageCode.Code)
             {
                 case HeloMessage.HeartbeatMessageCode:
                     return PingMessageType.Heartbeat;

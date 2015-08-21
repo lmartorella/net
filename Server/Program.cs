@@ -3,8 +3,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Lucky.Home.Admin;
 using Lucky.Home.Application;
-using Lucky.Home.Core;
 using Lucky.Home.Protocol;
+using Lucky.Home.Sinks;
 using Lucky.Services;
 
 [assembly: InternalsVisibleTo("SpeechTests")]
@@ -15,7 +15,6 @@ namespace Lucky.Home
     {
         static void Main()
         {
-
             Manager.Register<ConsoleLoggerFactory, ILoggerFactory>();
             Manager.GetService<IPersistenceService>().InitAppRoot("Server");
 

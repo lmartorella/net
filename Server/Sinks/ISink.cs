@@ -1,4 +1,4 @@
-﻿namespace Lucky.Home.Core
+﻿namespace Lucky.Home.Sinks
 {
     public interface ISink
     {

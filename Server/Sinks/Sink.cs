@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Lucky.Home.Protocol;
 using Lucky.Services;
 
-namespace Lucky.Home.Core
+namespace Lucky.Home.Sinks
 {
     /// <summary>
     /// Base class for sinks

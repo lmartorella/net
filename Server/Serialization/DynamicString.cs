@@ -1,4 +1,5 @@
-﻿namespace Lucky.Home.Core
+﻿
+namespace Lucky.Home.Serialization
 {
     public class DynamicString
     {
