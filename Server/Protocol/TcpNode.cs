@@ -298,13 +298,13 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        internal async Task Rename()
+        public async Task Rename(Guid id)
         {
             await Task.Run(() =>
             {
                 OpenNodeSession((connection, address) =>
                 {
-                    connection.Write(new NewGuidMessage(Id));
+                    connection.Write(new NewGuidMessage(id));
                 });
                 ShouldBeRenamed = false;
             });

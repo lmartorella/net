@@ -51,5 +51,7 @@ namespace Lucky.Home.Protocol
         /// Get the sink with the given type
         /// </summary>
         T Sink<T>() where T : ISink;
+
+        Task Rename(Guid id);
     }
 }

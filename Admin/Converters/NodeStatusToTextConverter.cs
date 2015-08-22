@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
-using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Converters
 {
@@ -10,7 +9,7 @@ namespace Lucky.Home.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var status = (NodeStatus)value;
-            return string.Format("[{0}]", ToString(status));
+            return status != null ? string.Format("[{0}]", ToString(status)) : "<nil>";
         }
 
         private static object ToString(NodeStatus status)

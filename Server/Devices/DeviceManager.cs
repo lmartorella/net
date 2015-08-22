@@ -38,10 +38,11 @@ namespace Lucky.Home.Devices
 
         public void RegisterAssembly(Assembly assembly)
         {
-            foreach (var deviceType in assembly.GetTypes().Where(type => typeof(DeviceBase).IsAssignableFrom(type) && type.GetCustomAttribute<SupportsAttribute>() != null))
+            foreach (var deviceType in assembly.GetTypes().Where(type => type.IsGenericType && typeof(DeviceBase<>).IsAssignableFrom(type.GetGenericTypeDefinition())))
             {
                 // Exception if already registered..
-                _deviceTypes.Add(deviceType.GetCustomAttribute<SupportsAttribute>().SinkType, deviceType);
+                Type sinkType = deviceType.GetGenericArguments()[0];
+                _deviceTypes.Add(sinkType, deviceType);
             }
         }
 
@@ -51,7 +52,7 @@ namespace Lucky.Home.Devices
             {
                 foreach (var descriptor in descriptors)
                 {
-                    DeviceBase device = (DeviceBase)Activator.CreateInstance(descriptor.DeviceType);
+                    IDeviceIntenal device = (IDeviceIntenal)Activator.CreateInstance(descriptor.DeviceType);
                     device.OnInitialize(descriptor.SinkPath);
                     _devices.Add(device);
                 }
@@ -70,7 +71,7 @@ namespace Lucky.Home.Devices
             };
         }
 
-        public void RegisterDevice(DeviceBase device)
+        public void RegisterDevice(IDevice device)
         {
             _devices.Add(device);
             SaveState(_devices.ToArray());

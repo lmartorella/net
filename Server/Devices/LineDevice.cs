@@ -2,8 +2,14 @@
 
 namespace Lucky.Home.Devices
 {
-    [Supports(typeof(IDisplaySink))]
-    internal class LineDevice : DeviceBase
+    internal class LineDevice : DeviceBase<IDisplaySink>
     {
+        public void Write(string str)
+        {
+            if (IsOnline)
+            {
+                Sink.Write(str);
+            }
+        }
     }
 }

@@ -4,46 +4,51 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    internal abstract class DeviceBase : IDevice
+    internal abstract class DeviceBase<T> : IDeviceIntenal where T : class, ISink
     {
-        private ISink _sink;
+        public T Sink { get; private set; }
 
         public SinkPath SinkPath { get; private set; }
 
-        internal void OnInitialize(SinkPath sinkPath)
+        public void OnInitialize(SinkPath sinkPath)
         {
             SinkPath = sinkPath;
             var sinkManager = Manager.GetService<SinkManager>();
             lock (sinkManager.LockObject)
             {
-                _sink = sinkManager.FindSink(SinkPath);
+                Sink = (T)sinkManager.FindSink(SinkPath);
                 sinkManager.CollectionChanged += HandleSinkChanged;
             }
         }
 
         public void Dispose()
         {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
             var sinkManager = Manager.GetService<SinkManager>();
             lock (sinkManager.LockObject)
             {
                 sinkManager.CollectionChanged -= HandleSinkChanged;
-                _sink = null;
+                Sink = null;
             }
         }
 
         private void HandleSinkChanged(object sender, CollectionChangeEventArgs e)
         {
             ISink item = (ISink)e.Element;
-            if (_sink == null && e.Action == CollectionChangeAction.Add)
+            if (Sink == null && e.Action == CollectionChangeAction.Add)
             {
                 if (item.Path.Equals(SinkPath))
                 {
-                    _sink = item;
+                    Sink = (T)item;
                 }
             }
-            else if (_sink == item && e.Action == CollectionChangeAction.Remove)
+            else if (Sink == item && e.Action == CollectionChangeAction.Remove)
             {
-                _sink = null;
+                Sink = null;
             }
         }
 
@@ -51,7 +56,7 @@ namespace Lucky.Home.Devices
         {
             get
             {
-                return _sink != null;
+                return Sink != null;
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
@@ -9,7 +10,7 @@ namespace Lucky.Home.Admin
     public class Node
     {
         [DataMember]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         [DataMember]
         public List<Node> Children { get; set; }
@@ -26,7 +27,7 @@ namespace Lucky.Home.Admin
             :this()
         {
             TcpNode = tcpNode;
-            Id = tcpNode.Id.ToString();
+            Id = tcpNode.Id;
             Status = tcpNode.Sink<ISystemSink>().Status;
         }
 

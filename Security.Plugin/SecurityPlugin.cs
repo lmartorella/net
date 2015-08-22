@@ -7,7 +7,7 @@ using Lucky.Home.Security.Sensors;
 
 namespace Lucky.Home.Security
 {
-    class SecurityPlugin : HomePluginBase
+    class SecurityPlugin : AppBase
     {
         private readonly ActuatorBase[] _actuators;
         private readonly SensorBase[] _sensors;

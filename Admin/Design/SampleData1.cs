@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Lucky.Home.Admin;
-using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Design
 {
@@ -9,13 +10,18 @@ namespace Lucky.Home.Design
         public SampleData1()
         {
             StatusText = "Connected";
-            Nodes.Add(new Node { Id = "root1", Children = new List<Node>(
+            Nodes.Add(new Node { Id = Guid.NewGuid(), Children = new List<Node>(
                 new[]
                 {
-                    new Node { Id = "Child1", Status = new NodeStatus { ResetReason = ResetReason.Brownout }},
-                    new Node { Id = "Child2", Status = new NodeStatus { ResetReason = ResetReason.Exception, ExceptionMessage = "EXC.CODE1"} },
+                    new Node { Id = Guid.NewGuid(), Status = new NodeStatus { ResetReason = ResetReason.Brownout }},
+                    new Node { Id = Guid.NewGuid(), Status = new NodeStatus { ResetReason = ResetReason.Exception, ExceptionMessage = "EXC.CODE1"} },
                 })
             });
+        }
+
+        public override async Task RenameNode(Node node, Guid newName)
+        {
+            node.Id = newName;
         }
     }
 }

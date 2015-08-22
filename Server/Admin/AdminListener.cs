@@ -15,7 +15,7 @@ namespace Lucky.Home.Admin
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
-        private readonly NodeRegistrar _registrar;
+        private readonly INodeRegistrar _registrar;
 
         public AdminListener()
         {
@@ -41,6 +41,15 @@ namespace Lucky.Home.Admin
                 // Returns the topology
                 var ret = new GetTopologyMessage.Response { Roots = BuildTree() };
                 await Send(channel, ret);
+            }
+            else if (msg.Message is RenameNodeMessage)
+            {
+                var msg1 = (RenameNodeMessage)msg.Message;
+                var node = _registrar.FindNode(msg1.Id);
+                if (node != null)
+                {
+                    await node.Rename(msg1.NewId);
+                }
             }
         }
 

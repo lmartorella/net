@@ -28,7 +28,7 @@ namespace Lucky.Home.Protocol
             {
                 if (node.ShouldBeRenamed)
                 {
-                    node.Rename();
+                    node.Rename(node.Id);
                 }
                 // Start data fetch asynchrously
                 node.FetchMetadata();

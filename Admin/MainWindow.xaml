@@ -5,6 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cvt="clr-namespace:Lucky.Home.Converters"
+        xmlns:home="clr-namespace:Lucky.Home"
         mc:Ignorable="d"
         Title="Admin UI" Height="350" Width="525"
         d:DataContext="{d:DesignData /Design/SampleData.xaml}">
@@ -15,7 +16,12 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="{Binding Connection.StatusText}" />
-        <TreeView Grid.Row="1" ItemsSource="{Binding Connection.Nodes}" >
+        <TreeView Grid.Row="1" ItemsSource="{Binding Connection.Nodes}" x:Name="TreeView">
+            <TreeView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />
+                </ContextMenu>
+            </TreeView.ContextMenu>
             <TreeView.Resources>
                 <cvt:NodeStatusToTextConverter x:Key="nodeStatusToTextConverter" />
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type admin:Node}">
@@ -23,6 +29,9 @@
                         <TextBlock Text="{Binding Id}" />
                         <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
                     </StackPanel>
+                </HierarchicalDataTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type home:RenamingNode}">
+                    <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
                 </HierarchicalDataTemplate>
             </TreeView.Resources>
         </TreeView>

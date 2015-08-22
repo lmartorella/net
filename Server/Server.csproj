@@ -56,16 +56,16 @@
     <Compile Include="Admin\AdminMessage.cs" />
     <Compile Include="Admin\GetTopologyMessage.cs" />
     <Compile Include="Admin\Node.cs" />
+    <Compile Include="Admin\RenameNodeMessage.cs" />
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\LineDevice.cs" />
     <Compile Include="Devices\SinkPath.cs" />
-    <Compile Include="Devices\SupportsAttribute.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
     <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Devices\IDevice.cs" />
-    <Compile Include="Plugin\HomePluginBase.cs" />
+    <Compile Include="Application\AppBase.cs" />
     <Compile Include="Protocol\INodeRegistrar.cs" />
     <Compile Include="Protocol\NodeRegistrar.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
@@ -95,9 +95,7 @@
     <Compile Include="Sinks\Old\RomFlasherSink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
     <Compile Include="Speech\TextToSpeechService.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
+    <Compile Include="TestApp\ClockApp.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
