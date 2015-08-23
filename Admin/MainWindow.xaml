@@ -24,13 +24,13 @@
             </TreeView.ContextMenu>
             <TreeView.Resources>
                 <cvt:NodeStatusToTextConverter x:Key="nodeStatusToTextConverter" />
-                <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type admin:Node}">
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Id}" />
                         <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
                     </StackPanel>
                 </HierarchicalDataTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type home:RenamingNode}">
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:RenamingNode}">
                     <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
                 </HierarchicalDataTemplate>
             </TreeView.Resources>

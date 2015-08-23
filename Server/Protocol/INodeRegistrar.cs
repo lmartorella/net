@@ -8,6 +8,7 @@ namespace Lucky.Home.Protocol
     {
         void RegisterNode(Guid guid, TcpNodeAddress address);
         void HeartbeatNode(Guid guid, TcpNodeAddress address);
+        void RenameNode(Guid oldId, Guid newId);
         void RefetchSubNodes(Guid guid, TcpNodeAddress address);
         ITcpNode FindNode(Guid guid);
         IEnumerable<ITcpNode> Nodes { get; }

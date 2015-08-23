@@ -90,6 +90,7 @@ namespace Lucky.Home
                 using (_channel = new MessageChannel(_client.GetStream()))
                 {
                     await Send(new Container { Message = new RenameNodeMessage(node.Id, newName) });
+                    await Receive<RenameNodeMessage.Response>();
                 }
                 await FetchTree();
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
@@ -13,14 +12,14 @@ namespace Lucky.Home.Admin
         public Guid Id { get; set; }
 
         [DataMember]
-        public List<Node> Children { get; set; }
+        public Node[] Children { get; set; }
 
         [DataMember]
         public NodeStatus Status { get; set; }
 
         public Node()
         {
-            Children = new List<Node>();
+            Children = new Node[0];
         }
 
         internal Node(ITcpNode tcpNode)

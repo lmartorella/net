@@ -302,6 +302,11 @@ namespace Lucky.Home.Protocol
         {
             await Task.Run(() =>
             {
+                if (id != Id)
+                {
+                    // Notify the node registrar too
+                    Manager.GetService<INodeRegistrar>().RenameNode(Id, id);
+                }
                 OpenNodeSession((connection, address) =>
                 {
                     connection.Write(new NewGuidMessage(id));

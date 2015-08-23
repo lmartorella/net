@@ -50,6 +50,8 @@ namespace Lucky.Home.Admin
                 {
                     await node.Rename(msg1.NewId);
                 }
+                var ret = new RenameNodeMessage.Response();
+                await Send(channel, ret);
             }
         }
 
@@ -61,7 +63,7 @@ namespace Lucky.Home.Admin
                 var root = roots.FirstOrDefault(r => r.TcpNode.Address.Equals(node.Address.SubNode(0)));
                 if (root != null)
                 {
-                    root.Children.Add(new Node(node));
+                    root.Children = root.Children.Concat(new[] { new Node(node) }).ToArray();
                 }
             }
             return roots.ToArray();

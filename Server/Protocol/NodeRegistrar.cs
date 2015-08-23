@@ -59,8 +59,7 @@ namespace Lucky.Home.Protocol
         {
             lock (_nodeLock)
             {
-                TcpNode node;
-                _nodes.TryGetValue(guid, out node);
+                TcpNode node = FindNode(guid);
                 if (node == null)
                 {
                     // The server was reset?
@@ -72,6 +71,19 @@ namespace Lucky.Home.Protocol
                 {
                     // Normal heartbeat
                     node.Heartbeat(address);
+                }
+            }
+        }
+
+        public void RenameNode(Guid oldId, Guid newId)
+        {
+            lock (_nodeLock)
+            {
+                TcpNode node = FindNode(oldId);
+                if (node != null)
+                {
+                    _nodes.Remove(oldId);
+                    _nodes.Add(newId, node);
                 }
             }
         }

@@ -50,13 +50,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="UiNode.cs" />
     <Compile Include="RenamingNode.cs" />
     <Compile Include="TcpConnection.cs" />
     <Compile Include="UiCommand.cs" />
-    <DesignData Include="Design\SampleData.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </DesignData>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

@@ -1,10 +1,8 @@
 ﻿using System;
-using Lucky.Home.Devices;
-using Lucky.Home.Plugin;
 
 namespace Lucky.Home.Security.Sensors
 {
-    internal abstract class SensorBase : 
+    internal abstract class SensorBase
     {
         private NodeStatus _status = NodeStatus.None;
 
@@ -46,10 +44,5 @@ namespace Lucky.Home.Security.Sensors
         /// Event raised when status changes
         /// </summary>
         public event EventHandler StatusChanged;
-
-        protected IDevice GetDeviceByPath(DeviceDescriptor deviceDescriptor)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

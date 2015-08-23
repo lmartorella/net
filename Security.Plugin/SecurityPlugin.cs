@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lucky.Home.Plugin;
+using Lucky.Home.Application;
 using Lucky.Home.Security.Actuators;
 using Lucky.Home.Security.Sensors;
 
@@ -26,10 +26,10 @@ namespace Lucky.Home.Security
             AlarmStatus = AlarmStatus.Unarmed;
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             Disengage();
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         private void Engage()

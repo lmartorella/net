@@ -1,15 +1,16 @@
+using System.Collections.ObjectModel;
 using System.Windows;
-using Lucky.Home.Admin;
 
 namespace Lucky.Home
 {
     public class RenamingNode : DependencyObject
     {
-        public RenamingNode(Node node, int pos)
+        public RenamingNode(UiNode node, int pos, ObservableCollection<object> parent)
         {
             Name = node.Id.ToString();
             Node = node;
             Index = pos;
+            Parent = parent;
         }
 
         public static readonly DependencyProperty NameProperty = DependencyProperty.Register(
@@ -21,7 +22,13 @@ namespace Lucky.Home
             set { SetValue(NameProperty, value); }
         }
 
-        public Node Node { get; private set; }
-        public int Index { get; private set; }
+        internal UiNode Node { get; private set; }
+        internal int Index { get; private set; }
+        internal ObservableCollection<object> Parent { get; set; }
+
+        public ObservableCollection<object> Children
+        {
+            get { return Node.Children; }
+        } 
     }
 }

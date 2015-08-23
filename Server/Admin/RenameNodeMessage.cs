@@ -17,5 +17,10 @@ namespace Lucky.Home.Admin
             Id = id;
             NewId = newId;
         }
+
+        [DataContract]
+        public class Response
+        {
+        }
     }
 }

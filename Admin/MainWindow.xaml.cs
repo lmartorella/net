@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Lucky.Home.Admin;
+using Lucky.Home.Design;
 
 namespace Lucky.Home
 {
@@ -37,20 +39,49 @@ namespace Lucky.Home
 
             RenameCommand = new UiCommand(() =>
             {
-                object node = TreeView.SelectedItem;
-                int pos = Connection.Nodes.IndexOf(node);
-                Connection.Nodes.Remove(node);
-                _inEditItem = new RenamingNode((Node)node, pos);
-                Connection.Nodes.Insert(pos, _inEditItem);
+                UiNode node = TreeView.SelectedItem as UiNode;
+                if (node != null)
+                {
+                    int pos;
+                    ObservableCollection<object> collection = Connection.Nodes;
+                    if (FindNode(node, out pos, ref collection))
+                    {
+                        collection.RemoveAt(pos);
+                        _inEditItem = new RenamingNode(node, pos, collection);
+                        collection.Insert(pos, _inEditItem);
+                    }
+                }
             }, () =>
             {
                 object node = TreeView.SelectedItem;
-                return node is Node;
+                return node is UiNode;
             });
 
             //Connection = new TcpConnection();
 
-            Connection = new Design.SampleData1();
+            Connection = new SampleData1();
+        }
+
+        private bool FindNode(UiNode node, out int pos, ref ObservableCollection<object> collection)
+        {
+            pos = collection.IndexOf(node);
+            if (pos < 0)
+            {
+                // Find children
+                foreach (var child in collection.OfType<UiNode>())
+                {
+                    collection = child.Children;
+                    if (FindNode(node, out pos, ref collection))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                return true;
+            }
+            return false;
         }
 
         private void RenameBoxKeyDown(object sender, KeyEventArgs e)
@@ -71,20 +102,22 @@ namespace Lucky.Home
             EndRename(true);
         }
 
-        private void EndRename(bool commit)
+        private async void EndRename(bool commit)
         {
             if (_inEditItem == null)
             {
                 return;
             }
 
-            Connection.Nodes.RemoveAt(_inEditItem.Index);
-            Connection.Nodes.Insert(_inEditItem.Index, _inEditItem.Node);
+            _inEditItem.Parent.RemoveAt(_inEditItem.Index);
+            _inEditItem.Parent.Insert(_inEditItem.Index, _inEditItem.Node);
 
             // Rename the node
             if (commit)
             {
-                Connection.RenameNode(_inEditItem.Node, new Guid(_inEditItem.Name));
+                var newId = new Guid(_inEditItem.Name);
+                await Connection.RenameNode(_inEditItem.Node.Node, newId);
+                _inEditItem.Node.Id = newId;
             }
             _inEditItem = null;
         }

@@ -115,8 +115,7 @@ namespace Lucky.Home.Serialization
 
             public ClassConverter()
             {
-                _fields = typeof(T)
-                    .GetFields(BindingFlags.Public | BindingFlags.Instance)
+                _fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance)
                     .OrderBy(fi => fi.MetadataToken) // undocumented, to have the source definition order
                     .Select(fi => new Tuple<FieldInfo, INetSerializer>(fi, BuildFieldItem(fi, fi.FieldType))).ToArray();
                 //var selectors = _fields.Select(t => t.Item1)
