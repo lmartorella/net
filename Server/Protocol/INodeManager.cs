@@ -4,13 +4,17 @@ using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
-    interface INodeRegistrar : IService
+    interface INodeManager : IService
     {
         void RegisterNode(Guid guid, TcpNodeAddress address);
         void HeartbeatNode(Guid guid, TcpNodeAddress address);
-        void RenameNode(Guid oldId, Guid newId);
         void RefetchSubNodes(Guid guid, TcpNodeAddress address);
+
         ITcpNode FindNode(Guid guid);
         IEnumerable<ITcpNode> Nodes { get; }
+
+        void BeginRenameNode(TcpNode node, Guid newId);
+        void EndRenameNode(TcpNode node, Guid oldId, Guid newId, bool success);
+        Guid CreateNewGuid();
     }
 }

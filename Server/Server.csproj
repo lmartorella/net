@@ -66,8 +66,8 @@
     <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Application\AppBase.cs" />
-    <Compile Include="Protocol\INodeRegistrar.cs" />
-    <Compile Include="Protocol\NodeRegistrar.cs" />
+    <Compile Include="Protocol\INodeManager.cs" />
+    <Compile Include="Protocol\NodeManager.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
     <Compile Include="Protocol\PingMessageType.cs" />
     <Compile Include="Sinks\SinkIdAttribute.cs" />

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using Lucky.Home.Devices;
+using Lucky.Home.Protocol;
 using Lucky.Services;
 
 namespace Lucky.Home.Sinks
@@ -43,18 +44,18 @@ namespace Lucky.Home.Sinks
             return type.GetCustomAttribute<SinkIdAttribute>().SinkFourCc;
         }
 
-        public SinkBase CreateSink(string sinkFourCc, Guid nodeGuid, int index)
+        public SinkBase CreateSink(string sinkFourCc, ITcpNode node, int index)
         {
             Type type;
             if (!_sinkTypes.TryGetValue(sinkFourCc, out type))
             {
                 // Unknown sink type
-                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", nodeGuid);
+                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", node.Id);
                 return null;
             }
 
             var sink = (SinkBase)Activator.CreateInstance(type);
-            sink.Init(nodeGuid, index);
+            sink.Init(node, index);
 
             lock (LockObject)
             {

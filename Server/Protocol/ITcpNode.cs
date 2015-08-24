@@ -53,10 +53,8 @@ namespace Lucky.Home.Protocol
         T Sink<T>() where T : ISink;
 
         /// <summary>
-        /// Change the valid ID to another
+        /// Change the ID of the node
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        Task Rename(Guid id);
+        Task<bool> Rename(Guid newId);
     }
 }

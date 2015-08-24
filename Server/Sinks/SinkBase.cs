@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
-using Lucky.Services;
 
 namespace Lucky.Home.Sinks
 {
@@ -11,12 +10,11 @@ namespace Lucky.Home.Sinks
     /// </summary>
     internal class SinkBase : IDisposable, ISink
     {
-        private Guid _nodeGuid;
         private int _index;
 
-        public void Init(Guid nodeGuid, int index)
+        public void Init(ITcpNode node, int index)
         {
-            _nodeGuid = nodeGuid;
+            Node = node;
             _index = index;
             OnInitialize();
         }
@@ -31,17 +29,11 @@ namespace Lucky.Home.Sinks
         {
             get
             {
-                return new SinkPath(_nodeGuid, FourCc);
+                return new SinkPath(Node.Id, FourCc);
             }
         }
 
-        public ITcpNode Node
-        {
-            get
-            {
-                return Manager.GetService<INodeRegistrar>().FindNode(_nodeGuid);
-            }
-        }
+        public ITcpNode Node { get; private set; }
 
         public string FourCc
         {
@@ -53,10 +45,9 @@ namespace Lucky.Home.Sinks
 
         protected Task Read(Action<IConnectionReader> readHandler)
         {
-            var node = Node;
-            if (node != null)
+            if (Node != null)
             {
-                return node.ReadFromSink(_index, readHandler);
+                return Node.ReadFromSink(_index, readHandler);
             }
             else
             {
@@ -66,10 +57,9 @@ namespace Lucky.Home.Sinks
 
         protected Task Write(Action<IConnectionWriter> writeHandler)
         {
-            var node = Manager.GetService<INodeRegistrar>().FindNode(_nodeGuid);
-            if (node != null)
+            if (Node != null)
             {
-                return node.WriteToSink(_index, writeHandler);
+                return Node.WriteToSink(_index, writeHandler);
             }
             else
             {

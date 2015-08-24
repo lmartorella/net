@@ -6,14 +6,6 @@ using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 
-#pragma warning disable 414
-#pragma warning disable 649
-#pragma warning disable 169
-
-// ReSharper disable ClassNeverInstantiated.Local
-// ReSharper disable MemberCanBePrivate.Local
-// ReSharper disable NotAccessedField.Local
-
 namespace Lucky.Home.Protocol
 {
     class TcpNode : ITcpNode
@@ -28,54 +20,36 @@ namespace Lucky.Home.Protocol
         /// </summary>
         public bool IsZombie { get; private set; }
 
-        public bool ShouldBeRenamed { get; private set; }
-
-        private TcpNodeAddress _address;
-
         private readonly object _lockObject = new object();
         private bool _inFetchSinkData;
+        private bool _inRename;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
-        private readonly ILogger _logger;
 
         /// <summary>
         /// Valid sinks
         /// </summary>
         private readonly List<SinkBase> _sinks = new List<SinkBase>();
 
-        private TcpNodeAddress _address1;
-
-        internal TcpNode(Guid guid, TcpNodeAddress address, bool shouldBeRenamed = false)
+        internal TcpNode(Guid guid, TcpNodeAddress address)
         {
-            if (guid == Guid.Empty)
-            {
-                throw new ArgumentNullException("guid");
-            }
-
             Id = guid;
-            ShouldBeRenamed = shouldBeRenamed;
-            _address = address;
-            _logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
+            Address = address;
+            Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
+            
+            // Start data fetch asynchrously
+            FetchMetadata();
         }
 
-        public TcpNodeAddress Address
-        {
-            get { return _address; }
-        }
+        public TcpNodeAddress Address { get; private set; }
 
-        private ILogger Logger
-        {
-            get
-            {
-                return _logger;
-            }
-        }
+        private ILogger Logger { get; set; }
 
         public void Heartbeat(TcpNodeAddress address)
         {
             // Update address!
-            lock (_address)
+            lock (Address)
             {
-                _address = address;
+                Address = address;
             }
             IsZombie = false;
         }
@@ -86,11 +60,14 @@ namespace Lucky.Home.Protocol
         public async Task Relogin(TcpNodeAddress address)
         {
             // Update address!
-            lock (_address)
+            lock (Address)
             {
-                _address = address;
+                Address = address;
             }
             IsZombie = false;
+
+            // Start data fetch asynchrously
+            await FetchMetadata();
         }
 
         /// <summary>
@@ -168,7 +145,7 @@ namespace Lucky.Home.Protocol
             public short SinkIndex;
         }
 
-        internal async Task FetchMetadata()
+        private async Task FetchMetadata()
         {
             lock (_lockObject)
             {
@@ -198,9 +175,9 @@ namespace Lucky.Home.Protocol
 
             // Init a METADATA fetch connection
             TcpNodeAddress address;
-            lock (_address)
+            lock (Address)
             {
-                address = _address.Clone();
+                address = Address.Clone();
             }
 
             try
@@ -252,7 +229,7 @@ namespace Lucky.Home.Protocol
                         else
                         {
                             // Register a subnode
-                            Manager.GetService<INodeRegistrar>().RegisterNode(childGuid, _address.SubNode(index));
+                            Manager.GetService<INodeManager>().RegisterNode(childGuid, Address.SubNode(index));
                         }
                     }
                 }
@@ -280,7 +257,7 @@ namespace Lucky.Home.Protocol
             lock (_sinks)
             {
                 ClearSinks();
-                _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, Id, i)));
+                _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, this, i)));
             }
         }
 
@@ -298,21 +275,58 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public async Task Rename(Guid id)
+        /// <summary>
+        /// Change the ID of the node
+        /// </summary>
+        public async Task<bool> Rename(Guid newId)
         {
-            await Task.Run(() =>
+            if (newId == Guid.Empty)
             {
-                if (id != Id)
+                throw new ArgumentNullException("newId");
+            }
+            lock (_lockObject)
+            {
+                if (_inRename)
                 {
-                    // Notify the node registrar too
-                    Manager.GetService<INodeRegistrar>().RenameNode(Id, id);
+                    return false;
                 }
-                OpenNodeSession((connection, address) =>
+                if (newId == Id)
                 {
-                    connection.Write(new NewGuidMessage(id));
+                    return true;
+                }
+                _inRename = true;
+            }
+
+            bool success = false;
+            Guid oldId = Guid.Empty;
+            try
+            {
+                // Notify the node registrar too
+                Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
+
+                await OpenNodeSession((connection, address) =>
+                {
+                    connection.Write(new NewGuidMessage(newId));
                 });
-                ShouldBeRenamed = false;
-            });
+
+                success = true;
+                oldId = Id;
+                Id = newId;
+            }
+            catch (Exception exc)
+            {
+                success = false;
+                Logger.Exception(exc);
+            }
+            finally
+            {
+                lock (_lockObject)
+                {
+                    _inRename = false;
+                }
+                Manager.GetService<INodeManager>().EndRenameNode(this, oldId, newId, success);
+            }
+            return success;
         }
 
         public Task WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)

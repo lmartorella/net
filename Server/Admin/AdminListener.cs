@@ -15,7 +15,7 @@ namespace Lucky.Home.Admin
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
-        private readonly INodeRegistrar _registrar;
+        private readonly INodeManager _manager;
 
         public AdminListener()
         {
@@ -29,7 +29,7 @@ namespace Lucky.Home.Admin
                 _listener = Manager.GetService<TcpService>().CreateListener(loopbackAddress, Constants.DefaultAdminPort, "Admin", HandleConnection);
             }
 
-            _registrar = Manager.GetService<NodeRegistrar>();
+            _manager = Manager.GetService<NodeManager>();
         }
 
         private async void HandleConnection(NetworkStream stream)
@@ -45,7 +45,7 @@ namespace Lucky.Home.Admin
             else if (msg.Message is RenameNodeMessage)
             {
                 var msg1 = (RenameNodeMessage)msg.Message;
-                var node = _registrar.FindNode(msg1.Id);
+                var node = _manager.FindNode(msg1.Id);
                 if (node != null)
                 {
                     await node.Rename(msg1.NewId);
@@ -57,8 +57,8 @@ namespace Lucky.Home.Admin
 
         private Node[] BuildTree()
         {
-            var roots = _registrar.Nodes.Where(n => !n.Address.IsSubNode).Select(n => new Node(n)).ToList();
-            foreach (var node in _registrar.Nodes.Where(n => n.Address.IsSubNode))
+            var roots = _manager.Nodes.Where(n => !n.Address.IsSubNode).Select(n => new Node(n)).ToList();
+            foreach (var node in _manager.Nodes.Where(n => n.Address.IsSubNode))
             {
                 var root = roots.FirstOrDefault(r => r.TcpNode.Address.Equals(node.Address.SubNode(0)));
                 if (root != null)

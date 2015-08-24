@@ -20,7 +20,7 @@ namespace Lucky.Home
             Manager.GetService<IPersistenceService>().InitAppRoot("Server");
 
             Manager.Register<Server, IServer>();
-            Manager.Register<NodeRegistrar, INodeRegistrar>();
+            Manager.Register<NodeManager, INodeManager>();
             Manager.Register<SinkManager>();
             Manager.Register<AppService>();
 

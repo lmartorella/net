@@ -57,9 +57,9 @@ namespace Lucky.Home
                 return node is UiNode;
             });
 
-            //Connection = new TcpConnection();
+            Connection = new TcpConnection();
 
-            Connection = new SampleData1();
+            //Connection = new SampleData1();
         }
 
         private bool FindNode(UiNode node, out int pos, ref ObservableCollection<object> collection)

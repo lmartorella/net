@@ -12,7 +12,7 @@ namespace Lucky.Home.Protocol
     {
         private readonly TcpListener[] _tcpListeners;
         private UdpControlPortListener[] _helloListeners;
-        private readonly INodeRegistrar _nodeRegistrar;
+        private readonly INodeManager _nodeManager;
 
         // Find a free TCP port
         private const int DEFAULT_PORT = 17010;
@@ -27,7 +27,7 @@ namespace Lucky.Home.Protocol
                 Logger.Warning("Cannot find a valid public IP address of the host. Using IPv4 loopback.");
             }
             //Port = DefaultPort;
-            _nodeRegistrar = Manager.GetService<INodeRegistrar>();
+            _nodeManager = Manager.GetService<INodeManager>();
 
             _helloListeners = Addresses.Select(address =>
             {
@@ -57,13 +57,13 @@ namespace Lucky.Home.Protocol
             switch (messageType)
             {
                 case PingMessageType.Hello:
-                    _nodeRegistrar.RegisterNode(guid, address);
+                    _nodeManager.RegisterNode(guid, address);
                     break;
                 case PingMessageType.Heartbeat:
-                    _nodeRegistrar.HeartbeatNode(guid, address);
+                    _nodeManager.HeartbeatNode(guid, address);
                     break;
                 case PingMessageType.SubNodeChanged:
-                    _nodeRegistrar.RefetchSubNodes(guid, address);
+                    _nodeManager.RefetchSubNodes(guid, address);
                     break;
             }
         }

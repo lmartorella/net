@@ -102,7 +102,7 @@ namespace Lucky.Home.Serialization
             else if (fieldType.IsClass)
             {
                 // Build nested class
-                Type serType = typeof(ClassConverter);
+                Type serType = typeof(NetSerializer<>.ClassConverter).MakeGenericType(fieldType);
                 return (INetSerializer)Activator.CreateInstance(serType);
             }
             throw new NotSupportedException("Type not supported: " + fieldType);
@@ -111,22 +111,12 @@ namespace Lucky.Home.Serialization
         private class ClassConverter : INetSerializer
         {
             private readonly Tuple<FieldInfo, INetSerializer>[] _fields;
-            //private readonly FieldInfo _selector;
 
             public ClassConverter()
             {
                 _fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.Instance)
                     .OrderBy(fi => fi.MetadataToken) // undocumented, to have the source definition order
                     .Select(fi => new Tuple<FieldInfo, INetSerializer>(fi, BuildFieldItem(fi, fi.FieldType))).ToArray();
-                //var selectors = _fields.Select(t => t.Item1)
-                //    .Where(fi => fi.DeclaringType == typeof(T))
-                //    .Where(fi => fi.GetCustomAttributes(typeof(SelectorAttribute), false).Length > 0)
-                //    .ToArray();
-                //if (selectors.Count() > 1)
-                //{
-                //    throw new NotSupportedException("Too many selectors on type " + typeof(T));
-                //}
-                //_selector = selectors.FirstOrDefault();
             }
 
             public void Serialize(object source, BinaryWriter writer)
@@ -149,34 +139,8 @@ namespace Lucky.Home.Serialization
                     INetSerializer ser = tuple.Item2;
                     fi.SetValue(retValue, ser.Deserialize(reader));
                 }
-                //if (_selector != null)
-                //{
-                //    retValue = ProcessSelector(retValue, reader);
-                //}
                 return retValue;
             }
-
-            //private T ProcessSelector(T value, BinaryReader reader)
-            //{
-            //    object currValue = _selector.GetValue(value);
-            //    SelectorAttribute[] attrs = (SelectorAttribute[])_selector.GetCustomAttributes(typeof(SelectorAttribute), false);
-            //    foreach (var attr in attrs)
-            //    {
-            //        if (attr.SelectorValue.Equals(currValue))
-            //        {
-            //            Type newType = attr.Type;
-            //            if (newType.BaseType != typeof(T))
-            //            {
-            //                throw new NotSupportedException("Type not directly assignable in selector");
-            //            }
-
-            //            // Create new NetSerializer
-            //            IPartialSerializer deser = (IPartialSerializer)Activator.CreateInstance(typeof(NetSerializer<>).MakeGenericType(newType));
-            //            value = (T)deser.Deserialize(value, _fields.Length, reader);
-            //        }
-            //    }
-            //    return value;
-            //}
         }
 
         private class BitConverterItem<TD> : INetSerializer where TD : struct
@@ -364,26 +328,6 @@ namespace Lucky.Home.Serialization
                 return default(T);
             }
         }
-
-        //object IPartialSerializer.Deserialize(object firstPart, int fields, BinaryReader reader)
-        //{
-        //    // Copy all field values of the base type there
-        //    T newValue = default(T);
-        //    if (typeof(T).IsClass)
-        //    {
-        //        newValue = Activator.CreateInstance<T>();
-        //    }
-
-        //    foreach (var fieldInfo in s_fields.Take(fields).Select(t => t.Item1))
-        //    {
-        //        object v = fieldInfo.GetValue(firstPart);
-        //        fieldInfo.SetValue(newValue, v);
-        //    }
-
-        //    // Now go on with deserialization
-        //    Read(ref newValue, reader, fields);
-        //    return newValue;
-        //}
 
         object INetSerializer.Deserialize(BinaryReader reader)
         {
