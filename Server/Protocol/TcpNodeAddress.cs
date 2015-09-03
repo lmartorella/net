@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace Lucky.Home.Protocol
 {
@@ -55,6 +56,12 @@ namespace Lucky.Home.Protocol
         public TcpNodeAddress SubNode(int index)
         {
             return new TcpNodeAddress(Address, ControlPort, index);
+        }
+
+        public static TcpNodeAddress Parse(string nodeAddress)
+        {
+            var groups = new Regex("(?<address>.*):(?<port>.*)\\[(?<index>.*)\\]").Match(nodeAddress).Groups;
+            return new TcpNodeAddress(IPAddress.Parse(groups["address"].Value), ushort.Parse(groups["port"].Value), int.Parse(groups["index"].Value));
         }
     }
 }

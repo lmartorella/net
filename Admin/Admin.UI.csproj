@@ -50,8 +50,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="UiNode.cs" />
-    <Compile Include="RenamingNode.cs" />
     <Compile Include="TcpConnection.cs" />
     <Compile Include="UiCommand.cs" />
     <Page Include="MainWindow.xaml">

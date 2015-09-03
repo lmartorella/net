@@ -12,6 +12,9 @@ namespace Lucky.Home.Admin
         public Guid Id { get; set; }
 
         [DataMember]
+        public string Address { get; set; } 
+
+        [DataMember]
         public Node[] Children { get; set; }
 
         [DataMember]
@@ -28,6 +31,7 @@ namespace Lucky.Home.Admin
             TcpNode = tcpNode;
             Id = tcpNode.Id;
             Status = tcpNode.Sink<ISystemSink>().Status;
+            Address = tcpNode.Address.ToString();
         }
 
         internal ITcpNode TcpNode { get; private set; }

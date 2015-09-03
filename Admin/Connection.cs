@@ -10,7 +10,7 @@ namespace Lucky.Home
     {
         protected Connection()
         {
-            Nodes = new ObservableCollection<object>();
+            Nodes = new ObservableCollection<UiNode>();
         }
 
         #region Dependency properties
@@ -27,14 +27,14 @@ namespace Lucky.Home
         #endregion
 
         public static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
-            "Nodes", typeof(ObservableCollection<object>), typeof(Connection));
+            "Nodes", typeof(ObservableCollection<UiNode>), typeof(Connection));
 
-        public ObservableCollection<object> Nodes
+        public ObservableCollection<UiNode> Nodes
         {
-            get { return (ObservableCollection<object>)GetValue(NodesProperty); }
+            get { return (ObservableCollection<UiNode>)GetValue(NodesProperty); }
             set { SetValue(NodesProperty, value); }
         }
 
-        public abstract Task RenameNode(Node node, Guid newName);
+        public abstract Task<bool> RenameNode(Node node, Guid newName);
     }
 }

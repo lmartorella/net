@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Lucky.Home.Design;
 
 namespace Lucky.Home
 {
@@ -22,13 +20,13 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty RenameCommandProperty = DependencyProperty.Register(
-            "RenameCommand", typeof (ICommand), typeof (MainWindow), new PropertyMetadata(default(ICommand)));
+            "RenameCommand", typeof(UiCommand), typeof(MainWindow), new PropertyMetadata(default(ICommand)));
 
-        private RenamingNode _inEditItem;
+        private UiNode _inEditItem;
 
-        public ICommand RenameCommand
+        public UiCommand RenameCommand
         {
-            get { return (ICommand) GetValue(RenameCommandProperty); }
+            get { return (UiCommand)GetValue(RenameCommandProperty); }
             set { SetValue(RenameCommandProperty, value); }
         }
 
@@ -42,46 +40,19 @@ namespace Lucky.Home
                 UiNode node = TreeView.SelectedItem as UiNode;
                 if (node != null)
                 {
-                    int pos;
-                    ObservableCollection<object> collection = Connection.Nodes;
-                    if (FindNode(node, out pos, ref collection))
-                    {
-                        collection.RemoveAt(pos);
-                        _inEditItem = new RenamingNode(node, pos, collection);
-                        collection.Insert(pos, _inEditItem);
-                    }
+                    _inEditItem = node;
+                    node.InRename = true;
+                    RenameCommand.RaiseCanExecuteChanged();
                 }
             }, () =>
             {
-                object node = TreeView.SelectedItem;
-                return node is UiNode;
+                UiNode node = TreeView.SelectedItem as UiNode;
+                return node != null && !node.InRename;
             });
 
             Connection = new TcpConnection();
 
             //Connection = new SampleData1();
-        }
-
-        private bool FindNode(UiNode node, out int pos, ref ObservableCollection<object> collection)
-        {
-            pos = collection.IndexOf(node);
-            if (pos < 0)
-            {
-                // Find children
-                foreach (var child in collection.OfType<UiNode>())
-                {
-                    collection = child.Children;
-                    if (FindNode(node, out pos, ref collection))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                return true;
-            }
-            return false;
         }
 
         private void RenameBoxKeyDown(object sender, KeyEventArgs e)
@@ -104,22 +75,38 @@ namespace Lucky.Home
 
         private async void EndRename(bool commit)
         {
-            if (_inEditItem == null)
+            if (_inEditItem != null)
             {
-                return;
+                // Rename the node
+                if (commit)
+                {
+                    Guid newId;
+                    var inEditItem = _inEditItem;
+                    _inEditItem = null;
+                    inEditItem.InRename = false;
+                    RenameCommand.RaiseCanExecuteChanged();
+                    if (Guid.TryParse(inEditItem.Name, out newId))
+                    {
+                        inEditItem.Name = "Renaming...";
+                        if (await Connection.RenameNode(inEditItem.Node, newId))
+                        {
+                            inEditItem.Name = newId.ToString();
+                        }
+                        else
+                        {
+                            inEditItem.Name = "Error in connection!";
+                            await Task.Delay(TimeSpan.FromSeconds(2));
+                            inEditItem.Name = inEditItem.Node.Id.ToString();
+                        }
+                    }
+                    else
+                    {
+                        inEditItem.Name = "Invalid GUID!";
+                        await Task.Delay(TimeSpan.FromSeconds(2));
+                        inEditItem.Name = inEditItem.Node.Id.ToString();
+                    }
+                }
             }
-
-            _inEditItem.Parent.RemoveAt(_inEditItem.Index);
-            _inEditItem.Parent.Insert(_inEditItem.Index, _inEditItem.Node);
-
-            // Rename the node
-            if (commit)
-            {
-                var newId = new Guid(_inEditItem.Name);
-                await Connection.RenameNode(_inEditItem.Node.Node, newId);
-                _inEditItem.Node.Id = newId;
-            }
-            _inEditItem = null;
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿<Window x:Class="Lucky.Home.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:admin="clr-namespace:Lucky.Home.Admin;assembly=Home.Server"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cvt="clr-namespace:Lucky.Home.Converters"
@@ -24,14 +23,18 @@
             </TreeView.ContextMenu>
             <TreeView.Resources>
                 <cvt:NodeStatusToTextConverter x:Key="nodeStatusToTextConverter" />
+                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+                <cvt:InverseBooleanToVisibilityConverter x:Key="NegatedBooleanToVisibilityConverter"></cvt:InverseBooleanToVisibilityConverter>
+
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Id}" />
-                        <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
-                    </StackPanel>
-                </HierarchicalDataTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:RenamingNode}">
-                    <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
+                        </StackPanel>
+                        <TextBox Visibility="{Binding InRename, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
+                    </Grid>
                 </HierarchicalDataTemplate>
             </TreeView.Resources>
         </TreeView>

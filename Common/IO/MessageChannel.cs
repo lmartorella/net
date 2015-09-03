@@ -26,24 +26,36 @@ namespace Lucky.IO
 
         public async Task<byte[]> ReadMessage()
         {
-            return await Task.Run(() =>
+            List<byte> buffer = new List<byte>(128);
+            do
             {
-                List<byte> buffer = new List<byte>(128);
-                do
+                byte[] ch = new byte[1];
+                int l;
+                try
                 {
-                    byte ch = (byte)_stream.ReadByte();
-                    if (ch == 0)
-                    {
-                        return buffer.ToArray();
-                    }
-                    buffer.Add(ch);
-                } while (true);
-            });
+                    l = await _stream.ReadAsync(ch, 0, 1);
+                }
+                catch (Exception)
+                {
+                    // EOF/closed
+                    return null;
+                }
+                if (l == 0)
+                {
+                    // EOF
+                    return null;
+                }
+                if (ch[0] == 0)
+                {
+                    return buffer.ToArray();
+                }
+                buffer.Add(ch[0]);
+            } while (true);
         }
 
         public void Dispose()
         {
-            _stream.Dispose();
+            //_stream.Dispose();
         }
     }
 }

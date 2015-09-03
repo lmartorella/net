@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
+using Lucky.IO;
 
 namespace Lucky.Home.Protocol
 {
@@ -112,10 +113,9 @@ namespace Lucky.Home.Protocol
                     var writer = new BinaryWriter(stream);
                     NetSerializer<T>.Write(data, writer);
                     writer.Flush();
-                    int l = (int)stream.Position;
+                    byte[] data1 = stream.ToArray();
                     stream.Position = 0;
-
-                    Stream.Write(stream.GetBuffer(), 0, l);
+                    Stream.Write(data1, 0, data1.Length);
                 }
                 Stream.Flush();
             }

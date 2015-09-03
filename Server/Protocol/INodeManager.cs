@@ -11,6 +11,7 @@ namespace Lucky.Home.Protocol
         void RefetchSubNodes(Guid guid, TcpNodeAddress address);
 
         ITcpNode FindNode(Guid guid);
+        ITcpNode FindNode(TcpNodeAddress address);
         IEnumerable<ITcpNode> Nodes { get; }
 
         void BeginRenameNode(TcpNode node, Guid newId);

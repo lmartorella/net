@@ -12,6 +12,7 @@ using Lucky.Services;
 
 namespace Lucky.Home.Admin
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
@@ -35,23 +36,40 @@ namespace Lucky.Home.Admin
         private async void HandleConnection(NetworkStream stream)
         {
             var channel = new MessageChannel(stream);
-            var msg = await Receive<Container>(channel);
-            if (msg.Message is GetTopologyMessage)
+            while (true)
             {
-                // Returns the topology
-                var ret = new GetTopologyMessage.Response { Roots = BuildTree() };
-                await Send(channel, ret);
-            }
-            else if (msg.Message is RenameNodeMessage)
-            {
-                var msg1 = (RenameNodeMessage)msg.Message;
-                var node = _manager.FindNode(msg1.Id);
-                if (node != null)
+                var msg = await Receive<Container>(channel);
+                if (msg == null)
                 {
-                    await node.Rename(msg1.NewId);
+                    // EOF
+                    break;
                 }
-                var ret = new RenameNodeMessage.Response();
-                await Send(channel, ret);
+
+                if (msg.Message is GetTopologyMessage)
+                {
+                    // Returns the topology
+                    var ret = new GetTopologyMessage.Response { Roots = BuildTree() };
+                    await Send(channel, ret);
+                }
+                else if (msg.Message is RenameNodeMessage)
+                {
+                    var msg1 = (RenameNodeMessage)msg.Message;
+                    ITcpNode node;
+                    if (msg1.Id == Guid.Empty)
+                    {
+                        node = _manager.FindNode(TcpNodeAddress.Parse(msg1.NodeAddress));
+                    }
+                    else
+                    {
+                        node = _manager.FindNode(msg1.Id);
+                    }
+                    if (node != null)
+                    {
+                        await node.Rename(msg1.NewId);
+                    }
+                    var ret = new RenameNodeMessage.Response();
+                    await Send(channel, ret);
+                }
             }
         }
 
@@ -75,13 +93,18 @@ namespace Lucky.Home.Admin
             {
                 new DataContractSerializer(message.GetType()).WriteObject(ms, message);
                 ms.Flush();
-                await stream.WriteMessage(ms.GetBuffer());
+                await stream.WriteMessage(ms.ToArray());
             }
         }
 
-        private async Task<T> Receive<T>(MessageChannel stream)
+        private async Task<T> Receive<T>(MessageChannel stream) where T : class
         {
-            using (MemoryStream ms = new MemoryStream(await stream.ReadMessage()))
+            var buffer = await stream.ReadMessage();
+            if (buffer == null)
+            {
+                return null;
+            }
+            using (MemoryStream ms = new MemoryStream(buffer))
             {
                 return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
             }

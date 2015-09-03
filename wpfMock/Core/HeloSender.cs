@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Lucky.Home;
+using Lucky.IO;
 using Lucky.Services;
 
 namespace Lucky.HomeMock.Core
@@ -50,7 +51,7 @@ namespace Lucky.HomeMock.Core
                 writer.Write(Manager.GetService<ControlPortListener>().State.DeviceId.ToByteArray());
                 writer.Write(BitConverter.GetBytes(_rcvPort));
             }
-            byte[] dgram = stream.GetBuffer();
+            byte[] dgram = stream.ToArray();
             UdpClient client = new UdpClient();
             var ipAddress = _localhostMode ? new IPAddress(0x0100007f) : IPAddress.Broadcast;
             client.Send(dgram, dgram.Length, new IPEndPoint(ipAddress, Constants.UdpControlPort));

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -56,7 +57,8 @@ namespace Lucky.Home
                 {
                     await Send(new Container {Message = new GetTopologyMessage()});
                     var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
-                    Dispatcher.Invoke(() => Nodes = new ObservableCollection<object>(topology));
+                    var uinodes = topology.Select(n => new UiNode(n));
+                    Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
                 }
             }
             catch (Exception)
@@ -71,32 +73,40 @@ namespace Lucky.Home
             {
                 new DataContractSerializer(message.GetType()).WriteObject(ms, message);
                 ms.Flush();
-                await _channel.WriteMessage(ms.GetBuffer());
+                await _channel.WriteMessage(ms.ToArray());
             }
         }
 
-        private async Task<T> Receive<T>()
+        private async Task<T> Receive<T>() where T: class
         {
-            using (var ms = new MemoryStream(await _channel.ReadMessage()))
+            var buffer = await _channel.ReadMessage();
+            if (buffer == null)
+            {
+                return null;
+            }
+            using (var ms = new MemoryStream(buffer))
             {
                 return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
             }
         }
 
-        public override async Task RenameNode(Node node, Guid newName)
+        public override async Task<bool> RenameNode(Node node, Guid newName)
         {
             try
             {
+                bool retValue = false;
                 using (_channel = new MessageChannel(_client.GetStream()))
                 {
-                    await Send(new Container { Message = new RenameNodeMessage(node.Id, newName) });
-                    await Receive<RenameNodeMessage.Response>();
+                    await Send(new Container { Message = new RenameNodeMessage(node, newName) });
+                    retValue = (await Receive<RenameNodeMessage.Response>() != null);
                 }
                 await FetchTree();
+                return retValue;
             }
             catch (Exception)
             {
                 Connected = false;
+                return false;
             }
         }
     }

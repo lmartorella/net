@@ -141,6 +141,11 @@ namespace Lucky.Home.Protocol
             }
         }
 
+        ITcpNode INodeManager.FindNode(TcpNodeAddress address)
+        {
+            return FindUnnamed(address);
+        }
+
         public IEnumerable<ITcpNode> Nodes
         {
             get

@@ -18,9 +18,10 @@ namespace Lucky.Home.Design
             Nodes.Add(new UiNode(root));
         }
 
-        public override async Task RenameNode(Node node, Guid newName)
+        public override async Task<bool> RenameNode(Node node, Guid newName)
         {
             node.Id = newName;
+            return true;
         }
     }
 }

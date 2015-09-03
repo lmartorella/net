@@ -7,14 +7,18 @@ namespace Lucky.Home.Admin
     public class RenameNodeMessage : AdminMessage
     {
         [DataMember]
-        public readonly Guid Id;
+        public Guid Id;
+
+        [DataMember]
+        public readonly string NodeAddress;
 
         [DataMember]
         public readonly Guid NewId;
 
-        public RenameNodeMessage(Guid id, Guid newId)
+        public RenameNodeMessage(Node node, Guid newId)
         {
-            Id = id;
+            Id = node.Id;
+            NodeAddress = node.Address;
             NewId = newId;
         }
 
