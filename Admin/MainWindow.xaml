@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="{Binding Connection.StatusText}" />
-        <TreeView Grid.Row="1" ItemsSource="{Binding Connection.Nodes}" x:Name="TreeView">
+        <TreeView Grid.Row="1" ItemsSource="{Binding Connection.Nodes}" x:Name="TreeView" SelectedItemChanged="HandleSelectedItemChanged">
             <TreeView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />

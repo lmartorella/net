@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
-using Lucky.IO;
 
 namespace Lucky.Home.Protocol
 {
@@ -59,7 +58,7 @@ namespace Lucky.Home.Protocol
                     {
                         if (!destroying)
                         {
-                            Write(new CloseMessage());
+                            SendClose();
                         }
 
                         Stream.Flush();
@@ -123,6 +122,11 @@ namespace Lucky.Home.Protocol
             public T Read<T>()
             {
                 return NetSerializer<T>.Read(Reader);
+            }
+
+            public void SendClose()
+            {
+                Write(new CloseMessage());
             }
         }
 

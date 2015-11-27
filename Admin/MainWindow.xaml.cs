@@ -108,5 +108,10 @@ namespace Lucky.Home
                 }
             }
         }
+
+        private void HandleSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            RenameCommand.RaiseCanExecuteChanged();
+        }
     }
 }

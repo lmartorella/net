@@ -37,6 +37,7 @@ namespace Lucky.Home.Protocol
             Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
             
             // Start data fetch asynchrously
+            Logger.Log("Fetching metadata");
             FetchMetadata();
         }
 
@@ -165,12 +166,12 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private Task<bool> OpenNodeSession(Action<TcpConnection, TcpNodeAddress> handler)
+        private async Task<bool> OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler)
         {
             if (IsZombie)
             {
                 // Avoid thrashing the network
-                return Task.FromResult(false);
+                return false;
             }
 
             // Init a METADATA fetch connection
@@ -186,7 +187,7 @@ namespace Lucky.Home.Protocol
                 {
                     // Connecion can be recycled
                     connection.Write(new SelectNodeMessage(address.Index));
-                    handler(connection, address);
+                    return handler(connection, address);
                 }
             }
             catch (Exception exc)
@@ -197,9 +198,8 @@ namespace Lucky.Home.Protocol
                 Logger.Exception(exc);
                 // Mark the node as a zombie
                 IsZombie = true;
-                return Task.FromResult(false);
+                return false;
             }
-            return Task.FromResult(true);
         }
 
         private async Task<bool> TryFetchMetadata()
@@ -213,6 +213,10 @@ namespace Lucky.Home.Protocol
                     // Ask for subnodes
                     connection.Write(new GetChildrenMessage());
                     var childNodes = connection.Read<GetChildrenMessageResponse>();
+                    if (childNodes == null)
+                    {
+                        return false;
+                    }
 
                     for (int index = 0; index < childNodes.Guids.Length; index++)
                     {
@@ -223,7 +227,7 @@ namespace Lucky.Home.Protocol
                             if (childGuid != Id)
                             {
                                 // ERROR
-                                Logger.Warning("InvalidGuidInEnum", "Ïd", Id, "returned", childGuid);
+                                Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childGuid);
                             }
                         }
                         else
@@ -236,7 +240,13 @@ namespace Lucky.Home.Protocol
 
                 // Then ask for sinks
                 connection.Write(new GetSinksMessage());
-                sinks = connection.Read<GetSinksMessageResponse>().Sinks;
+                var response = connection.Read<GetSinksMessageResponse>();
+                if (response == null)
+                {
+                    return false;
+                }
+                sinks = response.Sinks;
+                return true;
             }))
             {
                 return false;
@@ -244,12 +254,12 @@ namespace Lucky.Home.Protocol
 
             // Now register sinks
             RegisterSinks(sinks);
-
             return true;
         }
 
         private void RegisterSinks(string[] sinks)
         {
+            Logger.Log("Registering sinks");
             var sinkManager = Manager.GetService<SinkManager>();
 
             // Identity of sink is due to its position in the sink array.
@@ -307,6 +317,7 @@ namespace Lucky.Home.Protocol
                 await OpenNodeSession((connection, address) =>
                 {
                     connection.Write(new NewGuidMessage(newId));
+                    return true;
                 });
 
                 success = true;
@@ -338,6 +349,7 @@ namespace Lucky.Home.Protocol
                 // Now the channel is owned by the sink driver
                 // Returns when done, and the protocol should leave the channel clean
                 writeHandler(connection);
+                return true;
             });
         }
 
@@ -348,6 +360,7 @@ namespace Lucky.Home.Protocol
                 // Open stream
                 connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
                 readHandler(connection);
+                return true;
             });
         }
 

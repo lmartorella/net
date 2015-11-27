@@ -3,7 +3,10 @@ using Lucky.Services;
 
 namespace Lucky.Home
 {
-    internal class ConsoleLoggerFactory : ServiceBase, ILoggerFactory
+    /// <summary>
+    /// Only console supported at the moment
+    /// </summary>
+    internal class LoggerFactory : ServiceBase, ILoggerFactory
     {        
         private class ConsoleLogger : ILogger
         {

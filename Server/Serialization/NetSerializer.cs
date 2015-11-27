@@ -2,8 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using Lucky.Services;
 
 // ReSharper disable StaticMemberInGenericType
 
@@ -21,6 +23,7 @@ namespace Lucky.Home.Serialization
     class NetSerializer<T> : INetSerializer
     {
         private static readonly INetSerializer s_directSerializer;
+        private static ILogger Logger = Manager.GetService<LoggerFactory>().Create("NetSerializer");
 
         static NetSerializer()
         {
@@ -323,8 +326,9 @@ namespace Lucky.Home.Serialization
             {
                 return (T)s_directSerializer.Deserialize(reader);
             }
-            catch (EndOfStreamException)
+            catch (Exception exc)
             {
+                Logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
                 return default(T);
             }
         }

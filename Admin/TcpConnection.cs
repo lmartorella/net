@@ -56,9 +56,17 @@ namespace Lucky.Home
                 using (_channel = new MessageChannel(_client.GetStream()))
                 {
                     await Send(new Container {Message = new GetTopologyMessage()});
-                    var topology = (await Receive<GetTopologyMessage.Response>()).Roots;
-                    var uinodes = topology.Select(n => new UiNode(n));
-                    Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
+                    var response = (await Receive<GetTopologyMessage.Response>());
+                    if (response == null)
+                    {
+                        Connected = false;
+                    }
+                    else
+                    {
+                        var topology = response.Roots;
+                        var uinodes = topology.Select(n => new UiNode(n));
+                        Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
+                    }
                 }
             }
             catch (Exception)

@@ -12,6 +12,7 @@
 #ifdef HAS_IP
 
 static BOOL s_registered = FALSE;
+static BYTE s_slowDemux = 0;
 
 /*
 	HOME request
@@ -24,10 +25,9 @@ __PACK typedef struct
 	WORD controlPort;
 } HOME_REQUEST;
 
-static void sendHelo(void);
+static void sendHelo(BOOL isHeartbeat);
 static void pollControlPort(void);
-#define NO_SINK 0xffff;
-static WORD s_inReadSink = NO_SINK;
+static int s_inReadSink = -1;
 
 static void CLOS_command()
 {
@@ -36,6 +36,8 @@ static void CLOS_command()
 
 static void SELE_command()
 {
+    s_registered = TRUE;
+ 
     // Select subnode. Ignores it.
     WORD w;
     if (!ip_control_readW(&w)) {
@@ -85,7 +87,7 @@ static void GUID_command()
     boot_getUserData(&persistence);
     persistence.deviceId = guid;
     // Have new GUID! Program it.
-    boot_updateUserData(&persistence);
+    boot_updateUserData(&persistence);   
 }
 
 static void READ_command()
@@ -105,7 +107,7 @@ static void readSink()
 {
     if (!AllSinks[s_inReadSink]->readHandler())
     {
-        s_inReadSink = NO_SINK;
+        s_inReadSink = -1;
     }
 }
 
@@ -178,7 +180,7 @@ void prot_poll()
 	}
 
     s = ip_control_getDataSize();
-	if (s_inReadSink) 
+	if (s_inReadSink >= 0) 
     {
         readSink();
     } 
@@ -196,15 +198,23 @@ void prot_poll()
 */
 void prot_slowTimer()
 {
-    //char buffer[16];
-    // Ping server every second
-    sendHelo();
-
-    //sprintf(buffer, "STA:%x,%s", (int)s_protState, s_errMsg);
-    //println(buffer);
+    if (!s_registered) 
+    {
+        // Ping server every second
+        sendHelo(FALSE);
+    }
+    else 
+    {
+        s_slowDemux++;
+        // Ping server every 4 seconds
+        if ((s_slowDemux % 4) == 0)
+        {
+            sendHelo(TRUE);
+        }
+    }
 }
 
-static void sendHelo()
+static void sendHelo(BOOL isHeartbeat)
 {
 	// Still no HOME? Ping HELO
 	if (UDPIsPutReady(s_heloSocket) < sizeof(HOME_REQUEST))
@@ -213,7 +223,7 @@ static void sendHelo()
 	}
 
 	UDPPutString("HOME");
-	UDPPutString(s_registered ? "HTBT" : "HEL3");
+	UDPPutString(isHeartbeat ? "HTBT" : "HEL3");
 	UDPPutArray((BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();
