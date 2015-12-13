@@ -52,7 +52,7 @@ namespace Lucky.Home.Devices
             {
                 foreach (var descriptor in descriptors)
                 {
-                    IDeviceIntenal device = (IDeviceIntenal)Activator.CreateInstance(descriptor.DeviceType);
+                    IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(descriptor.DeviceType);
                     device.OnInitialize(descriptor.SinkPath);
                     _devices.Add(device);
                 }

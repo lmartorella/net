@@ -5,7 +5,7 @@ using Lucky.Services;
 
 namespace Lucky.HomeMock.Sinks
 {
-    internal class SystemSink : SinkBase
+    internal class SystemSink : SinkMockBase
     {
         private ResetReason _resetReason;
         private string _excMsg;

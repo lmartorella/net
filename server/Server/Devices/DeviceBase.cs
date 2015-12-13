@@ -4,9 +4,29 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    internal abstract class DeviceBase<T> : IDeviceIntenal where T : class, ISink
+    internal abstract class DeviceBase<T> : IDeviceInternal where T : class, ISink
     {
-        public T Sink { get; private set; }
+        private T _sink;
+
+        protected T Sink
+        {
+            get
+            {
+                return _sink;
+            }
+            private set
+            {
+                if (_sink != value)
+                {
+                    _sink = value;
+                    OnSinkChanged();
+                }
+            }
+        }
+
+        protected virtual void OnSinkChanged()
+        {
+        }
 
         public SinkPath SinkPath { get; private set; }
 

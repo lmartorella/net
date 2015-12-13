@@ -57,8 +57,12 @@
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
+    <Compile Include="Devices\IDeviceInternal.cs" />
+    <Compile Include="Devices\ISwitchDevice.cs" />
+    <Compile Include="Sinks\ISwitchArraySink.cs" />
     <Compile Include="Devices\LineDevice.cs" />
     <Compile Include="Devices\SinkPath.cs" />
+    <Compile Include="Devices\SwitchDevice.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
     <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Devices\IDevice.cs" />
@@ -90,6 +94,7 @@
     <Compile Include="Sinks\Old\AudioPlayerSink.cs" />
     <Compile Include="Sinks\IDisplaySink.cs" />
     <Compile Include="Sinks\Old\RomFlasherSink.cs" />
+    <Compile Include="Sinks\SwitchArraySink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
     <Compile Include="Speech\TextToSpeechService.cs" />
     <Compile Include="TestApp\ClockApp.cs" />

@@ -14,9 +14,4 @@ namespace Lucky.Home.Devices
         /// </summary>
         SinkPath SinkPath { get; }
     }
-
-    internal interface IDeviceIntenal : IDevice
-    {
-        void OnInitialize(SinkPath sinkPath);
-    }
 }

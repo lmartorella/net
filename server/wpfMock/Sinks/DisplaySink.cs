@@ -5,7 +5,7 @@ using Lucky.HomeMock.Core;
 
 namespace Lucky.HomeMock.Sinks
 {
-    class DisplaySink : SinkBase
+    class DisplaySink : SinkMockBase
     {
         public DisplaySink()
             : base("LINE")

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.Serialization;
 using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
@@ -20,6 +21,9 @@ namespace Lucky.Home.Admin
         [DataMember]
         public NodeStatus Status { get; set; }
 
+        [DataMember]
+        public string[] Sinks{ get; set; }
+
         public Node()
         {
             Children = new Node[0];
@@ -32,6 +36,7 @@ namespace Lucky.Home.Admin
             Id = tcpNode.Id;
             Status = tcpNode.Sink<ISystemSink>().Status;
             Address = tcpNode.Address.ToString();
+            Sinks = tcpNode.Sinks.Select(s => s.FourCc).ToArray();
         }
 
         internal ITcpNode TcpNode { get; private set; }

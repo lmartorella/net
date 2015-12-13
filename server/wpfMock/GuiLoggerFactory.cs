@@ -8,19 +8,19 @@ namespace Lucky.HomeMock
     internal class GuiLoggerFactory : ServiceBase, ILoggerFactory
     {
         private ILogger _masterLogger;
-        private List<Action> _delayedLogs = new List<Action>();
+        private readonly List<Action> _delayedLogs = new List<Action>();
 
         public ILogger Create(string name)
         {
-            return new Logger(name, this);
+            return new LoggerImpl(name, this);
         }
 
-        private class Logger : ILogger
+        private class LoggerImpl : ILogger
         {
             private readonly string _name;
             private readonly GuiLoggerFactory _owner;
 
-            public Logger(string name, GuiLoggerFactory owner)
+            public LoggerImpl(string name, GuiLoggerFactory owner)
             {
                 _name = name;
                 _owner = owner;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using Lucky.Home;
@@ -16,6 +17,7 @@ namespace Lucky.HomeMock
         private HeloSender _heloSender;
         private DisplaySink _displaySink;
         private readonly SystemSink _systemSink;
+        private readonly SwitchArraySink _switchesSink;
 
         public MainWindow()
         {
@@ -37,8 +39,11 @@ namespace Lucky.HomeMock
                 });
             };
 
+            SwitchesCount = 8;
+            _switchesSink = new SwitchArraySink(this);
+
             var controlPort = Manager.GetService<ControlPortListener>();
-            controlPort.InitSinks(new SinkBase[] { _displaySink, _systemSink });
+            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _switchesSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
@@ -102,6 +107,42 @@ namespace Lucky.HomeMock
         {
             get { return (string) GetValue(ExcMsgProperty); }
             set { SetValue(ExcMsgProperty, value); }
+        }
+
+        public static readonly DependencyProperty SwitchesCountProperty = DependencyProperty.Register(
+            "SwitchesCount", typeof (int), typeof (MainWindow), new PropertyMetadata(default(int), HandleSwitchesCountChanged));
+
+        public int SwitchesCount
+        {
+            get { return (int) GetValue(SwitchesCountProperty); }
+            set { SetValue(SwitchesCountProperty, value); }
+        }
+
+        private static void HandleSwitchesCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MainWindow me = (MainWindow) d;
+            me.Switches = new ObservableCollection<Switch>(Enumerable.Range(0, me.SwitchesCount).Select(i => new Switch(false, "Switch " + i)));
+        }
+
+        public class Switch
+        {
+            public bool Value { get; set; }
+            public string Name { get; private set; }
+
+            public Switch(bool value, string name)
+            {
+                Value = value;
+                Name = name;
+            }
+        }
+
+        public static readonly DependencyProperty SwitchesProperty = DependencyProperty.Register(
+            "Switches", typeof(ObservableCollection<Switch>), typeof(MainWindow), new PropertyMetadata(default(ObservableCollection<Switch>)));
+
+        public ObservableCollection<Switch> Switches
+        {
+            get { return (ObservableCollection<Switch>)GetValue(SwitchesProperty); }
+            set { SetValue(SwitchesProperty, value); }
         }
     }
 }

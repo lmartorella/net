@@ -14,7 +14,7 @@ namespace Lucky.HomeMock.Core
     class ControlPortListener : ServiceBaseWithData<Data>
     {
         private readonly TcpListener _serviceListener;
-        private SinkBase[] _sinks;
+        private SinkMockBase[] _sinks;
 
         public ControlPortListener()
         {
@@ -52,7 +52,7 @@ namespace Lucky.HomeMock.Core
             _serviceListener.BeginAcceptTcpClient(handler, null);
         }
 
-        public void InitSinks(IEnumerable<SinkBase> sinks)
+        public void InitSinks(IEnumerable<SinkMockBase> sinks)
         {
             _sinks = sinks.ToArray();
         }

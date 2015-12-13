@@ -28,7 +28,7 @@
 
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
                     <Grid>
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" ToolTip="{Binding Sinks}" ContextMenuOpening="Node_OnContextMenuOpening" DataContext="{Binding}">
                             <TextBlock Text="{Binding Name}" />
                             <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
                         </StackPanel>

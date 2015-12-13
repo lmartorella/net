@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using Lucky.Home.Admin;
@@ -24,6 +23,7 @@ namespace Lucky.Home
             Name = node.Id.ToString();
             Status = node.Status;
             Children = new ObservableCollection<object>(node.Children.Select(n => new UiNode(n)));
+            Sinks = string.Join(", ", node.Sinks);
         }
 
         public static readonly DependencyProperty InRenameProperty = DependencyProperty.Register(
@@ -42,6 +42,15 @@ namespace Lucky.Home
         {
             get { return (string) GetValue(NameProperty); }
             set { SetValue(NameProperty, value); }
+        }
+
+        public static readonly DependencyProperty SinksProperty = DependencyProperty.Register(
+            "Sinks", typeof (string), typeof (UiNode), new PropertyMetadata(default(string)));
+
+        public string Sinks
+        {
+            get { return (string) GetValue(SinksProperty); }
+            set { SetValue(SinksProperty, value); }
         }
     }
 }

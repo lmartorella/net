@@ -51,14 +51,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\IntToStringConverter.cs" />
     <Compile Include="Converters\ResetReasonToEnabledConverter.cs" />
     <Compile Include="Core\ItemEventArgs.cs" />
     <Compile Include="GuiLoggerFactory.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
     <Compile Include="Sinks\FlasherSink.cs" />
     <Compile Include="Core\ControlPortListener.cs" />
-    <Compile Include="Sinks\SinkBase.cs" />
+    <Compile Include="Sinks\SinkMockBase.cs" />
     <Compile Include="Sinks\SinkStateManager.cs" />
+    <Compile Include="Sinks\SwitchArraySink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

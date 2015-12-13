@@ -22,6 +22,11 @@ namespace Lucky.Home.Protocol
         bool IsZombie { get; }
 
         /// <summary>
+        /// Get all available sinks
+        /// </summary>
+        ISink[] Sinks { get; }
+
+        /// <summary>
         /// Manage heartbeat
         /// </summary>
         void Heartbeat(TcpNodeAddress address);

@@ -371,5 +371,16 @@ namespace Lucky.Home.Protocol
                 return _sinks.OfType<T>().FirstOrDefault();
             }
         }
+
+        public ISink[] Sinks
+        {
+            get
+            {
+                lock (_sinks)
+                {
+                    return _sinks.ToArray();
+                }
+            }
+        }
     }
 }

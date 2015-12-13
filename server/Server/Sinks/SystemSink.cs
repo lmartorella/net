@@ -9,6 +9,11 @@ namespace Lucky.Home.Sinks
     {
         public NodeStatus Status { get; private set; }
 
+        public SystemSink()
+        {
+            Status = new NodeStatus { ResetReason = ResetReason.Waiting };
+        }
+
         protected override async void OnInitialize()
         {
             base.OnInitialize();

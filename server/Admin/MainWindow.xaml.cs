@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Lucky.Home
@@ -112,6 +114,24 @@ namespace Lucky.Home
         private void HandleSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             RenameCommand.RaiseCanExecuteChanged();
+        }
+
+        private void Node_OnContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            var frameworkElement = ((FrameworkElement)sender);
+            var cm = frameworkElement.ContextMenu = new ContextMenu();
+            var node = (UiNode)frameworkElement.DataContext;
+
+            if (node.Node.Sinks.Contains("SWAR"))
+            {
+                // Read switch array    
+                var menuItem = new MenuItem { Header = "Read Switches" };
+                menuItem.Click += (o, args) =>
+                {
+                    Console.WriteLine("uno");
+                };
+                cm.Items.Add(menuItem);
+            }
         }
     }
 }

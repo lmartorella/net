@@ -6,12 +6,11 @@
     <Grid>
         <Grid.Resources>
             <cvts:ResetReasonToEnabledConverter x:Key="ResetReasonToEnabledConverter" />
+            <cvts:IntToStringConverter x:Key="IntToString" />
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
         <!-- Top Toolbar -->
@@ -21,13 +20,48 @@
             <TextBlock Margin="4">Exc</TextBlock>
             <TextBox Margin="4" Text="{Binding ExcMsg}" MinWidth="150" IsEnabled="{Binding ResetReason, Converter={StaticResource ResetReasonToEnabledConverter}}"></TextBox>
         </StackPanel>
-        <TextBox  Grid.Row="1" 
-                  x:Name="LogBox" Margin="4"/>
-        <TextBlock Grid.Row="2" 
-                   Text="Display" Margin="4"/>
-        <TextBox  Grid.Row="3" 
-                  MaxLines="2"
-                  MinLines="2"
-                  x:Name="DisplayBox" Margin="4" />
+        
+        <TabControl Grid.Row="1">
+            <!-- Display and logs -->
+            <TabItem Header="Display/Log">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <TextBox  Grid.Row="0" x:Name="LogBox" Margin="4"/>
+                    <TextBlock Grid.Row="1" Text="Display" Margin="4"/>
+                    <TextBox  Grid.Row="2" MaxLines="2" MinLines="2" x:Name="DisplayBox" Margin="4" />
+                </Grid>
+            </TabItem>
+
+            <!-- Switch array -->
+            <TabItem Header="Switches">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock>Count:</TextBlock>
+                        <TextBox Text="{Binding SwitchesCount, Mode=TwoWay, Converter={StaticResource IntToString}}"></TextBox>
+                    </StackPanel>
+                    <ListBox ItemsSource="{Binding Switches}" Grid.Row="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}"/>
+                                    <CheckBox IsChecked="{Binding Value, Mode=TwoWay}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </TabItem>
+            
+        </TabControl>
+        
     </Grid>
 </Window>

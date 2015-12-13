@@ -4,11 +4,11 @@ using System.Text;
 
 namespace Lucky.HomeMock.Sinks
 {
-    abstract class SinkBase
+    abstract class SinkMockBase
     {
         public readonly string FourCc;
 
-        protected SinkBase(string fourCc)
+        protected SinkMockBase(string fourCc)
         {
             FourCc = fourCc;
         }
