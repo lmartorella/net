@@ -1,4 +1,4 @@
-﻿<Window x:Class="Lucky.Home.MainWindow"
+﻿<Window x:Class="Lucky.Home.AdminMainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -19,6 +19,7 @@
             <TreeView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />
+                    <MenuItem Command="{Binding CreateDeviceCommand}" Header="Create device..." />
                 </ContextMenu>
             </TreeView.ContextMenu>
             <TreeView.Resources>
@@ -28,7 +29,7 @@
 
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
                     <Grid>
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" ToolTip="{Binding Sinks}" ContextMenuOpening="Node_OnContextMenuOpening" DataContext="{Binding}">
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" ToolTip="{Binding Sinks}">
                             <TextBlock Text="{Binding Name}" />
                             <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
                         </StackPanel>

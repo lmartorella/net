@@ -77,8 +77,8 @@ namespace Lucky.Home.Protocol
                     {
                         _cancellationToken.Cancel();
                     }
-                    _semaphore.WaitOne();
                 }
+                _semaphore.WaitOne();
             }
 
             public void Release()
@@ -140,9 +140,9 @@ namespace Lucky.Home.Protocol
                     _client = new Client(endPoint);
                     s_instances[endPoint] = _client;
                 }
-                // Locking
-                _client.Acquire();
             }
+            // Locking
+            _client.Acquire();
         }
 
         public void Write<T>(T data)

@@ -51,10 +51,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
+    <Compile Include="CreateDeviceWindow.xaml.cs">
+      <DependentUpon>CreateDeviceWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UiNode.cs" />
     <Compile Include="TcpConnection.cs" />
     <Compile Include="UiCommand.cs" />
-    <Page Include="MainWindow.xaml">
+    <Page Include="AdminMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -65,10 +68,14 @@
     <Compile Include="Connection.cs" />
     <Compile Include="Converters\NodeStatusToTextConverter.cs" />
     <Compile Include="Design\SampleData1.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="AdminMainWindow.xaml.cs">
+      <DependentUpon>AdminMainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="CreateDeviceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

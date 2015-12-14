@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
+using Lucky.Home.Admin;
 
 namespace Lucky.Home
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for AdminMainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public partial class AdminMainWindow
     {
+        private UiNode _inEditItem;
+
         public static readonly DependencyProperty ConnectionProperty = DependencyProperty.Register(
-            "Connection", typeof (Connection), typeof (MainWindow), new PropertyMetadata(default(Connection)));
+            "Connection", typeof (Connection), typeof (AdminMainWindow), new PropertyMetadata(default(Connection)));
 
         public Connection Connection
         {
@@ -22,9 +23,7 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty RenameCommandProperty = DependencyProperty.Register(
-            "RenameCommand", typeof(UiCommand), typeof(MainWindow), new PropertyMetadata(default(ICommand)));
-
-        private UiNode _inEditItem;
+            "RenameCommand", typeof(UiCommand), typeof(AdminMainWindow), new PropertyMetadata(default(ICommand)));
 
         public UiCommand RenameCommand
         {
@@ -32,29 +31,49 @@ namespace Lucky.Home
             set { SetValue(RenameCommandProperty, value); }
         }
 
-        public MainWindow()
+        public static readonly DependencyProperty CreateDeviceCommandProperty = DependencyProperty.Register(
+            "CreateDeviceCommand", typeof (UiCommand), typeof (AdminMainWindow), new PropertyMetadata(default(UiCommand)));
+
+        public UiCommand CreateDeviceCommand
+        {
+            get { return (UiCommand) GetValue(CreateDeviceCommandProperty); }
+            set { SetValue(CreateDeviceCommandProperty, value); }
+        }
+
+        public AdminMainWindow()
         {
             InitializeComponent();
             DataContext = this;
 
             RenameCommand = new UiCommand(() =>
             {
-                UiNode node = TreeView.SelectedItem as UiNode;
-                if (node != null)
+                if (SelectedNode != null)
                 {
-                    _inEditItem = node;
-                    node.InRename = true;
+                    _inEditItem = SelectedNode;
+                    SelectedNode.InRename = true;
                     RenameCommand.RaiseCanExecuteChanged();
                 }
-            }, () =>
+            }, () => SelectedNode != null && !SelectedNode.InRename);
+
+            CreateDeviceCommand = new UiCommand(() =>
             {
-                UiNode node = TreeView.SelectedItem as UiNode;
-                return node != null && !node.InRename;
-            });
+                if (SelectedNode != null)
+                {
+                    CreateDevice(SelectedNode.Node);
+                }
+            }, () => SelectedNode != null && !SelectedNode.InRename);
 
             Connection = new TcpConnection();
 
             //Connection = new SampleData1();
+        }
+
+        private UiNode SelectedNode
+        {
+            get
+            {
+                return TreeView.SelectedItem as UiNode;
+            }
         }
 
         private void RenameBoxKeyDown(object sender, KeyEventArgs e)
@@ -114,23 +133,22 @@ namespace Lucky.Home
         private void HandleSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             RenameCommand.RaiseCanExecuteChanged();
+            CreateDeviceCommand.RaiseCanExecuteChanged();
         }
 
-        private void Node_OnContextMenuOpening(object sender, ContextMenuEventArgs e)
+        private async void CreateDevice(Node node)
         {
-            var frameworkElement = ((FrameworkElement)sender);
-            var cm = frameworkElement.ContextMenu = new ContextMenu();
-            var node = (UiNode)frameworkElement.DataContext;
-
-            if (node.Node.Sinks.Contains("SWAR"))
+            CreateDeviceWindow wnd = new CreateDeviceWindow();
+            wnd.Sinks = node.Sinks;
+            wnd.DeviceTypes = await Connection.GetDevices();
+            if (wnd.ShowDialog() == true)
             {
-                // Read switch array    
-                var menuItem = new MenuItem { Header = "Read Switches" };
-                menuItem.Click += (o, args) =>
+                // Create device
+                string err = await Connection.CreateDevice(node, wnd.SinkId, wnd.DeviceType, wnd.Argument);
+                if (err != null)
                 {
-                    Console.WriteLine("uno");
-                };
-                cm.Items.Add(menuItem);
+                    MessageBox.Show(err, "Error creating the device");
+                }
             }
         }
     }

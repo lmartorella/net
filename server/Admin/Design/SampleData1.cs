@@ -23,5 +23,15 @@ namespace Lucky.Home.Design
             node.Id = newName;
             return true;
         }
+
+        public override async Task<string[]> GetDevices()
+        {
+            return new string[0];
+        }
+
+        public override async Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument)
+        {
+            return null;
+        }
     }
 }

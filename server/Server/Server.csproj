@@ -51,6 +51,8 @@
   <ItemGroup>
     <Compile Include="Admin\AdminListener.cs" />
     <Compile Include="Admin\AdminMessage.cs" />
+    <Compile Include="Admin\CreateDeviceMessage.cs" />
+    <Compile Include="Admin\GetDeviceTypesMessage.cs" />
     <Compile Include="Admin\GetTopologyMessage.cs" />
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Admin\RenameNodeMessage.cs" />

@@ -30,8 +30,11 @@ namespace Lucky.Home.Devices
 
         public SinkPath SinkPath { get; private set; }
 
-        public void OnInitialize(SinkPath sinkPath)
+        public string Argument { get; private set; }
+
+        public virtual void OnInitialize(string argument, SinkPath sinkPath)
         {
+            Argument = argument;
             SinkPath = sinkPath;
             var sinkManager = Manager.GetService<SinkManager>();
             lock (sinkManager.LockObject)

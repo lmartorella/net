@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Lucky.Home.Admin;
+using Lucky.Home.Devices;
 using Lucky.IO;
 
 namespace Lucky.Home
@@ -115,6 +116,40 @@ namespace Lucky.Home
             {
                 Connected = false;
                 return false;
+            }
+        }
+
+        public override async Task<string[]> GetDevices()
+        {
+            try
+            {
+                using (_channel = new MessageChannel(_client.GetStream()))
+                {
+                    await Send(new Container { Message = new GetDeviceTypesMessage() });
+                    return (await Receive<GetDeviceTypesMessage.Response>()).DeviceTypes;
+                }
+            }
+            catch (Exception)
+            {
+                Connected = false;
+                return new string[0];
+            }
+        }
+
+        public override async Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument)
+        {
+            try
+            {
+                using (_channel = new MessageChannel(_client.GetStream()))
+                {
+                    await Send(new Container { Message = new CreateDeviceMessage { SinkPath = new SinkPath(node.Id, sinkId), DeviceType = deviceType, Argument = argument } });
+                    return (await Receive<CreateDeviceMessage.Response>()).Error;
+                }
+            }
+            catch (Exception exc)
+            {
+                Connected = false;
+                return exc.Message;
             }
         }
     }

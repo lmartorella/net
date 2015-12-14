@@ -17,7 +17,7 @@ namespace Lucky.Home.TestApp
             // Creates a line device
             
             _device = new LineDevice();
-            _device.OnInitialize(new SinkPath(new Guid("12345678-ABCD-EF00-1234-0123456789AB"), "LINE"));
+            _device.OnInitialize("", new SinkPath(new Guid("12345678-ABCD-EF00-1234-0123456789AB"), "LINE"));
 
             _timer = new Timer(state =>
             {

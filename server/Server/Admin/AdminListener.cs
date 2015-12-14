@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.IO;
 using Lucky.Net;
@@ -70,6 +71,26 @@ namespace Lucky.Home.Admin
                     var ret = new RenameNodeMessage.Response();
                     await Send(channel, ret);
                 }
+                else if (msg.Message is GetDeviceTypesMessage)
+                {
+                    var ret = new GetDeviceTypesMessage.Response { DeviceTypes = Manager.GetService<DeviceManager>().DeviceTypes };
+                    await Send(channel, ret);
+                }
+                else if (msg.Message is CreateDeviceMessage)
+                {
+                    var msg1 = (CreateDeviceMessage)msg.Message;
+                    string err = null;
+                    try
+                    {
+                        CreateDevice(msg1.SinkPath, msg1.DeviceType, msg1.Argument);
+                    }
+                    catch (Exception exc)
+                    {
+                        err = exc.Message;
+                    }
+                    var ret = new CreateDeviceMessage.Response { Error = err };
+                    await Send(channel, ret);
+                }
             }
         }
 
@@ -108,6 +129,11 @@ namespace Lucky.Home.Admin
             {
                 return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
             }
+        }
+
+        private void CreateDevice(SinkPath sinkPath, string deviceType, string argument)
+        {
+            Manager.GetService<DeviceManager>().CreateAndLoadDevice(deviceType, argument, sinkPath);
         }
     }
 }

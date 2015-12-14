@@ -36,5 +36,9 @@ namespace Lucky.Home
         }
 
         public abstract Task<bool> RenameNode(Node node, Guid newName);
+
+        public abstract Task<string[]> GetDevices();
+
+        public abstract Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument);
     }
 }

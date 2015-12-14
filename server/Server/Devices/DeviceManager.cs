@@ -10,9 +10,9 @@ namespace Lucky.Home.Devices
     class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>
     {
         /// <summary>
-        /// From sink type to device type
+        /// From type name to device type
         /// </summary>
-        private readonly Dictionary<Type, Type> _deviceTypes = new Dictionary<Type, Type>();
+        private readonly Dictionary<string, Type> _deviceTypes = new Dictionary<string, Type>();
         private readonly List<IDevice> _devices = new List<IDevice>();
 
         [DataContract]
@@ -25,7 +25,10 @@ namespace Lucky.Home.Devices
         internal class DeviceDescriptor
         {
             [DataMember]
-            public Type DeviceType;
+            public string DeviceType;
+
+            [DataMember]
+            public string Argument;
 
             [DataMember]
             public SinkPath SinkPath;
@@ -36,14 +39,27 @@ namespace Lucky.Home.Devices
             LoadState(State.Descriptors);
         }
 
+        public string[] DeviceTypes
+        {
+            get
+            {
+                return _deviceTypes.Keys.ToArray();
+            }
+        }
+
         public void RegisterAssembly(Assembly assembly)
         {
-            foreach (var deviceType in assembly.GetTypes().Where(type => type.IsGenericType && typeof(DeviceBase<>).IsAssignableFrom(type.GetGenericTypeDefinition())))
+            foreach (var deviceType in assembly.GetTypes().Where(type => !type.IsGenericType && type.BaseType != null && type.BaseType.IsGenericType && typeof(DeviceBase<>).IsAssignableFrom(type.BaseType.GetGenericTypeDefinition())))
             {
                 // Exception if already registered..
-                Type sinkType = deviceType.GetGenericArguments()[0];
-                _deviceTypes.Add(sinkType, deviceType);
+                _deviceTypes.Add(deviceType.Name, deviceType);
             }
+        }
+
+        private Type GetSinkTypeOfDeviceType(Type deviceType)
+        {
+            // Exception if already registered..
+            return deviceType.BaseType.GetGenericArguments()[0];
         }
 
         private void LoadState(DeviceDescriptor[] descriptors)
@@ -52,8 +68,8 @@ namespace Lucky.Home.Devices
             {
                 foreach (var descriptor in descriptors)
                 {
-                    IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(descriptor.DeviceType);
-                    device.OnInitialize(descriptor.SinkPath);
+                    IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(_deviceTypes[descriptor.DeviceType]);
+                    device.OnInitialize(descriptor.Argument, descriptor.SinkPath);
                     _devices.Add(device);
                 }
             }
@@ -66,15 +82,20 @@ namespace Lucky.Home.Devices
                 Descriptors = devices.Select(d => new DeviceDescriptor
                 {
                     SinkPath = d.SinkPath,
-                    DeviceType = d.GetType()
+                    DeviceType = d.GetType().Name,
+                    Argument = d.Argument
                 }).ToArray()
             };
         }
 
-        public void RegisterDevice(IDevice device)
+        public IDevice CreateAndLoadDevice(string type, string argument, SinkPath sinkPath)
         {
+            var device = (IDeviceInternal)Activator.CreateInstance(_deviceTypes[type]);
             _devices.Add(device);
             SaveState(_devices.ToArray());
+
+            device.OnInitialize(argument, sinkPath);
+            return device;
         }
     }
 }

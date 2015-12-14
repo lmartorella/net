@@ -1,17 +1,26 @@
 ﻿using System;
 using Lucky.Home.Sinks;
 
+// ReSharper disable once UnusedMember.Global
+
 namespace Lucky.Home.Devices
 {
     internal class SwitchDevice : DeviceBase<ISwitchArraySink>, ISwitchDevice
     {
-        private readonly int _bit;
+        private int _bit;
         private ISwitchArraySink _sink;
         private bool _lastStatus;
+        private TimeSpan _period;
 
-        public SwitchDevice(int bit)
+        /// <summary>
+        /// argument = "bit#,poll_ms#"
+        /// </summary>
+        public override void OnInitialize(string argument, SinkPath sinkPath)
         {
-            _bit = bit;
+            var args = argument.Split(',');
+            _bit = int.Parse(args[0]);
+            _period = TimeSpan.FromMilliseconds(double.Parse(args[1]));
+            base.OnInitialize(argument, sinkPath);
         }
 
         protected override void OnSinkChanged()
@@ -22,6 +31,7 @@ namespace Lucky.Home.Devices
                 _sink.StatusChanged -= HandleStatusChanged;
             }
             _sink = Sink;
+            _sink.PollPeriod = _period;
             if (_sink != null)
             {
                 _sink.StatusChanged += HandleStatusChanged;
