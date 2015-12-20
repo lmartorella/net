@@ -13,15 +13,6 @@ namespace Lucky.Home
             DataContext = this;
         }
 
-        public static readonly DependencyProperty SinksProperty = DependencyProperty.Register(
-            "Sinks", typeof (string[]), typeof (CreateDeviceWindow), new PropertyMetadata(default(string[])));
-
-        public string[] Sinks
-        {
-            get { return (string[]) GetValue(SinksProperty); }
-            set { SetValue(SinksProperty, value); }
-        }
-
         public static readonly DependencyProperty DeviceTypesProperty = DependencyProperty.Register(
             "DeviceTypes", typeof (string[]), typeof (CreateDeviceWindow), new PropertyMetadata(default(string[])));
 
@@ -38,15 +29,6 @@ namespace Lucky.Home
         {
             get { return (string) GetValue(DeviceTypeProperty); }
             set { SetValue(DeviceTypeProperty, value); }
-        }
-
-        public static readonly DependencyProperty SinkIdProperty = DependencyProperty.Register(
-            "SinkId", typeof (string), typeof (CreateDeviceWindow), new PropertyMetadata(default(string)));
-
-        public string SinkId
-        {
-            get { return (string) GetValue(SinkIdProperty); }
-            set { SetValue(SinkIdProperty, value); }
         }
 
         public static readonly DependencyProperty ArgumentProperty = DependencyProperty.Register(

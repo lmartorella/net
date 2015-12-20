@@ -13,8 +13,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Margin="4">Select sink:</TextBlock>
-            <ComboBox Margin="4" Grid.Row="1" ItemsSource="{Binding Sinks}" SelectedItem="{Binding SinkId}"></ComboBox>
             <TextBlock Grid.Row="2" Margin="4">Select device type:</TextBlock>
             <ComboBox Margin="4" Grid.Row="3" ItemsSource="{Binding DeviceTypes}" SelectedItem="{Binding DeviceType}"></ComboBox>
             <TextBlock Margin="4" Grid.Row="4">Argument:</TextBlock>

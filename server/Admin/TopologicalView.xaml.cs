@@ -2,19 +2,18 @@
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Lucky.Home.Admin;
 
 namespace Lucky.Home
 {
     /// <summary>
-    /// Interaction logic for AdminMainWindow.xaml
+    /// Interaction logic for TopologicalView.xaml
     /// </summary>
-    public partial class AdminMainWindow
+    public partial class TopologicalView
     {
         private UiNode _inEditItem;
 
         public static readonly DependencyProperty ConnectionProperty = DependencyProperty.Register(
-            "Connection", typeof (Connection), typeof (AdminMainWindow), new PropertyMetadata(default(Connection)));
+            "Connection", typeof (Connection), typeof (TopologicalView), new PropertyMetadata(default(Connection)));
 
         public Connection Connection
         {
@@ -23,7 +22,7 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty RenameCommandProperty = DependencyProperty.Register(
-            "RenameCommand", typeof(UiCommand), typeof(AdminMainWindow), new PropertyMetadata(default(ICommand)));
+            "RenameCommand", typeof(UiCommand), typeof(TopologicalView), new PropertyMetadata(default(ICommand)));
 
         public UiCommand RenameCommand
         {
@@ -32,7 +31,7 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty CreateDeviceCommandProperty = DependencyProperty.Register(
-            "CreateDeviceCommand", typeof (UiCommand), typeof (AdminMainWindow), new PropertyMetadata(default(UiCommand)));
+            "CreateDeviceCommand", typeof (UiCommand), typeof (TopologicalView), new PropertyMetadata(default(UiCommand)));
 
         public UiCommand CreateDeviceCommand
         {
@@ -40,35 +39,39 @@ namespace Lucky.Home
             set { SetValue(CreateDeviceCommandProperty, value); }
         }
 
-        public AdminMainWindow()
+        public TopologicalView()
         {
             InitializeComponent();
             DataContext = this;
 
             RenameCommand = new UiCommand(() =>
             {
-                if (SelectedNode != null)
+                if (SelectedUiNode != null)
                 {
-                    _inEditItem = SelectedNode;
-                    SelectedNode.InRename = true;
+                    _inEditItem = SelectedUiNode;
+                    _inEditItem.InRename = true;
                     RenameCommand.RaiseCanExecuteChanged();
                 }
-            }, () => SelectedNode != null && !SelectedNode.InRename);
+            }, () => SelectedUiNode != null && !SelectedUiNode.InRename);
 
             CreateDeviceCommand = new UiCommand(() =>
             {
-                if (SelectedNode != null)
+                if (SelectedSink != null)
                 {
-                    CreateDevice(SelectedNode.Node);
+                    CreateDevice(SelectedSink);
                 }
-            }, () => SelectedNode != null && !SelectedNode.InRename);
-
-            Connection = new TcpConnection();
-
-            //Connection = new SampleData1();
+            }, () => SelectedSink != null);
         }
 
-        private UiNode SelectedNode
+        private SinkNode SelectedSink
+        {
+            get
+            {
+                return TreeView.SelectedItem as SinkNode;
+            }
+        }
+
+        private UiNode SelectedUiNode
         {
             get
             {
@@ -136,15 +139,15 @@ namespace Lucky.Home
             CreateDeviceCommand.RaiseCanExecuteChanged();
         }
 
-        private async void CreateDevice(Node node)
+        private async void CreateDevice(SinkNode node)
         {
+            UiNode parent = (UiNode) node.Parent;
             CreateDeviceWindow wnd = new CreateDeviceWindow();
-            wnd.Sinks = node.Sinks;
             wnd.DeviceTypes = await Connection.GetDevices();
             if (wnd.ShowDialog() == true)
             {
                 // Create device
-                string err = await Connection.CreateDevice(node, wnd.SinkId, wnd.DeviceType, wnd.Argument);
+                string err = await Connection.CreateDevice(parent.Node, node.Name, wnd.DeviceType, wnd.Argument);
                 if (err != null)
                 {
                     MessageBox.Show(err, "Error creating the device");

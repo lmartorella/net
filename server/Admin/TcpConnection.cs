@@ -65,7 +65,7 @@ namespace Lucky.Home
                     else
                     {
                         var topology = response.Roots;
-                        var uinodes = topology.Select(n => new UiNode(n));
+                        var uinodes = topology.Select(n => new UiNode(n, null));
                         Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
                     }
                 }

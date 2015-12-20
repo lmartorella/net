@@ -15,7 +15,7 @@ namespace Lucky.Home.Design
                     new Node { Id = Guid.NewGuid(), Status = new NodeStatus { ResetReason = ResetReason.Exception, ExceptionMessage = "EXC.CODE1"} },
                 }
             };
-            Nodes.Add(new UiNode(root));
+            Nodes.Add(new UiNode(root, null));
         }
 
         public override async Task<bool> RenameNode(Node node, Guid newName)

@@ -5,25 +5,29 @@ using Lucky.Home.Admin;
 
 namespace Lucky.Home
 {
-    public class UiNode : DependencyObject
+    public class UiNode : TreeNode
     {
-        public ObservableCollection<object> Children { get; set; }
-
+        // If a tcp node...
         public NodeStatus Status { get; set; }
+        // If a tcp node...
         internal Node Node { get; private set; }
 
-        public UiNode()
-        {
-            Children = new ObservableCollection<object>();
-        }
-
-        internal UiNode(Node node)
+        /// <summary>
+        /// From a TCP node
+        /// </summary>
+        internal UiNode(Node node, UiNode parent)
         {
             Node = node;
+            Parent = parent;
             Name = node.Id.ToString();
             Status = node.Status;
-            Children = new ObservableCollection<object>(node.Children.Select(n => new UiNode(n)));
-            Sinks = string.Join(", ", node.Sinks);
+            Children = new ObservableCollection<object>(node.Children.Select(n => new UiNode(n, this)));
+            SinkNames = string.Join(", ", node.Sinks);
+
+            foreach (var sink in node.Sinks)
+            {
+                Children.Add(new SinkNode(sink, this));
+            }
         }
 
         public static readonly DependencyProperty InRenameProperty = DependencyProperty.Register(
@@ -35,22 +39,13 @@ namespace Lucky.Home
             set { SetValue(InRenameProperty, value); }
         }
 
-        public static readonly DependencyProperty NameProperty = DependencyProperty.Register(
-            "Name", typeof (string), typeof (UiNode), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty SinkNamesProperty = DependencyProperty.Register(
+            "SinkNames", typeof (string), typeof (UiNode), new PropertyMetadata(default(string)));
 
-        public string Name
+        public string SinkNames
         {
-            get { return (string) GetValue(NameProperty); }
-            set { SetValue(NameProperty, value); }
-        }
-
-        public static readonly DependencyProperty SinksProperty = DependencyProperty.Register(
-            "Sinks", typeof (string), typeof (UiNode), new PropertyMetadata(default(string)));
-
-        public string Sinks
-        {
-            get { return (string) GetValue(SinksProperty); }
-            set { SetValue(SinksProperty, value); }
+            get { return (string) GetValue(SinkNamesProperty); }
+            set { SetValue(SinkNamesProperty, value); }
         }
     }
 }
