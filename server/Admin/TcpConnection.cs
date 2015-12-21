@@ -49,6 +49,7 @@ namespace Lucky.Home
         {
             Connected = true;
             await FetchTree();
+            await FetchDevices();
         }
 
         private async Task FetchTree()
@@ -58,6 +59,12 @@ namespace Lucky.Home
             App.Current.Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
         }
 
+        private async Task FetchDevices()
+        {
+            var devices = (await _adminInterface.GetDevices()).Select(desc => new UiDevice(desc));
+            App.Current.Dispatcher.Invoke(() => Devices = new ObservableCollection<UiDevice>(devices));
+        }
+
         public async Task<bool> RenameNode(Node node, Guid newName)
         {
             bool ret = await _adminInterface.RenameNode(node.Address, node.Id, newName);
@@ -65,9 +72,14 @@ namespace Lucky.Home
             return ret;
         }
 
-        public async Task<string[]> GetDevices()
+        public async Task<string[]> GetDeviceTypes()
         {
             return await _adminInterface.GetDeviceTypes();
+        }
+
+        public async Task<DeviceDescriptor[]> GetDevices()
+        {
+            return await _adminInterface.GetDevices();
         }
 
         public async Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument)
@@ -144,6 +156,11 @@ namespace Lucky.Home
             public async Task<string> CreateDevice(SinkPath sinkPath, string deviceType, string argument)
             {
                 return (string) await Request("CreateDevice", sinkPath, deviceType, argument);
+            }
+
+            public async Task<DeviceDescriptor[]> GetDevices()
+            {
+                return (DeviceDescriptor[])await Request();
             }
         }
     }

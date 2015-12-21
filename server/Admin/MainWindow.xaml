@@ -16,6 +16,7 @@
                 <home:TopologicalView Nodes="{Binding Connection.Nodes}"/>
             </TabItem>
             <TabItem Header="Devices">
+                <home:DeviceView Devices="{Binding Connection.Devices}" />
             </TabItem>
         </TabControl>
     </Grid>

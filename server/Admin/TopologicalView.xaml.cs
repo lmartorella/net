@@ -154,7 +154,7 @@ namespace Lucky.Home
         {
             UiNode parent = (UiNode) node.Parent;
             CreateDeviceWindow wnd = new CreateDeviceWindow();
-            wnd.DeviceTypes = await TcpConnection.GetDevices();
+            wnd.DeviceTypes = await TcpConnection.GetDeviceTypes();
             if (wnd.ShowDialog() == true)
             {
                 // Create device

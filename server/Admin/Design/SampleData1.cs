@@ -1,5 +1,6 @@
 ﻿using System;
 using Lucky.Home.Admin;
+using Lucky.Home.Devices;
 
 namespace Lucky.Home.Design
 {
@@ -15,6 +16,8 @@ namespace Lucky.Home.Design
                 }
             };
             Nodes.Add(new UiNode(root, null));
+
+            Devices.Add(new UiDevice(new DeviceDescriptor { Argument = "Argument", DeviceType = "Type"}));
         }
     }
 }

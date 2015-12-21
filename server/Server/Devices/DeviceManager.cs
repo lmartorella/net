@@ -21,19 +21,6 @@ namespace Lucky.Home.Devices
             public DeviceDescriptor[] Descriptors { get; set; }
         }
 
-        [DataContract]
-        internal class DeviceDescriptor
-        {
-            [DataMember]
-            public string DeviceType;
-
-            [DataMember]
-            public string Argument;
-
-            [DataMember]
-            public SinkPath SinkPath;
-        }
-
         public DeviceManager()
         {
             LoadState(State.Descriptors);
@@ -75,16 +62,11 @@ namespace Lucky.Home.Devices
             }
         }
 
-        private void SaveState(IDevice[] devices)
+        private void SaveState()
         {
             State = new Persistence
             {
-                Descriptors = devices.Select(d => new DeviceDescriptor
-                {
-                    SinkPath = d.SinkPath,
-                    DeviceType = d.GetType().Name,
-                    Argument = d.Argument
-                }).ToArray()
+                Descriptors = GetDeviceDescriptors()
             };
         }
 
@@ -92,10 +74,20 @@ namespace Lucky.Home.Devices
         {
             var device = (IDeviceInternal)Activator.CreateInstance(_deviceTypes[type]);
             _devices.Add(device);
-            SaveState(_devices.ToArray());
+            SaveState();
 
             device.OnInitialize(argument, sinkPath);
             return device;
+        }
+
+        public DeviceDescriptor[] GetDeviceDescriptors()
+        {
+            return _devices.Select(d => new DeviceDescriptor
+            {
+                SinkPath = d.SinkPath,
+                DeviceType = d.GetType().Name,
+                Argument = d.Argument
+            }).ToArray();
         }
     }
 }

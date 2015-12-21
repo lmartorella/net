@@ -59,6 +59,7 @@
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
+    <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
     <Compile Include="Devices\ISwitchDevice.cs" />

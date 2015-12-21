@@ -1,4 +1,6 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
+using Lucky.Home.Devices;
 
 namespace Lucky.Home.Admin
 {
@@ -8,7 +10,7 @@ namespace Lucky.Home.Admin
         {
             get
             {
-                return new DataContractSerializer(typeof(MessageRequest), new[] { typeof(Node), typeof(Node[]) });
+                return new DataContractSerializer(typeof(MessageRequest), new Type[0]);
             }
         }
 
@@ -16,7 +18,7 @@ namespace Lucky.Home.Admin
         {
             get
             {
-                return new DataContractSerializer(typeof(MessageResponse), new[] { typeof(Node), typeof(Node[]) });
+                return new DataContractSerializer(typeof(MessageResponse), new[] { typeof(Node), typeof(Node[]), typeof(DeviceDescriptor), typeof(DeviceDescriptor[]) });
             }
         }
     }

@@ -10,5 +10,6 @@ namespace Lucky.Home.Admin
         Task<string[]> GetDeviceTypes();
         Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId);
         Task<string> CreateDevice(SinkPath sinkPath, string deviceType, string argument);
+        Task<DeviceDescriptor[]> GetDevices();
     }
 }
