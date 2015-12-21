@@ -36,6 +36,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="NAudio">
       <HintPath>..\vssln\packages\NAudio.1.7\lib\net35\NAudio.dll</HintPath>
     </Reference>
@@ -49,13 +50,13 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Admin\AdminInterface.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="Admin\AdminMessage.cs" />
-    <Compile Include="Admin\CreateDeviceMessage.cs" />
-    <Compile Include="Admin\GetDeviceTypesMessage.cs" />
-    <Compile Include="Admin\GetTopologyMessage.cs" />
+    <Compile Include="Admin\IAdminInterface.cs" />
+    <Compile Include="Admin\MessageRequest.cs" />
+    <Compile Include="Admin\MessageResponse.cs" />
+    <Compile Include="Admin\MessageSerializerFactory.cs" />
     <Compile Include="Admin\Node.cs" />
-    <Compile Include="Admin\RenameNodeMessage.cs" />
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />

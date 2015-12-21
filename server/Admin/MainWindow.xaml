@@ -13,7 +13,7 @@
 
         <TabControl Grid.Row="1">
             <TabItem Header="Topological View">
-                <home:TopologicalView Connection="{Binding Connection}"/>
+                <home:TopologicalView Nodes="{Binding Connection.Nodes}"/>
             </TabItem>
             <TabItem Header="Devices">
             </TabItem>

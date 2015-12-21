@@ -22,11 +22,13 @@ namespace Lucky.Home
             Name = node.Id.ToString();
             Status = node.Status;
             Children = new ObservableCollection<object>(node.Children.Select(n => new UiNode(n, this)));
-            SinkNames = string.Join(", ", node.Sinks);
-
-            foreach (var sink in node.Sinks)
+            if (node.Sinks != null)
             {
-                Children.Add(new SinkNode(sink, this));
+                SinkNames = string.Join(", ", node.Sinks);
+                foreach (var sink in node.Sinks)
+                {
+                    Children.Add(new SinkNode(sink, this));
+                }
             }
         }
 

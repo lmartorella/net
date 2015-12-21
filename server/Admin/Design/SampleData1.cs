@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Lucky.Home.Admin;
 
 namespace Lucky.Home.Design
@@ -16,22 +15,6 @@ namespace Lucky.Home.Design
                 }
             };
             Nodes.Add(new UiNode(root, null));
-        }
-
-        public override async Task<bool> RenameNode(Node node, Guid newName)
-        {
-            node.Id = newName;
-            return true;
-        }
-
-        public override async Task<string[]> GetDevices()
-        {
-            return new string[0];
-        }
-
-        public override async Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument)
-        {
-            return null;
         }
     }
 }

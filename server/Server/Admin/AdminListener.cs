@@ -3,10 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Lucky.Home.Devices;
-using Lucky.Home.Protocol;
 using Lucky.IO;
 using Lucky.Net;
 using Lucky.Services;
@@ -17,7 +14,7 @@ namespace Lucky.Home.Admin
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
-        private readonly INodeManager _manager;
+        private readonly AdminInterface _adminInterface = new AdminInterface();
 
         public AdminListener()
         {
@@ -30,8 +27,6 @@ namespace Lucky.Home.Admin
             {
                 _listener = Manager.GetService<TcpService>().CreateListener(loopbackAddress, Constants.DefaultAdminPort, "Admin", HandleConnection);
             }
-
-            _manager = Manager.GetService<NodeManager>();
         }
 
         private async void HandleConnection(NetworkStream stream)
@@ -39,86 +34,37 @@ namespace Lucky.Home.Admin
             var channel = new MessageChannel(stream);
             while (true)
             {
-                var msg = await Receive<Container>(channel);
+                var msg = await Receive(channel);
                 if (msg == null)
                 {
                     // EOF
                     break;
                 }
 
-                if (msg.Message is GetTopologyMessage)
+                // Decode message
+                Task task = (Task)_adminInterface.GetType().GetMethod(msg.Method).Invoke(_adminInterface, msg.Arguments);
+                await task;
+                object res = null;
+                if (task.GetType().IsGenericType)
                 {
-                    // Returns the topology
-                    var ret = new GetTopologyMessage.Response { Roots = BuildTree() };
-                    await Send(channel, ret);
+                    res = ((dynamic)task).Result;
                 }
-                else if (msg.Message is RenameNodeMessage)
-                {
-                    var msg1 = (RenameNodeMessage)msg.Message;
-                    ITcpNode node;
-                    if (msg1.Id == Guid.Empty)
-                    {
-                        node = _manager.FindNode(TcpNodeAddress.Parse(msg1.NodeAddress));
-                    }
-                    else
-                    {
-                        node = _manager.FindNode(msg1.Id);
-                    }
-                    if (node != null)
-                    {
-                        await node.Rename(msg1.NewId);
-                    }
-                    var ret = new RenameNodeMessage.Response();
-                    await Send(channel, ret);
-                }
-                else if (msg.Message is GetDeviceTypesMessage)
-                {
-                    var ret = new GetDeviceTypesMessage.Response { DeviceTypes = Manager.GetService<DeviceManager>().DeviceTypes };
-                    await Send(channel, ret);
-                }
-                else if (msg.Message is CreateDeviceMessage)
-                {
-                    var msg1 = (CreateDeviceMessage)msg.Message;
-                    string err = null;
-                    try
-                    {
-                        CreateDevice(msg1.SinkPath, msg1.DeviceType, msg1.Argument);
-                    }
-                    catch (Exception exc)
-                    {
-                        err = exc.Message;
-                    }
-                    var ret = new CreateDeviceMessage.Response { Error = err };
-                    await Send(channel, ret);
-                }
+
+                await Send(channel, new MessageResponse { Value = res });
             }
         }
 
-        private Node[] BuildTree()
-        {
-            var roots = _manager.Nodes.Where(n => !n.Address.IsSubNode).Select(n => new Node(n)).ToList();
-            foreach (var node in _manager.Nodes.Where(n => n.Address.IsSubNode))
-            {
-                var root = roots.FirstOrDefault(r => r.TcpNode.Address.Equals(node.Address.SubNode(0)));
-                if (root != null)
-                {
-                    root.Children = root.Children.Concat(new[] { new Node(node) }).ToArray();
-                }
-            }
-            return roots.ToArray();
-        }
-
-        private async Task Send<T>(MessageChannel stream, T message)
+        private async Task Send(MessageChannel stream, MessageResponse message)
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                new DataContractSerializer(message.GetType()).WriteObject(ms, message);
+                MessageResponse.DataContractSerializer.WriteObject(ms, message);
                 ms.Flush();
                 await stream.WriteMessage(ms.ToArray());
             }
         }
 
-        private async Task<T> Receive<T>(MessageChannel stream) where T : class
+        private async Task<MessageRequest> Receive(MessageChannel stream)
         {
             var buffer = await stream.ReadMessage();
             if (buffer == null)
@@ -127,13 +73,8 @@ namespace Lucky.Home.Admin
             }
             using (MemoryStream ms = new MemoryStream(buffer))
             {
-                return (T)new DataContractSerializer(typeof(T)).ReadObject(ms);
+                return (MessageRequest)MessageRequest.DataContractSerializer.ReadObject(ms);
             }
-        }
-
-        private void CreateDevice(SinkPath sinkPath, string deviceType, string argument)
-        {
-            Manager.GetService<DeviceManager>().CreateAndLoadDevice(deviceType, argument, sinkPath);
         }
     }
 }

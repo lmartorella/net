@@ -1,44 +1,41 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using System.Windows;
-using Lucky.Home.Admin;
+﻿using System.Collections.ObjectModel;
 
 namespace Lucky.Home
 {
-    public abstract class Connection : DependencyObject
+    public abstract class Connection : ViewModelBase
     {
+        private string _statusText;
+        private ObservableCollection<UiNode> _nodes;
+
         protected Connection()
         {
             Nodes = new ObservableCollection<UiNode>();
         }
 
-        #region Dependency properties
-
-        public static readonly DependencyProperty StatusTextProperty = DependencyProperty.Register(
-            "StatusText", typeof(string), typeof(Connection));
-
         public string StatusText
         {
-            get { return (string)GetValue(StatusTextProperty); }
-            set { SetValue(StatusTextProperty, value); }
+            get
+            {
+                return _statusText;
+            }
+            set
+            {
+                _statusText = value;
+                OnPropertyChanged();
+            }
         }
-
-        #endregion
-
-        public static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
-            "Nodes", typeof(ObservableCollection<UiNode>), typeof(Connection));
-
+        
         public ObservableCollection<UiNode> Nodes
         {
-            get { return (ObservableCollection<UiNode>)GetValue(NodesProperty); }
-            set { SetValue(NodesProperty, value); }
+            get
+            {
+                return _nodes;
+            }
+            set
+            {
+                _nodes = value;
+                OnPropertyChanged();
+            }
         }
-
-        public abstract Task<bool> RenameNode(Node node, Guid newName);
-
-        public abstract Task<string[]> GetDevices();
-
-        public abstract Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument);
     }
 }

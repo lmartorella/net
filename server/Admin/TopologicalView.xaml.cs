@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace Lucky.Home
 {
@@ -12,13 +15,13 @@ namespace Lucky.Home
     {
         private UiNode _inEditItem;
 
-        public static readonly DependencyProperty ConnectionProperty = DependencyProperty.Register(
-            "Connection", typeof (Connection), typeof (TopologicalView), new PropertyMetadata(default(Connection)));
+        public static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
+            "Nodes", typeof (ObservableCollection<UiNode>), typeof (TopologicalView), new PropertyMetadata(default(ObservableCollection<UiNode>)));
 
-        public Connection Connection
+        public ObservableCollection<UiNode> Nodes
         {
-            get { return (Connection) GetValue(ConnectionProperty); }
-            set { SetValue(ConnectionProperty, value); }
+            get { return (ObservableCollection<UiNode>) GetValue(NodesProperty); }
+            set { SetValue(NodesProperty, value); }
         }
 
         public static readonly DependencyProperty RenameCommandProperty = DependencyProperty.Register(
@@ -42,7 +45,7 @@ namespace Lucky.Home
         public TopologicalView()
         {
             InitializeComponent();
-            DataContext = this;
+            TreeView.DataContext = this;
 
             RenameCommand = new UiCommand(() =>
             {
@@ -97,6 +100,14 @@ namespace Lucky.Home
             EndRename(true);
         }
 
+        private TcpConnection TcpConnection
+        {
+            get
+            {
+                return ((dynamic)((FrameworkElement)Parent).DataContext).Connection;
+            }
+        }
+
         private async void EndRename(bool commit)
         {
             if (_inEditItem != null)
@@ -112,7 +123,7 @@ namespace Lucky.Home
                     if (Guid.TryParse(inEditItem.Name, out newId))
                     {
                         inEditItem.Name = "Renaming...";
-                        if (await Connection.RenameNode(inEditItem.Node, newId))
+                        if (await TcpConnection.RenameNode(inEditItem.Node, newId))
                         {
                             inEditItem.Name = newId.ToString();
                         }
@@ -143,11 +154,11 @@ namespace Lucky.Home
         {
             UiNode parent = (UiNode) node.Parent;
             CreateDeviceWindow wnd = new CreateDeviceWindow();
-            wnd.DeviceTypes = await Connection.GetDevices();
+            wnd.DeviceTypes = await TcpConnection.GetDevices();
             if (wnd.ShowDialog() == true)
             {
                 // Create device
-                string err = await Connection.CreateDevice(parent.Node, node.Name, wnd.DeviceType, wnd.Argument);
+                string err = await TcpConnection.CreateDevice(parent.Node, node.Name, wnd.DeviceType, wnd.Argument);
                 if (err != null)
                 {
                     MessageBox.Show(err, "Error creating the device");

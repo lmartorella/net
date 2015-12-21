@@ -3,34 +3,36 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:cvt="clr-namespace:Lucky.Home.Converters"
         xmlns:home="clr-namespace:Lucky.Home">
-    
-    <TreeView ItemsSource="{Binding Connection.Nodes}" x:Name="TreeView" SelectedItemChanged="HandleSelectedItemChanged">
-        <TreeView.ContextMenu>
-            <ContextMenu>
-                <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />
-                <MenuItem Command="{Binding CreateDeviceCommand}" Header="Create device..." />
-            </ContextMenu>
-        </TreeView.ContextMenu>
-        <TreeView.Resources>
-            <cvt:NodeStatusToTextConverter x:Key="nodeStatusToTextConverter" />
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
-            <cvt:InverseBooleanToVisibilityConverter x:Key="NegatedBooleanToVisibilityConverter"></cvt:InverseBooleanToVisibilityConverter>
 
-            <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
-                <Grid>
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" ToolTip="{Binding SinkNames}">
+    <Grid>
+        <TreeView ItemsSource="{Binding Nodes, PresentationTraceSources.TraceLevel=High}" x:Name="TreeView" SelectedItemChanged="HandleSelectedItemChanged">
+            <TreeView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />
+                    <MenuItem Command="{Binding CreateDeviceCommand}" Header="Create device..." />
+                </ContextMenu>
+            </TreeView.ContextMenu>
+            <TreeView.Resources>
+                <cvt:NodeStatusToTextConverter x:Key="nodeStatusToTextConverter" />
+                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
+                <cvt:InverseBooleanToVisibilityConverter x:Key="NegatedBooleanToVisibilityConverter"></cvt:InverseBooleanToVisibilityConverter>
+
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" ToolTip="{Binding SinkNames}">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
+                        </StackPanel>
+                        <TextBox Visibility="{Binding InRename, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
+                    </Grid>
+                </HierarchicalDataTemplate>
+                <DataTemplate DataType="{x:Type home:SinkNode}">
+                    <Grid>
                         <TextBlock Text="{Binding Name}" />
-                        <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
-                    </StackPanel>
-                    <TextBox Visibility="{Binding InRename, Converter={StaticResource BooleanToVisibilityConverter}}" 
-                                Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
-                </Grid>
-            </HierarchicalDataTemplate>
-            <DataTemplate DataType="{x:Type home:SinkNode}">
-                <Grid>
-                    <TextBlock Text="{Binding Name}" />
-                </Grid>
-            </DataTemplate>
-        </TreeView.Resources>
-    </TreeView>
+                    </Grid>
+                </DataTemplate>
+            </TreeView.Resources>
+        </TreeView>
+    </Grid>
 </UserControl>
