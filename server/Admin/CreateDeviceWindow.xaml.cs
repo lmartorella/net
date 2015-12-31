@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Lucky.Home.Devices;
 
 namespace Lucky.Home
 {
@@ -14,20 +15,20 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty DeviceTypesProperty = DependencyProperty.Register(
-            "DeviceTypes", typeof (string[]), typeof (CreateDeviceWindow), new PropertyMetadata(default(string[])));
+            "DeviceTypes", typeof(DeviceTypeDescriptor[]), typeof(CreateDeviceWindow), new PropertyMetadata(default(DeviceTypeDescriptor[])));
 
-        public string[] DeviceTypes
+        public DeviceTypeDescriptor[] DeviceTypes
         {
-            get { return (string[]) GetValue(DeviceTypesProperty); }
+            get { return (DeviceTypeDescriptor[])GetValue(DeviceTypesProperty); }
             set { SetValue(DeviceTypesProperty, value); }
         }
 
         public static readonly DependencyProperty DeviceTypeProperty = DependencyProperty.Register(
-            "DeviceType", typeof (string), typeof (CreateDeviceWindow), new PropertyMetadata(default(string)));
+            "DeviceType", typeof(DeviceTypeDescriptor), typeof(CreateDeviceWindow), new PropertyMetadata(default(DeviceTypeDescriptor)));
 
-        public string DeviceType
+        public DeviceTypeDescriptor DeviceType
         {
-            get { return (string) GetValue(DeviceTypeProperty); }
+            get { return (DeviceTypeDescriptor)GetValue(DeviceTypeProperty); }
             set { SetValue(DeviceTypeProperty, value); }
         }
 

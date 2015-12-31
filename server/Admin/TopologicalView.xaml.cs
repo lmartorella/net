@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Lucky.Home.Devices;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -59,18 +61,18 @@ namespace Lucky.Home
 
             CreateDeviceCommand = new UiCommand(() =>
             {
-                if (SelectedSink != null)
+                if (SelectedSinks.Length > 0)
                 {
-                    CreateDevice(SelectedSink);
+                    CreateDevice(SelectedSinks);
                 }
-            }, () => SelectedSink != null);
+            }, () => SelectedSinks.Length > 0);
         }
 
-        private SinkNode SelectedSink
+        private SinkNode[] SelectedSinks
         {
             get
             {
-                return TreeView.SelectedItem as SinkNode;
+                return TreeView.Items.Where(i => i.IsSelected) as SinkNode;
             }
         }
 
@@ -150,20 +152,27 @@ namespace Lucky.Home
             CreateDeviceCommand.RaiseCanExecuteChanged();
         }
 
-        private async void CreateDevice(SinkNode node)
+        private async void CreateDevice(SinkNode[] sinks)
         {
-            UiNode parent = (UiNode) node.Parent;
+            // Create device
             CreateDeviceWindow wnd = new CreateDeviceWindow();
             wnd.DeviceTypes = await TcpConnection.GetDeviceTypes();
             if (wnd.ShowDialog() == true)
             {
-                // Create device
-                string err = await TcpConnection.CreateDevice(parent.Node, node.Name, wnd.DeviceType, wnd.Argument);
+                var argumentTypes = wnd.DeviceType.ArgumentTypes.Select(Type.GetType).ToArray();
+                object[] arguments = ParseArguments(wnd.Argument, argumentTypes);
+                var sinkPaths = sinks.Select(n => n.SinkPath).ToArray();
+                string err = await TcpConnection.CreateDevice(sinkPaths, wnd.DeviceType.TypeName, arguments);
                 if (err != null)
                 {
                     MessageBox.Show(err, "Error creating the device");
                 }
             }
+        }
+
+        private object[] ParseArguments(string argumentStr, Type[] types)
+        {
+            return argumentStr.Split(',').Select((str, i) => Convert.ChangeType(str, types[i])).ToArray();
         }
     }
 }

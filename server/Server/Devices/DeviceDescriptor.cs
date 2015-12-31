@@ -9,9 +9,9 @@ namespace Lucky.Home.Devices
         public string DeviceType;
 
         [DataMember]
-        public string Argument;
+        public object[] Arguments;
 
         [DataMember]
-        public SinkPath SinkPath;
+        public SinkPath[] SinkPaths;
     }
 }

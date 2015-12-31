@@ -1,14 +1,19 @@
-﻿using Lucky.Home.Sinks;
+﻿using System.Linq;
+using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Devices
 {
-    internal class LineDevice : DeviceBase<IDisplaySink>
+    [Device(new [] {typeof(IDisplaySink)})]
+    internal class LineDevice : DeviceBase
     {
         public void Write(string str)
         {
-            if (IsOnline)
+            if (IsFullOnline)
             {
-                Sink.Write(str);
+                foreach (var sink in Sinks.OfType<IDisplaySink>())
+                {
+                    sink.Write(str);
+                }
             }
         }
     }

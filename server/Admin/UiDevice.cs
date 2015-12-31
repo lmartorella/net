@@ -8,16 +8,16 @@ namespace Lucky.Home
         internal UiDevice(DeviceDescriptor desc)
         {
             DeviceType = desc.DeviceType;
-            Argument = desc.Argument;
+            Arguments = desc.Arguments;
         }
 
-        public static readonly DependencyProperty ArgumentProperty = DependencyProperty.Register(
-            "Argument", typeof (string), typeof (UiDevice), new PropertyMetadata(default(string)));
+        public static readonly DependencyProperty ArgumentsProperty = DependencyProperty.Register(
+            "Arguments", typeof (object[]), typeof (UiDevice), new PropertyMetadata(default(object[])));
 
-        public string Argument
+        public object[] Arguments
         {
-            get { return (string) GetValue(ArgumentProperty); }
-            set { SetValue(ArgumentProperty, value); }
+            get { return (object[])GetValue(ArgumentsProperty); }
+            set { SetValue(ArgumentsProperty, value); }
         }
 
         public static readonly DependencyProperty DeviceTypeProperty = DependencyProperty.Register(

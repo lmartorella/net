@@ -9,7 +9,7 @@ namespace Lucky.Home.Sinks
     /// Passive/poll based switch array
     /// </summary>
     [SinkId("SWAR")]
-    internal class SwitchArraySink : SinkBase, ISwitchArraySink
+    internal class DigitalInputArraySink : SinkBase, IDigitalInputArraySink
     {
         private TimeSpan _pollPeriod;
         private Timer _timer;
@@ -17,7 +17,7 @@ namespace Lucky.Home.Sinks
         private bool _isInitialized;
         private bool[] _status;
 
-        public SwitchArraySink()
+        public DigitalInputArraySink()
         {
             PollPeriod = TimeSpan.FromSeconds(1);
         }

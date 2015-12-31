@@ -5,18 +5,18 @@ namespace Lucky.Home.Devices
     public interface IDevice : IDisposable
     {
         /// <summary>
-        /// Get the sink path
+        /// Get the sink paths of involved sinks
         /// </summary>
-        SinkPath SinkPath { get; }
+        SinkPath[] SinkPaths { get; }
 
         /// <summary>
-        /// Instance argument
+        /// Are all the relevant sinks connected?
         /// </summary>
-        string Argument { get; }
+        bool IsFullOnline { get; }
 
         /// <summary>
-        /// Is the relevant sink/s connected?
+        /// Raised when the <see cref="IsFullOnline"/> changes
         /// </summary>
-        bool IsOnline { get; }
+        event EventHandler IsFullOnlineChanged;
     }
 }

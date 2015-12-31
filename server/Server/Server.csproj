@@ -15,7 +15,6 @@
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\vssln\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -37,16 +36,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="NAudio">
-      <HintPath>..\vssln\packages\NAudio.1.7\lib\net35\NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio.Lame">
-      <HintPath>..\vssln\packages\NAudio.Lame.1.0.2\lib\net20\NAudio.Lame.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Speech" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
@@ -58,16 +50,20 @@
     <Compile Include="Admin\MessageSerializerFactory.cs" />
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Application\AppService.cs" />
+    <Compile Include="Devices\DeviceAttribute.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
+    <Compile Include="Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
     <Compile Include="Devices\ISwitchDevice.cs" />
-    <Compile Include="Sinks\ISwitchArraySink.cs" />
+    <Compile Include="Devices\SubSink.cs" />
+    <Compile Include="Sinks\IDigitalInputArraySink.cs" />
     <Compile Include="Devices\LineDevice.cs" />
     <Compile Include="Devices\SinkPath.cs" />
     <Compile Include="Devices\SwitchDevice.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
+    <Compile Include="Sinks\IDigitalOutputArraySink.cs" />
     <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Application\AppBase.cs" />
@@ -98,13 +94,8 @@
     <Compile Include="Sinks\Old\AudioPlayerSink.cs" />
     <Compile Include="Sinks\IDisplaySink.cs" />
     <Compile Include="Sinks\Old\RomFlasherSink.cs" />
-    <Compile Include="Sinks\SwitchArraySink.cs" />
+    <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
-    <Compile Include="Speech\TextToSpeechService.cs" />
-    <Compile Include="TestApp\ClockApp.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
@@ -112,17 +103,13 @@
       <Name>Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Speech\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>rem copy "$(TargetPath)" \\mule\backup</PostBuildEvent>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

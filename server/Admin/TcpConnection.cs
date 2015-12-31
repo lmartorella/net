@@ -72,7 +72,7 @@ namespace Lucky.Home
             return ret;
         }
 
-        public async Task<string[]> GetDeviceTypes()
+        public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
         {
             return await _adminInterface.GetDeviceTypes();
         }
@@ -82,9 +82,15 @@ namespace Lucky.Home
             return await _adminInterface.GetDevices();
         }
 
-        public async Task<string> CreateDevice(Node node, string sinkId, string deviceType, string argument)
+        public async Task<string> CreateDevice(SinkPath[] sinks, string deviceType, object[] arguments)
         {
-            return await _adminInterface.CreateDevice(new SinkPath(node.Id, sinkId), deviceType, argument);
+            var descriptor = new DeviceDescriptor
+            {
+                SinkPaths = sinks,
+                DeviceType = deviceType,
+                Arguments = arguments
+            };
+            return await _adminInterface.CreateDevice(descriptor);
         }
 
         private class AdminInterface : IAdminInterface
@@ -143,9 +149,9 @@ namespace Lucky.Home
                 return (Node[]) await Request();
             }
 
-            public async Task<string[]> GetDeviceTypes()
+            public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
             {
-                return (string[])await Request();
+                return (DeviceTypeDescriptor[])await Request();
             }
 
             public async Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId)
@@ -153,9 +159,9 @@ namespace Lucky.Home
                 return (bool) await Request("RenameNode", nodeAddress, oldId, newId);
             }
 
-            public async Task<string> CreateDevice(SinkPath sinkPath, string deviceType, string argument)
+            public async Task<string> CreateDevice(DeviceDescriptor descriptor)
             {
-                return (string) await Request("CreateDevice", sinkPath, deviceType, argument);
+                return (string)await Request("CreateDevice", descriptor);
             }
 
             public async Task<DeviceDescriptor[]> GetDevices()

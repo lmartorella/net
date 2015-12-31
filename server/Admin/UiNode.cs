@@ -25,9 +25,10 @@ namespace Lucky.Home
             if (node.Sinks != null)
             {
                 SinkNames = string.Join(", ", node.Sinks);
-                foreach (var sink in node.Sinks)
+                for (int i = 0; i < node.Sinks.Length; i++)
                 {
-                    Children.Add(new SinkNode(sink, this));
+                    var sink = node.Sinks[i];
+                    Children.Add(new SinkNode(sink, node.SubSinkCount[i], this));
                 }
             }
         }

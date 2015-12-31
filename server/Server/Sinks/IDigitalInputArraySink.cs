@@ -3,9 +3,9 @@
 namespace Lucky.Home.Sinks
 {
     /// <summary>
-    /// Passive/poll based switch array
+    /// Passive/poll based digital input array
     /// </summary>
-    internal interface ISwitchArraySink : ISink
+    internal interface IDigitalInputArraySink : ISink
     {
         /// <summary>
         /// Get the current switch status

@@ -21,7 +21,7 @@ namespace Lucky.Home.Admin
             return BuildTree();
         }
 
-        public async Task<string[]> GetDeviceTypes()
+        public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
         {
             return Manager.GetService<DeviceManager>().DeviceTypes;
         }
@@ -48,12 +48,12 @@ namespace Lucky.Home.Admin
             }
         }
 
-        public async Task<string> CreateDevice(SinkPath sinkPath, string deviceType, string argument)
+        public async Task<string> CreateDevice(DeviceDescriptor descriptor)
         {
             string err = null;
             try
             {
-                Manager.GetService<DeviceManager>().CreateAndLoadDevice(deviceType, argument, sinkPath);
+                Manager.GetService<DeviceManager>().CreateAndLoadDevice(descriptor);
             }
             catch (Exception exc)
             {

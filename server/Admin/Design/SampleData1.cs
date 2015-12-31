@@ -17,7 +17,7 @@ namespace Lucky.Home.Design
             };
             Nodes.Add(new UiNode(root, null));
 
-            Devices.Add(new UiDevice(new DeviceDescriptor { Argument = "Argument", DeviceType = "Type"}));
+            Devices.Add(new UiDevice(new DeviceDescriptor { DeviceType = "Type"}));
         }
     }
 }

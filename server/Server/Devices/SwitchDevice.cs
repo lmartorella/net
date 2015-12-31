@@ -1,53 +1,74 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Lucky.Home.Sinks;
 
 // ReSharper disable once UnusedMember.Global
 
 namespace Lucky.Home.Devices
 {
-    internal class SwitchDevice : DeviceBase<ISwitchArraySink>, ISwitchDevice
+    /// <summary>
+    /// Switch device. All outputs are set to the XOR of all inputs, like
+    /// classic electric wall switches.
+    /// Needs at least one input (Digital Input Array) and one output (Digital Out Array)
+    /// </summary>
+    [Device(new[] { typeof(IDigitalInputArraySink), typeof(IDigitalOutputArraySink) })]
+    internal class SwitchDevice : DeviceBase, ISwitchDevice
     {
-        private int _bit;
-        private ISwitchArraySink _sink;
-        private bool _lastStatus;
-        private TimeSpan _period;
+        private readonly TimeSpan _period;
 
-        /// <summary>
-        /// argument = "bit#,poll_ms#"
-        /// </summary>
-        public override void OnInitialize(string argument, SinkPath sinkPath)
+        private readonly List<SubSink<IDigitalInputArraySink>> _inputs = new List<SubSink<IDigitalInputArraySink>>();
+        private readonly List<SubSink<IDigitalOutputArraySink>> _outputs = new List<SubSink<IDigitalOutputArraySink>>();
+
+        private bool _lastStatus;
+
+        public SwitchDevice(int period)
         {
-            var args = argument.Split(',');
-            _bit = int.Parse(args[0]);
-            _period = TimeSpan.FromMilliseconds(double.Parse(args[1]));
-            base.OnInitialize(argument, sinkPath);
+            _period = TimeSpan.FromMilliseconds(period);
         }
 
-        protected override void OnSinkChanged()
+        protected override void OnSinkChanged(SubSink removed, SubSink added)
         {
-            base.OnSinkChanged();
-            if (_sink != null)
+            base.OnSinkChanged(removed, added);
+            
+            var removedInput = removed.Sink as IDigitalInputArraySink;
+            if (removedInput != null)
             {
-                _sink.StatusChanged -= HandleStatusChanged;
+                removedInput.StatusChanged -= HandleStatusChanged;
+                _inputs.Remove(removed);
             }
-            _sink = Sink;
-            _sink.PollPeriod = _period;
-            if (_sink != null)
+            else
             {
-                _sink.StatusChanged += HandleStatusChanged;
+                _outputs.Remove(removed);
             }
+
+            var addedInput = added.Sink as IDigitalInputArraySink;
+            if (addedInput != null)
+            {
+                addedInput.StatusChanged += HandleStatusChanged;
+                // TODO
+                addedInput.PollPeriod = _period;
+                _inputs.Add(added);
+            }
+            else
+            {
+                _outputs.Add(added);
+            }
+
+            UpdateOutput();
+            HandleStatusChanged(null, null);
         }
 
         private void HandleStatusChanged(object sender, EventArgs e)
         {
-            Status = _bit < Sink.Status.Length && Sink.Status[_bit];
+            Status = _inputs.Aggregate(false, (c, input) => c ^ input.Sink.Status[input.SubIndex]);
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (_sink != null)
+            foreach (var input in _inputs)
             {
-                _sink.StatusChanged -= HandleStatusChanged;
+                input.Sink.StatusChanged -= HandleStatusChanged;
             }
             base.Dispose(disposing);
         }
@@ -63,11 +84,20 @@ namespace Lucky.Home.Devices
                 if (_lastStatus != value)
                 {
                     _lastStatus = value;
+                    UpdateOutput();
                     if (StatusChanged != null)
                     {
                         StatusChanged(this, EventArgs.Empty);
                     }
                 }
+            }
+        }
+
+        private void UpdateOutput()
+        {
+            foreach (var output in _outputs)
+            {
+                output.Sink.Status[output.SubIndex] = Status;
             }
         }
 
