@@ -55,7 +55,18 @@ namespace Lucky.Home
         private async Task FetchTree()
         {
             var topology = await _adminInterface.GetTopology();
-            var uinodes = topology.Select(n => new UiNode(n, null));
+            var uinodes = topology.Select(n =>
+            {
+                var node = new UiNode(n, null);
+                node.SelectionChanged += (o, e) =>
+                {
+                    if (NodeSelectionChanged != null)
+                    {
+                        NodeSelectionChanged(this, e);
+                    }
+                };
+                return node;
+            });
             App.Current.Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
         }
 
@@ -169,5 +180,7 @@ namespace Lucky.Home
                 return (DeviceDescriptor[])await Request();
             }
         }
+
+        public event EventHandler NodeSelectionChanged;
     }
 }

@@ -8,7 +8,7 @@ namespace Lucky.Home.Sinks
     /// <summary>
     /// Passive/poll based switch array
     /// </summary>
-    [SinkId("SWAR")]
+    [SinkId("DIAR")]
     internal class DigitalInputArraySink : SinkBase, IDigitalInputArraySink
     {
         private TimeSpan _pollPeriod;
@@ -49,6 +49,7 @@ namespace Lucky.Home.Sinks
             private set
             {
                 _status = value;
+                SubCount = _status.Length;
                 if (StatusChanged != null)
                 {
                     StatusChanged(this, EventArgs.Empty);

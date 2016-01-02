@@ -36,7 +36,7 @@ namespace Lucky.Home.Devices
 
         public void RegisterAssembly(Assembly assembly)
         {
-            foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && typeof(DeviceBase).IsAssignableFrom(type)))
+            foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type)))
             {
                 // Exception if already registered..
                 var descriptor = new DeviceTypeDescriptor(deviceType);

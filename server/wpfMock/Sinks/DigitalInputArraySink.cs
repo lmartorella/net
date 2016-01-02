@@ -2,12 +2,12 @@
 
 namespace Lucky.HomeMock.Sinks
 {
-    class SwitchArraySink : SinkMockBase
+    class DigitalInputArraySink : SinkMockBase
     {
         private readonly MainWindow _owner;
 
-        public SwitchArraySink(MainWindow owner) 
-            :base("SWAR")
+        public DigitalInputArraySink(MainWindow owner) 
+            :base("DIAR")
         {
             _owner = owner;
         }
@@ -31,7 +31,7 @@ namespace Lucky.HomeMock.Sinks
                 for (int i = 0; i < count; i++)
                 {
                     // Pack bits
-                    ret[i / 8] = (byte)(ret[i / 8] | (_owner.Switches[i].Value ? (1 << (i % 8)) : 0));
+                    ret[i / 8] = (byte)(ret[i / 8] | (_owner.Inputs[i].Value ? (1 << (i % 8)) : 0));
                 }
                 writer.Write(ret);
             });

@@ -8,5 +8,6 @@ namespace Lucky.Home.Sinks
         SinkPath Path { get; }
         ITcpNode Node { get; }
         string FourCc { get; }
+        int SubCount { get; }
     }
 }

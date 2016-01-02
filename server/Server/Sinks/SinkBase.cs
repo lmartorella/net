@@ -12,6 +12,11 @@ namespace Lucky.Home.Sinks
     {
         private int _index;
 
+        public SinkBase()
+        {
+            SubCount = 0;
+        }
+
         public void Init(ITcpNode node, int index)
         {
             Node = node;
@@ -66,5 +71,7 @@ namespace Lucky.Home.Sinks
                 throw new InvalidOperationException("Node not found/unregistered");
             }
         }
+
+        public int SubCount { get; protected set; }
     }
 }

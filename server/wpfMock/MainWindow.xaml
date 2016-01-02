@@ -37,10 +37,11 @@
             </TabItem>
 
             <!-- Switch array -->
-            <TabItem Header="Switches">
+            <TabItem Header="Digital">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition />
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
@@ -48,12 +49,24 @@
                         <TextBlock>Count:</TextBlock>
                         <TextBox Text="{Binding SwitchesCount, Mode=TwoWay, Converter={StaticResource IntToString}}"></TextBox>
                     </StackPanel>
-                    <ListBox ItemsSource="{Binding Switches}" Grid.Row="1">
+
+                    <ListBox ItemsSource="{Binding Inputs}" Grid.Row="1">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding Name}"/>
                                     <CheckBox IsChecked="{Binding Value, Mode=TwoWay}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <ListBox ItemsSource="{Binding Outputs}" Grid.Row="2">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}"/>
+                                    <CheckBox IsChecked="{Binding Value, Mode=TwoWay}" IsEnabled="False"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

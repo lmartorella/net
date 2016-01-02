@@ -1,3 +1,4 @@
+using System.Windows;
 using Lucky.Home.Devices;
 
 namespace Lucky.Home
@@ -13,6 +14,21 @@ namespace Lucky.Home
             {
                 Children.Add(new SinkNode(i.ToString(), 0, this));
             }
+        }
+
+        public static readonly DependencyProperty IsSelectedProperty = DependencyProperty.Register(
+            "IsSelected", typeof (bool), typeof (SinkNode), new PropertyMetadata(false, HandleCheckedChanged));
+
+        private static void HandleCheckedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            SinkNode me = (SinkNode) d;
+            me.Root.RaiseSelectionChanged();
+        }
+
+        public bool IsSelected
+        {
+            get { return (bool) GetValue(IsSelectedProperty); }
+            set { SetValue(IsSelectedProperty, value); }
         }
 
         private UiNode ParentUiNode

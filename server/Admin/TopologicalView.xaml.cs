@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Lucky.Home.Devices;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -66,13 +65,15 @@ namespace Lucky.Home
                     CreateDevice(SelectedSinks);
                 }
             }, () => SelectedSinks.Length > 0);
+
+            TcpConnection.NodeSelectionChanged += (o, e) => UpdateMenuItems();
         }
 
         private SinkNode[] SelectedSinks
         {
             get
             {
-                return TreeView.Items.Where(i => i.IsSelected) as SinkNode;
+                return TcpConnection.Nodes.OfType<SinkNode>().Where(sn => sn.IsSelected).ToArray();
             }
         }
 
@@ -147,6 +148,11 @@ namespace Lucky.Home
         }
 
         private void HandleSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            UpdateMenuItems();
+        }
+
+        private void UpdateMenuItems()
         {
             RenameCommand.RaiseCanExecuteChanged();
             CreateDeviceCommand.RaiseCanExecuteChanged();

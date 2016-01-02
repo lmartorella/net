@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -21,5 +22,23 @@ namespace Lucky.Home
         }
 
         internal TreeNode Parent { get; set; }
+
+        protected TreeNode Root
+        {
+            get
+            {
+                return Parent != null ? Parent.Root : this;
+            }
+        }
+
+        public void RaiseSelectionChanged()
+        {
+            if (SelectionChanged != null)
+            {
+                SelectionChanged(this, EventArgs.Empty);
+            }
+        }
+
+        public event EventHandler SelectionChanged;
     }
 }

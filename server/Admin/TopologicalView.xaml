@@ -29,7 +29,10 @@
                 </HierarchicalDataTemplate>
                 <DataTemplate DataType="{x:Type home:SinkNode}">
                     <Grid>
-                        <TextBlock Text="{Binding Name}" />
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox IsChecked="{Binding IsSelected}" />
+                            <TextBlock Text="{Binding Name}" />
+                        </StackPanel>
                     </Grid>
                 </DataTemplate>
             </TreeView.Resources>
