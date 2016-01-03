@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using Lucky.Home.Design;
 
 namespace Lucky.Home
 {

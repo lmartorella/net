@@ -45,7 +45,7 @@ namespace Lucky.HomeMock
             _digitalOutputsSink = new DigitalOutputArraySink(this);
 
             var controlPort = Manager.GetService<ControlPortListener>();
-            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink });
+            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
@@ -125,18 +125,6 @@ namespace Lucky.HomeMock
             MainWindow me = (MainWindow) d;
             me.Inputs = new ObservableCollection<Switch>(Enumerable.Range(0, me.SwitchesCount).Select(i => new Switch(false, "Input " + i)));
             me.Outputs = new ObservableCollection<Switch>(Enumerable.Range(0, me.SwitchesCount).Select(i => new Switch(false, "Output " + i)));
-        }
-
-        public class Switch
-        {
-            public bool Value { get; set; }
-            public string Name { get; private set; }
-
-            public Switch(bool value, string name)
-            {
-                Value = value;
-                Name = name;
-            }
         }
 
         public static readonly DependencyProperty InputsProperty = DependencyProperty.Register(

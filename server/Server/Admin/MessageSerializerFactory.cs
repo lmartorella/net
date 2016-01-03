@@ -6,11 +6,18 @@ namespace Lucky.Home.Admin
 {
     static class MessageSerializerFactory
     {
+        private static readonly Type[] KnownTypes;
+
+        static MessageSerializerFactory()
+        {
+            KnownTypes = new[] { typeof(Node), typeof(Node[]), typeof(DeviceDescriptor), typeof(DeviceDescriptor[]), typeof(DeviceTypeDescriptor), typeof(DeviceTypeDescriptor[]) };
+        }
+
         public static DataContractSerializer MessageRequestSerialier
         {
             get
             {
-                return new DataContractSerializer(typeof(MessageRequest), new Type[0]);
+                return new DataContractSerializer(typeof(MessageRequest), KnownTypes);
             }
         }
 
@@ -18,7 +25,7 @@ namespace Lucky.Home.Admin
         {
             get
             {
-                return new DataContractSerializer(typeof(MessageResponse), new[] { typeof(Node), typeof(Node[]), typeof(DeviceDescriptor), typeof(DeviceDescriptor[]) });
+                return new DataContractSerializer(typeof(MessageResponse), KnownTypes);
             }
         }
     }

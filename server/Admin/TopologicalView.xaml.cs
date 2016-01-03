@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -65,15 +66,25 @@ namespace Lucky.Home
                     CreateDevice(SelectedSinks);
                 }
             }, () => SelectedSinks.Length > 0);
-
-            TcpConnection.NodeSelectionChanged += (o, e) => UpdateMenuItems();
         }
 
         private SinkNode[] SelectedSinks
         {
             get
             {
-                return TcpConnection.Nodes.OfType<SinkNode>().Where(sn => sn.IsSelected).ToArray();
+                return GetAllNodes<SinkNode>().Where(sn => sn.IsSelected).ToArray();
+            }
+        }
+
+        private IEnumerable<T> GetAllNodes<T>(TreeNode root = null) where T: TreeNode
+        {
+            if (root != null)
+            {
+                return root.Children.OfType<T>().Concat(root.Children.OfType<TreeNode>().SelectMany(GetAllNodes<T>));
+            }
+            else
+            {
+                return TcpConnection.Nodes.SelectMany(GetAllNodes<T>);
             }
         }
 
@@ -103,12 +114,24 @@ namespace Lucky.Home
             EndRename(true);
         }
 
-        private TcpConnection TcpConnection
+        public static readonly DependencyProperty TcpConnectionProperty = DependencyProperty.Register(
+            "TcpConnection", typeof (TcpConnection), typeof (TopologicalView), new PropertyMetadata(null, HandleConnectionChanged));
+
+        private static void HandleConnectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            get
+            if (e.NewValue != null)
             {
-                return ((dynamic)((FrameworkElement)Parent).DataContext).Connection;
+                ((TcpConnection) e.NewValue).NodeSelectionChanged += (o, e1) =>
+                {
+                    ((TopologicalView) d).UpdateMenuItems();
+                };
             }
+        }
+
+        public TcpConnection TcpConnection
+        {
+            get { return (TcpConnection) GetValue(TcpConnectionProperty); }
+            set { SetValue(TcpConnectionProperty, value); }
         }
 
         private async void EndRename(bool commit)
@@ -178,7 +201,14 @@ namespace Lucky.Home
 
         private object[] ParseArguments(string argumentStr, Type[] types)
         {
-            return argumentStr.Split(',').Select((str, i) => Convert.ChangeType(str, types[i])).ToArray();
+            if (string.IsNullOrEmpty(argumentStr))
+            {
+                return new object[0];
+            }
+            else
+            {
+                return argumentStr.Split(',').Select((str, i) => Convert.ChangeType(str, types[i])).ToArray();
+            }
         }
     }
 }

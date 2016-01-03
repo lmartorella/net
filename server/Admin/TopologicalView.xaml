@@ -27,14 +27,14 @@
                                     Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
                     </Grid>
                 </HierarchicalDataTemplate>
-                <DataTemplate DataType="{x:Type home:SinkNode}">
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:SinkNode}">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
                             <CheckBox IsChecked="{Binding IsSelected}" />
                             <TextBlock Text="{Binding Name}" />
                         </StackPanel>
                     </Grid>
-                </DataTemplate>
+                </HierarchicalDataTemplate>
             </TreeView.Resources>
         </TreeView>
     </Grid>

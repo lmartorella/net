@@ -19,7 +19,7 @@ namespace Lucky.Home.Sinks
 
         public DigitalInputArraySink()
         {
-            PollPeriod = TimeSpan.FromSeconds(1);
+            PollPeriod = TimeSpan.FromSeconds(5);
         }
 
         protected override void OnInitialize()
@@ -62,24 +62,24 @@ namespace Lucky.Home.Sinks
             get { return _pollPeriod; }
             set
             {
+                _pollPeriod = value;
                 if (_isInitialized)
                 {
                     if (_timer != null)
                     {
                         _timer.Dispose();
                     }
-                    _pollPeriod = value;
                     _timer = new Timer(OnPoll, null, TimeSpan.Zero, _pollPeriod);
                 }
             }
         }
 
-        private void OnPoll(object state)
+        private async void OnPoll(object state)
         {
-            Read(reader =>
+            await Read(reader =>
             {
                 var resp = reader.Read<ReadStatusResponse>();
-                if (_lastData != null && resp.Data.SequenceEqual(_lastData))
+                if (resp == null || _lastData != null && resp.Data.SequenceEqual(_lastData))
                 {
                     // Same data. No event.
                 }
@@ -87,7 +87,7 @@ namespace Lucky.Home.Sinks
                 {
                     // Something changed
                     _lastData = resp.Data;
-                    int swCount = Math.Min(resp.SwitchCount, resp.Data.Length / 8);
+                    int swCount = Math.Min(resp.SwitchCount, resp.Data.Length * 8);
                     var ret = new bool[swCount];
                     for (int i = 0; i < swCount; i++)
                     {

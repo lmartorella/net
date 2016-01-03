@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
+using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
@@ -23,7 +24,8 @@ namespace Lucky.Home.Protocol
     {
         private static readonly Dictionary<IPEndPoint, Client> s_instances = new Dictionary<IPEndPoint, Client>();
         private Client _client;
-        private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(4);
+        private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
+        private static readonly ILogger Logger = Manager.GetService<LoggerFactory>().Create("NetSerializer");
 
         private class CloseMessage
         {
@@ -34,9 +36,9 @@ namespace Lucky.Home.Protocol
         {
             private readonly IPEndPoint _endPoint;
             private TcpClient _tcpClient;
-            public readonly Stream Stream;
-            public readonly BinaryReader Reader;
-            private readonly Semaphore _semaphore = new Semaphore(1, 1);
+            private readonly Stream _stream;
+            private readonly BinaryReader _reader;
+            private readonly Mutex _semaphore = new Mutex();
             private CancellationTokenSource _cancellationToken;
 
             public Client(IPEndPoint endPoint)
@@ -44,10 +46,12 @@ namespace Lucky.Home.Protocol
                 _endPoint = endPoint;
                 _tcpClient = new TcpClient();
                 _tcpClient.Connect(endPoint);
-                Stream = _tcpClient.GetStream();
-                //Stream.ReadTimeout = 5 * 60 * 1000;
+                _tcpClient.NoDelay = true;
+                _stream = _tcpClient.GetStream();
                 //Stream.WriteTimeout = 5 * 60 * 1000;
-                Reader = new BinaryReader(Stream);
+                _reader = new BinaryReader(_stream);
+                _stream.ReadTimeout = 5000;
+                //Stream.WriteTimeout = 5 * 60 * 1000;
             }
 
             public void Dispose(bool destroying)
@@ -61,8 +65,8 @@ namespace Lucky.Home.Protocol
                             SendClose();
                         }
 
-                        Stream.Flush();
-                        Reader.Close();
+                        _stream.Flush();
+                        _reader.Close();
                         //_tcpClient.Close();
                         _tcpClient = null;
                     }
@@ -71,6 +75,7 @@ namespace Lucky.Home.Protocol
 
             public void Acquire()
             {
+                _semaphore.WaitOne();
                 lock (this)
                 {
                     if (_cancellationToken != null)
@@ -78,7 +83,6 @@ namespace Lucky.Home.Protocol
                         _cancellationToken.Cancel();
                     }
                 }
-                _semaphore.WaitOne();
             }
 
             public void Release()
@@ -86,7 +90,7 @@ namespace Lucky.Home.Protocol
                 lock (this)
                 {
                     _cancellationToken = new CancellationTokenSource();
-                    _semaphore.Release();
+                    _semaphore.ReleaseMutex();
                     // Start timeout auto-disposal timer
                     Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
                     {
@@ -101,27 +105,46 @@ namespace Lucky.Home.Protocol
 
             public void Write<T>(T data)
             {
-                byte[] raw = data as byte[];
-                if (raw != null)
+                try
                 {
-                    Stream.Write(raw, 0, raw.Length);
+                    byte[] raw = data as byte[];
+                    if (raw != null)
+                    {
+                        _stream.Write(raw, 0, raw.Length);
+                    }
+                    else
+                    {
+                        MemoryStream stream = new MemoryStream();
+                        var writer = new BinaryWriter(stream);
+                        NetSerializer<T>.Write(data, writer);
+                        writer.Flush();
+                        byte[] data1 = stream.ToArray();
+                        stream.Position = 0;
+                        _stream.Write(data1, 0, data1.Length);
+                    }
+                    _stream.Flush();
                 }
-                else
+                catch (Exception exc)
                 {
-                    MemoryStream stream = new MemoryStream();
-                    var writer = new BinaryWriter(stream);
-                    NetSerializer<T>.Write(data, writer);
-                    writer.Flush();
-                    byte[] data1 = stream.ToArray();
-                    stream.Position = 0;
-                    Stream.Write(data1, 0, data1.Length);
+                    Logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
+                    // Destroy the channel
+                    Close(_endPoint);
                 }
-                Stream.Flush();
             }
 
             public T Read<T>()
             {
-                return NetSerializer<T>.Read(Reader);
+                try
+                {
+                    return NetSerializer<T>.Read(_reader);
+                }
+                catch (Exception exc)
+                {
+                    Logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
+                    // Destroy the channel
+                    Close(_endPoint);
+                    return default(T);
+                }
             }
 
             public void SendClose()
@@ -167,9 +190,8 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public static void Close(IPAddress address, ushort port)
+        public static void Close(IPEndPoint endPoint)
         {
-            IPEndPoint endPoint = new IPEndPoint(address, port);
             lock (s_instances)
             {
                 Client client;

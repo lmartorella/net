@@ -22,41 +22,53 @@ namespace Lucky.Home.Devices
 
         private bool _lastStatus;
 
-        public SwitchDevice(int period)
+        public SwitchDevice()
         {
-            _period = TimeSpan.FromMilliseconds(period);
+            _period = TimeSpan.FromMilliseconds(250);
         }
 
         protected override void OnSinkChanged(SubSink removed, SubSink added)
         {
             base.OnSinkChanged(removed, added);
-            
-            var removedInput = removed.Sink as IDigitalInputArraySink;
-            if (removedInput != null)
+
+            bool updated = false;
+            if (removed != null)
             {
-                removedInput.StatusChanged -= HandleStatusChanged;
-                _inputs.Remove(removed);
-            }
-            else
-            {
-                _outputs.Remove(removed);
+                var removedInput = removed.Sink as IDigitalInputArraySink;
+                if (removedInput != null)
+                {
+                    removedInput.StatusChanged -= HandleStatusChanged;
+                    _inputs.Remove(removed);
+                }
+                else
+                {
+                    _outputs.Remove(removed);
+                }
+                updated = true;
             }
 
-            var addedInput = added.Sink as IDigitalInputArraySink;
-            if (addedInput != null)
+            if (added != null)
             {
-                addedInput.StatusChanged += HandleStatusChanged;
-                // TODO
-                addedInput.PollPeriod = _period;
-                _inputs.Add(added);
-            }
-            else
-            {
-                _outputs.Add(added);
+                var addedInput = added.Sink as IDigitalInputArraySink;
+                if (addedInput != null)
+                {
+                    addedInput.StatusChanged += HandleStatusChanged;
+                    // TODO
+                    addedInput.PollPeriod = _period;
+                    _inputs.Add(added);
+                }
+                else
+                {
+                    _outputs.Add(added);
+                }
+                updated = true;
             }
 
-            UpdateOutput();
-            HandleStatusChanged(null, null);
+            if (updated)
+            {
+                UpdateOutput();
+                HandleStatusChanged(null, null);
+            }
         }
 
         private void HandleStatusChanged(object sender, EventArgs e)
@@ -97,7 +109,9 @@ namespace Lucky.Home.Devices
         {
             foreach (var output in _outputs)
             {
-                output.Sink.Status[output.SubIndex] = Status;
+                var state = output.Sink.Status;
+                state[output.SubIndex] = Status;
+                output.Sink.Status = state;
             }
         }
 

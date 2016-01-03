@@ -26,7 +26,7 @@ namespace Lucky.Home.Devices
 
             _sinks.CollectionChanged += (sender, args) =>
             {
-                if (args.NewItems.Count > 1 || args.OldItems.Count > 1)
+                if ((args.NewItems != null && args.NewItems.Count > 1) || (args.OldItems != null && args.OldItems.Count > 1))
                 {
                     throw new InvalidOperationException("Multiple sink change");
                 }
@@ -68,7 +68,7 @@ namespace Lucky.Home.Devices
             {
                 foreach (var sinkPath in SinkPaths)
                 {
-                    var sink = sinkManager.FindSink(sinkPath);
+                    var sink = sinkManager.FindOwnerSink(sinkPath);
                     if (sink != null)
                     {
                         _sinks.Add(new SubSink(sink, sinkPath.SubIndex));

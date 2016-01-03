@@ -42,6 +42,7 @@ namespace Lucky.Home.Sinks
             {
                 var resp = reader.Read<ReadStatusResponse>();
                 SubCount = resp.SwitchCount;
+                _status = new bool[SubCount];
             });
             // Align ext data
             await UpdateValues();

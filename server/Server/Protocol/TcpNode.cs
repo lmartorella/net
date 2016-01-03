@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
@@ -193,7 +194,7 @@ namespace Lucky.Home.Protocol
             catch (Exception exc)
             {
                 // Forbicly close the channel
-                TcpConnection.Close(address.Address, address.ControlPort);
+                TcpConnection.Close(new IPEndPoint(address.Address, address.ControlPort));
                 // Log exc
                 Logger.Exception(exc);
                 // Mark the node as a zombie

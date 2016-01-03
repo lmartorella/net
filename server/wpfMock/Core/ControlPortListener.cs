@@ -182,6 +182,7 @@ namespace Lucky.HomeMock.Core
 
         private void HandleServiceSocketAccepted(TcpClient tcpClient)
         {
+            tcpClient.NoDelay = true;
             using (Stream stream = tcpClient.GetStream())
             {
                 Logger.Log("Incoming connection", "from", tcpClient.Client.RemoteEndPoint);

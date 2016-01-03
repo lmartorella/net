@@ -63,6 +63,7 @@
     <Compile Include="Sinks\SinkStateManager.cs" />
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
+    <Compile Include="Switch.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

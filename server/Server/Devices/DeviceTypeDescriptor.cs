@@ -24,13 +24,13 @@ namespace Lucky.Home.Devices
         }
 
         [DataMember]
-        public string TypeName;
+        public string TypeName { get; set; }
 
         [DataMember]
-        public string[] ArgumentNames;
+        public string[] ArgumentNames { get; set; }
 
         [DataMember]
-        public string[] ArgumentTypes;
+        public string[] ArgumentTypes { get; set; }
 
         internal Type Type { get; private set; }
     }
