@@ -20,12 +20,12 @@ namespace Lucky.Home.Protocol
         void Write<T>(T data);
     }
 
-    internal class TcpConnection : IDisposable, IConnectionReader, IConnectionWriter
+    internal class TcpConnection : IConnectionReader, IConnectionWriter
     {
         private static readonly Dictionary<IPEndPoint, Client> s_instances = new Dictionary<IPEndPoint, Client>();
-        private Client _client;
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
         private static readonly ILogger Logger = Manager.GetService<LoggerFactory>().Create("NetSerializer");
+        private readonly IPEndPoint _endPoint;
 
         private class CloseMessage
         {
@@ -38,8 +38,9 @@ namespace Lucky.Home.Protocol
             private TcpClient _tcpClient;
             private readonly Stream _stream;
             private readonly BinaryReader _reader;
-            private readonly Mutex _semaphore = new Mutex();
+            private readonly object _mutex = new object();
             private CancellationTokenSource _cancellationToken;
+            private bool _acquired;
 
             public Client(IPEndPoint endPoint)
             {
@@ -56,51 +57,50 @@ namespace Lucky.Home.Protocol
 
             public void Dispose(bool destroying)
             {
-                lock (this)
+                // Dispose doesn't need to wait the mutex
+                if (_tcpClient != null)
                 {
-                    if (_tcpClient != null)
+                    if (!destroying)
                     {
-                        if (!destroying)
-                        {
-                            SendClose();
-                        }
-
-                        _stream.Flush();
-                        _reader.Close();
-                        //_tcpClient.Close();
-                        _tcpClient = null;
+                        SendClose();
                     }
+
+                    _stream.Flush();
+                    _reader.Close();
+                    //_tcpClient.Close();
+                    _tcpClient = null;
                 }
             }
 
             public void Acquire()
             {
-                _semaphore.WaitOne();
-                lock (this)
+                Monitor.Enter(_mutex);
+                if (_acquired)
                 {
-                    if (_cancellationToken != null)
-                    {
-                        _cancellationToken.Cancel();
-                    }
+                    throw new InvalidOperationException("Already acquired");
+                }
+                _acquired = true;
+                if (_cancellationToken != null)
+                {
+                    _cancellationToken.Cancel();
                 }
             }
 
             public void Release()
             {
-                lock (this)
+                _cancellationToken = new CancellationTokenSource();
+                // Start timeout auto-disposal timer
+                Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
                 {
-                    _cancellationToken = new CancellationTokenSource();
-                    _semaphore.ReleaseMutex();
-                    // Start timeout auto-disposal timer
-                    Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
+                    lock (s_instances)
                     {
-                        lock (s_instances)
-                        {
-                            Dispose(false);
-                            s_instances.Remove(_endPoint);
-                        }
-                    }, _cancellationToken.Token);
-                }
+                        Dispose(false);
+                        s_instances.Remove(_endPoint);
+                    }
+                }, _cancellationToken.Token);
+
+                _acquired = false;
+                Monitor.Exit(_mutex);
             }
 
             public void Write<T>(T data)
@@ -155,38 +155,50 @@ namespace Lucky.Home.Protocol
 
         public TcpConnection(IPAddress address, ushort port)
         {
-            IPEndPoint endPoint = new IPEndPoint(address, port);
+            _endPoint = new IPEndPoint(address, port);
+        }
+
+        private Client GetClient()
+        {
             lock (s_instances)
             {
-                if (!s_instances.TryGetValue(endPoint, out _client))
+                Client client;
+                if (!s_instances.TryGetValue(_endPoint, out client))
                 {
-                    _client = new Client(endPoint);
-                    s_instances[endPoint] = _client;
+                    client = new Client(_endPoint);
+                    s_instances[_endPoint] = client;
                 }
+                return client;
             }
-            // Locking
-            _client.Acquire();
         }
 
         public void Write<T>(T data)
         {
-            _client.Write(data);
+            // Locking
+            var client = GetClient();
+            client.Acquire();
+            try
+            {
+                client.Write(data);
+            }
+            finally
+            {
+                client.Release();
+            }
         }
 
         public T Read<T>()
         {
-            return _client.Read<T>();
-        }
-
-        /// <summary>
-        /// Close the TCP client connection
-        /// </summary>
-        public void Dispose()
-        {
-            if (_client != null)
+            // Locking
+            var client = GetClient();
+            client.Acquire();
+            try
             {
-                _client.Release();
-                _client = null;
+                return client.Read<T>();
+            }
+            finally
+            {
+                client.Release();
             }
         }
 
