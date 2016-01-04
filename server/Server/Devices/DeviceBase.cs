@@ -32,7 +32,6 @@ namespace Lucky.Home.Devices
                 }
                 switch (args.Action)
                 {
-                    case NotifyCollectionChangedAction.Reset:
                     case NotifyCollectionChangedAction.Replace:
                     case NotifyCollectionChangedAction.Move:
                         throw new InvalidOperationException("Sink collection operation not supported: " + args.Action);
@@ -90,7 +89,11 @@ namespace Lucky.Home.Devices
             lock (sinkManager.LockObject)
             {
                 sinkManager.CollectionChanged -= HandleSinkChanged;
-                _sinks.Clear();
+                //_sinks.Clear();
+                foreach (var sink in _sinks.ToArray())
+                {
+                    _sinks.Remove(sink);
+                }
             }
         }
 

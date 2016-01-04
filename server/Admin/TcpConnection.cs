@@ -93,6 +93,11 @@ namespace Lucky.Home
             return await _adminInterface.GetDevices();
         }
 
+        public async Task DeleteDevice(UiDevice uiDevice)
+        {
+            await _adminInterface.DeleteDevice(uiDevice.Id);
+        }
+
         public async Task<string> CreateDevice(SinkPath[] sinks, string deviceType, object[] arguments)
         {
             var descriptor = new DeviceDescriptor
@@ -178,6 +183,11 @@ namespace Lucky.Home
             public async Task<DeviceDescriptor[]> GetDevices()
             {
                 return (DeviceDescriptor[])await Request();
+            }
+
+            public async Task DeleteDevice(Guid id)
+            {
+                await Request("DeleteDevice", id);
             }
         }
 

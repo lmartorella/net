@@ -12,6 +12,19 @@ namespace Lucky.Home
         {
             InitializeComponent();
             List.DataContext = this;
+
+            DeleteCommand = new UiCommand(() =>
+            {
+                TcpConnection.DeleteDevice(SelectedDevice);
+            }, () => SelectedDevice != null);
+        }
+
+        public UiDevice SelectedDevice
+        {
+            get
+            {
+                return List.SelectedItem as UiDevice;
+            }
         }
 
         public static readonly DependencyProperty DevicesProperty = DependencyProperty.Register(
@@ -21,6 +34,40 @@ namespace Lucky.Home
         {
             get { return (ObservableCollection<UiDevice>) GetValue(DevicesProperty); }
             set { SetValue(DevicesProperty, value); }
+        }
+
+        public static readonly DependencyProperty DeleteCommandProperty = DependencyProperty.Register(
+            "DeleteCommand", typeof (UiCommand), typeof (DeviceView), new PropertyMetadata(default(UiCommand)));
+
+        public UiCommand DeleteCommand
+        {
+            get { return (UiCommand) GetValue(DeleteCommandProperty); }
+            set { SetValue(DeleteCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty TcpConnectionProperty = DependencyProperty.Register(
+    "TcpConnection", typeof(TcpConnection), typeof(DeviceView), new PropertyMetadata(null, HandleConnectionChanged));
+
+        private static void HandleConnectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue != null)
+            {
+                ((TcpConnection)e.NewValue).NodeSelectionChanged += (o, e1) =>
+                {
+                    ((DeviceView)d).UpdateMenuItems();
+                };
+            }
+        }
+
+        public TcpConnection TcpConnection
+        {
+            get { return (TcpConnection)GetValue(TcpConnectionProperty); }
+            set { SetValue(TcpConnectionProperty, value); }
+        }
+
+        private void UpdateMenuItems()
+        {
+            DeleteCommand.RaiseCanExecuteChanged();
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Lucky.Home.Devices
         /// From type name to device type
         /// </summary>
         private readonly Dictionary<string, DeviceTypeDescriptor> _deviceTypes = new Dictionary<string, DeviceTypeDescriptor>();
-        private readonly List<Tuple<IDevice, DeviceDescriptor>> _devices = new List<Tuple<IDevice, DeviceDescriptor>>();
+        private readonly Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>>();
 
         [DataContract]
         internal class Persistence
@@ -43,11 +43,14 @@ namespace Lucky.Home.Devices
 
         private void LoadState(DeviceDescriptor[] descriptors)
         {
-            if (descriptors != null)
+            lock (_devices)
             {
-                foreach (var descriptor in descriptors)
+                if (descriptors != null)
                 {
-                    CreateDevice(descriptor);
+                    foreach (var descriptor in descriptors)
+                    {
+                        CreateDevice(descriptor);
+                    }
                 }
             }
         }
@@ -56,7 +59,11 @@ namespace Lucky.Home.Devices
         {
             IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(_deviceTypes[descriptor.DeviceType].Type, descriptor.Arguments);
             device.OnInitialize(descriptor.SinkPaths);
-            _devices.Add(Tuple.Create((IDevice)device, descriptor));
+            descriptor.Id = Guid.NewGuid();
+            lock (_devices)
+            {
+                _devices.Add(descriptor.Id, Tuple.Create((IDevice)device, descriptor));
+            }
             return device;
         }
 
@@ -77,12 +84,29 @@ namespace Lucky.Home.Devices
 
         public DeviceDescriptor[] GetDeviceDescriptors()
         {
-            return _devices.Select(d => d.Item2).ToArray();
+            lock (_devices)
+            {
+                return _devices.Values.Select(d => d.Item2).ToArray();
+            }
         }
 
         public void Load()
         {
             LoadState(State.Descriptors);
+        }
+
+        public void DeleteDevice(Guid id)
+        {
+            lock (_devices)
+            {
+                Tuple<IDevice, DeviceDescriptor> tuple;
+                if (_devices.TryGetValue(id, out tuple))
+                {
+                    tuple.Item1.Dispose();
+                    _devices.Remove(id);
+                }
+            }
+            SaveState();
         }
     }
 }

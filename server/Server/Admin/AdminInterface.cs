@@ -67,6 +67,12 @@ namespace Lucky.Home.Admin
             return Task.FromResult(Manager.GetService<DeviceManager>().GetDeviceDescriptors());
         }
 
+        public Task DeleteDevice(Guid id)
+        {
+            Manager.GetService<DeviceManager>().DeleteDevice(id);
+            return Task.Run(() => { });
+        }
+
         private Node[] BuildTree()
         {
             var roots = _manager.Nodes.Where(n => !n.Address.IsSubNode).Select(n => new Node(n)).ToList();

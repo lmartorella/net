@@ -73,7 +73,7 @@ namespace Lucky.Home.Devices
 
         private void HandleStatusChanged(object sender, EventArgs e)
         {
-            Status = _inputs.Aggregate(false, (c, input) => c ^ input.Sink.Status[input.SubIndex]);
+            Status = _inputs.Aggregate(false, (c, input) => c ^ (input.Sink.Status.Length > input.SubIndex && input.Sink.Status[input.SubIndex]));
         }
 
         protected override void Dispose(bool disposing)

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Windows;
 using Lucky.Home.Devices;
 
@@ -10,8 +11,11 @@ namespace Lucky.Home
         {
             DeviceType = desc.DeviceType;
             Arguments = desc.Arguments;
+            Id = desc.Id;
             SinksDescription = string.Format("Sinks: {0}", string.Join(", ", desc.SinkPaths.Select(s => s.ToString())));
         }
+
+        public Guid Id { get; private set; }
 
         public static readonly DependencyProperty ArgumentsProperty = DependencyProperty.Register(
             "Arguments", typeof (object[]), typeof (UiDevice), new PropertyMetadata(default(object[])));

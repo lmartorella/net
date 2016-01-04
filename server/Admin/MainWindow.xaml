@@ -25,7 +25,7 @@
                 <home:TopologicalView Nodes="{Binding Connection.Nodes}" TcpConnection="{Binding Connection}"/>
             </TabItem>
             <TabItem Header="Devices">
-                <home:DeviceView Devices="{Binding Connection.Devices}" />
+                <home:DeviceView Devices="{Binding Connection.Devices}" TcpConnection="{Binding Connection}"/>
             </TabItem>
         </TabControl>
     </Grid>

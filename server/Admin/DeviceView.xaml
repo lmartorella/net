@@ -8,6 +8,11 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <ListView x:Name="List" ItemsSource="{Binding Devices}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Command="{Binding DeleteCommand}" Header="Delete" />
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.ItemTemplate>
                 <DataTemplate DataType="home:UiDevice">
                     <StackPanel Orientation="Horizontal">
