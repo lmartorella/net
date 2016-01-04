@@ -24,5 +24,11 @@ namespace Lucky.Home
             get { return (Connection) GetValue(ConnectionProperty); }
             set { SetValue(ConnectionProperty, value); }
         }
+
+        private void RefreshClicked(object sender, RoutedEventArgs routedEventArgs)
+        {
+            Connection.Dispose();
+            Connection = new TcpConnection();
+        }
     }
 }

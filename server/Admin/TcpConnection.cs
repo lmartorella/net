@@ -11,7 +11,7 @@ using Lucky.IO;
 
 namespace Lucky.Home
 {
-    public class TcpConnection : Connection
+    public class TcpConnection : Connection, IDisposable
     {
         private readonly TcpClient _client;
         private bool _connected;
@@ -29,7 +29,7 @@ namespace Lucky.Home
         {
             // Start listener
             await _client.ConnectAsync("localhost", Constants.DefaultAdminPort);
-            await Task.Run(() => HandleConnected());
+            await HandleConnected();
         }
 
         private bool Connected
@@ -45,7 +45,7 @@ namespace Lucky.Home
             }
         }
 
-        private async void HandleConnected()
+        private async Task HandleConnected()
         {
             Connected = true;
             await FetchTree();
@@ -182,5 +182,10 @@ namespace Lucky.Home
         }
 
         public event EventHandler NodeSelectionChanged;
+
+        public override void Dispose()
+        {
+            _client.Close();
+        }
     }
 }

@@ -12,7 +12,7 @@
                 <DataTemplate DataType="home:UiDevice">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding DeviceType}" Margin="3"/>
-                        <TextBlock Text="{Binding Argument}" Margin="3" />
+                        <TextBlock Text="{Binding SinksDescription}" Margin="3" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

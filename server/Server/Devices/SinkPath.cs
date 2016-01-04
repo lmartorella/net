@@ -37,5 +37,10 @@ namespace Lucky.Home.Devices
         {
             return NodeId == ((SinkPath)obj).NodeId && SinkId.Equals(((SinkPath)obj).SinkId) && SubIndex == ((SinkPath)obj).SubIndex;
         }
+
+        public override string ToString()
+        {
+            return String.Format("{0}/{1}{2}", NodeId, SinkId, SubIndex >= 0 ? "." + SubIndex : "");
+        }
     }
 }

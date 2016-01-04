@@ -9,7 +9,16 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="{Binding Connection.StatusText}" />
+        <Grid Grid.Row="0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Connection.StatusText}" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Column="1" HorizontalAlignment="Right">
+                <Hyperlink Click="RefreshClicked">Refresh</Hyperlink>
+            </TextBlock>
+        </Grid>
 
         <TabControl Grid.Row="1">
             <TabItem Header="Topological View">

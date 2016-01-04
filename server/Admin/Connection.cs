@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows;
 
 namespace Lucky.Home
 {
-    public abstract class Connection : DependencyObject
+    public abstract class Connection : DependencyObject, IDisposable
     {
         protected Connection()
         {
@@ -36,6 +37,10 @@ namespace Lucky.Home
         {
             get { return (ObservableCollection<UiDevice>) GetValue(DevicesProperty); }
             set { SetValue(DevicesProperty, value); }
+        }
+
+        public virtual void Dispose()
+        {
         }
     }
 }
