@@ -18,12 +18,8 @@ namespace Lucky.Home.Devices
         [DataContract]
         internal class Persistence
         {
+            [DataMember]
             public DeviceDescriptor[] Descriptors { get; set; }
-        }
-
-        public DeviceManager()
-        {
-            LoadState(State.Descriptors);
         }
 
         public DeviceTypeDescriptor[] DeviceTypes
@@ -34,7 +30,7 @@ namespace Lucky.Home.Devices
             }
         }
 
-        public void RegisterAssembly(Assembly assembly)
+        public DeviceManager RegisterAssembly(Assembly assembly)
         {
             foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type)))
             {
@@ -42,6 +38,7 @@ namespace Lucky.Home.Devices
                 var descriptor = new DeviceTypeDescriptor(deviceType);
                 _deviceTypes.Add(descriptor.TypeName, descriptor);
             }
+            return this;
         }
 
         private void LoadState(DeviceDescriptor[] descriptors)
@@ -81,6 +78,11 @@ namespace Lucky.Home.Devices
         public DeviceDescriptor[] GetDeviceDescriptors()
         {
             return _devices.Select(d => d.Item2).ToArray();
+        }
+
+        public void Load()
+        {
+            LoadState(State.Descriptors);
         }
     }
 }

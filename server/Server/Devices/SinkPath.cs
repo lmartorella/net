@@ -42,5 +42,10 @@ namespace Lucky.Home.Devices
         {
             return String.Format("{0}/{1}{2}", NodeId, SinkId, SubIndex >= 0 ? "." + SubIndex : "");
         }
+
+        public bool Owns(SinkPath sinkPath)
+        {
+            return new SinkPath(sinkPath.NodeId, sinkPath.SinkId).Equals(this);
+        }
     }
 }

@@ -99,7 +99,7 @@ namespace Lucky.Home.Devices
             ISink item = (ISink)e.Element;
             if (e.Action == CollectionChangeAction.Add)
             {
-                var subSinkPaths = SinkPaths.Where(sp => sp.Equals(item.Path));
+                var subSinkPaths = SinkPaths.Where(sp => item.Path.Owns(sp));
                 foreach (var sinkPath in subSinkPaths)
                 {
                     _sinks.Add(new SubSink(item, sinkPath.SubIndex));

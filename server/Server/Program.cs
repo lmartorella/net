@@ -30,7 +30,7 @@ namespace Lucky.Home
 
             // Register devices
             Manager.Register<DeviceManager>();
-            Manager.GetService<DeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
+            Manager.GetService<DeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly()).Load();
 
             // Start server
             Manager.GetService<IServer>();

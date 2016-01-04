@@ -20,7 +20,7 @@ namespace Lucky.Services
             set
             {
                 _state = value;
-                Manager.GetService<IPersistenceService>().SetState<T>(LogName, value);
+                Manager.GetService<IPersistenceService>().SetState(LogName, value);
             }
         }
     }

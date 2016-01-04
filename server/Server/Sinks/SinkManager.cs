@@ -92,10 +92,9 @@ namespace Lucky.Home.Sinks
         public ISink FindOwnerSink(SinkPath sinkPath)
         {
             // Find the parent sink instance
-            sinkPath = new SinkPath(sinkPath.NodeId, sinkPath.SinkId);
             lock (LockObject)
             {
-                return _sinks.FirstOrDefault(s => s.Path.Equals(sinkPath));
+                return _sinks.FirstOrDefault(s => s.Path.Owns(sinkPath));
             }
         }
 
