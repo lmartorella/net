@@ -184,10 +184,12 @@ namespace Lucky.Home.Protocol
 
             try
             {
-                var connection = new TcpConnection(address.Address, address.ControlPort);
-                // Connecion can be recycled
-                connection.Write(new SelectNodeMessage(address.Index));
-                return handler(connection, address);
+                using (var connection = new TcpConnection(address.Address, address.ControlPort))
+                {
+                    // Connecion can be recycled
+                    connection.Write(new SelectNodeMessage(address.Index));
+                    return handler(connection, address);
+                }
             }
             catch (Exception exc)
             {
