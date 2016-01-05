@@ -14,17 +14,19 @@
             </TreeView.ContextMenu>
             <TreeView.Resources>
                 <cvt:NodeStatusToTextConverter x:Key="nodeStatusToTextConverter" />
-                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"></BooleanToVisibilityConverter>
-                <cvt:InverseBooleanToVisibilityConverter x:Key="NegatedBooleanToVisibilityConverter"></cvt:InverseBooleanToVisibilityConverter>
+                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+                <cvt:InverseBooleanToVisibilityConverter x:Key="NegatedBooleanToVisibilityConverter" />
+                <cvt:IsZombieToFontStyleConverter x:Key="IsZombieToFontStyle" />
 
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:UiNode}">
                     <Grid>
                         <StackPanel Orientation="Horizontal" Visibility="{Binding InRename, Converter={StaticResource NegatedBooleanToVisibilityConverter}}" ToolTip="{Binding SinkNames}">
-                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="{Binding Name}" FontStyle="{Binding IsZombie, Converter={StaticResource IsZombieToFontStyle}}" />
                             <TextBlock Margin="5 0 0 0" Text="{Binding Status, Converter={StaticResource nodeStatusToTextConverter}}" />
                         </StackPanel>
                         <TextBox Visibility="{Binding InRename, Converter={StaticResource BooleanToVisibilityConverter}}" 
-                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
+                                 Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                 KeyDown="RenameBoxKeyDown" LostFocus="RenameBoxLostFocus"/>
                     </Grid>
                 </HierarchicalDataTemplate>
                 <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type home:SinkNode}">

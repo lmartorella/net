@@ -53,6 +53,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\IsZombieToFontStyleConverter.cs" />
     <Compile Include="CreateDeviceWindow.xaml.cs">
       <DependentUpon>CreateDeviceWindow.xaml</DependentUpon>
     </Compile>

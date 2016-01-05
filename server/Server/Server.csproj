@@ -58,6 +58,8 @@
     <Compile Include="Devices\IDeviceInternal.cs" />
     <Compile Include="Devices\ISwitchDevice.cs" />
     <Compile Include="Devices\SubSink.cs" />
+    <Compile Include="Protocol\IConnectionReader.cs" />
+    <Compile Include="Protocol\IConnectionWriter.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\IDigitalInputArraySink.cs" />
     <Compile Include="Devices\LineDevice.cs" />

@@ -27,6 +27,9 @@ namespace Lucky.Home.Admin
         [DataMember]
         public int[] SubSinkCount { get; set; }
 
+        [DataMember]
+        public bool IsZombie{ get; set; }
+
         public Node()
         {
             Children = new Node[0];
@@ -41,6 +44,7 @@ namespace Lucky.Home.Admin
             Address = tcpNode.Address.ToString();
             Sinks = tcpNode.Sinks.Select(s => s.FourCc).ToArray();
             SubSinkCount = tcpNode.Sinks.Select(s => s.SubCount).ToArray();
+            IsZombie = tcpNode.IsZombie;
         }
 
         internal ITcpNode TcpNode { get; private set; }

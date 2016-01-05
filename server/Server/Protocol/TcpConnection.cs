@@ -10,26 +10,54 @@ using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
-    public interface IConnectionReader
-    {
-        T Read<T>();
-    }
-
-    public interface IConnectionWriter
-    {
-        void Write<T>(T data);
-    }
-
     internal class TcpConnection : IDisposable, IConnectionReader, IConnectionWriter
     {
-        private static readonly Dictionary<IPEndPoint, Client> s_instances = new Dictionary<IPEndPoint, Client>();
-        private Client _client;
+        private static readonly Dictionary<IPEndPoint, Client> s_activeClients = new Dictionary<IPEndPoint, Client>();
+        private static readonly Dictionary<IPEndPoint, ClientMutex> s_mutexes = new Dictionary<IPEndPoint, ClientMutex>();
+        private static readonly object s_lockObject = new object();
+
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
-        private static readonly ILogger Logger = Manager.GetService<LoggerFactory>().Create("NetSerializer");
+        private static readonly ILogger Logger = Manager.GetService<LoggerFactory>().Create("TcpConnection");
+
+        private ClientMutex _mutex;
+        private readonly IPEndPoint _endPoint;
 
         private class CloseMessage
         {
             public Fourcc Cmd = new Fourcc("CLOS");
+        }
+
+        private class ClientMutex
+        {
+            private readonly IPEndPoint _endPoint;
+            private readonly Mutex _mutex = new Mutex();
+            private CancellationTokenSource _cancellationToken;
+
+            public ClientMutex(IPEndPoint endPoint)
+            {
+                _endPoint = endPoint;
+            }
+
+            public void Acquire()
+            {
+                _mutex.WaitOne();
+                // Ok, the client is alive
+                if (_cancellationToken != null)
+                {
+                    _cancellationToken.Cancel();
+                }
+            }
+
+            public void Release()
+            {
+                _cancellationToken = new CancellationTokenSource();
+                // Start timeout auto-disposal timer
+                Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
+                {
+                    Close(_endPoint, true);
+                }, _cancellationToken.Token);
+                _mutex.ReleaseMutex();
+            }
         }
 
         private class Client
@@ -38,8 +66,6 @@ namespace Lucky.Home.Protocol
             private TcpClient _tcpClient;
             private readonly Stream _stream;
             private readonly BinaryReader _reader;
-            private readonly Mutex _semaphore = new Mutex();
-            private CancellationTokenSource _cancellationToken;
 
             public Client(IPEndPoint endPoint)
             {
@@ -48,58 +74,23 @@ namespace Lucky.Home.Protocol
                 _tcpClient.Connect(endPoint);
                 _tcpClient.NoDelay = true;
                 _stream = _tcpClient.GetStream();
-                //Stream.WriteTimeout = 5 * 60 * 1000;
                 _reader = new BinaryReader(_stream);
+                // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
                 _stream.ReadTimeout = 5000;
-                //Stream.WriteTimeout = 5 * 60 * 1000;
             }
 
-            public void Dispose(bool destroying)
+            public void Close(bool sendCloseMessage)
             {
-                lock (this)
+                if (_tcpClient != null)
                 {
-                    if (_tcpClient != null)
+                    if (sendCloseMessage)
                     {
-                        if (!destroying)
-                        {
-                            SendClose();
-                        }
-
-                        _stream.Flush();
-                        _reader.Close();
-                        //_tcpClient.Close();
-                        _tcpClient = null;
+                        Write(new CloseMessage());
                     }
-                }
-            }
 
-            public void Acquire()
-            {
-                _semaphore.WaitOne();
-                lock (this)
-                {
-                    if (_cancellationToken != null)
-                    {
-                        _cancellationToken.Cancel();
-                    }
-                }
-            }
-
-            public void Release()
-            {
-                lock (this)
-                {
-                    _cancellationToken = new CancellationTokenSource();
-                    _semaphore.ReleaseMutex();
-                    // Start timeout auto-disposal timer
-                    Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
-                    {
-                        lock (s_instances)
-                        {
-                            Dispose(false);
-                            s_instances.Remove(_endPoint);
-                        }
-                    }, _cancellationToken.Token);
+                    _stream.Flush();
+                    _reader.Close();
+                    _tcpClient = null;
                 }
             }
 
@@ -128,7 +119,7 @@ namespace Lucky.Home.Protocol
                 {
                     Logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
                     // Destroy the channel
-                    Close(_endPoint);
+                    TcpConnection.Close(_endPoint, false);
                 }
             }
 
@@ -142,40 +133,26 @@ namespace Lucky.Home.Protocol
                 {
                     Logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
                     // Destroy the channel
-                    Close(_endPoint);
+                    TcpConnection.Close(_endPoint, false);
                     return default(T);
                 }
-            }
-
-            public void SendClose()
-            {
-                Write(new CloseMessage());
             }
         }
 
         public TcpConnection(IPAddress address, ushort port)
         {
-            IPEndPoint endPoint = new IPEndPoint(address, port);
-            lock (s_instances)
+            _endPoint = new IPEndPoint(address, port);
+            lock (s_lockObject)
             {
-                if (!s_instances.TryGetValue(endPoint, out _client))
+                if (!s_mutexes.TryGetValue(_endPoint, out _mutex))
                 {
-                    _client = new Client(endPoint);
-                    s_instances[endPoint] = _client;
+                    _mutex = new ClientMutex(_endPoint);
+                    s_mutexes[_endPoint] = _mutex;
                 }
             }
+
             // Locking
-            _client.Acquire();
-        }
-
-        public void Write<T>(T data)
-        {
-            _client.Write(data);
-        }
-
-        public T Read<T>()
-        {
-            return _client.Read<T>();
+            _mutex.Acquire();
         }
 
         /// <summary>
@@ -183,24 +160,47 @@ namespace Lucky.Home.Protocol
         /// </summary>
         public void Dispose()
         {
-            if (_client != null)
+            if (_mutex != null)
             {
-                _client.Release();
-                _client = null;
+                _mutex.Release();
+                _mutex = null;
             }
         }
 
-        public static void Close(IPEndPoint endPoint)
+        public void Write<T>(T data)
         {
-            lock (s_instances)
+            GetClient().Write(data);
+        }
+
+        public T Read<T>()
+        {
+            return GetClient().Read<T>();
+        }
+
+        private Client GetClient()
+        {
+            Client client;
+            if (!s_activeClients.TryGetValue(_endPoint, out client))
+            {
+                // Destroy the channel
+                client = new Client(_endPoint);
+                s_activeClients[_endPoint] = client;
+            }
+            return client;
+        }
+
+        public static void Close(IPEndPoint endPoint, bool sendCloseMessage = false)
+        {
+            lock (s_lockObject)
             {
                 Client client;
-                if (s_instances.TryGetValue(endPoint, out client))
+                if (s_activeClients.TryGetValue(endPoint, out client))
                 {
                     // Destroy the channel
-                    client.Dispose(true);
-                    s_instances.Remove(endPoint);
+                    client.Close(sendCloseMessage);
+                    s_activeClients.Remove(endPoint);
                 }
+                s_mutexes.Remove(endPoint);
             }
         }
     }

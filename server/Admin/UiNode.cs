@@ -22,6 +22,8 @@ namespace Lucky.Home
             Name = node.Id.ToString();
             Status = node.Status;
             Children = new ObservableCollection<object>(node.Children.Select(n => new UiNode(n, this)));
+            IsZombie = node.IsZombie;
+
             if (node.Sinks != null)
             {
                 SinkNames = string.Join(", ", node.Sinks);
@@ -49,6 +51,15 @@ namespace Lucky.Home
         {
             get { return (string) GetValue(SinkNamesProperty); }
             set { SetValue(SinkNamesProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsZombieProperty = DependencyProperty.Register(
+            "IsZombie", typeof (bool), typeof (UiNode), new PropertyMetadata(default(bool)));
+
+        public bool IsZombie
+        {
+            get { return (bool) GetValue(IsZombieProperty); }
+            set { SetValue(IsZombieProperty, value); }
         }
     }
 }
