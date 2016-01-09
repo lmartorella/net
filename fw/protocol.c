@@ -1,15 +1,16 @@
+#include "pch.h"
 #include "protocol.h"
 #include "appio.h"
 #include "displaySink.h"
 #include "audioSink.h"
 #include "persistence.h"
-#include "hardware/fuses.h"
 #include "hardware/cm1602.h"
 #include "hardware/ip.h"
-#include "Compiler.h"
-#include "TCPIPStack/TCPIP.h"
 
 #ifdef HAS_IP
+
+#include "Compiler.h"
+#include "TCPIPStack/TCPIP.h"
 
 static BOOL s_registered = FALSE;
 static BYTE s_slowDemux = 0;

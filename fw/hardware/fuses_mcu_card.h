@@ -1,9 +1,7 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
-#include <xc.h>
 #include <p18f87j60.h>
-#include "utilities.h"
 
 // PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
 // PORTB: 0/7, interrupt on change. RB6/7 used by ICSP. RB0/5 used by Mp3
@@ -92,7 +90,7 @@
 // ******
 // RS485: use USART2 on 18F87J60 (PORTG)
 // ******
-#define HAS_RS485
+#undef HAS_RS485
 
 
 

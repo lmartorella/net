@@ -1,14 +1,16 @@
 #ifndef _PROT_H_APP_
 #define _PROT_H_APP_
 
-#include <GenericTypeDefs.h>
-#include "ver.h"
-
 #define SERVER_CONTROL_UDP_PORT 17007
 #define CLIENT_TCP_PORT 20000
 
 void prot_poll(void);
 void prot_slowTimer(void);
+
+BOOL prot_control_readW(WORD* w);
+BOOL prot_control_read(void* data, WORD size);
+void prot_control_writeW(WORD w);
+void prot_control_write(void* data, WORD size);
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished

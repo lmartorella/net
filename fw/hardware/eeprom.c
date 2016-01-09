@@ -1,7 +1,7 @@
-#include "fuses.h"
-#include "GenericTypeDefs.h"
+#include "../pch.h"
 #include "../appio.h"
 
+#ifdef _CONF_MCU_ETH_CARD
 // Source: http://www.microchip.com/forums/m339126.aspx
 
 // full 24-bit pointer support for flash zones
@@ -116,3 +116,4 @@ void rom_write(const void* destination, const void* source, WORD length)
 	rowWrite(); 
 }
 
+#endif

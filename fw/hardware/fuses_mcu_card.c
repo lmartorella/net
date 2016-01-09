@@ -1,5 +1,5 @@
-#include "fuses.h"
-//#include <delays.h>
+#include "../pch.h"
+
 // For the list of fuses, run "mcc18.exe --help-config -p=18f87j60"
 
 // Enable WDT, 1:256 prescaler
@@ -70,4 +70,57 @@ void wait1s(void)
         wait30ms();
         CLRWDT();
     }
+}
+
+void enableInterrupts()
+{
+	// Enable low/high interrupt mode
+	RCONbits.IPEN = 1;		
+	INTCONbits.GIEL = 1;
+	INTCONbits.GIEH = 1;
+}
+ 
+// Check RCON and STKPTR register for anormal reset cause
+void sys_storeResetReason()
+{
+	if (!RCONbits.NOT_RI)
+	{
+		// Software exception. 
+		// Obtain last reason from appio.h 
+		_reason = RESET_EXC;
+	}
+	else if (!RCONbits.NOT_POR)
+	{
+		// Normal Power-on startup. Ok.
+		_reason = RESET_POWER;
+	}
+	else if (!RCONbits.NOT_BOR)
+	{
+		// Brown-out reset. Low voltage.
+		_reason = RESET_BROWNOUT;
+	}
+/*
+	else if (!RCONbits.NOT_CM)
+	{
+		// Configuration mismatch reset. EEPROM fail.
+		_reason = RESET_CONFIGMISMATCH;
+	}
+*/
+	else if (!RCONbits.NOT_TO)
+	{
+		// Watchdog reset. Loop detected.
+		_reason = RESET_WATCHDOG;
+	}
+	else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
+	{
+		// Stack underrun/overrun reset. 
+		_reason = RESET_STACKFAIL;
+	}
+	else
+	{
+		// Else it was reset manually (MCLR)
+		_reason = RESET_MCLR;
+	}
+	RCON = RCON | 0x33;	// reset all flags
+	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
 }

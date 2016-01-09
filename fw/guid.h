@@ -1,8 +1,5 @@
-
 #ifndef _VER_APP_H
 #define _VER_APP_H
-
-#include <GenericTypeDefs.h>
 
 // Update this at every build
 //#define APP_VER "0.1"
@@ -26,6 +23,5 @@ typedef union {
     } chars;
     BYTE bytes[4];
 } FOURCC;
-
 
 #endif

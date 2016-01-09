@@ -1,8 +1,7 @@
-#include "spiram.h"
+#include "../pch.h"
 #include "spi.h"
-#include "fuses.h"
+#include "spiram.h"
 #include "../appio.h"
-#include <stdio.h>
 
 #ifdef HAS_SPI_RAM
 
@@ -198,7 +197,5 @@ void sram_test_gui(BYTE* buffer, UINT16 bufferSize)
     }
 }
 
-#else
-void sram_init()
-{}
 #endif // HAS_SPI_RAM
+

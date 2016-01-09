@@ -1,4 +1,4 @@
-#include "fuses.h"
+#include "../pch.h"
 #include "spi.h"
 
 #ifdef HAS_SPI
@@ -86,7 +86,4 @@ void spi_shift_repeat_8(BYTE data, BYTE size)
     spi_release();
 }
 
-#else
-void spi_init(enum SPI_INIT value)
-{ }
 #endif //#ifdef HAS_SPI

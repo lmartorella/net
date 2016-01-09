@@ -1,11 +1,10 @@
-#include "fuses.h"
-#include "ip.h"
+#include "../pch.h"
 #include "../protocol.h"
-#include "../TCPIPStack/TCPIP.h"
 #include "../appio.h"
-#include "cm1602.h"
 
 #ifdef HAS_IP
+#include "ip.h"
+#include "../TCPIPStack/TCPIP.h"
 
 // UDP broadcast socket
 UDP_SOCKET s_heloSocket;  // TODO: static
@@ -142,6 +141,26 @@ void ip_prot_slowTimer()
     {
         prot_slowTimer();
     }
+}
+
+BOOL prot_control_readW(WORD* w)
+{
+    return ip_control_readW(w);
+}
+
+BOOL prot_control_read(void* data, WORD size)
+{
+    return ip_control_read(data, size);
+}
+
+void prot_control_writeW(WORD w)
+{
+    ip_control_writeW(w);
+}
+
+void prot_control_write(void* data, WORD size)
+{
+    ip_control_write(data, size);
 }
 
 #endif

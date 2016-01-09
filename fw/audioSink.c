@@ -1,11 +1,10 @@
-#include "hardware/fuses.h"
+#include "pch.h"
 #include "audioSink.h"
 #include "appio.h"
 #include "hardware/vs1011e.h"
-#include "hardware/spiram.h"
+//#include "hardware/spiram.h"
 #include "hardware/spi.h"
-#include <string.h>
-#include "TCPIPStack/TCPIP.h"
+//#include "TCPIPStack/TCPIP.h"
 
 #ifdef HAS_VS1011
 

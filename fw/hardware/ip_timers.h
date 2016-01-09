@@ -1,7 +1,7 @@
 #ifndef _TIMERS_APP_H_
 #define _TIMERS_APP_H_
 
-#include "GenericTypeDefs.h"
+#ifdef HAS_IP
 
 // Init timers stuff
 void timers_init(void);
@@ -19,4 +19,5 @@ typedef union
 // Check if 1sec timer is elapsed, and reset it if so.
 TIMER_RES timers_check();
 
+#endif
 #endif

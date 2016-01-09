@@ -1,7 +1,8 @@
-#include "hardware/fuses.h"
-#include "TCPIPStack/TCPIP.h"
-#include "audioSink.h"
-#include "timers.h"
+#include "../pch.h"
+#include "ip_timers.h"
+
+#ifdef HAS_IP
+#include "../TCPIPStack/TCPIP.h"
 
 static DWORD s_1sec;
 static DWORD s_10msec;
@@ -41,3 +42,5 @@ TIMER_RES timers_check()
     }
     return res;
 }
+
+#endif

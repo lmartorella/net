@@ -1,6 +1,8 @@
 #ifndef _IP_INCLUDE_
 #define	_IP_INCLUDE_
 
+#ifdef HAS_IP
+
 #include "Compiler.h"
 
 #include "../TCPIPStack/TCPIP.h"
@@ -20,6 +22,8 @@ void ip_control_flush(void);
 
 WORD ip_control_getDataSize(void);
 BOOL ip_control_isListening(void);        
+
+#endif
 
 #endif	/* IP_H */
 

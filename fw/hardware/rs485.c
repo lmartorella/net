@@ -1,11 +1,6 @@
-/* 
- * File:   rs485.c
- * Author: Luciano
- *
- * Created on 20 dicembre 2015, 19.16
- */
-
 #include "rs485.h"
+
+#ifdef HAS_RS485
 
 // TODO: In progress
 void rs485_reset()
@@ -32,5 +27,4 @@ void rs485_reset()
     TRISGbits.RG3 = 0;
 }
 
-
-
+#endif

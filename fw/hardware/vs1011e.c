@@ -203,9 +203,4 @@ VS1011_MODEL vs1011_reset(BOOL enableStream)
     return (VS1011_MODEL)((v >> 4) & 0x7);
 }
 
-#else
-void vs1011_init()
-{
-}
-
 #endif //#ifdef HAS_VS1011

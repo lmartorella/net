@@ -1,8 +1,6 @@
 #ifndef PERSISTENCE_INCLUDE_
 #define PERSISTENCE_INCLUDE_
 
-#include "ver.h"
-
 /********************
   USER-DATA PART OF LOADER RECORD (PROGRAMMABLE)
   The record is immediately before the Configuration word, in the higher program memory.

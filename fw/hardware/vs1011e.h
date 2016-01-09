@@ -1,7 +1,7 @@
 #ifndef _VS1011E_INCLUDE_
 #define _VS1011E_INCLUDE_
 
-#include "fuses.h"
+#ifdef HAS_VS1011
 
 typedef enum 
 {
@@ -28,4 +28,5 @@ BOOL vs1011_isWaitingData();
 // Max 32 bytes
 void vs1011_streamData(BYTE* buffer, BYTE size);
 
+#endif
 #endif

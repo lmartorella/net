@@ -1,25 +1,15 @@
-#include "hardware/fuses.h"
-#include "hardware/utilities.h"
+#include "pch.h"
 #include "hardware/cm1602.h"
 #include "hardware/spiram.h"
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
 #include "hardware/ip.h"
 #include "protocol.h"
-#include "timers.h"
+#include "hardware/ip_timers.h"
 #include "appio.h"
 #include "audioSink.h"
-#include <stdio.h>
 
 static const char* msg1 = "Hi world! ";
-
-static void enableInterrupts(void)
-{
-	// Enable low/high interrupt mode
-	RCONbits.IPEN = 1;		
-	INTCONbits.GIEL = 1;
-	INTCONbits.GIEH = 1;
-}
 
 void main()
 {
@@ -28,6 +18,7 @@ void main()
     // Analyze RESET reason
     sys_storeResetReason();
 
+#ifdef HAS_CM1602
     // reset display
     cm1602_reset();
     cm1602_clear();
@@ -45,45 +36,56 @@ void main()
     }
 
     wait1s();
-    println("Spi");
+#endif
 
+#ifdef HAS_SPI
+    println("Spi");
+    
     // Enable SPI
     // from 23k256 datasheet and figure 20.3 of PIC datasheet
     // CKP = 0, CKE = 1
     // Output: data changed at clock falling.
     // Input: data sampled at clock rising.
     spi_init(SPI_SMP_END | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
-
+#endif
+    
+#ifdef HAS_SPI_RAM
     sram_init();
+#endif
+    
+#ifdef HAS_VS1011
     vs1011_init();
-
+#endif
+    
     wait1s();
     clearlnUp();
     
     enableInterrupts();
+    
+#ifdef HAS_IP
     timers_init();
-
     ip_prot_init();
+#endif
     
     // I'm alive
     while (1)
     {
+#ifdef HAS_IP
             TIMER_RES timers = timers_check();
-
             if (timers.timer_10ms)
             {
                ip_prot_poll();
             }
-
             if (timers.timer_1s)
             {
                 ip_prot_slowTimer();
             }
-
+#endif
+            
 #if HAS_VS1011
             audio_pollMp3Player();
 #endif
-            ClrWdt();
+            CLRWDT();
     }
 }
 

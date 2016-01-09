@@ -1,6 +1,8 @@
 #ifndef _SPI_INCLUDE_
 #define _SPI_INCLUDE_
 
+#ifdef HAS_SPI
+
 enum SPI_INIT
 {
 	// **** 
@@ -50,4 +52,5 @@ extern BYTE s_spiInUse;
 #define spi_release() (s_spiInUse--)
 #define spi_isLocked() (s_spiInUse > 0)
 
+#endif
 #endif

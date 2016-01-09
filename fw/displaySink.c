@@ -1,10 +1,10 @@
-#include "hardware/fuses.h"
+#include "pch.h"
 #include "displaySink.h"
 #include "appio.h"
+#include "protocol.h"
 #include "hardware/cm1602.h"
-#include <string.h>
-#include "TCPIPStack/TCPIP.h"
-#include "hardware/ip.h"
+//#include "TCPIPStack/TCPIP.h"
+//#include "hardware/ip.h"
 
 #ifdef HAS_CM1602
 

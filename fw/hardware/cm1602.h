@@ -1,7 +1,7 @@
 #ifndef _CM1602_H
 #define _CM1602_H
 
-#include "utilities.h"
+#ifdef HAS_CM1602
 
 // Low-level interface, HW dependent
 // CM1602_IF_MODE should be set to 4 or 8
@@ -63,4 +63,5 @@ void cm1602_writeStr(const char* str);
 
 // Read should be implemented ONLY on port tolerant to 5V 
 
+#endif
 #endif

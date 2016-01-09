@@ -1,9 +1,5 @@
-
-
 #ifndef _APPIO_INCLUDE_
 #define _APPIO_INCLUDE_
-
-#include "ver.h"
 
 // Clear the upper row (status)
 void clearlnUp();
