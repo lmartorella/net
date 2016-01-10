@@ -1,6 +1,7 @@
 #include "../pch.h"
 #include "../protocol.h"
 #include "../appio.h"
+#include "cm1602.h"
 
 #ifdef HAS_IP
 #include "ip.h"

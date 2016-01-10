@@ -42,3 +42,8 @@ void wait1s(void)
 void enableInterrupts()
 {
 }
+
+void sys_storeResetReason()
+{
+    _reason = RESET_MCLR;
+}

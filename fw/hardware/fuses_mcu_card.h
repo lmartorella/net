@@ -1,7 +1,7 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
-#include <p18f87j60.h>
+//#include <p18f87j60.h>
 
 // PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
 // PORTB: 0/7, interrupt on change. RB6/7 used by ICSP. RB0/5 used by Mp3

@@ -1,7 +1,7 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
-#include <pic16f628a.h>
+//#include <pic16f628a.h>
 
 #undef HAS_CM1602
 #undef HAS_VS1011
