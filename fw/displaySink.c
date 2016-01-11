@@ -3,8 +3,6 @@
 #include "appio.h"
 #include "protocol.h"
 #include "hardware/cm1602.h"
-//#include "TCPIPStack/TCPIP.h"
-//#include "hardware/ip.h"
 
 #ifdef HAS_CM1602
 

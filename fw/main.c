@@ -3,13 +3,16 @@
 #include "hardware/spiram.h"
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
-#include "hardware/ip.h"
-#include "protocol.h"
-#include "hardware/ip_timers.h"
+#include "ip_protocol.h"
 #include "appio.h"
 #include "audioSink.h"
 
 static const char* msg1 = "Hi world! ";
+
+void interrupt low_priority low_isr(void)
+{
+    ip_prot_tickUpdate();
+}
 
 void main()
 {
@@ -63,7 +66,6 @@ void main()
     enableInterrupts();
     
 #ifdef HAS_IP
-    timers_init();
     ip_prot_init();
 #endif
     
@@ -71,7 +73,7 @@ void main()
     while (1)
     {
 #ifdef HAS_IP
-            TIMER_RES timers = timers_check();
+            TIMER_RES timers = ip_timers_check();
             if (timers.timer_10ms)
             {
                ip_prot_poll();

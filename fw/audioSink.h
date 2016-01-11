@@ -8,6 +8,7 @@
 #define	AUDIO_SINK_H
 
 #include "protocol.h"
+
 // The public sink descriptor
 extern const Sink g_audioSink;
 

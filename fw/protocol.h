@@ -1,11 +1,5 @@
-#ifndef _PROT_H_APP_
-#define _PROT_H_APP_
-
-#define SERVER_CONTROL_UDP_PORT 17007
-#define CLIENT_TCP_PORT 20000
-
-void prot_poll(void);
-void prot_slowTimer(void);
+#ifndef PROTOCOL_H
+#define	PROTOCOL_H
 
 BOOL prot_control_readW(WORD* w);
 BOOL prot_control_read(void* data, WORD size);
@@ -32,5 +26,5 @@ typedef struct SinkStruct
 extern const Sink* AllSinks[];
 extern int AllSinksSize;
 
-#endif //#ifdef HAS_IP
+#endif	/* PROTOCOL_H */
 
