@@ -5,11 +5,11 @@
 
 // PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
 // PORTB: 0/7, interrupt on change. RB6/7 used by ICSP. RB0/5 used by Mp3
-// PORTC: 0/7, RC3/4 used by I2C. 1/2 and 6/7 used by EXTRAM I2C. Used by IO modules. 6/7 used by USART1.
+// PORTC: 0/7, RC3/4 used by I2C. 1/2 and 6/7 used by EXTRAM I2C. Used by IO modules. 
 // PORTD: 0/2
 // PORTE: 0/5: Used by CM1602 module (0 and 2/7)
 // PORTF: 0/7: digital and analog. Used by IO modules.
-// PORTG: 4: 1/2 used by USART2 + 0/3 used by MAX485 enable logic
+// PORTG: 4: 1/2 used by USART2 + 0 used by MAX485 enable logic
 
 
 // ******* 
@@ -90,8 +90,7 @@
 // ******
 // RS485: use USART2 on 18F87J60 (PORTG)
 // ******
-#undef HAS_RS485
-
+#define HAS_RS485
 
 
 
