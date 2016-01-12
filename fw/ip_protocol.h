@@ -7,9 +7,9 @@
 #define CLIENT_TCP_PORT 20000
 
 // Manage poll activities
-void ip_prot_init(void);
-void ip_prot_poll(void);
-void ip_prot_slowTimer(void);
+void ip_prot_init();
+void ip_prot_timer();
+void ip_prot_slowTimer();
 // Update ETH module timers at ~23Khz freq
 void ip_prot_tickUpdate();
 

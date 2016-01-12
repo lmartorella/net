@@ -237,10 +237,12 @@ static void parseCommandAndData()
     fatal("CMD.unkn");
 }
 
-void ip_prot_tickUpdate()
+void ip_prot_timer()
 {
     // Update ETH module timers at ~23Khz freq
-    TickUpdate();
+     if (INTCONbits.TMR0IF) {
+         TickUpdate();
+     }
 }
 
 void ip_prot_init()

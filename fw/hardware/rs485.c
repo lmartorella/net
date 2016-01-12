@@ -6,6 +6,8 @@
 #define RG0_TRANSMIT 1
 #define RG0_RECEIVE 0
 
+static char s_toSend = 0;
+
 void rs485_init()
 {
     // Enable EUSART2 on PIC18f
@@ -26,14 +28,53 @@ void rs485_init()
     // Enable control ports
     PORTGbits.RG0 = RG0_RECEIVE;
     TRISGbits.RG0 = 0;
+    
+    // Enable high priority interrupt on transmit
+    //IPR3bits.TX2IP = 1;
+}
+
+void rs485_interrupt()
+{
+    //if (PIR3bits.TX2IF) {
+        // Disable RS485 driver
+        PORTGbits.RG0 = RG0_RECEIVE;
+        // Disable TX port
+        TXSTA2bits.TXEN = 0;
+        PIR3bits.TX2IF = 0;
+    //}
+}
+
+void rs485_poll()
+{
+    if (TXSTA2bits.TRMT) {  // Empty TSR reg
+        // Disable RS485 driver
+        PORTGbits.RG0 = RG0_RECEIVE;
+        // Disable TX port
+        //TXSTA2bits.TXEN = 0;
+        //PIR3bits.TX2IF = 0;
+    }
 }
 
 void rs485_write(void* data, WORD size)
 {
+    // Disable interrupt
+    //PIE3bits.TX2IE = 0;
+
+    // Enable RS485 driver
     PORTGbits.RG0 = RG0_TRANSMIT;
+    // Enable UART transmit
     TXSTA2bits.TXEN = 1;
-    TXREG2 = 0x55;
-    // TODO clear transmit when finished
+    // Transmit U
+    TXREG2 = s_toSend + '0';
+    s_toSend = (s_toSend + 1) % 10;
+    
+    // Now interrupt is set
+    //PIR3bits.TX2IF = 0;
+    // Reenable interrupt
+    //PIE3bits.TX2IE = 1;
+    // Transmit dummy
+    //TXREG2 = 0x81;
+    // This will raise a real interrupt at the end of the first byte
 }
 
 void rs485_read(void* data, WORD size)

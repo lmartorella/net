@@ -6,12 +6,25 @@
 #include "ip_protocol.h"
 #include "appio.h"
 #include "audioSink.h"
+#include "hardware/rs485.h"
 
 static const char* msg1 = "Hi world! ";
 
+void interrupt high_priority high_isr(void)
+{
+#ifdef HAS_RS485
+    rs485_interrupt();
+#endif
+}
+
 void interrupt low_priority low_isr(void)
 {
-    ip_prot_tickUpdate();
+#ifdef HAS_RS485
+    rs485_poll();
+#endif
+#ifdef HAS_IP
+    ip_prot_timer();
+#endif
 }
 
 void main()
@@ -67,6 +80,10 @@ void main()
     
 #ifdef HAS_IP
     ip_prot_init();
+#endif
+
+#ifdef HAS_RS485
+    rs485_init();
 #endif
     
     // I'm alive
