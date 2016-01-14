@@ -10,6 +10,7 @@
 void ip_prot_init();
 void ip_prot_timer();
 void ip_prot_slowTimer();
+void ip_prot_poll();
 // Update ETH module timers at ~23Khz freq
 void ip_prot_tickUpdate();
 

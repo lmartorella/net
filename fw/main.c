@@ -19,9 +19,6 @@ void interrupt high_priority high_isr(void)
 
 void interrupt low_priority low_isr(void)
 {
-#ifdef HAS_RS485
-    rs485_poll();
-#endif
 #ifdef HAS_IP
     ip_prot_timer();
 #endif

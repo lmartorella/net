@@ -6,14 +6,16 @@
 #define RG0_TRANSMIT 1
 #define RG0_RECEIVE 0
 
-static char s_toSend = 0;
+static BYTE* s_ptr;
+static BYTE s_size = 0;
 
 void rs485_init()
 {
     // Enable EUSART2 on PIC18f
     RCSTA2bits.SPEN = 1;
-    RCSTA2bits.RX9 = 0;
+    RCSTA2bits.RX9 = 1;
     TXSTA2bits.SYNC = 0;
+    TXSTA2bits.TX9 = 1;
     
     // 19200 baud
     TXSTA2bits.BRGH = 1;
@@ -30,51 +32,52 @@ void rs485_init()
     TRISGbits.RG0 = 0;
     
     // Enable high priority interrupt on transmit
-    //IPR3bits.TX2IP = 1;
+    IPR3bits.TX2IP = 1;
 }
 
 void rs485_interrupt()
 {
-    //if (PIR3bits.TX2IF) {
-        // Disable RS485 driver
-        PORTGbits.RG0 = RG0_RECEIVE;
-        // Disable TX port
-        TXSTA2bits.TXEN = 0;
-        PIR3bits.TX2IF = 0;
-    //}
+    if (PIR3bits.TX2IF) {
+        if (s_size > 0) {
+            // Feed more data
+            TXREG2 = *(++s_ptr);
+            s_size--;
+        }
+        else {
+            // TX2IF cannot be cleared
+            PIE3bits.TX2IE = 0;
+        }
+    }
 }
 
 void rs485_poll()
 {
-    if (TXSTA2bits.TRMT) {  // Empty TSR reg
+    //if (TXSTA2bits.TRMT) {  // Empty TSR reg
         // Disable RS485 driver
-        PORTGbits.RG0 = RG0_RECEIVE;
+        //PORTGbits.RG0 = RG0_RECEIVE;
         // Disable TX port
         //TXSTA2bits.TXEN = 0;
         //PIR3bits.TX2IF = 0;
-    }
+    //}
 }
 
-void rs485_write(void* data, WORD size)
-{
-    // Disable interrupt
-    //PIE3bits.TX2IE = 0;
+void rs485_write(BOOL address, void* data, BYTE size)
+{ 
+    // Disable interrupts, change the data
+    PIE3bits.TX2IE = 0;
+    s_ptr = data;
+    s_size = size - 1;
 
+    // 9-bit address
+    TXSTA2bits.TX9D = address;
     // Enable RS485 driver
     PORTGbits.RG0 = RG0_TRANSMIT;
     // Enable UART transmit
     TXSTA2bits.TXEN = 1;
-    // Transmit U
-    TXREG2 = s_toSend + '0';
-    s_toSend = (s_toSend + 1) % 10;
-    
-    // Now interrupt is set
-    //PIR3bits.TX2IF = 0;
-    // Reenable interrupt
-    //PIE3bits.TX2IE = 1;
-    // Transmit dummy
-    //TXREG2 = 0x81;
-    // This will raise a real interrupt at the end of the first byte
+
+    // Start transmitting
+    TXREG2 = *s_ptr;
+    PIE3bits.TX2IE = 1;
 }
 
 void rs485_read(void* data, WORD size)

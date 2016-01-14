@@ -240,9 +240,7 @@ static void parseCommandAndData()
 void ip_prot_timer()
 {
     // Update ETH module timers at ~23Khz freq
-     if (INTCONbits.TMR0IF) {
-         TickUpdate();
-     }
+     TickUpdate();
 }
 
 void ip_prot_init()
@@ -397,7 +395,7 @@ static void sendHelo(BOOL isHeartbeat)
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();
     
-    rs485_write(NULL, 1);
+    rs485_write(1, "Hello world!", 12);
 }
 
 BOOL prot_control_readW(WORD* w)

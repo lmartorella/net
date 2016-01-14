@@ -8,9 +8,14 @@
  */
 void rs485_init();
 void rs485_interrupt();
-void rs485_poll();
-void rs485_write(void* data, WORD size);
-void rs485_read(void* data, WORD size);
+//void rs485_poll();
+
+// Enqueue bytes to send. Use 9-bit address.
+void rs485_write(BOOL address, void* data, BYTE size);
+// Still busy sending?
+BOOL rs485_busy();
+
+//void rs485_read(void* data, BYTE size);
 
 #endif
 
