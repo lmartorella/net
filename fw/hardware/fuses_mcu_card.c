@@ -78,6 +78,12 @@ void enableInterrupts()
 	RCONbits.IPEN = 1;		
 	INTCONbits.GIEL = 1;
 	INTCONbits.GIEH = 1;
+    
+#ifdef HAS_RS485
+    // Enable high priority interrupt on transmit
+    RS485_IPR.TX2IP = 1;
+    RS485_IPR.RC2IP = 1;
+#endif
 }
  
 // Check RCON and STKPTR register for anormal reset cause

@@ -91,7 +91,20 @@
 // RS485: use USART2 on 18F87J60 (PORTG)
 // ******
 #define HAS_RS485
-
+#define RS485_RCSTA RCSTA2bits
+#define RS485_TXSTA TXSTA2bits
+#define RS485_TXREG TXREG2
+#define RS485_RCREG RCREG2
+#define RS485_BAUDCON BAUDCON2bits
+#define RS485_SPBRGH SPBRGH2
+#define RS485_SPBRG SPBRG2
+#define RS485_IPR IPR3bits
+#define RS485_PIR PIR3bits
+#define RS485_PIE PIE3bits
+#define RS485_TRIS_TX TRISGbits.RG1
+#define RS485_TRIS_RX TRISGbits.RG2
+#define RS485_TRIS_EN TRISGbits.RG0
+#define RS485_PORT_EN PORTGbits.RG0
 
 
 #ifdef HAS_IO
