@@ -6,13 +6,13 @@
 #define EN_TRANSMIT 1
 #define EN_RECEIVE 0
 
+#define CLICKS_TO_
+
 typedef enum {
     STATUS_IDLE,
-    STATUS_WAIT_FOR_TRANSMIT1,
-    STATUS_WAIT_FOR_TRANSMIT2,
+    STATUS_WAIT_FOR_TRANSMIT,
     STATUS_TRANSMIT,
-    STATUS_WAIT_FOR_TRANSMIT_END1,
-    STATUS_WAIT_FOR_TRANSMIT_END2,
+    STATUS_WAIT_FOR_TRANSMIT_END,
     STATUS_RECEIVE,
     STATUS_RECEIVE_ERROR,
 } RS485_STATUS;
@@ -56,10 +56,10 @@ void rs485_interrupt()
         else {
             // TX2IF cannot be cleared
             RS485_PIE_TXIE = 0;
-            s_status = STATUS_WAIT_FOR_TRANSMIT_END1;
+            s_status = STATUS_WAIT_FOR_TRANSMIT_END;
         }
     }
-    else if (RS485_PIR_RCIF) {
+    else if (RS485_PIR_RCIF && s_status == STATUS_RECEIVE) {
         if (RS485_RCSTA.OERR || RS485_RCSTA.FERR) {
             s_status = STATUS_RECEIVE_ERROR;
             RS485_RCSTA.CREN = 0;
@@ -72,30 +72,24 @@ void rs485_interrupt()
     }
 }
 
-// Poll at ~23KHz 
+// Poll at 10ms
 void rs485_poll()
 {
     switch (s_status){
-        case STATUS_WAIT_FOR_TRANSMIT1:
-            s_status = STATUS_WAIT_FOR_TRANSMIT2;
-            break;
-        case STATUS_WAIT_FOR_TRANSMIT2:
+        case STATUS_WAIT_FOR_TRANSMIT:
             s_status = STATUS_TRANSMIT;
             // Start transmitting
             RS485_TXREG = *s_ptr;
             RS485_PIE_TXIE = 1;
             break;
-        case STATUS_WAIT_FOR_TRANSMIT_END1:
-            s_status = STATUS_WAIT_FOR_TRANSMIT_END2;
-            break;
-        case STATUS_WAIT_FOR_TRANSMIT_END2:
+        case STATUS_WAIT_FOR_TRANSMIT_END:
             // Detach TX line
             RS485_PORT_EN = EN_RECEIVE;
             break;
     }
 }
 
-void rs485_write(BOOL address, void* data, BYTE size)
+void rs485_write(BOOL address, void* data, int size)
 { 
     RS485_RCSTA.CREN = 0;
     
@@ -114,13 +108,7 @@ void rs485_write(BOOL address, void* data, BYTE size)
     RS485_TXSTA.TXEN = 1;
     
     // Schedule trasmitting
-    s_status = STATUS_WAIT_FOR_TRANSMIT1;
-}
-
-BYTE rs485_dataAvail(BOOL* rc9)
-{
-    *rc9 = s_rc9;
-    return (s_status == STATUS_RECEIVE) ? s_size : 0;
+    s_status = STATUS_WAIT_FOR_TRANSMIT;
 }
 
 void rs485_startRead()
@@ -134,14 +122,26 @@ void rs485_startRead()
     s_size = 0;
 
     // Enable UART receiver
-    RS485_PIE_TXIE = 1;
     RS485_RCSTA.CREN = 1;
-    RS485_PIE_RCIE = 0;
+    RS485_PIE_RCIE = 1;
 }
 
-BYTE* rs485_readBuffer()
+BYTE* rs485_read(int* size, BOOL* rc9)
 {
-    return s_buffer;
+    // Disable RX interrupts
+    RS485_PIE_RCIE = 0;
+    if (s_status == STATUS_RECEIVE) {
+        *rc9 = s_rc9;
+        *size = s_size;
+        s_size = 0;
+        s_ptr = s_buffer;
+    }
+    else {
+        *size = 0;        
+    }
+    // Re-enabled interrupts
+    RS485_PIE_RCIE = 1;
+    return (*size > 0) ? s_buffer : NULL;
 }
 
 #endif

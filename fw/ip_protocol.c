@@ -5,7 +5,6 @@
 #include "audioSink.h"
 #include "persistence.h"
 #include "hardware/cm1602.h"
-#include "hardware/rs485.h"
 #include "ip_protocol.h"
 
 #ifdef HAS_IP
@@ -359,9 +358,7 @@ static void sendHelo(BOOL isHeartbeat)
 	UDPPutString(isHeartbeat ? "HTBT" : "HEL3");
 	UDPPutArray((BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
-	UDPFlush();
-    
-    rs485_write(1, "Hello world!", 12);
+	UDPFlush();   
 }
 
 BOOL prot_control_readW(WORD* w)

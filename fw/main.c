@@ -22,13 +22,18 @@ void interrupt PRIO_TYPE low_isr(void)
 #endif
 }
 
-
-#ifndef HAS_IP
+#define TEST_APP
+#ifdef TEST_APP
 static int s_led = 0;
-static void led_off() {
-    PORTBbits.RB0 = 0;
+static BOOL s_rc9;
+static int s_size;
+static void led_check_off() {
+    if ((++s_led) > 10){
+        PORTBbits.RB0 = 0;
+    }
 }
 static void led_on() {
+    s_led = 0;
     PORTBbits.RB0 = 1;
 }
 static void led_init() {
@@ -42,16 +47,17 @@ void main()
 {
 #ifdef HAS_CM1602
     const char* errMsg;
-#else
-    led_init();
 #endif
    
-    
     // Analyze RESET reason
     sys_storeResetReason();
 
     // Init Ticks on timer0 (low prio) module
     TickInit();
+
+#ifdef TEST_APP
+    led_init();
+#endif    
 
 #ifdef HAS_CM1602
     // reset display
@@ -107,6 +113,10 @@ void main()
     rs485_init();
 #endif
     
+#ifdef TEST_APP
+    rs485_startRead();
+#endif
+    
     // I'm alive
     while (1)
     {   
@@ -115,21 +125,37 @@ void main()
         {
 #ifdef HAS_IP
            ip_prot_poll();
-#else
-           if ((++s_led) > 10){
-              led_off();
-           }
+#endif
+           
+#ifdef HAS_RS485
+           rs485_poll();
+#endif
+           
+#ifdef TEST_APP
+           // Wait 100ms to shut down the led
+           led_check_off();
 #endif
         }
+        
         if (timers.timer_1s)
         {
 #ifdef HAS_IP
             ip_prot_slowTimer();
-#else
-            s_led = 0;
+#endif
+
+#ifdef TEST_APP
+            rs485_write(1, "Hello!", 6);
             led_on();
+
+            //if (rs485_read(&s_size, &s_rc9)) {
+            //    if (s_size < 0) {
+              //      s_led = -32768;
+           //     }
+            //}
 #endif
         }
+        
+        
             
 #if HAS_VS1011
         audio_pollMp3Player();
