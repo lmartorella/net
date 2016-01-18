@@ -31,11 +31,7 @@ void rs485_init()
     RS485_TXSTA.SYNC = 0;
     RS485_TXSTA.TX9 = 1;
     
-    // 19200 baud
-    RS485_TXSTA.BRGH = 1;
-    RS485_BAUDCON.BRG16 = 0;
-    RS485_SPBRGH = 0;  
-    RS485_SPBRG = 80;  // 25Mhz -> 19290
+    RS485_INIT_19K_BAUD();
     
     // Enable ports
     RS485_TRIS_RX = 1;
@@ -51,7 +47,7 @@ void rs485_init()
 void rs485_interrupt()
 {
     // Empty TX buffer?
-    if (RS485_PIR.TX2IF && s_status != STATUS_RECEIVE) {
+    if (RS485_PIR_TXIF && s_status != STATUS_RECEIVE) {
         if (s_size > 0) {
             // Feed more data
             RS485_TXREG = *(++s_ptr);
@@ -59,11 +55,11 @@ void rs485_interrupt()
         }
         else {
             // TX2IF cannot be cleared
-            RS485_PIE.TX2IE = 0;
+            RS485_PIE_TXIE = 0;
             s_status = STATUS_WAIT_FOR_TRANSMIT_END1;
         }
     }
-    else if (RS485_PIR.RC2IF) {
+    else if (RS485_PIR_RCIF) {
         if (RS485_RCSTA.OERR || RS485_RCSTA.FERR) {
             s_status = STATUS_RECEIVE_ERROR;
             RS485_RCSTA.CREN = 0;
@@ -87,7 +83,7 @@ void rs485_poll()
             s_status = STATUS_TRANSMIT;
             // Start transmitting
             RS485_TXREG = *s_ptr;
-            RS485_PIE.TX2IE = 1;
+            RS485_PIE_TXIE = 1;
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END1:
             s_status = STATUS_WAIT_FOR_TRANSMIT_END2;
@@ -106,7 +102,7 @@ void rs485_write(BOOL address, void* data, BYTE size)
     memcpy(s_buffer, data, size);
     
     // Disable interrupts, change the data
-    RS485_PIE.TX2IE = 0;
+    RS485_PIE_TXIE = 0;
     s_ptr = s_buffer;
     s_size = size - 1;
 
@@ -138,9 +134,9 @@ void rs485_startRead()
     s_size = 0;
 
     // Enable UART receiver
-    RS485_PIE.TX2IE = 1;
+    RS485_PIE_TXIE = 1;
     RS485_RCSTA.CREN = 1;
-    RS485_PIE.RC2IE = 0;
+    RS485_PIE_RCIE = 0;
 }
 
 BYTE* rs485_readBuffer()

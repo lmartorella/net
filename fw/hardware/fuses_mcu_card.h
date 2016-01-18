@@ -11,8 +11,8 @@
 // PORTF: 0/7: digital and analog. Used by IO modules.
 // PORTG: 4: 1/2 used by USART2 + 0 used by MAX485 enable logic
 
-#define SYSTEM_CLOCK 25000000
-#define PERIPHERAL_CLOCK (SYSTEM_CLOCK/4)
+#define SYSTEM_CLOCK 25000000ull
+#define PRIO_TYPE low_priority
 
 // ******* 
 // DISPLAY
@@ -97,25 +97,35 @@
 #define RS485_TXSTA TXSTA2bits
 #define RS485_TXREG TXREG2
 #define RS485_RCREG RCREG2
-#define RS485_BAUDCON BAUDCON2bits
-#define RS485_SPBRGH SPBRGH2
-#define RS485_SPBRG SPBRG2
 #define RS485_IPR IPR3bits
-#define RS485_PIR PIR3bits
-#define RS485_PIE PIE3bits
+#define RS485_PIR_TXIF PIR3bits.TX2IF
+#define RS485_PIR_RCIF PIR3bits.RC2IF
+#define RS485_PIE_TXIE PIE3bits.TX2IE
+#define RS485_PIE_RCIE PIE3bits.RC2IE
 #define RS485_TRIS_TX TRISGbits.RG1
 #define RS485_TRIS_RX TRISGbits.RG2
 #define RS485_TRIS_EN TRISGbits.RG0
 #define RS485_PORT_EN PORTGbits.RG0
-
+// 19200 baud
+#define RS485_INIT_19K_BAUD() \
+    TXSTA2bits.BRGH = 1;\
+    BAUDCONbits.BRG16 = 0;\
+    SPBRGH = 0;\
+    SPBRG = 80
+    
 // *****
 // Tick timer source
 // *****
 #define TICK_TMRH TMR0H
 #define TICK_TMRL TMR0L
 #define TICK_TCON T0CON
+// Timer on, 16-bit, internal timer, 1:256 prescalar
+// (TMR0ON | T0PS2 | T0PS1 | T0PS0)
+#define TICK_TCON_DATA (0x87)
 #define TICK_INTCON_IF INTCONbits.TMR0IF
 #define TICK_INTCON_IE INTCONbits.TMR0IE
+#define TICK_CLOCK_BASE (SYSTEM_CLOCK/4ull)
+#define TICK_PRESCALER 256ull
 
 #ifdef HAS_IO
 #ifdef HAS_SPI

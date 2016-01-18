@@ -15,11 +15,6 @@
 static BOOL s_registered = FALSE;
 static BYTE s_slowDemux = 0;
 
-static DWORD s_1sec;
-static DWORD s_10msec;
-#define TICKS_1S ((DWORD)TICK_SECOND)
-#define TICKS_10MS (DWORD)(TICKS_1S / 100)
-
 // UDP broadcast socket
 static UDP_SOCKET s_heloSocket;  
 // TCP lister control socket
@@ -237,12 +232,6 @@ static void parseCommandAndData()
     fatal("CMD.unkn");
 }
 
-void ip_prot_timer()
-{
-    // Update ETH module timers at ~23Khz freq
-     TickUpdate();
-}
-
 void ip_prot_init()
 {
     println("IP/DHCP");
@@ -255,8 +244,6 @@ void ip_prot_init()
     AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
     AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
-    // Init ETH Ticks on timer0 (low prio) module
-    TickInit();
     // Init ETH loop data
     StackInit();  
 
@@ -272,9 +259,6 @@ void ip_prot_init()
 	{
 		fatal("SOCK.opn2");
 	}
-
-    // Align 1sec to now()
-    s_1sec = s_10msec = TickGet();
 }
 
 /*
@@ -361,24 +345,6 @@ void ip_prot_slowTimer()
     {
         slowTimer();
     }
-}
-
-TIMER_RES ip_timers_check()
-{
-    TIMER_RES res;
-    res.v = 0;
-    DWORD now = TickGet();
-    if ((now - s_1sec) >= TICKS_1S)
-    {
-        s_1sec = now;
-        res.timer_1s = 1;
-    }
-    if ((now - s_10msec) >= TICKS_10MS)
-    {
-        s_10msec = now;
-        res.timer_10ms = 1;
-    }
-    return res;
 }
 
 static void sendHelo(BOOL isHeartbeat)

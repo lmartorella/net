@@ -3,35 +3,55 @@
 #include "hardware/spiram.h"
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
+#include "hardware/tick.h"
 #include "ip_protocol.h"
 #include "appio.h"
 #include "audioSink.h"
 #include "hardware/rs485.h"
 
+#ifdef HAS_CM1602
 static const char* msg1 = "Hi world! ";
+#endif
 
-void interrupt high_priority high_isr(void)
+void interrupt PRIO_TYPE low_isr(void)
 {
+    // Update tick timers at ~Khz freq
+    TickUpdate();
 #ifdef HAS_RS485
     rs485_interrupt();
 #endif
 }
 
-void interrupt low_priority low_isr(void)
-{
-#ifdef HAS_IP
-    ip_prot_timer();
-#endif
+
+#ifndef HAS_IP
+static int s_led = 0;
+static void led_off() {
+    PORTBbits.RB0 = 0;
 }
+static void led_on() {
+    PORTBbits.RB0 = 1;
+}
+static void led_init() {
+    TRISBbits.TRISB0 = 0;
+}
+#endif
+
+
 
 void main()
 {
 #ifdef HAS_CM1602
     const char* errMsg;
+#else
+    led_init();
 #endif
+   
     
     // Analyze RESET reason
     sys_storeResetReason();
+
+    // Init Ticks on timer0 (low prio) module
+    TickInit();
 
 #ifdef HAS_CM1602
     // reset display
@@ -89,23 +109,32 @@ void main()
     
     // I'm alive
     while (1)
-    {
+    {   
+        TIMER_RES timers = timers_check();
+        if (timers.timer_10ms)
+        {
 #ifdef HAS_IP
-            TIMER_RES timers = ip_timers_check();
-            if (timers.timer_10ms)
-            {
-               ip_prot_poll();
-            }
-            if (timers.timer_1s)
-            {
-                ip_prot_slowTimer();
-            }
+           ip_prot_poll();
+#else
+           if ((++s_led) > 10){
+              led_off();
+           }
 #endif
+        }
+        if (timers.timer_1s)
+        {
+#ifdef HAS_IP
+            ip_prot_slowTimer();
+#else
+            s_led = 0;
+            led_on();
+#endif
+        }
             
 #if HAS_VS1011
-            audio_pollMp3Player();
+        audio_pollMp3Player();
 #endif
-            CLRWDT();
+        CLRWDT();
     }
 }
 

@@ -3,6 +3,11 @@
 #include "../pch.h"
 #include "tick.h"
 
+static DWORD s_1sec;
+static DWORD s_10msec;
+#define TICKS_1S ((DWORD)TICK_SECOND)
+#define TICKS_10MS (DWORD)(TICKS_1S / 100)
+
 // Internal counter to store Ticks.  This variable is incremented in an ISR and
 // therefore must be marked volatile to prevent the compiler optimizer from
 // reordering code to use this value in the main context while interrupts are
@@ -39,17 +44,20 @@ static void GetTickCopy(void);
   ***************************************************************************/
 void TickInit(void)
 {
-	// Use Timer0 for 8 bit processors
+	// Use Timer0 (that prescales to 1:256)
     // Initialize the time
-    TICK_TMRH = 0;
     TICK_TMRL = 0;
-
+    TICK_TMRH = 0;
+    
 	// Set up the timer interrupt
     TICK_INTCON_IF = 0;
     TICK_INTCON_IE = 1;		// Enable interrupt
 
-    // Timer0 on, 16-bit, internal timer, 1:256 prescalar
-    TICK_TCON = 0x87;
+    // Set up prescaler and other stuff
+    TICK_TCON = TICK_TCON_DATA;
+    
+    // Align 1sec to now()
+    s_1sec = s_10msec = TickGet();
 }
 
 /*****************************************************************************
@@ -79,7 +87,7 @@ static void GetTickCopy(void)
 	do
 	{
 		TICK_INTCON_IE = 1;		// Enable interrupt
-		Nop();
+		NOP();
 		TICK_INTCON_IE = 0;		// Disable interrupt
 		vTickReading[0] = TICK_TMRL;
 		vTickReading[1] = TICK_TMRH;
@@ -193,40 +201,6 @@ DWORD TickGetDiv64K(void)
 	return dw;
 }
 
-
-/*****************************************************************************
-  Function:
-	DWORD TickConvertToMilliseconds(DWORD dwTickValue)
-
-  Summary:
-	Converts a Tick value or difference to milliseconds.
-
-  Description:
-	This function converts a Tick value or difference to milliseconds.  For
-	example, TickConvertToMilliseconds(32768) returns 1000 when a 32.768kHz
-	clock with no prescaler drives the Tick module interrupt.
-
-  Precondition:
-	None
-
-  Parameters:
-	dwTickValue	- Value to convert to milliseconds
-
-  Returns:
-  	Input value expressed in milliseconds.
-
-  Remarks:
-	This function performs division on DWORDs, which is slow.  Avoid using
-	it unless you absolutely must (such as displaying data to a user).  For
-	timeout comparisons, compare the current value to a multiple or fraction
-	of TICK_SECOND, which will be calculated only once at compile time.
-  ***************************************************************************/
-DWORD TickConvertToMilliseconds(DWORD dwTickValue)
-{
-	return (dwTickValue+(TICKS_PER_SECOND/2000ul))/((DWORD)(TICKS_PER_SECOND/1000ul));
-}
-
-
 /*****************************************************************************
   Function:
 	void TickUpdate(void)
@@ -253,4 +227,22 @@ void TickUpdate(void)
         // Reset interrupt flag
         TICK_INTCON_IF = 0;
     }
+}
+
+TIMER_RES timers_check()
+{
+    TIMER_RES res;
+    res.v = 0;
+    DWORD now = TickGet();
+    if ((now - s_1sec) >= TICKS_1S)
+    {
+        s_1sec = now;
+        res.timer_1s = 1;
+    }
+    if ((now - s_10msec) >= TICKS_10MS)
+    {
+        s_10msec = now;
+        res.timer_10ms = 1;
+    }
+    return res;
 }

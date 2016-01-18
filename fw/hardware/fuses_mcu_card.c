@@ -74,16 +74,16 @@ void wait1s(void)
 
 void enableInterrupts()
 {
-	// Enable low/high interrupt mode
-	RCONbits.IPEN = 1;		
-	INTCONbits.GIEL = 1;
-	INTCONbits.GIEH = 1;
+	// Disable low/high interrupt mode
+	RCONbits.IPEN = 0;		
+	INTCONbits.GIE = 1;
+	INTCONbits.PEIE = 1;
     INTCON2bits.TMR0IP = 0;		// TMR0 Low priority
     
 #ifdef HAS_RS485
-    // Enable high priority interrupt on transmit
-    RS485_IPR.TX2IP = 1;
-    RS485_IPR.RC2IP = 1;
+    // Enable low priority interrupt on transmit
+    RS485_IPR.TX2IP = 0;
+    RS485_IPR.RC2IP = 0;
 #endif
 }
  

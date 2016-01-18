@@ -115,7 +115,6 @@ typedef struct
 typedef struct
 {
     AUDIO_RESPONSE res;
-    UINT16 elapsedMs;
     UINT16 calls;
     INT32 freeSize;
 } AUDIO_STREAM_RESPONSE;
@@ -243,7 +242,6 @@ static void _processData(WORD len)
 
         // Only do it if no other operation was done above
         AUDIO_STREAM_RESPONSE response;
-        response.elapsedMs = TickConvertToMilliseconds(TickGet() - _startTime);
         response.res = AUDIO_RES_OK;
         response.calls = _dequeueCallCount;
         response.freeSize = freeSize();
