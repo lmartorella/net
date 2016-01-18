@@ -26,7 +26,9 @@ void interrupt low_priority low_isr(void)
 
 void main()
 {
+#ifdef HAS_CM1602
     const char* errMsg;
+#endif
     
     // Analyze RESET reason
     sys_storeResetReason();
@@ -70,8 +72,10 @@ void main()
     vs1011_init();
 #endif
     
+#ifdef HAS_CM1602
     wait1s();
     clearlnUp();
+#endif
     
     enableInterrupts();
     

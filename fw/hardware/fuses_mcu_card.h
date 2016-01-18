@@ -11,6 +11,8 @@
 // PORTF: 0/7: digital and analog. Used by IO modules.
 // PORTG: 4: 1/2 used by USART2 + 0 used by MAX485 enable logic
 
+#define SYSTEM_CLOCK 25000000
+#define PERIPHERAL_CLOCK (SYSTEM_CLOCK/4)
 
 // ******* 
 // DISPLAY
@@ -106,6 +108,14 @@
 #define RS485_TRIS_EN TRISGbits.RG0
 #define RS485_PORT_EN PORTGbits.RG0
 
+// *****
+// Tick timer source
+// *****
+#define TICK_TMRH TMR0H
+#define TICK_TMRL TMR0L
+#define TICK_TCON T0CON
+#define TICK_INTCON_IF INTCONbits.TMR0IF
+#define TICK_INTCON_IE INTCONbits.TMR0IE
 
 #ifdef HAS_IO
 #ifdef HAS_SPI

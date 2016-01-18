@@ -287,7 +287,7 @@
 #include "TCPIPStack/StackTsk.h"
 #include "TCPIPStack/Helpers.h"
 #include "TCPIPStack/Delay.h"
-#include "TCPIPStack/Tick.h"
+#include "../../../hardware/tick.h"
 #include "TCPIPStack/MAC.h"
 #include "TCPIPStack/IP.h"
 #include "TCPIPStack/ARP.h"

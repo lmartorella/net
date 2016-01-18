@@ -15,22 +15,17 @@
         <itemPath>../hardware/fuses_mcu_card.h</itemPath>
         <itemPath>../hardware/hw.h</itemPath>
         <itemPath>../hardware/fuses_mini_bean.h</itemPath>
+        <itemPath>../hardware/tick.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
         <itemPath>../tcpipstack/TCPIPConfig.h</itemPath>
         <itemPath>../tcpipstack/Include/Compiler.h</itemPath>
-        <itemPath>../tcpipstack/Include/GenericTypeDefs.h</itemPath>
-        <itemPath>../tcpipstack/Include/TimeDelay.h</itemPath>
-        <itemPath>../tcpipstack/Include/debug.h</itemPath>
-        <itemPath>../tcpipstack/Include/struct_queue.h</itemPath>
-        <itemPath>../tcpipstack/Include/timer.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/Announce.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/ARP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/AutoIP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/BerkeleyAPI.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/BigInt.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/Delay.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/DHCP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/DNS.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/ETH97J60.h</itemPath>
@@ -53,7 +48,6 @@
         <itemPath>../tcpipstack/Include/TCPIPStack/StackTsk.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/TCP.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/TCPIP.h</itemPath>
-        <itemPath>../tcpipstack/Include/TCPIPStack/Tick.h</itemPath>
         <itemPath>../tcpipstack/Include/TCPIPStack/UDP.h</itemPath>
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
@@ -81,12 +75,12 @@
         <itemPath>../hardware/rs485.c</itemPath>
         <itemPath>../hardware/fuses_mcu_card.c</itemPath>
         <itemPath>../hardware/fuses_mini_bean.c</itemPath>
+        <itemPath>../hardware/tick.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/DHCP.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/DNS.c</itemPath>
-        <itemPath>../tcpipstack/TCPIPStack/Delay.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/ETH97J60.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/Hashes.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/Helpers.c</itemPath>
@@ -94,7 +88,6 @@
         <itemPath>../tcpipstack/TCPIPStack/IP.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/StackTsk.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/TCP.c</itemPath>
-        <itemPath>../tcpipstack/TCPIPStack/Tick.c</itemPath>
         <itemPath>../tcpipstack/TCPIPStack/UDP.c</itemPath>
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
@@ -308,7 +301,7 @@
         <property key="asmlist" value="true"/>
         <property key="define-macros" value="_CONF_MCU_ETH_CARD"/>
         <property key="extra-include-directories"
-                  value="..\tcpipstack;..\tcpipstack\Include;..\tcpipstack\Include\TCPIPStack"/>
+                  value="..\;..\tcpipstack;..\tcpipstack\Include;..\tcpipstack\Include\TCPIPStack"/>
         <property key="identifier-length" value="255"/>
         <property key="operation-mode" value="pro"/>
         <property key="opt-xc8-compiler-strict_ansi" value="false"/>
@@ -485,14 +478,6 @@
         <XC8-config-global>
         </XC8-config-global>
       </item>
-      <item path="../tcpipstack/TCPIPStack/Delay.c" ex="true" overriding="false">
-        <HI-TECH-COMP>
-        </HI-TECH-COMP>
-        <HI-TECH-LINK>
-        </HI-TECH-LINK>
-        <XC8-config-global>
-        </XC8-config-global>
-      </item>
       <item path="../tcpipstack/TCPIPStack/ETH97J60.c" ex="true" overriding="false">
         <HI-TECH-COMP>
         </HI-TECH-COMP>
@@ -542,14 +527,6 @@
         </XC8-config-global>
       </item>
       <item path="../tcpipstack/TCPIPStack/TCP.c" ex="true" overriding="false">
-        <HI-TECH-COMP>
-        </HI-TECH-COMP>
-        <HI-TECH-LINK>
-        </HI-TECH-LINK>
-        <XC8-config-global>
-        </XC8-config-global>
-      </item>
-      <item path="../tcpipstack/TCPIPStack/Tick.c" ex="true" overriding="false">
         <HI-TECH-COMP>
         </HI-TECH-COMP>
         <HI-TECH-LINK>

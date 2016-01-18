@@ -78,6 +78,7 @@ void enableInterrupts()
 	RCONbits.IPEN = 1;		
 	INTCONbits.GIEL = 1;
 	INTCONbits.GIEH = 1;
+    INTCON2bits.TMR0IP = 0;		// TMR0 Low priority
     
 #ifdef HAS_RS485
     // Enable high priority interrupt on transmit
