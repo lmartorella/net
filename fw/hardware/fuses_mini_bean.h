@@ -1,10 +1,10 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
-//#include <pic16f628a.h>
-
 #define SYSTEM_CLOCK 4000000ull
 #define PRIO_TYPE
+
+#define MINIBEAN_TEST_APP
 
 #undef HAS_CM1602
 #undef HAS_VS1011

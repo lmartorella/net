@@ -3,6 +3,12 @@
 
 #ifdef HAS_RS485
 
+typedef enum {
+    RS485_NO_ERR = 0,
+    RS485_FRAME_ERR,
+    RS485_OVERRUN_ERR
+} RS485_ERR;
+
 /**
  * Initialize asynchronous mode, but only half-duplex is used
  */
@@ -20,8 +26,8 @@ void rs485_poll();
 // Enqueue bytes to send. Use 9-bit address. Buffer is copied (max. 64 bytes)
 void rs485_write(BOOL address, void* data, int size);
 void rs485_startRead();
-// If size -1, error occurred
 BYTE* rs485_read(int* size, BOOL* rc9);
+RS485_ERR rs485_getError();
 
 #endif
 

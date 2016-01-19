@@ -14,7 +14,8 @@ typedef enum {
     STATUS_TRANSMIT,
     STATUS_WAIT_FOR_TRANSMIT_END,
     STATUS_RECEIVE,
-    STATUS_RECEIVE_ERROR,
+    STATUS_RECEIVE_OERR,
+    STATUS_RECEIVE_FERR,
 } RS485_STATUS;
 
 static BYTE* s_ptr;
@@ -59,16 +60,23 @@ void rs485_interrupt()
             s_status = STATUS_WAIT_FOR_TRANSMIT_END;
         }
     }
-    else if (RS485_PIR_RCIF && s_status == STATUS_RECEIVE) {
-        if (RS485_RCSTA.OERR || RS485_RCSTA.FERR) {
-            s_status = STATUS_RECEIVE_ERROR;
-            RS485_RCSTA.CREN = 0;
-        }
-        else {
-            *(++s_ptr) = RS485_RCREG;
+    else if (s_status == STATUS_RECEIVE && RS485_PIR_RCIF) {
+        while (RS485_PIR_RCIF) {
+            if (RS485_RCSTA.OERR) {
+                s_status = STATUS_RECEIVE_OERR;
+                break;
+            }
+            //if (RS485_RCSTA.FERR) {
+            //    s_status = STATUS_RECEIVE_FERR;
+            //    break;
+            //}
             s_rc9 = RS485_RCSTA.RX9D;
+            *(++s_ptr) = RS485_RCREG;
             s_size++;
+            return;
         }
+        RS485_RCSTA.CREN = 0;
+        RS485_PIE_RCIE = 0;
     }
 }
 
@@ -92,7 +100,10 @@ void rs485_poll()
 void rs485_write(BOOL address, void* data, int size)
 { 
     RS485_RCSTA.CREN = 0;
-    
+    RS485_TXSTA.TXEN = 0;
+    RS485_PIE_TXIE = 0;
+    RS485_PIE_RCIE = 0;
+
     memcpy(s_buffer, data, size);
     
     // Disable interrupts, change the data
@@ -114,6 +125,9 @@ void rs485_write(BOOL address, void* data, int size)
 void rs485_startRead()
 {
     RS485_TXSTA.TXEN = 0;
+    RS485_RCSTA.CREN = 0;
+    RS485_PIE_TXIE = 0;
+    RS485_PIE_RCIE = 0;
 
     // Disable RS485 driver
     RS485_PORT_EN = EN_RECEIVE;
@@ -122,8 +136,19 @@ void rs485_startRead()
     s_size = 0;
 
     // Enable UART receiver
-    RS485_RCSTA.CREN = 1;
     RS485_PIE_RCIE = 1;
+    RS485_RCSTA.CREN = 1;
+}
+
+RS485_ERR rs485_getError() {
+    switch (s_status) {
+        case STATUS_RECEIVE_OERR:
+            return RS485_OVERRUN_ERR;
+        case STATUS_RECEIVE_FERR:
+            return RS485_FRAME_ERR;
+        default:
+            return RS485_NO_ERR;
+    }
 }
 
 BYTE* rs485_read(int* size, BOOL* rc9)

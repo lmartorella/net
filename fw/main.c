@@ -9,6 +9,7 @@
 #include "audioSink.h"
 #include "hardware/rs485.h"
 
+
 #ifdef HAS_CM1602
 static const char* msg1 = "Hi world! ";
 #endif
@@ -22,8 +23,7 @@ void interrupt PRIO_TYPE low_isr(void)
 #endif
 }
 
-#define TEST_APP
-#ifdef TEST_APP
+#ifdef MINIBEAN_TEST_APP
 static int s_led = 0;
 static BOOL s_rc9;
 static int s_size;
@@ -55,7 +55,7 @@ void main()
     // Init Ticks on timer0 (low prio) module
     TickInit();
 
-#ifdef TEST_APP
+#ifdef MINIBEAN_TEST_APP
     led_init();
 #endif    
 
@@ -113,7 +113,7 @@ void main()
     rs485_init();
 #endif
     
-#ifdef TEST_APP
+#ifdef MCU_TEST_APP
     rs485_startRead();
 #endif
     
@@ -131,7 +131,7 @@ void main()
            rs485_poll();
 #endif
            
-#ifdef TEST_APP
+#ifdef MINIBEAN_TEST_APP
            // Wait 100ms to shut down the led
            led_check_off();
 #endif
@@ -139,23 +139,34 @@ void main()
         
         if (timers.timer_1s)
         {
+#ifdef MCU_TEST_APP
+            int size;
+            BOOL rc9;
+            char msg[16];
+            BYTE* data;
+            if (rs485_getError()) {
+                println("Rc err");
+                rs485_startRead();
+            }
+            else {
+                data = rs485_read(&size, &rc9);
+                if (data) {
+                    strncpy(msg, data, size);
+                    msg[size] = 0;
+                    println(msg);
+                }
+            }
+#endif
+
 #ifdef HAS_IP
             ip_prot_slowTimer();
 #endif
 
-#ifdef TEST_APP
+#ifdef MINIBEAN_TEST_APP
             rs485_write(1, "Hello!", 6);
             led_on();
-
-            //if (rs485_read(&s_size, &s_rc9)) {
-            //    if (s_size < 0) {
-              //      s_led = -32768;
-           //     }
-            //}
 #endif
         }
-        
-        
             
 #if HAS_VS1011
         audio_pollMp3Player();

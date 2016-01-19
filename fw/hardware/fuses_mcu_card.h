@@ -1,8 +1,6 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
-//#include <p18f87j60.h>
-
 // PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
 // PORTB: 0/7, interrupt on change. RB6/7 used by ICSP. RB0/5 used by Mp3
 // PORTC: 0/7, RC3/4 used by I2C. 1/2 and 6/7 used by EXTRAM I2C. Used by IO modules. 
@@ -13,6 +11,8 @@
 
 #define SYSTEM_CLOCK 25000000ull
 #define PRIO_TYPE low_priority
+
+#define MCU_TEST_APP
 
 // ******* 
 // DISPLAY
