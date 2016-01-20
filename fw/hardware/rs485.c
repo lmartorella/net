@@ -66,12 +66,12 @@ void rs485_interrupt()
                 s_status = STATUS_RECEIVE_OERR;
                 break;
             }
-            //if (RS485_RCSTA.FERR) {
-            //    s_status = STATUS_RECEIVE_FERR;
-            //    break;
-            //}
+            if (RS485_RCSTA.FERR) {
+                s_status = STATUS_RECEIVE_FERR;
+                break;
+            }
             s_rc9 = RS485_RCSTA.RX9D;
-            *(++s_ptr) = RS485_RCREG;
+            *(s_ptr++) = RS485_RCREG;
             s_size++;
             return;
         }

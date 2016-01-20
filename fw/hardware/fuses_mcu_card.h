@@ -109,9 +109,9 @@
 // 19200 baud
 #define RS485_INIT_19K_BAUD() \
     TXSTA2bits.BRGH = 1;\
-    BAUDCONbits.BRG16 = 0;\
-    SPBRGH = 0;\
-    SPBRG = 80
+    BAUDCON2bits.BRG16 = 0;\
+    SPBRGH2 = 0;\
+    SPBRG2 = 80
     
 // *****
 // Tick timer source

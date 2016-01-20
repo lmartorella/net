@@ -320,7 +320,6 @@ void ip_prot_slowTimer()
 {
     char buffer[16];
     int dhcpOk;
-    println("");
 
     dhcpOk = DHCPIsBound(0) != 0;
 
