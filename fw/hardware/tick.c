@@ -5,8 +5,11 @@
 
 static DWORD s_1sec;
 static DWORD s_10msec;
+static DWORD s_1msec;
+
 #define TICKS_1S ((DWORD)TICK_SECOND)
 #define TICKS_10MS (DWORD)(TICKS_1S / 100)
+#define TICKS_1MS (DWORD)(TICKS_1S / 1000)
 
 // Internal counter to store Ticks.  This variable is incremented in an ISR and
 // therefore must be marked volatile to prevent the compiler optimizer from
@@ -243,6 +246,11 @@ TIMER_RES timers_check()
     {
         s_10msec = now;
         res.timer_10ms = 1;
+    }
+    if ((now - s_1msec) >= TICKS_1MS)
+    {
+        s_1msec = now;
+        res.timer_1ms = 1;
     }
     return res;
 }

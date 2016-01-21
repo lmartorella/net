@@ -23,6 +23,7 @@ typedef union
     {
         unsigned timer_1s: 1;
         unsigned timer_10ms: 1;
+        unsigned timer_1ms : 1;
     };
     BYTE v;
 } TIMER_RES;

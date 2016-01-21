@@ -118,22 +118,22 @@ void main()
 #endif
     
     // I'm alive
-    while (1)
-    {   
+    while (1) {   
         TIMER_RES timers = timers_check();
-        if (timers.timer_10ms)
-        {
+        if (timers.timer_10ms) {
 #ifdef HAS_IP
            ip_prot_poll();
-#endif
-           
-#ifdef HAS_RS485
-           rs485_poll();
-#endif
+#endif          
            
 #ifdef MINIBEAN_TEST_APP
            // Wait 100ms to shut down the led
            led_check_off();
+#endif
+        }
+        
+        if (timers.timer_1ms){
+#ifdef HAS_RS485
+           rs485_poll();
 #endif
         }
         
@@ -151,8 +151,9 @@ void main()
             else {
                 data = rs485_read(&size, &rc9);
                 if (data) {
-                    strncpy(msg, data, size);
-                    msg[size] = 0;
+                    strncpy(msg + 1, data, size);
+                    msg[size + 1] = 0;
+                    msg[0] = rc9 ? ':' : '.';
                     println(msg);
                 }
             }
@@ -163,7 +164,9 @@ void main()
 #endif
 
 #ifdef MINIBEAN_TEST_APP
-            rs485_write(1, "Hello!", 6);
+            static BOOL b9 = FALSE;
+            rs485_write(b9, "Hello!", 6);
+            b9 = !b9;
             led_on();
 #endif
         }

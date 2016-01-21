@@ -10,9 +10,11 @@
 
 typedef enum {
     STATUS_IDLE,
-    STATUS_WAIT_FOR_TRANSMIT,
+    STATUS_WAIT_FOR_TRANSMIT1,
+    STATUS_WAIT_FOR_TRANSMIT2,
     STATUS_TRANSMIT,
-    STATUS_WAIT_FOR_TRANSMIT_END,
+    STATUS_WAIT_FOR_TRANSMIT_END1,
+    STATUS_WAIT_FOR_TRANSMIT_END2,
     STATUS_RECEIVE,
     STATUS_RECEIVE_OERR,
     STATUS_RECEIVE_FERR,
@@ -47,50 +49,63 @@ void rs485_init()
 
 void rs485_interrupt()
 {
-    // Empty TX buffer?
-    if (RS485_PIR_TXIF && s_status != STATUS_RECEIVE) {
-        if (s_size > 0) {
-            // Feed more data
-            RS485_TXREG = *(++s_ptr);
-            s_size--;
-        }
-        else {
-            // TX2IF cannot be cleared
-            RS485_PIE_TXIE = 0;
-            s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+    if (s_status != STATUS_RECEIVE) {
+        // Empty TX buffer?
+        if (RS485_PIR_TXIF) {
+            if (s_size > 0) {
+                // Feed more data
+                RS485_TXREG = *(++s_ptr);
+                s_size--;
+            }
+            else {
+                // TX2IF cannot be cleared
+                RS485_PIE_TXIE = 0;
+                s_status = STATUS_WAIT_FOR_TRANSMIT_END1;
+            }
         }
     }
-    else if (s_status == STATUS_RECEIVE && RS485_PIR_RCIF) {
-        while (RS485_PIR_RCIF) {
-            if (RS485_RCSTA.OERR) {
-                s_status = STATUS_RECEIVE_OERR;
-                break;
-            }
-            if (RS485_RCSTA.FERR) {
-                s_status = STATUS_RECEIVE_FERR;
-                break;
-            }
-            s_rc9 = RS485_RCSTA.RX9D;
-            *(s_ptr++) = RS485_RCREG;
-            s_size++;
-            return;
+    else {
+        if (RS485_PIR_RCIF) {
+            do {
+                if (RS485_RCSTA.OERR) {
+                    s_status = STATUS_RECEIVE_OERR;
+                    break;
+                }
+                if (RS485_RCSTA.FERR) {
+                    s_status = STATUS_RECEIVE_FERR;
+                    break;
+                }
+                s_rc9 = RS485_RCSTA.RX9D;
+                *(s_ptr++) = RS485_RCREG;
+                s_size++;
+                return;
+            } while (RS485_PIR_RCIF);
+            
+            // Error, disable
+            RS485_RCSTA.CREN = 0;
+            RS485_PIE_RCIE = 0;
         }
-        RS485_RCSTA.CREN = 0;
-        RS485_PIE_RCIE = 0;
     }
 }
 
-// Poll at 10ms
+// Poll at 1ms
 void rs485_poll()
 {
     switch (s_status){
-        case STATUS_WAIT_FOR_TRANSMIT:
+        case STATUS_WAIT_FOR_TRANSMIT1:
+            s_status = STATUS_WAIT_FOR_TRANSMIT2;
+            break;
+        case STATUS_WAIT_FOR_TRANSMIT2:
             s_status = STATUS_TRANSMIT;
             // Start transmitting
             RS485_TXREG = *s_ptr;
             RS485_PIE_TXIE = 1;
             break;
-        case STATUS_WAIT_FOR_TRANSMIT_END:
+        case STATUS_WAIT_FOR_TRANSMIT_END1:
+            s_status = STATUS_WAIT_FOR_TRANSMIT_END2;
+            break;
+        case STATUS_WAIT_FOR_TRANSMIT_END2:
+            s_status = STATUS_IDLE;
             // Detach TX line
             RS485_PORT_EN = EN_RECEIVE;
             break;
@@ -119,7 +134,7 @@ void rs485_write(BOOL address, void* data, int size)
     RS485_TXSTA.TXEN = 1;
     
     // Schedule trasmitting
-    s_status = STATUS_WAIT_FOR_TRANSMIT;
+    s_status = STATUS_WAIT_FOR_TRANSMIT1;
 }
 
 void rs485_startRead()
