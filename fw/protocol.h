@@ -5,6 +5,15 @@ BOOL prot_control_readW(WORD* w);
 BOOL prot_control_read(void* data, WORD size);
 void prot_control_writeW(WORD w);
 void prot_control_write(void* data, WORD size);
+void prot_control_flush();
+void prot_control_close();
+BOOL prot_control_isListening();
+WORD prot_control_getDataSize();
+
+extern BOOL prot_registered;
+extern BOOL prot_started;
+
+void prot_poll();
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished

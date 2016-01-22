@@ -9,7 +9,6 @@
 // Manage poll activities
 void ip_prot_init();
 void ip_prot_slowTimer();
-void ip_prot_poll();
 
 #endif
 

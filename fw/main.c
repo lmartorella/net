@@ -121,9 +121,7 @@ void main()
     while (1) {   
         TIMER_RES timers = timers_check();
         if (timers.timer_10ms) {
-#ifdef HAS_IP
-           ip_prot_poll();
-#endif          
+           prot_poll();
            
 #ifdef MINIBEAN_TEST_APP
            // Wait 100ms to shut down the led

@@ -26,7 +26,7 @@ void rs485_poll();
 // Enqueue bytes to send. Use 9-bit address. Buffer is copied (max. 64 bytes)
 void rs485_write(BOOL address, void* data, int size);
 void rs485_startRead();
-BYTE* rs485_read(int* size, BOOL* rc9);
+BOOL rs485_read(void* data, int size, BOOL* rc9);
 RS485_ERR rs485_getError();
 
 #endif
