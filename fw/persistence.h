@@ -1,6 +1,8 @@
 #ifndef PERSISTENCE_INCLUDE_
 #define PERSISTENCE_INCLUDE_
 
+#include "hardware/eeprom.h"
+
 /********************
   USER-DATA PART OF LOADER RECORD (PROGRAMMABLE)
   The record is immediately before the Configuration word, in the higher program memory.
@@ -13,7 +15,7 @@ typedef struct
 } PersistentData;
 
 // This can be accessed by the running application in read-only mode
-extern const PersistentData g_persistentData;
+extern EEPROM_MODIFIER PersistentData g_persistentData;
 
 // Update my copy of persistence
 void boot_getUserData(PersistentData* newData);

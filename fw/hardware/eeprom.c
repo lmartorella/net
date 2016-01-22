@@ -116,4 +116,39 @@ void rom_write(const void* destination, const void* source, WORD length)
 	rowWrite(); 
 }
 
+#elif _CONF_MINI_BEAN
+
+void rom_read(int sourceAddress, BYTE* destination, WORD length)
+{
+    for (; length > 0; length--) { 
+        // Wait for previous WR to finish
+        while (EECON1bits.WR);
+        EEADR = sourceAddress++;
+        EECON1bits.RD = 1;
+        *(destination++) = EEDATA;
+    }
+}
+
+void rom_write(int destinationAddr, const BYTE* source, WORD length)
+{
+    CLRWDT();
+    // Save GIE
+    BOOL gie = INTCONbits.GIE;
+    INTCONbits.GIE = 0;
+    EECON1bits.WREN = 1;
+
+    for (; length > 0; length--) { 
+        // Wait for previous WR to finish
+        while (EECON1bits.WR);
+        EEADR = destinationAddr++;
+        EEDATA = *(source++);
+        EECON2 = 0x55;
+        EECON2 = 0xAA;
+        EECON1bits.WR = 1;
+    }
+
+    EECON1bits.WREN = 0;
+    INTCONbits.GIE = gie;
+}
+
 #endif
