@@ -4,12 +4,15 @@
 #include "displaySink.h"
 #include "audioSink.h"
 #include "hardware/cm1602.h"
-#include "ip_protocol.h"
+#include "ip_client.h"
 #include "persistence.h"
 
 #ifdef HAS_IP
 #include "Compiler.h"
 #include "TCPIPStack/TCPIP.h"
+
+#define SERVER_CONTROL_UDP_PORT 17007
+#define CLIENT_TCP_PORT 20000
 
 static BYTE s_slowDemux = 0;
 
@@ -140,7 +143,7 @@ static void slowTimer()
 /*
 	Manage slow timer (state transitions)
 */
-void ip_prot_slowTimer()
+void prot_slowTimer()
 {
     char buffer[16];
     int dhcpOk;

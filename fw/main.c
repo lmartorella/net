@@ -4,7 +4,7 @@
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
 #include "hardware/tick.h"
-#include "ip_protocol.h"
+#include "ip_client.h"
 #include "appio.h"
 #include "audioSink.h"
 #include "hardware/rs485.h"
@@ -157,9 +157,7 @@ void main()
             }
 #endif
 
-#ifdef HAS_IP
-            ip_prot_slowTimer();
-#endif
+            prot_slowTimer();
 
 #ifdef MINIBEAN_TEST_APP
             static BOOL b9 = FALSE;

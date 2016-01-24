@@ -14,6 +14,7 @@ extern BOOL prot_registered;
 extern BOOL prot_started;
 
 void prot_poll();
+void prot_slowTimer();
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished
