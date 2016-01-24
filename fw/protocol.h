@@ -13,14 +13,15 @@ WORD prot_control_getDataSize();
 extern BOOL prot_registered;
 extern BOOL prot_started;
 
-void prot_poll();
+inline void prot_poll();
 void prot_slowTimer();
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished
 typedef BOOL (*Sink_ReadHandler)();
-// Process READ message: write data from sink in one go
-typedef void (*Sink_WriteHandler)();
+// Process READ message: write data from sink
+// Return TRUE to continue to write, FALSE if write process finished
+typedef BOOL (*Sink_WriteHandler)();
 
 // Class virtual pointers
 typedef struct SinkStruct

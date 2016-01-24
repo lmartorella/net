@@ -25,7 +25,7 @@ static void GetTickCopy(void);
 
 /*****************************************************************************
   Function:
-	void TickInit(void)
+	void timers_init(void)
 
   Summary:
 	Initializes the Tick manager module.
@@ -45,7 +45,7 @@ static void GetTickCopy(void);
   Remarks:
 	This function is called only one during lifetime of the application.
   ***************************************************************************/
-void TickInit(void)
+void timers_init(void)
 {
 	// Use Timer0 (that prescales to 1:256)
     // Initialize the time

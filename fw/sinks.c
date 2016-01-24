@@ -4,7 +4,7 @@
 #include "displaySink.h"
 
 static BOOL sysSink_read();
-static void sysSink_write();
+static BOOL sysSink_write();
 
 static const Sink s_sysSink = {
     "SYS ",
@@ -18,7 +18,7 @@ const Sink* AllSinks[] = {
     &g_displaySink 
 #endif
 };
-int AllSinksSize = (sizeof(AllSinks) / sizeof(const Sink* const));
+int AllSinksSize = 2;//(sizeof(AllSinks) / sizeof(const Sink* const));
 
 
 static BOOL sysSink_read()
@@ -58,7 +58,7 @@ BOOL sys_isResetReasonExc()
     return _reason == RESET_EXC;
 }
 
-static void sysSink_write()
+static BOOL sysSink_write()
 {
     // Write reset reason
     FOURCC code;
@@ -79,4 +79,6 @@ static void sysSink_write()
 
     memcpy(&code, &EndOfMetadataText, sizeof(FOURCC));
     prot_control_write(&code, sizeof(FOURCC));
+    // Finish
+    return FALSE;
 }

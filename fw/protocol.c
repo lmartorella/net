@@ -8,7 +8,9 @@
 #include "TCPIPStack/TCPIP.h"
 #endif
 
-static int s_inReadSink = -1;
+static signed char s_inReadSink = -1;
+static signed char s_inWriteSink = -1;
+static signed char s_commandToRun = -1;
 BOOL prot_registered = FALSE;
 
 static void CLOS_command()
@@ -31,12 +33,12 @@ static void SELE_command()
 
 static void CHIL_command()
 {
-    GUID guid;
-    memcpy(&guid, &g_persistentData.deviceId, sizeof(GUID));
+    PersistentData persistence;
+    boot_getUserData(&persistence);
     
     // Only 1 children: me
     prot_control_writeW(1);
-    prot_control_write(&guid, sizeof(GUID));
+    prot_control_write(&persistence.deviceId, sizeof(GUID));
     prot_control_flush();
 }
 
@@ -57,6 +59,7 @@ static void SINK_command()
     prot_control_flush();
 }
 
+// Need 16 bytes
 static void GUID_command()
 {
     GUID guid;
@@ -74,22 +77,9 @@ static void GUID_command()
 
 static void READ_command()
 {
-    WORD sink;
-    if (!prot_control_readW(&sink))
+    if (!prot_control_readW((WORD*)&s_inWriteSink))
     {
         fatal("READ.undr");
-    }
-
-    // Address sink
-    AllSinks[sink]->writeHandler();
-    prot_control_flush();
-}
-
-static void readSink()
-{
-    if (!AllSinks[s_inReadSink]->readHandler())
-    {
-        s_inReadSink = -1;
     }
 }
 
@@ -100,63 +90,41 @@ static void WRIT_command()
     {
         fatal("WRIT.undr");
     }
-    // Address sink
-    readSink();
 }
 
-// TODO: Limitation: both the command and its data should be in the read buffer
-// at the same time
-static void parseCommandAndData()
-{
-    FOURCC msg;
-    prot_control_read(&msg, sizeof(FOURCC));
-	switch (msg.str[0])
-	{
-		case 'C':
-			if (strncmp(msg.str + 1, "LOS", 3) == 0) {
-				CLOS_command();
-                return;
-			} 
-			else if (strncmp(msg.str + 1, "HIL", 3) == 0) {
-				CHIL_command();
-                return;
-			} 
-			break;
-		case 'S':
-			if (strncmp(msg.str + 1, "ELE", 3) == 0) {
-				SELE_command();
-                return;
-			} 
-			else if (strncmp(msg.str + 1, "INK", 3) == 0) {
-				SINK_command();
-                return;
-			} 
-			break;
-        case 'R':
-			if (strncmp(msg.str + 1, "EAD", 3) == 0) {
-				READ_command();
-                return;
-			} 
-            break;
-        case 'W':
-			if (strncmp(msg.str + 1, "RIT", 3) == 0) {
-				WRIT_command();
-                return;
-			} 
-            break;
-		default:
-			if (strncmp(msg.str, "GUID", 4) == 0) {
-				GUID_command();
-                return;
-			} 
+typedef struct {
+    char cmd[4];
+    void (*fptr)();
+    char readSize;
+} TABLE;
+const TABLE s_table[] = {
+    { 
+        "READ", READ_command, 2
+    },
+    { 
+        "WRIT", WRIT_command, 2
+    },
+    { 
+        "CLOS", CLOS_command, 0
+    },
+    { 
+        "SELE", SELE_command, 2
+    },
+    { 
+        "SINK", SINK_command, 0
+    },
+    { 
+        "CHIL", CHIL_command, 0
+    },
+    { 
+        "GUID", GUID_command, 16
     }
-    fatal("CMD.unkn");
-}
+};
 
 /*
 	Manage POLLs (read buffers)
 */
-void prot_poll()
+inline void prot_poll()
 {
 #ifdef HAS_IP
     // Do ETH stuff
@@ -164,26 +132,53 @@ void prot_poll()
     // This tasks invokes each of the core stack application tasks
     StackApplications();
 #endif
-    
-    if (prot_started)
+    if (!prot_started || !prot_control_isListening())
     {
-        unsigned short s;
-        if (!prot_control_isListening())
-        {
-            return;
-        }
-
-        s = prot_control_getDataSize();
-        if (s_inReadSink >= 0) 
-        {
-            readSink();
-        } 
-        else if (s >= 4) // Minimum msg size
-        {
-            // This can even peek only one command.
-            // Until not closed by server, or CLOS command sent, the channel can stay open.
-            parseCommandAndData();
-        }
-        // Otherwise wait for data
+        return;
     }
+
+    if (s_inReadSink >= 0) {
+        // Tolerates empty rx buffer
+        if (!AllSinks[s_inReadSink]->readHandler()) {
+            s_inReadSink = -1;
+        }
+        return;
+    }
+    if (s_inWriteSink >= 0) {
+        // Address sink
+        if (!AllSinks[s_inWriteSink]->writeHandler()){
+            s_inWriteSink = -1;
+        }
+        prot_control_flush();
+        return;
+    }
+
+    unsigned short s = prot_control_getDataSize();
+    if (s_commandToRun >= 0) {
+        if (s >= s_table[s_commandToRun].readSize) {
+            s_table[s_commandToRun].fptr();
+            s_commandToRun = -1;
+        }
+        return;
+    }
+
+    // So decode message then
+    if (s >= 4) // Minimum msg size
+    {
+        // This can even peek only one command.
+        // Until not closed by server, or CLOS command sent, the channel can stay open.
+
+        // TODO: Limitation: both the command and its data should be in the read buffer
+        // at the same time
+        FOURCC msg;
+        prot_control_read(&msg, sizeof(FOURCC));
+        for (BYTE i = 0; i < sizeof(s_table) / sizeof(TABLE); i++) {
+            if (memcmp(msg.str, s_table[i].cmd, 4) == 0) {
+                s_commandToRun = i;
+                return;
+            }
+        }
+        fatal("CMD.unkn");
+    }
+    // Otherwise wait for data
 }

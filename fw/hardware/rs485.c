@@ -29,10 +29,12 @@ static enum {
 } s_status;
 
 // Circular buffer of 64 bytes
-#define BUFFER_SIZE 64
-#define BUFFER_SIZE_MASK 0x3f
+#define BUFFER_SIZE 32
+#define BUFFER_SIZE_MASK 0x1f
 
-static BYTE s_buffer[BUFFER_SIZE];
+#define ADJUST_PTR(x) x = (BYTE*)((int)x & BUFFER_SIZE_MASK)
+
+static BYTE s_buffer[BUFFER_SIZE] @ 0x0;
 // Pointer of the writing head
 static BYTE* s_writePtr;
 // Pointer of the reading head (if = write ptr, no bytes avail)
@@ -63,18 +65,34 @@ void rs485_init()
     s_writePtr = s_readPtr = s_buffer;
 }
 
-#define getBufferSize() ((s_writePtr - s_readPtr) & BUFFER_SIZE_MASK)
-#define moduloPtr(ptr) while (ptr >= s_buffer + BUFFER_SIZE) ptr -= BUFFER_SIZE;
+int rs485_readAvail()
+{
+    return (s_writePtr - s_readPtr) & BUFFER_SIZE_MASK;
+}
+
+static void writeByte()
+{
+    // Feed more data, read at read pointer and then increase
+    RS485_TXREG = *(s_readPtr++);
+    ADJUST_PTR(s_readPtr);
+}
+
+static void readByte()
+{
+    // read data
+    s_rc9 = RS485_RCSTA.RX9D;
+    *(s_writePtr++) = RS485_RCREG;
+    ADJUST_PTR(s_writePtr);
+}
 
 void rs485_interrupt()
 {
     // Empty TX buffer. Check for more data
     if (RS485_PIR_TXIF) {
         do {
-            if (getBufferSize() > 0) {
+            if (rs485_readAvail() > 0) {
                 // Feed more data, read at read pointer and then increase
-                RS485_TXREG = *(s_readPtr++);
-                moduloPtr(s_readPtr);
+                writeByte();
             }
             else {
                 // NO MORE data to transmit
@@ -91,20 +109,18 @@ void rs485_interrupt()
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
                 s_status = STATUS_RECEIVE_OERR;
-                break;
+                goto error;
             }
             if (RS485_RCSTA.FERR) {
                 s_status = STATUS_RECEIVE_FERR;
-                break;
+                goto error;
             }
-            // read data
-            s_rc9 = RS485_RCSTA.RX9D;
-            *(s_writePtr++) = RS485_RCREG;
-            moduloPtr(s_writePtr);
-            return;
+            readByte();
         } while (RS485_PIR_RCIF);
+        return;
 
         // Error, disable reading and interrupt
+error:
         RS485_RCSTA.CREN = 0;
         RS485_PIE_RCIE = 0;
     }
@@ -122,8 +138,7 @@ void rs485_poll()
             // Transmit
             s_status = STATUS_TRANSMIT;
             // Feed first byte
-            RS485_TXREG = *(s_readPtr++);
-            moduloPtr(s_readPtr);
+            writeByte();
             RS485_PIE_TXIE = 1;
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END1:
@@ -138,10 +153,8 @@ void rs485_poll()
     }
 }
 
-void rs485_write(BOOL address, void* data, int size)
+void rs485_write(BOOL address, BYTE* data, int size)
 { 
-    int ov;
-    
     // Truncate reading
     RS485_RCSTA.CREN = 0;
     RS485_PIE_RCIE = 0;
@@ -149,23 +162,16 @@ void rs485_write(BOOL address, void* data, int size)
     // Disable interrupts
     RS485_PIE_TXIE = 0;
 
-    if (size > getBufferSize()) {
+    if (size > rs485_readAvail()) {
         // Overflow error
         fatal("RS485.ov");
     }
     
     // Copy to buffer
-    ov = (s_writePtr + size) - (s_buffer + BUFFER_SIZE - 1); 
-    if (ov > 0) {
-        // 2-part copy
-        memcpy(s_writePtr, data, size - ov);
-        memcpy(s_buffer, data + size - ov, ov);
-        s_writePtr = s_buffer + ov - 1;
-    }
-    else {
-        // 1-part copy
-        memcpy(s_writePtr, data, size);
-        s_writePtr += size;
+    while (size > 0) {
+        *(s_writePtr++) = *(data++);
+        ADJUST_PTR(s_writePtr);
+        size--;
     }
 
     // 9-bit address
@@ -193,7 +199,7 @@ void rs485_write(BOOL address, void* data, int size)
     }
 }
 
-void rs485_startRead()
+static void rs485_startRead()
 {
     // Disable writing
     RS485_TXSTA.TXEN = 0;
@@ -224,34 +230,32 @@ RS485_ERR rs485_getError() {
     }
 }
 
-BOOL rs485_read(void* data, int size, BOOL* rc9)
+BOOL rs485_read(BYTE* data, int size, BOOL* rc9)
 {
     BOOL ret = FALSE;
-            
-    // Disable RX interrupts
-    RS485_PIE_RCIE = 0;
-    
-    if (s_status == STATUS_RECEIVE) {
+
+    if (s_status != STATUS_RECEIVE) { 
+        rs485_startRead();
+    }
+    else {
+        // Disable RX interrupts
+        RS485_PIE_RCIE = 0;
+
+        // Active? Read immediately.
         *rc9 = s_rc9;
-        if (getBufferSize() >= size) {        
-            // Copy to buffer
-            int ov = (s_readPtr + size) - (s_buffer + BUFFER_SIZE - 1); 
-            if (ov > 0) {
-                // 2-part copy
-                memcpy(data, s_readPtr, size - ov);
-                memcpy(data + size - ov, s_buffer, ov);
-                s_readPtr = s_buffer + ov - 1;
-            }
-            else {
-                // 1-part copy
-                memcpy(data, s_readPtr, size);
-                s_readPtr += size;
+        if (rs485_readAvail() >= size) {
+            ret = TRUE;
+            while (size > 0) {
+                *(data++) = *(s_readPtr++);
+                ADJUST_PTR(s_readPtr);
+                size--;
             }
         }
-    }
-    
-    // Re-enabled interrupts
-    RS485_PIE_RCIE = 1;
+
+        // Re-enabled interrupts
+        RS485_PIE_RCIE = 1;
+    }   
+          
     return ret;
 }
 

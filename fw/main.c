@@ -25,8 +25,6 @@ void interrupt PRIO_TYPE low_isr(void)
 
 #ifdef MINIBEAN_TEST_APP
 static int s_led = 0;
-static BOOL s_rc9;
-static int s_size;
 static void led_check_off() {
     if ((++s_led) > 10){
         PORTBbits.RB0 = 0;
@@ -53,7 +51,7 @@ void main()
     sys_storeResetReason();
 
     // Init Ticks on timer0 (low prio) module
-    TickInit();
+    timers_init();
 
 #ifdef MINIBEAN_TEST_APP
     led_init();
@@ -112,16 +110,13 @@ void main()
 #ifdef HAS_RS485
     rs485_init();
 #endif
-    
-#ifdef MCU_TEST_APP
-    rs485_startRead();
-#endif
-    
+        
     // I'm alive
     while (1) {   
+        prot_poll();
+
         TIMER_RES timers = timers_check();
         if (timers.timer_10ms) {
-           prot_poll();
            
 #ifdef MINIBEAN_TEST_APP
            // Wait 100ms to shut down the led
@@ -138,20 +133,19 @@ void main()
         if (timers.timer_1s)
         {
 #ifdef MCU_TEST_APP
-            int size;
             BOOL rc9;
             char msg[16];
-            BYTE* data;
             if (rs485_getError()) {
                 println("Rc err");
-                rs485_startRead();
             }
             else {
-                data = rs485_read(&size, &rc9);
-                if (data) {
-                    strncpy(msg + 1, data, size);
-                    msg[size + 1] = 0;
+                int size = rs485_readAvail();
+                if (size) {
+                    if (size > 14) 
+                        size = 14;
+                    rs485_read(msg + 1, size, &rc9);
                     msg[0] = rc9 ? ':' : '.';
+                    msg[size + 1] = 0;
                     println(msg);
                 }
             }
@@ -161,7 +155,7 @@ void main()
 
 #ifdef MINIBEAN_TEST_APP
             static BOOL b9 = FALSE;
-            rs485_write(b9, "Hello!", 6);
+            rs485_write(b9, (BYTE*)"Hello!", 6);
             b9 = !b9;
             led_on();
 #endif

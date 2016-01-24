@@ -28,12 +28,12 @@ typedef union
     BYTE v;
 } TIMER_RES;
 
-void TickInit(void);
 DWORD TickGet(void);
 DWORD TickGetDiv256(void);
 DWORD TickGetDiv64K(void);
 void TickUpdate(void);
 
+void timers_init(void);
 // Check if 1sec timer is elapsed, and reset it if so.
 TIMER_RES timers_check();
 

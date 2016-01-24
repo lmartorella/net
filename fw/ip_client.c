@@ -14,8 +14,6 @@
 #define SERVER_CONTROL_UDP_PORT 17007
 #define CLIENT_TCP_PORT 20000
 
-static BYTE s_slowDemux = 0;
-
 // UDP broadcast socket
 static UDP_SOCKET s_heloSocket;  
 // TCP lister control socket
@@ -35,8 +33,8 @@ __PACK typedef struct
 	WORD controlPort;
 } HOME_REQUEST;
 
-static void sendHelo(BOOL isHeartbeat);
-static void pollControlPort(void);
+static void sendHelo();
+static void pollControlPort();
 
 // Close the control port listener
 void prot_control_close()
@@ -122,27 +120,6 @@ void ip_prot_init()
 /*
 	Manage slow timer (state transitions)
 */
-static void slowTimer()
-{
-    if (!prot_registered) 
-    {
-        // Ping server every second
-        sendHelo(FALSE);
-    }
-    else 
-    {
-        s_slowDemux++;
-        // Ping server every 4 seconds
-        if ((s_slowDemux % 4) == 0)
-        {
-            sendHelo(TRUE);
-        }
-    }
-}
-
-/*
-	Manage slow timer (state transitions)
-*/
 void prot_slowTimer()
 {
     char buffer[16];
@@ -168,11 +145,12 @@ void prot_slowTimer()
     }
     if (prot_started)
     {
-        slowTimer();
+        // Ping server every second
+        sendHelo();
     }
 }
 
-static void sendHelo(BOOL isHeartbeat)
+static void sendHelo()
 {
 	// Still no HOME? Ping HELO
 	if (UDPIsPutReady(s_heloSocket) < sizeof(HOME_REQUEST))
@@ -181,7 +159,7 @@ static void sendHelo(BOOL isHeartbeat)
 	}
 
 	UDPPutString("HOME");
-	UDPPutString(isHeartbeat ? "HTBT" : "HEL3");
+	UDPPutString(prot_registered ? "HTBT" : "HEL3");
 	UDPPutArray((BYTE*)(&g_persistentData.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();   
