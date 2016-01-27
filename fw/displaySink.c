@@ -7,7 +7,7 @@
 #ifdef HAS_CM1602
 
 static BOOL readHandler();
-static void writeHandler();
+static BOOL writeHandler();
 
 const Sink g_displaySink = { { "LINE" },
                              &readHandler,
@@ -37,12 +37,15 @@ static BOOL readHandler()
     return FALSE;
 }
 
-static void writeHandler()
+static BOOL writeHandler()
 {
     // Num of lines
    prot_control_writeW(1);
     // Num of columns
    prot_control_writeW(15);
+
+   // Done
+   return FALSE;
 }
 
 #endif
