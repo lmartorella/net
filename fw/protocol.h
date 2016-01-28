@@ -4,7 +4,7 @@
 BOOL prot_control_readW(WORD* w);
 BOOL prot_control_read(void* data, WORD size);
 void prot_control_writeW(WORD w);
-void prot_control_write(void* data, WORD size);
+void prot_control_write(const void* data, WORD size);
 void prot_control_flush();
 void prot_control_close();
 BOOL prot_control_isListening();

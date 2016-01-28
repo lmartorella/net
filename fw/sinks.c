@@ -18,8 +18,13 @@ const Sink* AllSinks[] = {
     &g_displaySink 
 #endif
 };
-int AllSinksSize = 2;//(sizeof(AllSinks) / sizeof(const Sink* const));
-
+int AllSinksSize = 
+#ifdef HAS_CM1602
+    2
+#else
+    1
+#endif
+;
 
 static BOOL sysSink_read()
 {
@@ -61,15 +66,12 @@ BOOL sys_isResetReasonExc()
 static BOOL sysSink_write()
 {
     // Write reset reason
-    FOURCC code;
-    memcpy(&code, &ResetCode, sizeof(FOURCC));
-    prot_control_write(&code, sizeof(FOURCC));
+    prot_control_write(&ResetCode, sizeof(FOURCC));
     prot_control_writeW(_reason);
     
     if (sys_isResetReasonExc())
     {
-        memcpy(&code, &ExceptionText, sizeof(FOURCC));
-        prot_control_write(&code, sizeof(FOURCC));
+        prot_control_write(&ExceptionText, sizeof(FOURCC));
         
         char *exc = sys_getLastFatal();
         WORD l = strlen(exc);
@@ -77,8 +79,7 @@ static BOOL sysSink_write()
         prot_control_write(exc, l);
     }
 
-    memcpy(&code, &EndOfMetadataText, sizeof(FOURCC));
-    prot_control_write(&code, sizeof(FOURCC));
+    prot_control_write(&EndOfMetadataText, sizeof(FOURCC));
     // Finish
     return FALSE;
 }

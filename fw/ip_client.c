@@ -67,10 +67,10 @@ void prot_control_writeW(WORD w)
     TCPPutArray(s_controlSocket, (BYTE*)&w, sizeof(WORD));
 }
 
-void prot_control_write(void* data, WORD size)
+void prot_control_write(const void* data, WORD size)
 {
     // If I remove & from here, ip_control_read stop working!!
-    TCPPutArray(s_controlSocket, (BYTE*)data, size);
+    TCPPutArray(s_controlSocket, (const BYTE*)data, size);
 }
 
 void prot_control_flush()
