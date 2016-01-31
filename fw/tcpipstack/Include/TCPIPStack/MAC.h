@@ -290,13 +290,13 @@ BOOL MACIsLinked(void);
 
 BOOL MACGetHeader(MAC_ADDR *remote, BYTE* type);
 void MACSetReadPtrInRx(WORD offset);
-BYTE* MACSetWritePtr(BYTE* address);
-BYTE* MACSetReadPtr(BYTE* address);
+ETH_POINTER MACSetWritePtr(ETH_POINTER address);
+ETH_POINTER MACSetReadPtr(ETH_POINTER address);
 BYTE MACGet(void);
 WORD MACGetArray(BYTE *val, WORD len);
 void MACDiscardRx(void);
 WORD MACGetFreeRxSize(void);
-void MACMemCopyAsync(BYTE* destAddr, BYTE* sourceAddr, WORD len);
+void MACMemCopyAsync(ETH_POINTER destAddr, ETH_POINTER sourceAddr, WORD len);
 BOOL MACIsMemCopyDone(void);
 
 void MACPutHeader(MAC_ADDR *remote, BYTE type, WORD dataLen);

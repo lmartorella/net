@@ -330,4 +330,6 @@ typedef union {
 #define	PHLCON_LFRQ0	(1ul<<2)
 #define	PHLCON_STRCH	(1ul<<1)
 
+typedef WORD ETH_POINTER;
+
 #endif

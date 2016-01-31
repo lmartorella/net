@@ -703,13 +703,13 @@ void MACSetReadPtrInRx(WORD offset)
  *
  * Note:			None
  *****************************************************************************/
-BYTE* MACSetWritePtr(BYTE* address)
+ETH_POINTER MACSetWritePtr(ETH_POINTER address)
 {
 	WORD oldVal;
 
 	oldVal = EWRPT;
 	EWRPT = (WORD)address;
-	return (BYTE*)oldVal;
+	return (ETH_POINTER)oldVal;
 }
 
 /******************************************************************************
@@ -728,13 +728,13 @@ BYTE* MACSetWritePtr(BYTE* address)
  *
  * Note:			None
  *****************************************************************************/
-BYTE* MACSetReadPtr(BYTE* address)
+ETH_POINTER MACSetReadPtr(ETH_POINTER address)
 {
 	WORD oldVal;
 
 	oldVal = ERDPT;
 	ERDPT = (WORD)address;
-	return (BYTE*)oldVal;
+	return (ETH_POINTER)oldVal;
 }
 
 
@@ -952,21 +952,21 @@ WORD CalcIPBufferChecksum(WORD len)
  *					calling this function, this function will block until it
  *					can start this transfer.
  *****************************************************************************/
-void MACMemCopyAsync(BYTE* destAddr, BYTE* sourceAddr, WORD len)
+void MACMemCopyAsync(ETH_POINTER destAddr, ETH_POINTER sourceAddr, WORD len)
 {
 	WORD_VAL ReadSave, WriteSave;
 	BOOL UpdateWritePointer = FALSE;
 	BOOL UpdateReadPointer = FALSE;
 
-	if(destAddr == (BYTE*)-1)
+	if(destAddr == (ETH_POINTER)-1)
 	{
 		UpdateWritePointer = TRUE;
-		destAddr = (BYTE*)EWRPT;
+		destAddr = (ETH_POINTER)EWRPT;
 	}
-	if(sourceAddr == (BYTE*)-1)
+	if(sourceAddr == (ETH_POINTER)-1)
 	{
 		UpdateReadPointer = TRUE;
-		sourceAddr = (BYTE*)ERDPT;
+		sourceAddr = (ETH_POINTER)ERDPT;
 	}
 
 	// Handle special conditions where len == 0 or len == 1

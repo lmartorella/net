@@ -1010,7 +1010,7 @@ void UDPFlush(void)
 
 	// Position the hardware write pointer where we will need to
 	// begin writing the IP header
-	MACSetWritePtr((BYTE*)BASE_TX_ADDR + sizeof(ETHER_HEADER));
+	MACSetWritePtr((ETH_POINTER)BASE_TX_ADDR + sizeof(ETHER_HEADER));
 
 	// Write IP header to packet
 	IPPutHeader(&p->remote.remoteNode, IP_PROT_UDP, wUDPLength);

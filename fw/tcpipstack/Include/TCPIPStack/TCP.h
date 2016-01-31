@@ -108,13 +108,13 @@ typedef enum
 // Current size is 34 bytes (PIC18), 36 bytes (PIC24/dsPIC), or 56 (PIC32)
 typedef struct
 {
-	BYTE* bufferTxStart;		// First byte of TX buffer
-	BYTE* bufferRxStart;		// First byte of RX buffer.  TX buffer ends 1 byte prior
-	BYTE* bufferEnd;			// Last byte of RX buffer
-	BYTE* txHead;			// Head pointer for TX
-	BYTE* txTail;			// Tail pointer for TX
-	BYTE* rxHead;			// Head pointer for RX
-	BYTE* rxTail;			// Tail pointer for RX
+	ETH_POINTER bufferTxStart;		// First byte of TX buffer
+	ETH_POINTER bufferRxStart;		// First byte of RX buffer.  TX buffer ends 1 byte prior
+	ETH_POINTER bufferEnd;			// Last byte of RX buffer
+	ETH_POINTER txHead;			// Head pointer for TX
+	ETH_POINTER txTail;			// Tail pointer for TX
+	ETH_POINTER rxHead;			// Head pointer for RX
+	ETH_POINTER rxTail;			// Tail pointer for RX
     DWORD eventTime;			// Packet retransmissions, state changes
 	WORD eventTime2;			// Window updates, automatic transmission
 	union
@@ -149,7 +149,7 @@ typedef struct
     BYTE sslReqMessage;		// Currently requested SSL message
     #endif
 
-	BYTE vMemoryMedium;		// Which memory medium the TCB is actually stored
+	//BYTE vMemoryMedium;		// Which memory medium the TCB is actually stored
 	
 } TCB_STUB;
 
@@ -161,7 +161,7 @@ typedef struct
 	DWORD		retryInterval;			// How long to wait before retrying transmission
 	DWORD		MySEQ;					// Local sequence number
 	DWORD		RemoteSEQ;				// Remote sequence number
-	BYTE*	txUnackedTail;			// TX tail pointer for data that is not yet acked
+	ETH_POINTER	txUnackedTail;			// TX tail pointer for data that is not yet acked
     WORD_VAL	remotePort;				// Remote port number
     WORD_VAL	localPort;				// Local port number
 	WORD		remoteWindow;			// Remote window size
@@ -210,8 +210,8 @@ void TCPClose(TCP_SOCKET hTCP);
 WORD TCPIsPutReady(TCP_SOCKET hTCP);
 BOOL TCPPut(TCP_SOCKET hTCP, BYTE byte);
 //BOOL TCPPutW(TCP_SOCKET hTCP, WORD data);
-WORD TCPPutArray(TCP_SOCKET hTCP, BYTE* Data, WORD Len);
-BYTE* TCPPutString(TCP_SOCKET hTCP, BYTE* Data);
+WORD TCPPutArray(TCP_SOCKET hTCP, const BYTE* Data, WORD Len);
+const BYTE* TCPPutString(TCP_SOCKET hTCP, const BYTE* Data);
 WORD TCPIsGetReady(TCP_SOCKET hTCP);
 WORD TCPGetRxFIFOFree(TCP_SOCKET hTCP);
 BOOL TCPGet(TCP_SOCKET hTCP, BYTE* byte);

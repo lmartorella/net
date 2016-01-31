@@ -121,13 +121,13 @@
 		ROM struct
 		{
 			BYTE vSocketPurpose;
-			BYTE vMemoryMedium;
+			//BYTE vMemoryMedium;
 			WORD wTXBufferSize;
 			WORD wRXBufferSize;
 		} TCPSocketInitializer[] =
 		{
             // Control port
-			{TCP_PURPOSE_GENERIC_TCP_SERVER, TCP_ETH_RAM, 128, 128},
+			{TCP_PURPOSE_GENERIC_TCP_SERVER, /*TCP_ETH_RAM, */128, 128},
 			//{TCP_PURPOSE_GENERIC_TCP_CLIENT, TCP_ETH_RAM, 125, 100},
 			// Sinks
 			//{TCP_PURPOSE_TELNET, TCP_ETH_RAM, 200, 150},
