@@ -45,16 +45,11 @@ static void CHIL_command()
 static void SINK_command()
 {
     FOURCC fourcc;
-    int i = AllSinksSize;
-    prot_control_writeW(i);
-    while (i > 0)
+    prot_control_writeW(AllSinksSize);
+    for (int i = 0; i < AllSinksSize; i++)
     {
-        i--;
-        const Sink* sink = AllSinks[i]; 
-        memcpy(&fourcc, &sink->fourCc, sizeof(FOURCC));
-        
         // Put device ID
-        prot_control_write(&fourcc, sizeof(FOURCC));
+        prot_control_write(&AllSinks[i]->fourCc, sizeof(FOURCC));
     }
     prot_control_flush();
 }
