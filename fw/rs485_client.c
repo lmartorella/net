@@ -2,7 +2,7 @@
 #include "hardware/rs485.h"
 #include "protocol.h"
 
-#ifndef HAS_IP
+#ifdef HAS_RS485_CLIENT
 
 BOOL prot_started = TRUE;
 

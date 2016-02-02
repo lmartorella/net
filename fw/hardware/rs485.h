@@ -4,10 +4,12 @@
 #ifdef HAS_RS485
 
 typedef enum {
-    RS485_NO_ERR = 0,
-    RS485_FRAME_ERR,
-    RS485_OVERRUN_ERR
-} RS485_ERR;
+    RS485_LINE_RX = 0x4,
+    RS485_LINE_TX = 0x8,
+    RS485_ERR = 0x10,
+    RS485_FRAME_ERR = RS485_ERR,
+    RS485_OVERRUN_ERR = RS485_ERR + 1
+} RS485_STATE;
 
 /**
  * Initialize asynchronous mode, but only half-duplex is used
@@ -28,7 +30,8 @@ void rs485_write(BOOL address, BYTE* data, int size);
 // Read data, if available.
 BOOL rs485_read(BYTE* data, int size, BOOL* rc9);
 int rs485_readAvail();
-RS485_ERR rs485_getError();
+
+RS485_STATE rs485_getState();
 
 #endif
 

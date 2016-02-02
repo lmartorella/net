@@ -219,14 +219,18 @@ static void rs485_startRead()
     RS485_RCSTA.CREN = 1;
 }
 
-RS485_ERR rs485_getError() {
+RS485_STATE rs485_getState() {
     switch (s_status) {
         case STATUS_RECEIVE_OERR:
             return RS485_OVERRUN_ERR;
         case STATUS_RECEIVE_FERR:
             return RS485_FRAME_ERR;
+        case STATUS_RECEIVE:
+            return RS485_LINE_RX;
+        case STATUS_IDLE:
+            return 0;
         default:
-            return RS485_NO_ERR;
+            return RS485_LINE_TX;
     }
 }
 

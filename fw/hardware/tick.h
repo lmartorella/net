@@ -28,9 +28,11 @@ typedef union
     BYTE v;
 } TIMER_RES;
 
-DWORD TickGet(void);
-DWORD TickGetDiv256(void);
-DWORD TickGetDiv64K(void);
+#define TICK_TYPE DWORD
+
+TICK_TYPE TickGet(void);
+TICK_TYPE TickGetDiv256(void);
+TICK_TYPE TickGetDiv64K(void);
 void TickUpdate(void);
 
 void timers_init(void);
