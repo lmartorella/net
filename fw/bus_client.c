@@ -2,7 +2,7 @@
 #include "hardware/rs485.h"
 #include "protocol.h"
 
-#ifdef HAS_RS485_CLIENT
+#ifdef HAS_BUS_CLIENT
 
 BOOL prot_started = TRUE;
 
@@ -20,7 +20,7 @@ void prot_control_writeW(WORD w){
     rs485_write(FALSE, (BYTE*)w, 2);
 }
 
-void prot_control_write(void* data, WORD size){
+void prot_control_write(const void* data, WORD size){
     rs485_write(FALSE, (BYTE*)data, size);
 }
 

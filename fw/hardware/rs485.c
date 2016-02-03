@@ -153,7 +153,7 @@ void rs485_poll()
     }
 }
 
-void rs485_write(BOOL address, BYTE* data, int size)
+void rs485_write(BOOL address, const BYTE* data, int size)
 { 
     // Truncate reading
     RS485_RCSTA.CREN = 0;

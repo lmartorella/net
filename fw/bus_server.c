@@ -3,7 +3,7 @@
 #include "hardware/rs485.h"
 #include "hardware/tick.h"
 
-#ifdef HAS_RS485_SERVER
+#ifdef HAS_BUS_SERVER
 
 static signed char s_pollIndex;
 static TICK_TYPE s_timeout;

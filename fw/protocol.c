@@ -44,7 +44,6 @@ static void CHIL_command()
 
 static void SINK_command()
 {
-    FOURCC fourcc;
     prot_control_writeW(AllSinksSize);
     for (int i = 0; i < AllSinksSize; i++)
     {
@@ -127,6 +126,10 @@ inline void prot_poll()
     // This tasks invokes each of the core stack application tasks
     StackApplications();
 #endif
+#if HAS_BUS_SERVER
+    bus_poll();
+#endif
+    
     if (!prot_started || !prot_control_isListening())
     {
         return;

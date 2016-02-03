@@ -37,5 +37,14 @@ typedef struct SinkStruct
 extern const Sink* AllSinks[];
 extern int AllSinksSize;
 
+#ifdef HAS_RS485
+#ifdef HAS_IP
+#define HAS_BUS_SERVER
+void bus_poll();
+#else
+#define HAS_BUS_CLIENT
+#endif
+#endif // HAS_RS485
+
 #endif	/* PROTOCOL_H */
 
