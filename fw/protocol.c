@@ -13,26 +13,60 @@ static signed char s_inWriteSink = -1;
 static signed char s_commandToRun = -1;
 BOOL prot_registered = FALSE;
 
+#ifdef HAS_BUS_SERVER
+int s_selectedBusNode = -1;
+#endif
+static FOURCC s_lastMsgRead;
+
 static void CLOS_command()
 {
 	prot_control_close();
+#ifdef HAS_BUS_SERVER
+    if (s_selectedBusNode >= 0) {
+        bus_closeCommand();
+    }
+#endif
 }
 
 static void SELE_command()
 {
     prot_registered = TRUE;
  
-    // Select subnode. Ignores it.
+    // Select subnode. 
     WORD w;
     if (!prot_control_readW(&w)) {
         fatal("SELE.undr");
     }
     // Select subnode.
-    // TODO: Ignore when no subnodes
+    // Simply ignore when no subnodes
+#ifdef HAS_BUS_SERVER
+    // I need to address the communication to a bus node
+    s_selectedBusNode = w;
+#endif
 }
 
+#ifdef HAS_BUS_SERVER
+static void(*s_currentBusCommand)();
+static void forwardCommandToBus(void(*handler)(), const BYTE* buffer, int size) {
+    bus_server_select(s_selectedBusNode);
+    bus_server_send((BYTE*)&s_lastMsgRead, sizeof(FOURCC));
+    bus_server_send(buffer, size);
+    // Now waits for data
+    s_currentBusCommand = handler;
+}
+#endif
+
+// 0 bytes to receive
 static void CHIL_command()
 {
+#ifdef HAS_BUS_SERVER
+    if (s_selectedBusNode >= 0) {
+        // Forward the call to bus
+        forwardCommandToBus(&CHIL_bus_handler, NULL, 0);
+        return;
+    }
+#endif
+
     PersistentData persistence;
     boot_getUserData(&persistence);
     
@@ -42,8 +76,17 @@ static void CHIL_command()
     prot_control_flush();
 }
 
+// 0 bytes to receive
 static void SINK_command()
 {
+#ifdef HAS_BUS_SERVER
+    if (s_selectedBusNode >= 0) {
+        // Forward the call to bus
+        forwardCommandToBus(&SINK_bus_handler, NULL, 0);
+        return;
+    }
+#endif
+
     prot_control_writeW(AllSinksSize);
     for (int i = 0; i < AllSinksSize; i++)
     {
@@ -53,45 +96,74 @@ static void SINK_command()
     prot_control_flush();
 }
 
-// Need 16 bytes
+// 16 bytes to receive
 static void GUID_command()
 {
     GUID guid;
-    PersistentData persistence;
-    
     if (!prot_control_read(&guid, sizeof(GUID))) {
         fatal("GUID.undr");
     }
 
+#ifdef HAS_BUS_SERVER
+    if (s_selectedBusNode >= 0) {
+        // Forward the call to bus
+        forwardCommandToBus(&GUID_bus_handler, (BYTE*)&guid, sizeof(GUID));
+        return;
+    }
+#endif
+
+    PersistentData persistence;
     boot_getUserData(&persistence);
     persistence.deviceId = guid;
     // Have new GUID! Program it.
     boot_updateUserData(&persistence);   
 }
 
+// 2 bytes to receive
 static void READ_command()
 {
-    if (!prot_control_readW((WORD*)&s_inWriteSink))
+    WORD sinkId;
+    if (!prot_control_readW(&sinkId))
     {
         fatal("READ.undr");
     }
+
+#ifdef HAS_BUS_SERVER
+    if (s_selectedBusNode >= 0) {
+        // Forward the call to bus
+        forwardCommandToBus(&READ_bus_handler, (BYTE*)&sinkId, 2);
+        return;
+    }
+#endif
+    
+    s_inWriteSink = sinkId;
 }
 
+// 2 bytes to receive
 static void WRIT_command()
 {
-    // Get sink# and msg size
-    if (!prot_control_readW((WORD*)&s_inReadSink))
+    WORD sinkId;
+    if (!prot_control_readW(&sinkId))
     {
         fatal("WRIT.undr");
     }
+
+#ifdef HAS_BUS_SERVER
+    if (s_selectedBusNode >= 0) {
+        // Forward the call to bus
+        forwardCommandToBus(&WRIT_bus_handler, (BYTE*)&sinkId, 2);
+        return;
+    }
+#endif
+
+    s_inReadSink = sinkId;
 }
 
-typedef struct {
+const struct {
     char cmd[4];
     void (*fptr)();
     char readSize;
-} TABLE;
-const TABLE s_table[] = {
+} s_table[] = {
     { 
         "READ", READ_command, 2
     },
@@ -114,6 +186,8 @@ const TABLE s_table[] = {
         "GUID", GUID_command, 16
     }
 };
+#define COMMAND_COUNT 7
+
 
 /*
 	Manage POLLs (read buffers)
@@ -126,7 +200,7 @@ inline void prot_poll()
     // This tasks invokes each of the core stack application tasks
     StackApplications();
 #endif
-#if HAS_BUS_SERVER
+#ifdef HAS_BUS_SERVER
     bus_poll();
 #endif
     
@@ -168,10 +242,9 @@ inline void prot_poll()
 
         // TODO: Limitation: both the command and its data should be in the read buffer
         // at the same time
-        FOURCC msg;
-        prot_control_read(&msg, sizeof(FOURCC));
-        for (BYTE i = 0; i < sizeof(s_table) / sizeof(TABLE); i++) {
-            if (memcmp(msg.str, s_table[i].cmd, 4) == 0) {
+        prot_control_read(&s_lastMsgRead, sizeof(FOURCC));
+        for (BYTE i = 0; i < COMMAND_COUNT; i++) {
+            if (memcmp(s_lastMsgRead.str, s_table[i].cmd, 4) == 0) {
                 s_commandToRun = i;
                 return;
             }
