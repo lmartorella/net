@@ -15,18 +15,12 @@ static int s_commandToRun = -1;
 BOOL prot_registered = FALSE;
 
 #ifdef HAS_BUS_SERVER
-static int s_selectedBusNode = -1;
-static BOOL s_inCommandToBus = FALSE;
+static BOOL s_socketConnected = FALSE;
 #endif
-static FOURCC s_lastMsgRead;
 
 static void CLOS_command()
 {
 	prot_control_close();
-#ifdef HAS_BUS_SERVER
-    s_selectedBusNode = -1;
-    s_inCommandToBus = FALSE;
-#endif
 }
 
 static void SELE_command()
@@ -38,31 +32,19 @@ static void SELE_command()
     if (!prot_control_readW(&w)) {
         fatal("SELE.undr");
     }
+    
     // Select subnode.
     // Simply ignore when no subnodes
 #ifdef HAS_BUS_SERVER
-    // I need to address the communication to a bus node
-    s_selectedBusNode = w;
+    // Otherwise connect the socket
+    bus_connectSocket(w);
+    s_socketConnected = TRUE;
 #endif
 }
-
-#ifdef HAS_BUS_SERVER
-static void forwardCommandToBus(const BYTE* buffer, int size) {
-    bus_openCommand(s_selectedBusNode, &s_lastMsgRead, buffer, size);
-}
-#endif
 
 // 0 bytes to receive
 static void CHIL_command()
 {
-#ifdef HAS_BUS_SERVER
-    if (s_selectedBusNode >= 0) {
-        // Forward the call to bus
-        forwardCommandToBus(NULL, 0);
-        return;
-    }
-#endif
-
     PersistentData persistence;
     boot_getUserData(&persistence);
     
@@ -75,14 +57,6 @@ static void CHIL_command()
 // 0 bytes to receive
 static void SINK_command()
 {
-#ifdef HAS_BUS_SERVER
-    if (s_selectedBusNode >= 0) {
-        // Forward the call to bus
-        forwardCommandToBus(NULL, 0);
-        return;
-    }
-#endif
-
     prot_control_writeW(AllSinksSize);
     for (int i = 0; i < AllSinksSize; i++)
     {
@@ -100,14 +74,6 @@ static void GUID_command()
         fatal("GUID.undr");
     }
 
-#ifdef HAS_BUS_SERVER
-    if (s_selectedBusNode >= 0) {
-        // Forward the call to bus
-        forwardCommandToBus((BYTE*)&guid, sizeof(GUID));
-        return;
-    }
-#endif
-
     PersistentData persistence;
     boot_getUserData(&persistence);
     persistence.deviceId = guid;
@@ -122,16 +88,7 @@ static void READ_command()
     if (!prot_control_readW(&sinkId))
     {
         fatal("READ.undr");
-    }
-
-#ifdef HAS_BUS_SERVER
-    if (s_selectedBusNode >= 0) {
-        // Forward the call to bus
-        forwardCommandToBus((BYTE*)&sinkId, 2);
-        return;
-    }
-#endif
-    
+    }   
     s_inWriteSink = sinkId;
 }
 
@@ -143,15 +100,6 @@ static void WRIT_command()
     {
         fatal("WRIT.undr");
     }
-
-#ifdef HAS_BUS_SERVER
-    if (s_selectedBusNode >= 0) {
-        // Forward the call to bus
-        forwardCommandToBus((BYTE*)&sinkId, 2);
-        return;
-    }
-#endif
-
     s_inReadSink = sinkId;
 }
 
@@ -196,7 +144,9 @@ inline void prot_poll()
     // This tasks invokes each of the core stack application tasks
     StackApplications();
 #endif
+    
 #ifdef HAS_BUS_SERVER
+    // General poll
     bus_poll();
 #endif
     
@@ -206,9 +156,10 @@ inline void prot_poll()
     }
 
 #ifdef HAS_BUS_SERVER
-    if (bus_isExecCommand())
+    // Socket connected?
+    if (bus_isSocketConnected())
     {
-        // Don't poll TCP, command still in exec
+        // TCP is still polled by bus
         return;
     }
 #endif
@@ -229,7 +180,7 @@ inline void prot_poll()
         return;
     }
 
-    unsigned short s = prot_control_getDataSize();
+    WORD s = prot_control_readAvail();
     if (s_commandToRun >= 0) {
         if (s >= s_table[s_commandToRun].readSize) {
             s_table[s_commandToRun].fptr();
@@ -246,9 +197,10 @@ inline void prot_poll()
 
         // TODO: Limitation: both the command and its data should be in the read buffer
         // at the same time
-        prot_control_read(&s_lastMsgRead, sizeof(FOURCC));
+        FOURCC msg;
+        prot_control_read(&msg, sizeof(FOURCC));
         for (BYTE i = 0; i < COMMAND_COUNT; i++) {
-            if (memcmp(s_lastMsgRead.str, s_table[i].cmd, 4) == 0) {
+            if (memcmp(msg.str, s_table[i].cmd, 4) == 0) {
                 s_commandToRun = i;
                 return;
             }

@@ -63,7 +63,7 @@ void rs485_init()
     s_writePtr = s_readPtr = s_buffer;
 }
 
-int rs485_readAvail()
+WORD rs485_readAvail()
 {
     return (s_writePtr - s_readPtr) & BUFFER_SIZE_MASK;
 }

@@ -8,7 +8,7 @@ void prot_control_write(const void* data, WORD size);
 void prot_control_flush();
 void prot_control_close();
 BOOL prot_control_isListening();
-WORD prot_control_getDataSize();
+WORD prot_control_readAvail();
 
 extern BOOL prot_registered;
 extern BOOL prot_started;

@@ -17,16 +17,11 @@ static BYTE s_childKnown[MAX_CHILDREN / 8];
 #define isChildKnown(i) (s_childKnown[i / 8] & (1 << (i % 8)))
 static BOOL s_isFullScan;
 static TICK_TYPE s_lastFullScan;
-static int s_commandNodeIdx;
-static BYTE s_commandData[sizeof(GUID) + sizeof(FOURCC)];
-static int s_commandDataSize;
+
+// Socket
+static int s_socketConnected;
 
 #define FULL_SCAN_TIMEOUT (TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
-#define BUS_COMMAND_BREAK_TIMEOUT (TICKS_PER_SECOND) // 1s
-
-static void bus_startCommand_header();
-static void bus_startCommand_body();
-static void bus_command_poll();
 
 typedef enum { 
     // Message to beat a bean
@@ -35,8 +30,8 @@ typedef enum {
     POLL_MSG_TYPE_READY_FOR_REQ = 2,
     // Message to ask the only unknown bean to register itself
     POLL_MSG_TYPE_ADDRESS_ASSIGN = 3,
-    // Command data will follow
-    POLL_MSG_SELECT_FOR_COMMAND = 4
+    // Command/data will follow: socket open
+    POLL_MSG_CONNECT = 4
 } POLL_MSG_TYPE;
 
 typedef enum { 
@@ -51,14 +46,13 @@ static enum {
     BUS_STATE_IDLE,
     // Wait for ack
     BUS_STATE_WAIT_ACK,
-    // A command to a node is in progress
-    BUS_IN_COMMAND_TX,
-    // A command to a node is in progress (receiving data)
-    BUS_IN_COMMAND_RX,
-    // Breaking an ongoing command
-    BUS_COMMAND_BREAK
+    // A direct connection is established
+    BUS_STATE_SOCKET_CONNECTED
 } s_busState;
 static BOOL s_waitTxFlush;
+
+static void bus_socketCreate();
+static void bus_socketPoll();
 
 void bus_init()
 {
@@ -69,7 +63,7 @@ void bus_init()
     
     // Starts from zero
     s_pollIndex = MAX_CHILDREN - 1;
-    s_commandNodeIdx = -1;
+    s_socketConnected = -1;
     s_waitTxFlush = FALSE;
     
     // Do full scan
@@ -182,9 +176,9 @@ void bus_poll()
     
     switch (s_busState) {
         case BUS_STATE_IDLE:
-            // Should send a command?
-            if (s_commandNodeIdx >= 0) {
-                bus_startCommand_header();
+            // Should open a socket?
+            if (s_socketConnected >= 0) {
+                bus_socketCreate();
             }
             else {
                 bus_pollNextKnownChild();
@@ -204,89 +198,72 @@ void bus_poll()
                 }
             }
             break;
-        case BUS_IN_COMMAND_TX:
-            // Start transmitting command
-            bus_startCommand_body();
-            break;
-        case BUS_IN_COMMAND_RX:
-            // Check for command completion
-            bus_command_poll();
-            break;
-        case BUS_COMMAND_BREAK:
-            // Simply wait
-            if (TickGet() > (s_timer + BUS_COMMAND_BREAK_TIMEOUT)) {
-                // Timeout. Dead bean?
-                // Do nothing, simply skip it for now.
-                s_busState = BUS_STATE_IDLE;
-            }
+        case BUS_STATE_SOCKET_CONNECTED:
+            bus_socketPoll();
             break;
     }
 }
 
 // The command starts when the bus is idle
-void bus_openCommand(int nodeIdx, const FOURCC* cmd, const BYTE* data, int dataSize)
+void bus_connectSocket(int nodeIdx)
 {
-    if (s_busState == BUS_IN_COMMAND_RX || s_busState == BUS_IN_COMMAND_TX) {
-        // Break the current command
-        s_busState = BUS_COMMAND_BREAK;
-        s_timer = TickGet();
-    }
-    else {
-        s_commandNodeIdx = nodeIdx;
-
-        // Copy command body in a buffer
-        memcpy(memcpy(s_commandData, cmd, sizeof(FOURCC)), data, dataSize);
-        s_commandDataSize = sizeof(FOURCC) + dataSize;
-    }
+    s_socketConnected = nodeIdx;
+    // Next IDLE will start the connection
 }
 
-BOOL bus_isExecCommand() 
+BOOL bus_isSocketConnected() 
 {
-    return s_commandNodeIdx >= 0;
+    return s_socketConnected >= 0;
 }
 
-static void bus_startCommand_header() 
+static void bus_socketCreate() 
 {
-    // Bus is idle. Start transmitting.
-    
+    // Bus is idle. Start transmitting/receiving.
     BYTE buffer[4] = { 0x55, 0xaa };
-    buffer[2] = s_commandNodeIdx;
-    buffer[3] = POLL_MSG_SELECT_FOR_COMMAND;
+    buffer[2] = s_socketConnected;
+    buffer[3] = POLL_MSG_CONNECT;
     rs485_write(TRUE, buffer, 4);
     s_waitTxFlush = TRUE;
 
     // Next state (after TX finishes) is IN COMMAND
-    s_busState = BUS_IN_COMMAND_TX;
+    s_busState = BUS_STATE_SOCKET_CONNECTED;
 }
 
-static void bus_startCommand_body() 
+static void bus_socketPoll() 
 {
-    // Bus header sent. Immediately send the command.
-    rs485_write(FALSE, s_commandData, s_commandDataSize);
-    s_waitTxFlush = TRUE;
-
-    // Next state (after TX finishes) is IN COMMAND
-    s_busState = BUS_IN_COMMAND_RX;
-}
-
-static void bus_command_poll()
-{
-    int size = rs485_readAvail();
-    if (size > 0) {
-        BYTE buffer[8];
-        BOOL rc9;
-        size = size < 8 ? size : 8;
-        rs485_read(buffer, size, &rc9);
-        // Send it to the IP channel
-        prot_control_write(buffer, size);
+    // Bus line is slow, though
+    BYTE buffer[8];
+    
+    // Data from IP?
+    WORD rx = prot_control_readAvail();
+    if (rx > 0) {
+        // Read data and push it into the line
+        rx = rx > sizeof(buffer) ? sizeof(buffer) : rx;
+        prot_control_read(buffer, rx);
         
-        // Finished?
-        if (rc9) {
-            prot_control_flush();
+        rs485_write(FALSE, buffer, rx);
+    }
+    else {
+        // Data received?
+        WORD tx = rs485_readAvail();
+        if (tx > 0) {
+            BOOL rc9;
             
-            // End of command, back to idle
-            s_commandNodeIdx = -1;   
-            s_busState = BUS_STATE_IDLE;
+            // Read data and push it into IP
+            tx = tx > sizeof(buffer) ? sizeof(buffer) : tx;
+            rs485_read(buffer, tx, &rc9);
+            
+            if (rc9) {
+                // Socket close. Strip last byte
+                tx--;
+            }
+
+            prot_control_write(buffer, tx);
+            
+            if (rc9) {
+                // Now the channel is idle again
+                s_busState = BUS_STATE_IDLE;
+            }
         }
     }
 }

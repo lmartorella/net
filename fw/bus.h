@@ -16,11 +16,10 @@
 
 // Poll general bus activities
 void bus_poll();
-// Select a child, and send command header and data.
-// Starts waiting for data back
-void bus_openCommand(int nodeIdx, const FOURCC* cmd, const BYTE* data, int dataSize);
+// Select a child, and start a private communication bridging the IP protocol socket.
+void bus_connectSocket(int nodeIdx);
 // Is still in command execution, waiting for command data receive complete?
-BOOL bus_isExecCommand();
+BOOL bus_isSocketConnected();
 
 #endif
 #endif	/* BUS_H */
