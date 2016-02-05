@@ -2,6 +2,7 @@
 #include "protocol.h"
 #include "appio.h"
 #include "persistence.h"
+#include "bus.h"
 
 #ifdef HAS_IP
 #include "Compiler.h"
@@ -10,11 +11,12 @@
 
 static signed char s_inReadSink = -1;
 static signed char s_inWriteSink = -1;
-static signed char s_commandToRun = -1;
+static int s_commandToRun = -1;
 BOOL prot_registered = FALSE;
 
 #ifdef HAS_BUS_SERVER
-int s_selectedBusNode = -1;
+static int s_selectedBusNode = -1;
+static BOOL s_inCommandToBus = FALSE;
 #endif
 static FOURCC s_lastMsgRead;
 
@@ -22,9 +24,8 @@ static void CLOS_command()
 {
 	prot_control_close();
 #ifdef HAS_BUS_SERVER
-    if (s_selectedBusNode >= 0) {
-        bus_closeCommand();
-    }
+    s_selectedBusNode = -1;
+    s_inCommandToBus = FALSE;
 #endif
 }
 
@@ -46,13 +47,8 @@ static void SELE_command()
 }
 
 #ifdef HAS_BUS_SERVER
-static void(*s_currentBusCommand)();
-static void forwardCommandToBus(void(*handler)(), const BYTE* buffer, int size) {
-    bus_server_select(s_selectedBusNode);
-    bus_server_send((BYTE*)&s_lastMsgRead, sizeof(FOURCC));
-    bus_server_send(buffer, size);
-    // Now waits for data
-    s_currentBusCommand = handler;
+static void forwardCommandToBus(const BYTE* buffer, int size) {
+    bus_openCommand(s_selectedBusNode, &s_lastMsgRead, buffer, size);
 }
 #endif
 
@@ -62,7 +58,7 @@ static void CHIL_command()
 #ifdef HAS_BUS_SERVER
     if (s_selectedBusNode >= 0) {
         // Forward the call to bus
-        forwardCommandToBus(&CHIL_bus_handler, NULL, 0);
+        forwardCommandToBus(NULL, 0);
         return;
     }
 #endif
@@ -82,7 +78,7 @@ static void SINK_command()
 #ifdef HAS_BUS_SERVER
     if (s_selectedBusNode >= 0) {
         // Forward the call to bus
-        forwardCommandToBus(&SINK_bus_handler, NULL, 0);
+        forwardCommandToBus(NULL, 0);
         return;
     }
 #endif
@@ -107,7 +103,7 @@ static void GUID_command()
 #ifdef HAS_BUS_SERVER
     if (s_selectedBusNode >= 0) {
         // Forward the call to bus
-        forwardCommandToBus(&GUID_bus_handler, (BYTE*)&guid, sizeof(GUID));
+        forwardCommandToBus((BYTE*)&guid, sizeof(GUID));
         return;
     }
 #endif
@@ -131,7 +127,7 @@ static void READ_command()
 #ifdef HAS_BUS_SERVER
     if (s_selectedBusNode >= 0) {
         // Forward the call to bus
-        forwardCommandToBus(&READ_bus_handler, (BYTE*)&sinkId, 2);
+        forwardCommandToBus((BYTE*)&sinkId, 2);
         return;
     }
 #endif
@@ -151,7 +147,7 @@ static void WRIT_command()
 #ifdef HAS_BUS_SERVER
     if (s_selectedBusNode >= 0) {
         // Forward the call to bus
-        forwardCommandToBus(&WRIT_bus_handler, (BYTE*)&sinkId, 2);
+        forwardCommandToBus((BYTE*)&sinkId, 2);
         return;
     }
 #endif
@@ -208,6 +204,14 @@ inline void prot_poll()
     {
         return;
     }
+
+#ifdef HAS_BUS_SERVER
+    if (bus_isExecCommand())
+    {
+        // Don't poll TCP, command still in exec
+        return;
+    }
+#endif
 
     if (s_inReadSink >= 0) {
         // Tolerates empty rx buffer

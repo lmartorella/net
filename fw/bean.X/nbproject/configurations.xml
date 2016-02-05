@@ -58,6 +58,7 @@
       <itemPath>../guid.h</itemPath>
       <itemPath>../protocol.h</itemPath>
       <itemPath>../ip_client.h</itemPath>
+      <itemPath>../bus.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

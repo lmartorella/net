@@ -22,8 +22,6 @@ static enum {
     STATUS_WAIT_FOR_TRANSMIT_END2,
     // Receive mode
     STATUS_RECEIVE,
-    // ERROR in receive, overrun of PIC 2 bytes buffer
-    STATUS_RECEIVE_OERR,
     // ERROR in receive, frame error
     STATUS_RECEIVE_FERR,
 } s_status;
@@ -108,8 +106,7 @@ void rs485_interrupt()
         do {
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
-                s_status = STATUS_RECEIVE_OERR;
-                goto error;
+                fatal("UART.OERR");
             }
             if (RS485_RCSTA.FERR) {
                 s_status = STATUS_RECEIVE_FERR;
@@ -221,8 +218,6 @@ static void rs485_startRead()
 
 RS485_STATE rs485_getState() {
     switch (s_status) {
-        case STATUS_RECEIVE_OERR:
-            return RS485_OVERRUN_ERR;
         case STATUS_RECEIVE_FERR:
             return RS485_FRAME_ERR;
         case STATUS_RECEIVE:

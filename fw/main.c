@@ -135,7 +135,7 @@ void main()
 #ifdef MCU_TEST_APP
             BOOL rc9;
             char msg[16];
-            if (rs485_getState() & RS485_ERR) {
+            if (rs485_getState() == RS485_FRAME_ERR) {
                 println("Rc err");
             }
             else {

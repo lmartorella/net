@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "hardware/rs485.h"
-#include "protocol.h"
+#include "bus.h"
 
 #ifdef HAS_BUS_CLIENT
 

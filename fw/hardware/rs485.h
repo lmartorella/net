@@ -4,11 +4,9 @@
 #ifdef HAS_RS485
 
 typedef enum {
-    RS485_LINE_RX = 0x4,
-    RS485_LINE_TX = 0x8,
-    RS485_ERR = 0x10,
-    RS485_FRAME_ERR = RS485_ERR,
-    RS485_OVERRUN_ERR = RS485_ERR + 1
+    RS485_LINE_RX,
+    RS485_LINE_TX,
+    RS485_FRAME_ERR,
 } RS485_STATE;
 
 /**
