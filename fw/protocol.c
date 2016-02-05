@@ -17,6 +17,9 @@ BOOL prot_registered = FALSE;
 #ifdef HAS_BUS_SERVER
 static BOOL s_socketConnected = FALSE;
 #endif
+#ifdef HAS_BUS_CLIENT
+static BOOL g_rc9;
+#endif
 
 static void CLOS_command()
 {

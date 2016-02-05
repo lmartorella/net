@@ -83,7 +83,7 @@ BOOL prot_control_isListening()
     return TCPIsConnected(s_controlSocket);
 }
 
-WORD prot_control_getDataSize()
+WORD prot_control_readAvail()
 {
     return TCPIsGetReady(s_controlSocket);
 }

@@ -1,6 +1,21 @@
 #ifndef PROTOCOL_H
 #define	PROTOCOL_H
 
+#include "bus.h"
+#include "hardware/rs485.h"
+
+#ifdef HAS_BUS_CLIENT
+#define prot_control_readW(w) rs485_read((BYTE*)w, 2, &g_rc9) 
+#define prot_control_read(data, size) rs485_read((BYTE*)data, size, &g_rc9)
+#define prot_control_writeW(w) rs485_write(FALSE, (BYTE*)w, 2)
+#define prot_control_write(data, size) rs485_write(FALSE, (BYTE*)data, size)
+#define prot_control_flush() 
+#define prot_control_close()
+#define prot_control_isListening() (TRUE)
+#define prot_control_readAvail() rs485_readAvail()
+#define prot_started (TRUE)
+#define prot_slowTimer()
+#else
 BOOL prot_control_readW(WORD* w);
 BOOL prot_control_read(void* data, WORD size);
 void prot_control_writeW(WORD w);
@@ -9,12 +24,13 @@ void prot_control_flush();
 void prot_control_close();
 BOOL prot_control_isListening();
 WORD prot_control_readAvail();
+void prot_slowTimer();
+extern BOOL prot_started;
+#endif
 
 extern BOOL prot_registered;
-extern BOOL prot_started;
 
 inline void prot_poll();
-void prot_slowTimer();
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished

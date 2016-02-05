@@ -1,8 +1,6 @@
 #ifndef BUS_H
 #define	BUS_H
 
-#include "protocol.h"
-
 #ifdef HAS_RS485
 #ifdef HAS_IP
 #define HAS_BUS_SERVER
