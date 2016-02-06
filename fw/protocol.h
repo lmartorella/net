@@ -30,7 +30,8 @@ extern BOOL prot_started;
 
 extern BOOL prot_registered;
 
-inline void prot_poll();
+void prot_init();
+void prot_poll();
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished

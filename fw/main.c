@@ -102,10 +102,8 @@ void main()
 #endif
     
     enableInterrupts();
-    
-#ifdef HAS_IP
-    ip_prot_init();
-#endif
+
+    prot_init();
 
 #ifdef HAS_RS485
     rs485_init();

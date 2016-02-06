@@ -9,7 +9,6 @@
 
 static signed char s_pollIndex;
 static TICK_TYPE s_timer;
-#define BUS_ACK_TIMEOUT (TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
 // 8*8 = 63 max children (last is broadcast)
 #define MAX_CHILDREN 64
 static BYTE s_childKnown[MAX_CHILDREN / 8];
@@ -18,10 +17,12 @@ static BYTE s_childKnown[MAX_CHILDREN / 8];
 static BOOL s_isFullScan;
 static TICK_TYPE s_lastFullScan;
 
-// Socket
+// Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
 
-#define FULL_SCAN_TIMEOUT (TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
+#define BUS_FULLSCAN_TIMEOUT (TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
+#define BUS_SOCKET_TIMEOUT (TICKS_PER_SECOND)  // 1s
+#define BUS_ACK_TIMEOUT (TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
 
 typedef enum { 
     // Message to beat a bean
@@ -86,7 +87,7 @@ static void bus_pollNextKnownChild()
             
             // Check if a full scan should be done
             // Use the last timeout calculated (at least it is the broadcast)
-            if (s_timer > (s_lastFullScan + FULL_SCAN_TIMEOUT)){
+            if (s_timer > (s_lastFullScan + BUS_FULLSCAN_TIMEOUT)){
                 s_isFullScan = TRUE;
                 s_lastFullScan = s_timer;
             }
@@ -199,7 +200,15 @@ void bus_poll()
             }
             break;
         case BUS_STATE_SOCKET_CONNECTED:
-            bus_socketPoll();
+            if (TickGet() > (s_timer + BUS_SOCKET_TIMEOUT)) {
+                // Timeout. Dead bean?
+                // Drop the TCP connection and reset the channel
+                s_busState = BUS_STATE_IDLE;
+                s_socketConnected = -2;
+            }
+            else {
+                bus_socketPoll();
+            }
             break;
     }
 }
@@ -211,9 +220,9 @@ void bus_connectSocket(int nodeIdx)
     // Next IDLE will start the connection
 }
 
-BOOL bus_isSocketConnected() 
+BUS_SOCKET_STATE bus_isSocketConnected() 
 {
-    return s_socketConnected >= 0;
+    return s_socketConnected >= 0 ? BUS_SOCKET_CONNECTED : (s_socketConnected == -2 ? BUS_SOCKET_TIMEOUT : BUS_SOCKET_NONE);
 }
 
 static void bus_socketCreate() 
@@ -233,7 +242,8 @@ static void bus_socketPoll()
 {
     // Bus line is slow, though
     BYTE buffer[8];
-    
+    BOOL updateTimer = FALSE;
+            
     // Data from IP?
     WORD rx = prot_control_readAvail();
     if (rx > 0) {
@@ -242,6 +252,7 @@ static void bus_socketPoll()
         prot_control_read(buffer, rx);
         
         rs485_write(FALSE, buffer, rx);
+        updateTimer = TRUE;
     }
     else {
         // Data received?
@@ -264,7 +275,14 @@ static void bus_socketPoll()
                 // Now the channel is idle again
                 s_busState = BUS_STATE_IDLE;
             }
+            else {
+                updateTimer = TRUE;
+            }
         }
+    }
+    
+    if (updateTimer) {
+        s_timer = TickGet();
     }
 }
 

@@ -1,8 +1,7 @@
 #ifndef _PROT_H_APP_
 #define _PROT_H_APP_
 
-#include "hardware/fuses_mini_bean.h"
-
+#include "hardware/hw.h"
 
 #ifdef HAS_IP
 

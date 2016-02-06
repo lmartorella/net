@@ -65,7 +65,12 @@ void rs485_init()
 
 WORD rs485_readAvail()
 {
-    return (s_writePtr - s_readPtr) & BUFFER_SIZE_MASK;
+    return (WORD)((s_writePtr - s_readPtr) & BUFFER_SIZE_MASK);
+}
+
+WORD rs485_writeAvail()
+{
+    return (WORD)((s_readPtr - s_writePtr - 1) & BUFFER_SIZE_MASK);
 }
 
 static void writeByte()
@@ -159,7 +164,7 @@ void rs485_write(BOOL address, const BYTE* data, int size)
     // Disable interrupts
     RS485_PIE_TXIE = 0;
 
-    if (size > rs485_readAvail()) {
+    if (size > rs485_writeAvail()) {
         // Overflow error
         fatal("RS485.ov");
     }
@@ -221,9 +226,8 @@ RS485_STATE rs485_getState() {
         case STATUS_RECEIVE_FERR:
             return RS485_FRAME_ERR;
         case STATUS_RECEIVE:
-            return RS485_LINE_RX;
         case STATUS_IDLE:
-            return 0;
+            return RS485_LINE_RX;
         default:
             return RS485_LINE_TX;
     }

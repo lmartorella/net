@@ -7,6 +7,7 @@
 #ifdef HAS_IP
 #include "Compiler.h"
 #include "TCPIPStack/TCPIP.h"
+#include "ip_client.h"
 #endif
 
 static signed char s_inReadSink = -1;
@@ -20,6 +21,16 @@ static BOOL s_socketConnected = FALSE;
 #ifdef HAS_BUS_CLIENT
 static BOOL g_rc9;
 #endif
+
+void prot_init()
+{
+#ifdef HAS_IP
+    ip_prot_init();
+#endif
+#ifdef HAS_BUS_SERVER
+    bus_init();
+#endif
+}
 
 static void CLOS_command()
 {
@@ -61,8 +72,7 @@ static void CHIL_command()
 static void SINK_command()
 {
     prot_control_writeW(AllSinksSize);
-    for (int i = 0; i < AllSinksSize; i++)
-    {
+    for (int i = 0; i < AllSinksSize; i++) {
         // Put device ID
         prot_control_write(&AllSinks[i]->fourCc, sizeof(FOURCC));
     }
@@ -139,7 +149,7 @@ const struct {
 /*
 	Manage POLLs (read buffers)
 */
-inline void prot_poll()
+void prot_poll()
 {
 #ifdef HAS_IP
     // Do ETH stuff
@@ -153,17 +163,20 @@ inline void prot_poll()
     bus_poll();
 #endif
     
-    if (!prot_started || !prot_control_isListening())
-    {
+    if (!prot_started || !prot_control_isListening()) {
         return;
     }
 
 #ifdef HAS_BUS_SERVER
     // Socket connected?
-    if (bus_isSocketConnected())
-    {
+    BUS_SOCKET_STATE busState = bus_isSocketConnected(); 
+    if (busState == BUS_SOCKET_CONNECTED) {
         // TCP is still polled by bus
         return;
+    }
+    else if (busState == BUS_SOCKET_TIMEOUT) {
+        // drop the connection        
+        prot_control_close();
     }
 #endif
 

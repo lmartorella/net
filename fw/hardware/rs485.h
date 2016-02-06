@@ -28,6 +28,7 @@ void rs485_write(BOOL address, const BYTE* data, int size);
 // Read data, if available.
 BOOL rs485_read(BYTE* data, int size, BOOL* rc9);
 WORD rs485_readAvail();
+WORD rs485_writeAvail();
 
 RS485_STATE rs485_getState();
 
