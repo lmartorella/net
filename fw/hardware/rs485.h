@@ -19,7 +19,7 @@ void rs485_init();
 void rs485_interrupt();
 
 /**
- * Requires 1ms poll time
+ * Poll as much as possible (internal timered)
  */
 void rs485_poll();
 

@@ -1,5 +1,6 @@
 #include "../pch.h"
 #include "rs485.h"
+#include "tick.h"
 #include "../appio.h"
 
 #ifdef HAS_RS485
@@ -10,16 +11,12 @@
 static enum {
     // No trasmit, no receive, channel free
     STATUS_IDLE,
-    // Wait 2 1ms tick before transmit, channel engaged
-    STATUS_WAIT_FOR_TRANSMIT1,
     // Wait 1ms tick before transmit, channel engaged
-    STATUS_WAIT_FOR_TRANSMIT2,
+    STATUS_WAIT_FOR_TRANSMIT,
     // Channel engaged, trasmitting
     STATUS_TRANSMIT,
-    // Channel engaged, wait 2 1m ticks before freeing channel
-    STATUS_WAIT_FOR_TRANSMIT_END1,
     // Channel engaged, wait 1m ticks before freeing channel
-    STATUS_WAIT_FOR_TRANSMIT_END2,
+    STATUS_WAIT_FOR_TRANSMIT_END,
     // Receive mode
     STATUS_RECEIVE,
     // ERROR in receive, frame error
@@ -39,6 +36,11 @@ static BYTE* s_readPtr;
 
 // Status of address bit in the serie
 static BOOL s_rc9;
+
+static TICK_TYPE s_lastTick;
+
+#define WAIT_FOR_TRANSMIT_TIMEOUT (TICKS_PER_SECOND / 500)  // 2ms
+#define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICKS_PER_SECOND / 500)  // 2ms
 
 void rs485_init()
 {
@@ -60,6 +62,7 @@ void rs485_init()
       
     s_status = STATUS_IDLE;
     s_writePtr = s_readPtr = s_buffer;
+    s_lastTick = TickGet();
 }
 
 WORD rs485_readAvail()
@@ -101,7 +104,8 @@ void rs485_interrupt()
                 // TX2IF cannot be cleared, shut IE 
                 RS485_PIE_TXIE = 0;
                 // goto first phase of tx end
-                s_status = STATUS_WAIT_FOR_TRANSMIT_END1;
+                s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+                s_lastTick = TickGet();
                 break;
             }
         } while (RS485_PIR_TXIF);
@@ -132,25 +136,21 @@ error:
 void rs485_poll()
 {
     switch (s_status){
-        case STATUS_WAIT_FOR_TRANSMIT1:
-            // Wait another full slot
-            s_status = STATUS_WAIT_FOR_TRANSMIT2;
+        case STATUS_WAIT_FOR_TRANSMIT:
+            if (TickGet() > s_lastTick + WAIT_FOR_TRANSMIT_TIMEOUT) {
+                // Transmit
+                s_status = STATUS_TRANSMIT;
+                // Feed first byte
+                writeByte();
+                RS485_PIE_TXIE = 1;
+            }
             break;
-        case STATUS_WAIT_FOR_TRANSMIT2:
-            // Transmit
-            s_status = STATUS_TRANSMIT;
-            // Feed first byte
-            writeByte();
-            RS485_PIE_TXIE = 1;
-            break;
-        case STATUS_WAIT_FOR_TRANSMIT_END1:
-            // Wait another full slot
-            s_status = STATUS_WAIT_FOR_TRANSMIT_END2;
-            break;
-        case STATUS_WAIT_FOR_TRANSMIT_END2:
-            s_status = STATUS_IDLE;
-            // Detach TX line
-            RS485_PORT_EN = EN_RECEIVE;
+        case STATUS_WAIT_FOR_TRANSMIT_END:
+            if (TickGet() > s_lastTick + WAIT_FOR_TRANSMIT_END_TIMEOUT) {
+                s_status = STATUS_IDLE;
+                // Detach TX line
+                RS485_PORT_EN = EN_RECEIVE;
+            }
             break;
     }
 }
@@ -186,18 +186,15 @@ void rs485_write(BOOL address, const BYTE* data, int size)
     // Schedule trasmitting, if not yet ready
     switch (s_status) {
         case STATUS_TRANSMIT:
-        case STATUS_WAIT_FOR_TRANSMIT1:
-        case STATUS_WAIT_FOR_TRANSMIT2:
+        case STATUS_WAIT_FOR_TRANSMIT:
             // Already tx, ok
             break;
-        case STATUS_WAIT_FOR_TRANSMIT_END1:
-        case STATUS_WAIT_FOR_TRANSMIT_END2:
-            // Convert it to tx
-            s_status = STATUS_WAIT_FOR_TRANSMIT2;
-            break;
+        case STATUS_WAIT_FOR_TRANSMIT_END:
         default:
-            // Do all the cycles
-            s_status = STATUS_WAIT_FOR_TRANSMIT1;
+            // Convert it to tx
+            s_status = STATUS_WAIT_FOR_TRANSMIT;
+            s_lastTick = TickGet();
+            break;
     }
 }
 
