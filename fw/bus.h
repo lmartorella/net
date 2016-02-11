@@ -27,6 +27,10 @@ void bus_connectSocket(int nodeIdx);
 // Is still in command execution, waiting for command data receive complete?
 BUS_SOCKET_STATE bus_isSocketConnected();
 
+// Get known children count
+int bus_getAliveCount();
+
+
 #endif
 #endif	/* BUS_H */
 

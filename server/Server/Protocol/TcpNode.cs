@@ -88,8 +88,8 @@ namespace Lucky.Home.Protocol
 
         private class GetChildrenMessageResponse
         {
-            [SerializeAsDynArray]
-            public Guid[] Guids;
+            public short Count;
+            public Guid Guid;
         }
 
         private class SelectNodeMessage
@@ -167,21 +167,9 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private async Task<bool> OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler)
+        private static async Task<bool> OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
         {
-            if (IsZombie)
-            {
-                // Avoid thrashing the network
-                return false;
-            }
-
             // Init a METADATA fetch connection
-            TcpNodeAddress address;
-            lock (Address)
-            {
-                address = Address.Clone();
-            }
-
             try
             {
                 using (var connection = new TcpConnection(address.Address, address.ControlPort))
@@ -196,19 +184,43 @@ namespace Lucky.Home.Protocol
                 // Forbicly close the channel
                 TcpConnection.Close(new IPEndPoint(address.Address, address.ControlPort));
                 // Log exc
-                Logger.Exception(exc);
-                // Mark the node as a zombie
-                IsZombie = true;
+                logger.Exception(exc);
                 return false;
             }
+        }
+
+        private async Task<bool> OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler)
+        {
+            if (IsZombie)
+            {
+                // Avoid thrashing the network
+                return false;
+            }
+
+            TcpNodeAddress address;
+            lock (Address)
+            {
+                address = Address.Clone();
+            }
+
+            var ret = await OpenNodeSession(Logger, address, handler);
+            if (!ret)
+            {
+                // Mark the node as a zombie
+                IsZombie = true;
+            }
+            return ret;
         }
 
         private async Task<bool> TryFetchMetadata()
         {
             // Init a METADATA fetch connection
             string[] sinks = null;
-            if (!await OpenNodeSession((connection, address) =>
+            int childCount = 1;
+            TcpNodeAddress address = null;
+            if (!await OpenNodeSession((connection, addr) =>
             {
+                address = addr;
                 if (!address.IsSubNode)
                 {
                     // Ask for subnodes
@@ -218,25 +230,12 @@ namespace Lucky.Home.Protocol
                     {
                         return false;
                     }
-
-                    for (int index = 0; index < childNodes.Guids.Length; index++)
+                    if (childNodes.Guid != Id)
                     {
-                        var childGuid = childNodes.Guids[index];
-                        if (index == 0)
-                        {
-                            // Mine
-                            if (childGuid != Id)
-                            {
-                                // ERROR
-                                Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childGuid);
-                            }
-                        }
-                        else
-                        {
-                            // Register a subnode
-                            Manager.GetService<INodeManager>().RegisterNode(childGuid, Address.SubNode(index));
-                        }
+                        // ERROR
+                        Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childNodes.Guid);
                     }
+                    childCount = childNodes.Count;
                 }
 
                 // Then ask for sinks
@@ -255,6 +254,30 @@ namespace Lucky.Home.Protocol
 
             // Now register sinks
             RegisterSinks(sinks);
+
+            // Now register children
+            // Register subnodes, asking for identity
+            for (int index = 0; index < childCount - 1; index++)
+            {
+                var childAddr = address.SubNode(index + 1);
+                if (!await OpenNodeSession(Logger, childAddr, (connection, addr) =>
+                {
+                    // Ask for GUID
+                    connection.Write(new GetChildrenMessage());
+                    var childData = connection.Read<GetChildrenMessageResponse>();
+                    if (childData.Count > 0)
+                    {
+                        // ERROR
+                        Logger.Warning("InvalidNestedChild", "Id", childData.Guid, "parent", Id, "reportedCount", childData.Count);
+                    }
+                    // Register it
+                    Manager.GetService<INodeManager>().RegisterNode(childData.Guid, addr);
+                    return true;
+                }))
+                {
+                    return false;
+                }
+            }
             return true;
         }
 

@@ -44,6 +44,11 @@ namespace Lucky.Services
             logger.LogFormat(WARN, "{0} [{1}]: {2} [{3}]: {4}", message, param1, value1, param2, value2);
         }
 
+        public static void Warning(this ILogger logger, string message, string param1, object value1, string param2, object value2, string param3, object value3)
+        {
+            logger.LogFormat(WARN, "{0} [{1}]: {2} [{3}]: {4}, [{5}]: {6}", message, param1, value1, param2, value2, param3, value3);
+        }
+
         public static void Error(this ILogger logger, string message, string param1, object value1, string param2, object value2)
         {
             logger.LogFormat(ERROR, "{0} [{1}]: {2} [{3}]: {4}", message, param1, value1, param2, value2);

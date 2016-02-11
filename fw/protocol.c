@@ -50,22 +50,33 @@ static void SELE_command()
     // Select subnode.
     // Simply ignore when no subnodes
 #ifdef HAS_BUS_SERVER
-    // Otherwise connect the socket
-    bus_connectSocket(w);
-    s_socketConnected = TRUE;
+    if (w > 0)
+    {
+        // Otherwise connect the socket
+        bus_connectSocket(w - 1);
+        s_socketConnected = TRUE;
+    }
 #endif
 }
 
 // 0 bytes to receive
 static void CHIL_command()
 {
+    // Fetch my GUID
     PersistentData persistence;
     boot_getUserData(&persistence);
-    
+ 
+#ifdef HAS_BUS_SERVER
+    // Propagate the request to all children to fetch their GUIDs
+    prot_control_writeW(1 + bus_getAliveCount());
+#else    
     // Only 1 children: me
     prot_control_writeW(1);
+#endif
+    
+    // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
     prot_control_write(&persistence.deviceId, sizeof(GUID));
-    prot_control_flush();
+    prot_control_flush();   
 }
 
 // 0 bytes to receive

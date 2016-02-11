@@ -28,11 +28,10 @@ static enum {
 
 // Circular buffer of 64 bytes
 #define BUFFER_SIZE 32
-#define BUFFER_SIZE_MASK 0x1f
 
-#define ADJUST_PTR(x) x = (BYTE*)((int)x & BUFFER_SIZE_MASK)
+#define ADJUST_PTR(x) while (x >= (s_buffer + BUFFER_SIZE)) x-= BUFFER_SIZE
 
-static BYTE s_buffer[BUFFER_SIZE] @ 0x0;
+static BYTE s_buffer[BUFFER_SIZE];
 // Pointer of the writing head
 static BYTE* s_writePtr;
 // Pointer of the reading head (if = write ptr, no bytes avail)
@@ -65,12 +64,12 @@ void rs485_init()
 
 WORD rs485_readAvail()
 {
-    return (WORD)((s_writePtr - s_readPtr) & BUFFER_SIZE_MASK);
+    return (WORD)((s_writePtr - s_readPtr) % BUFFER_SIZE);
 }
 
 WORD rs485_writeAvail()
 {
-    return (WORD)((s_readPtr - s_writePtr - 1) & BUFFER_SIZE_MASK);
+    return (WORD)((s_readPtr - s_writePtr - 1) % BUFFER_SIZE);
 }
 
 static void writeByte()
@@ -91,7 +90,7 @@ static void readByte()
 void rs485_interrupt()
 {
     // Empty TX buffer. Check for more data
-    if (RS485_PIR_TXIF) {
+    if (RS485_PIR_TXIF && RS485_PIE_TXIE) {
         do {
             if (rs485_readAvail() > 0) {
                 // Feed more data, read at read pointer and then increase
@@ -103,10 +102,11 @@ void rs485_interrupt()
                 RS485_PIE_TXIE = 0;
                 // goto first phase of tx end
                 s_status = STATUS_WAIT_FOR_TRANSMIT_END1;
+                break;
             }
         } while (RS485_PIR_TXIF);
     }
-    else if (RS485_PIR_RCIF) {
+    else if (RS485_PIR_RCIF && RS485_PIE_RCIE) {
         // Data received
         do {
             // Check for errors BEFORE reading RCREG

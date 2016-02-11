@@ -286,4 +286,14 @@ static void bus_socketPoll()
     }
 }
 
+int bus_getAliveCount() {
+    int res = 0;
+    for (int i = 0; i < MAX_CHILDREN; i++) {
+        if (isChildKnown(i)) {
+            res++;
+        }
+    }
+    return res;
+}
+
 #endif
