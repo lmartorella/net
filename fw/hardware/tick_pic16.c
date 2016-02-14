@@ -12,9 +12,6 @@ static volatile BYTE s_ticksH = 0;
 // 2-byte value to store Ticks.  
 static BYTE vTickReading[2];
 
-static void GetTickCopy(void);
-
-
 /*****************************************************************************
   Function:
 	void timers_init(void)
@@ -53,41 +50,6 @@ void timers_init(void)
     TICK_INTCON_IE = 1;		// Enable interrupt
 }
 
-/*****************************************************************************
-  Function:
-	static void GetTickCopy(void)
-
-  Summary:
-	Reads the tick value.
-
-  Description:
-	This function performs an interrupt-safe and synchronized read of the
-	16-bit Tick value.
-
-  Precondition:
-	None
-
-  Parameters:
-	None
-
-  Returns:
-  	None
-  ***************************************************************************/
-static void GetTickCopy(void)
-{
-	// Perform an Interrupt safe and synchronized read of the 48-bit
-	// tick value
-	do
-	{
-		TICK_INTCON_IE = 1;		// Enable interrupt
-		NOP();
-		TICK_INTCON_IE = 0;		// Disable interrupt
-		vTickReading[0] = TICK_TMR;
-        vTickReading[1] = s_ticksH;
-	} while(TICK_INTCON_IF);
-	TICK_INTCON_IE = 1;			// Enable interrupt
-}
-
 
 /*****************************************************************************
   Function:
@@ -112,7 +74,17 @@ static void GetTickCopy(void)
   ***************************************************************************/
 WORD TickGet()
 {
-	GetTickCopy();
+	// Perform an Interrupt safe and synchronized read of the 48-bit
+	// tick value
+	do
+	{
+		TICK_INTCON_IE = 1;		// Enable interrupt
+		NOP();
+		TICK_INTCON_IE = 0;		// Disable interrupt
+		vTickReading[0] = TICK_TMR;
+        vTickReading[1] = s_ticksH;
+	} while(TICK_INTCON_IF);
+	TICK_INTCON_IE = 1;			// Enable interrupt
 	return *((WORD*)&vTickReading[0]);
 }
 

@@ -9,6 +9,7 @@
 #endif
 #endif // HAS_RS485
 
+void bus_poll();
 
 #ifdef HAS_BUS_SERVER
 

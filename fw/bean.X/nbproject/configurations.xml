@@ -101,6 +101,7 @@
       <itemPath>../protocol.c</itemPath>
       <itemPath>../ip_client.c</itemPath>
       <itemPath>../bus_server.c</itemPath>
+      <itemPath>../bus_client.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

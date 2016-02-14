@@ -73,7 +73,7 @@ static BOOL sysSink_write()
     {
         prot_control_write(&ExceptionText, sizeof(FOURCC));
         
-        char *exc = sys_getLastFatal();
+        const char *exc = s_lastErr;
         WORD l = strlen(exc);
         prot_control_writeW(l);
         prot_control_write(exc, l);

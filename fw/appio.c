@@ -2,9 +2,9 @@
 #include "appio.h"
 #include "hardware/cm1602.h"
 
-// The pointer is pointing to RAM space that will not be reset
+// The pointer is pointing to ROM space that will not be reset
 // otherwise after the RESET the variable content can be lost.
-static persistent char s_lastErr[8];
+persistent const char* s_lastErr;
 
 #ifdef HAS_CM1602
 static void _clr(BYTE addr)
@@ -63,15 +63,12 @@ void printch(char ch)
 #endif
 }
 
+#ifndef SHORT_FATAL
+// Long (callable) version of fatal
 void fatal(const char* str)
 {
-    strncpy(s_lastErr, str, sizeof(s_lastErr) - 1);
-    s_lastErr[sizeof(s_lastErr)] = 0;
+    s_lastErr = str;
     wait30ms();
     RESET();
 }
-
-char* sys_getLastFatal()
-{
-    return s_lastErr;
-}
+#endif

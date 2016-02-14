@@ -176,20 +176,15 @@ const struct {
 */
 void prot_poll()
 {
+    // General poll
+    bus_poll();
    
 #ifdef HAS_IP
     // Do ETH stuff
     StackTask();
     // This tasks invokes each of the core stack application tasks
     StackApplications();
-#endif
-    
-#ifdef HAS_BUS_SERVER
-    // General poll
-    bus_poll();
-#endif
 
-#ifdef HAS_IP
     if (TickGet() > (TICK_TYPE)(s_slowTimer + TICKS_PER_SECOND))
     {
         s_slowTimer = TickGet();

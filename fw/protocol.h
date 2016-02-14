@@ -10,8 +10,6 @@
 #define prot_control_writeW(w) rs485_write(FALSE, (BYTE*)w, 2)
 #define prot_control_write(data, size) rs485_write(FALSE, (BYTE*)data, size)
 #define prot_control_flush() 
-#define prot_control_close()
-#define prot_control_isConnected() (TRUE)
 #define prot_control_readAvail() rs485_readAvail()
 #else
 BOOL prot_control_readW(WORD* w);
@@ -19,12 +17,12 @@ BOOL prot_control_read(void* data, WORD size);
 void prot_control_writeW(WORD w);
 void prot_control_write(const void* data, WORD size);
 void prot_control_flush();
-void prot_control_close();
-BOOL prot_control_isConnected();
 WORD prot_control_readAvail();
 #endif
 
 extern BOOL prot_registered;
+void prot_control_close();
+BOOL prot_control_isConnected();
 
 void prot_init();
 void prot_poll();

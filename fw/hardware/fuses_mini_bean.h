@@ -51,6 +51,8 @@
 
 #define TICK_TYPE WORD
 
+#define SHORT_FATAL
+
 #endif
 
 
