@@ -13,10 +13,11 @@
 #ifdef HAS_BUS_SERVER
 
 typedef enum {
-    BUS_SOCKET_NONE,
-    BUS_SOCKET_CONNECTED,
-    BUS_SOCKET_TIMEOUT,
-} BUS_SOCKET_STATE;
+    BUS_STATE_NONE,
+    BUS_STATE_SOCKET_CONNECTED,
+    BUS_STATE_SOCKET_TIMEOUT,
+    BUS_STATE_DIRTY_CHILDREN
+} BUS_STATE;
 
 
 void bus_init();
@@ -27,10 +28,10 @@ void bus_connectSocket(int nodeIdx);
 void bus_disconnectSocket();
 
 // Is still in command execution, waiting for command data receive complete?
-BUS_SOCKET_STATE bus_isSocketConnected();
+BUS_STATE bus_getState();
 
 // Get known children count
-int bus_getAliveCount();
+int bus_getAliveCountAndResetDirty();
 
 
 #endif

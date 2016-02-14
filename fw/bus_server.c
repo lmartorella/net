@@ -13,10 +13,12 @@ static BYTE s_childKnown[MAX_CHILDREN / 8];
 
 #define MSG_SIZE 4
 #define isChildKnown(i) (s_childKnown[i / 8] & (1 << (i % 8)))
+#define setChildKnown(i) s_childKnown[i / 8] |= (1 << (i % 8))
 
 static signed char s_scanIndex;
 static TICK_TYPE s_lastScanTime;
 static TICK_TYPE s_lastTime;
+static BOOL s_dirtyChildren;
 
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
@@ -45,12 +47,13 @@ typedef enum {
 
 static enum {
     // To call next child
-    BUS_STATE_IDLE,
+    BUS_PRIV_STATE_IDLE,
     // Wait for ack
-    BUS_STATE_WAIT_ACK,
+    BUS_PRIV_STATE_WAIT_ACK,
     // A direct connection is established
-    BUS_STATE_SOCKET_CONNECTED
+    BUS_PRIV_STATE_SOCKET_CONNECTED
 } s_busState;
+
 static BOOL s_waitTxFlush;
 
 static void bus_socketCreate();
@@ -67,6 +70,7 @@ void bus_init()
     s_scanIndex = MAX_CHILDREN - 1;
     s_socketConnected = -1;
     s_waitTxFlush = FALSE;
+    s_dirtyChildren = FALSE;
     
     // Do full scan
     s_lastScanTime = TickGet();
@@ -94,7 +98,7 @@ static void bus_scanNext()
     s_waitTxFlush = TRUE;
     
     // Wait for tx end and then for ack
-    s_busState = BUS_STATE_WAIT_ACK;
+    s_busState = BUS_PRIV_STATE_WAIT_ACK;
 }
 
 static void bus_registerNewNode() {
@@ -105,12 +109,16 @@ static void bus_registerNewNode() {
         s_scanIndex++;
         if (s_scanIndex >= MAX_CHILDREN) {
             // Ops, no space
-            s_busState = BUS_STATE_IDLE;
+            s_busState = BUS_PRIV_STATE_IDLE;
             return;
         }
     };
     
     // Have the good address
+    // Store it
+    setChildKnown(s_scanIndex);
+    s_dirtyChildren = TRUE;
+    
     // Send it
     BYTE buffer[4] = { 0x55, 0xaa };
     buffer[2] = s_scanIndex;
@@ -119,7 +127,7 @@ static void bus_registerNewNode() {
     s_waitTxFlush = TRUE;
 
     // Go ahead. Expect a valid response like the heartbeat
-    s_busState = BUS_STATE_WAIT_ACK;
+    s_busState = BUS_PRIV_STATE_WAIT_ACK;
 }
 
 static void bus_checkAck()
@@ -138,14 +146,14 @@ static void bus_checkAck()
         }
     }
     // Next one.
-    s_busState = BUS_STATE_IDLE;
+    s_busState = BUS_PRIV_STATE_IDLE;
 }
 
 void bus_poll()
 {
     if (rs485_getState() == RS485_FRAME_ERR) {
         // Error. Reset to idle
-        s_busState = BUS_STATE_IDLE;
+        s_busState = BUS_PRIV_STATE_IDLE;
         // Reinit the bus
         rs485_init();
     }
@@ -163,7 +171,7 @@ void bus_poll()
     }
     
     switch (s_busState) {
-        case BUS_STATE_IDLE:
+        case BUS_PRIV_STATE_IDLE:
             // Should open a socket?
             if (s_socketConnected >= 0) {
                 bus_socketCreate();
@@ -176,7 +184,7 @@ void bus_poll()
                 }
             }
             break;
-        case BUS_STATE_WAIT_ACK:
+        case BUS_PRIV_STATE_WAIT_ACK:
             // Wait timeout for response
             if (rs485_readAvail() >= MSG_SIZE) {
                 // Check what is received
@@ -186,15 +194,15 @@ void bus_poll()
                 if (TickGet() > (s_lastTime + BUS_ACK_TIMEOUT)) {
                     // Timeout. Dead bean?
                     // Do nothing, simply skip it for now.
-                    s_busState = BUS_STATE_IDLE;
+                    s_busState = BUS_PRIV_STATE_IDLE;
                 }
             }
             break;
-        case BUS_STATE_SOCKET_CONNECTED:
+        case BUS_PRIV_STATE_SOCKET_CONNECTED:
             if (TickGet() > (s_lastTime + BUS_SOCKET_TIMEOUT)) {
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
-                s_busState = BUS_STATE_IDLE;
+                s_busState = BUS_PRIV_STATE_IDLE;
                 s_socketConnected = -2;
             }
             else {
@@ -216,9 +224,15 @@ void bus_disconnectSocket()
     s_socketConnected = -1;
 }
 
-BUS_SOCKET_STATE bus_isSocketConnected() 
+BUS_STATE bus_getState() 
 {
-    return s_socketConnected >= 0 ? BUS_SOCKET_CONNECTED : (s_socketConnected == -2 ? BUS_SOCKET_TIMEOUT : BUS_SOCKET_NONE);
+    if (s_socketConnected >= 0)
+        return BUS_STATE_SOCKET_CONNECTED;
+    if (s_socketConnected == -2) 
+        return BUS_SOCKET_TIMEOUT;
+    if (s_dirtyChildren)
+        return BUS_STATE_DIRTY_CHILDREN;
+    return BUS_STATE_NONE;
 }
 
 static void bus_socketCreate() 
@@ -231,7 +245,7 @@ static void bus_socketCreate()
     s_waitTxFlush = TRUE;
 
     // Next state (after TX finishes) is IN COMMAND
-    s_busState = BUS_STATE_SOCKET_CONNECTED;
+    s_busState = BUS_PRIV_STATE_SOCKET_CONNECTED;
 }
 
 static void bus_socketPoll() 
@@ -269,7 +283,7 @@ static void bus_socketPoll()
             
             if (rc9) {
                 // Now the channel is idle again
-                s_busState = BUS_STATE_IDLE;
+                s_busState = BUS_PRIV_STATE_IDLE;
             }
             else {
                 updateTimer = TRUE;
@@ -282,13 +296,14 @@ static void bus_socketPoll()
     }
 }
 
-int bus_getAliveCount() {
+int bus_getAliveCountAndResetDirty() {
     int res = 0;
     for (int i = 0; i < MAX_CHILDREN; i++) {
         if (isChildKnown(i)) {
             res++;
         }
     }
+    s_dirtyChildren = FALSE;
     return res;
 }
 

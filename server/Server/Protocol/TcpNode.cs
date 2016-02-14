@@ -72,14 +72,6 @@ namespace Lucky.Home.Protocol
             await FetchMetadata();
         }
 
-        /// <summary>
-        /// Children node collection changed (e.g. new node). Check differences
-        /// </summary>
-        public void RefetchChildren(TcpNodeAddress address)
-        {
-            throw new NotImplementedException();
-        }
-
         private class GetChildrenMessage
         {
             [SerializeAsFixedString(4)]

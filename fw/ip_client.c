@@ -33,7 +33,7 @@ __PACK typedef struct
 	WORD controlPort;
 } HOME_REQUEST;
 
-static void sendHelo();
+static void sendHelo(BOOL dirtyChildren);
 static void pollControlPort();
 
 // Close the control port listener
@@ -118,9 +118,9 @@ void ip_prot_init()
 }
 
 /*
-	Manage slow timer (state transitions)
+	Manage slow timer (heartbeats)
 */
-void ip_prot_slowTimer()
+void ip_prot_slowTimer(BOOL dirtyChildren)
 {
     char buffer[16];
     int dhcpOk;
@@ -146,11 +146,11 @@ void ip_prot_slowTimer()
     if (s_started)
     {
         // Ping server every second
-        sendHelo();
+        sendHelo(dirtyChildren);
     }
 }
 
-static void sendHelo()
+static void sendHelo(BOOL dirtyChildren)
 {
     PersistentData persistence;
     boot_getUserData(&persistence);
@@ -162,7 +162,7 @@ static void sendHelo()
 	}
 
 	UDPPutString("HOME");
-	UDPPutString(prot_registered ? "HTBT" : "HEL3");
+	UDPPutString(prot_registered ? (dirtyChildren ? "NWND" : "HTBT") : "HEL3");
 	UDPPutArray((BYTE*)(&persistence.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();   

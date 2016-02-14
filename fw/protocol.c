@@ -10,14 +10,15 @@
 #include "ip_client.h"
 #endif
 
-static signed char s_inReadSink = -1;
-static signed char s_inWriteSink = -1;
-static int s_commandToRun = -1;
-BOOL prot_registered = FALSE;
+static signed char s_inReadSink;
+static signed char s_inWriteSink;
+static int s_commandToRun;
+BOOL prot_registered;
 static TICK_TYPE s_slowTimer;
+static BOOL s_dirtyChildren;
 
 #ifdef HAS_BUS_SERVER
-static BOOL s_socketConnected = FALSE;
+static BOOL s_socketConnected;
 #endif
 #ifdef HAS_BUS_CLIENT
 static BOOL g_rc9;
@@ -30,10 +31,15 @@ void prot_init()
 #endif
 #ifdef HAS_BUS_SERVER
     bus_init();
+    s_socketConnected = FALSE;
 #endif
     
     // Align 1sec to now()
     s_slowTimer = TickGet();
+    s_dirtyChildren = FALSE;
+    prot_registered = FALSE;
+    s_commandToRun = -1;
+    s_inWriteSink = s_inReadSink = -1;
 }
 
 static void CLOS_command()
@@ -72,7 +78,7 @@ static void CHIL_command()
  
 #ifdef HAS_BUS_SERVER
     // Propagate the request to all children to fetch their GUIDs
-    prot_control_writeW(1 + bus_getAliveCount());
+    prot_control_writeW(1 + bus_getAliveCountAndResetDirty());
 #else    
     // Only 1 children: me
     prot_control_writeW(1);
@@ -166,6 +172,7 @@ const struct {
 */
 void prot_poll()
 {
+   
 #ifdef HAS_IP
     // Do ETH stuff
     StackTask();
@@ -181,7 +188,7 @@ void prot_poll()
     if (TickGet() > s_slowTimer + TICKS_PER_SECOND)
     {
         s_slowTimer = TickGet();
-        ip_prot_slowTimer();
+        ip_prot_slowTimer(s_dirtyChildren);
     }
     
     if (!prot_control_isConnected()) {
@@ -193,14 +200,18 @@ void prot_poll()
 
 #ifdef HAS_BUS_SERVER
     // Socket connected?
-    BUS_SOCKET_STATE busState = bus_isSocketConnected(); 
-    if (busState == BUS_SOCKET_CONNECTED) {
-        // TCP is still polled by bus
-        return;
-    }
-    else if (busState == BUS_SOCKET_TIMEOUT) {
-        // drop the connection        
-        prot_control_close();
+    BUS_STATE busState = bus_getState(); 
+    switch (busState) {
+        case BUS_STATE_SOCKET_CONNECTED:
+            // TCP is still polled by bus
+            return;
+        case BUS_STATE_SOCKET_TIMEOUT:
+            // drop the connection        
+            prot_control_close();
+            break;
+        case BUS_STATE_DIRTY_CHILDREN:
+            s_dirtyChildren = TRUE;
+            break;
     }
 #endif
 

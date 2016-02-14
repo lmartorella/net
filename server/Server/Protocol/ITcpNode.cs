@@ -37,11 +37,6 @@ namespace Lucky.Home.Protocol
         Task Relogin(TcpNodeAddress address);
 
         /// <summary>
-        /// An already logged-in node changed its children (e.g. RS485 push-button)
-        /// </summary>
-        void RefetchChildren(TcpNodeAddress address);
-
-        /// <summary>
         /// Open sink communication for write
         /// </summary>
         Task WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler);

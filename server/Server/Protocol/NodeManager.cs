@@ -103,7 +103,8 @@ namespace Lucky.Home.Protocol
                 else
                 {
                     // Refetch children
-                    node.RefetchChildren(address);
+                    // TODO: deregister old child nodes
+                    node.Relogin(address);
                 }
             }
         }
