@@ -3,14 +3,6 @@
 #include "../pch.h"
 #include "tick.h"
 
-static DWORD s_1sec;
-static DWORD s_10msec;
-static DWORD s_1msec;
-
-#define TICKS_1S ((DWORD)TICK_SECOND)
-#define TICKS_10MS (DWORD)(TICKS_1S / 100)
-#define TICKS_1MS (DWORD)(TICKS_1S / 1000)
-
 // Internal counter to store Ticks.  This variable is incremented in an ISR and
 // therefore must be marked volatile to prevent the compiler optimizer from
 // reordering code to use this value in the main context while interrupts are
@@ -57,10 +49,7 @@ void timers_init(void)
     TICK_INTCON_IE = 1;		// Enable interrupt
 
     // Set up prescaler and other stuff
-    TICK_TCON = TICK_TCON_DATA;
-    
-    // Align 1sec to now()
-    s_1sec = s_10msec = TickGet();
+    TICK_TCON = TICK_TCON_DATA;   
 }
 
 /*****************************************************************************
@@ -232,25 +221,3 @@ void TickUpdate(void)
     }
 }
 
-TIMER_RES timers_check()
-{
-    TIMER_RES res;
-    res.v = 0;
-    DWORD now = TickGet();
-    if ((now - s_1sec) >= TICKS_1S)
-    {
-        s_1sec = now;
-        res.timer_1s = 1;
-    }
-    if ((now - s_10msec) >= TICKS_10MS)
-    {
-        s_10msec = now;
-        res.timer_10ms = 1;
-    }
-    if ((now - s_1msec) >= TICKS_1MS)
-    {
-        s_1msec = now;
-        res.timer_1ms = 1;
-    }
-    return res;
-}

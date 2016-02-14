@@ -9,7 +9,6 @@
 #include "audioSink.h"
 #include "hardware/rs485.h"
 
-
 #ifdef HAS_CM1602
 static const char* msg1 = "Hi world! ";
 #endif
@@ -23,24 +22,6 @@ void interrupt PRIO_TYPE low_isr(void)
 #endif
 }
 
-#ifdef MINIBEAN_TEST_APP
-static int s_led = 0;
-static void led_check_off() {
-    if ((++s_led) > 10){
-        PORTBbits.RB0 = 0;
-    }
-}
-static void led_on() {
-    s_led = 0;
-    PORTBbits.RB0 = 1;
-}
-static void led_init() {
-    TRISBbits.TRISB0 = 0;
-}
-#endif
-
-
-
 void main()
 {
 #ifdef HAS_CM1602
@@ -52,10 +33,6 @@ void main()
 
     // Init Ticks on timer0 (low prio) module
     timers_init();
-
-#ifdef MINIBEAN_TEST_APP
-    led_init();
-#endif    
 
 #ifdef HAS_CM1602
     // reset display
@@ -112,52 +89,7 @@ void main()
     // I'm alive
     while (1) {   
         prot_poll();
-
-        TIMER_RES timers = timers_check();
-        if (timers.timer_10ms) {
-           
-#ifdef MINIBEAN_TEST_APP
-           // Wait 100ms to shut down the led
-           led_check_off();
-#endif
-        }
-        
-        if (timers.timer_1ms){
-#ifdef HAS_RS485
-           rs485_poll();
-#endif
-        }
-        
-        if (timers.timer_1s)
-        {
-#ifdef MCU_TEST_APP
-            BOOL rc9;
-            char msg[16];
-            if (rs485_getState() == RS485_FRAME_ERR) {
-                println("Rc err");
-            }
-            else {
-                int size = rs485_readAvail();
-                if (size) {
-                    if (size > 14) 
-                        size = 14;
-                    rs485_read(msg + 1, size, &rc9);
-                    msg[0] = rc9 ? ':' : '.';
-                    msg[size + 1] = 0;
-                    println(msg);
-                }
-            }
-#endif
-
-            prot_slowTimer();
-
-#ifdef MINIBEAN_TEST_APP
-            static BOOL b9 = FALSE;
-            rs485_write(b9, (BYTE*)"Hello!", 6);
-            b9 = !b9;
-            led_on();
-#endif
-        }
+        rs485_poll();
             
 #if HAS_VS1011
         audio_pollMp3Player();

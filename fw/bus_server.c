@@ -7,28 +7,29 @@
 
 #ifdef HAS_BUS_SERVER
 
-static signed char s_pollIndex;
-static TICK_TYPE s_timer;
 // 8*8 = 63 max children (last is broadcast)
 #define MAX_CHILDREN 64
 static BYTE s_childKnown[MAX_CHILDREN / 8];
+
 #define MSG_SIZE 4
 #define isChildKnown(i) (s_childKnown[i / 8] & (1 << (i % 8)))
-static BOOL s_isFullScan;
-static TICK_TYPE s_lastFullScan;
+
+static signed char s_scanIndex;
+static TICK_TYPE s_lastScanTime;
+static TICK_TYPE s_lastTime;
 
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
 
-#define BUS_FULLSCAN_TIMEOUT (TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
-#define BUS_SOCKET_TIMEOUT (TICKS_PER_SECOND)  // 1s
+#define BUS_SCAN_TIMEOUT (TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
+#define BUS_SOCKET_TIMEOUT (TICKS_PER_SECOND / 2)  // 500ms
 #define BUS_ACK_TIMEOUT (TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
 
 typedef enum { 
     // Message to beat a bean
     POLL_MSG_TYPE_HEARTBEAT = 1,
-    // Message to ask unknown bean to present (broadcast))
-    POLL_MSG_TYPE_READY_FOR_REQ = 2,
+    // Message to ask unknown bean to present (broadcast)
+    POLL_MSG_TYPE_READY_FOR_HELLO = 2,
     // Message to ask the only unknown bean to register itself
     POLL_MSG_TYPE_ADDRESS_ASSIGN = 3,
     // Command/data will follow: socket open
@@ -63,45 +64,31 @@ void bus_init()
     }
     
     // Starts from zero
-    s_pollIndex = MAX_CHILDREN - 1;
+    s_scanIndex = MAX_CHILDREN - 1;
     s_socketConnected = -1;
     s_waitTxFlush = FALSE;
     
     // Do full scan
-    s_isFullScan = TRUE;
-    s_lastFullScan = TickGet();
+    s_lastScanTime = TickGet();
 }
 
 // Ask for the next known child
-static void bus_pollNextKnownChild()
+static void bus_scanNext()
 {
     POLL_MSG_TYPE msgType = POLL_MSG_TYPE_HEARTBEAT;
     
     // Poll next child 
-    do {
-        s_pollIndex++;
-        if (s_pollIndex >= MAX_CHILDREN) {
-            // Do broadcast now
-            s_pollIndex = -1;
-            msgType = POLL_MSG_TYPE_READY_FOR_REQ;
-            
-            // Check if a full scan should be done
-            // Use the last timeout calculated (at least it is the broadcast)
-            if (s_timer > (s_lastFullScan + BUS_FULLSCAN_TIMEOUT)){
-                s_isFullScan = TRUE;
-                s_lastFullScan = s_timer;
-            }
-            else {
-                s_isFullScan = FALSE;
-            }
-            break;
-        }
-        // Check for valid node
-    } while (!s_isFullScan && !isChildKnown(s_pollIndex));
+    s_scanIndex++;
+    if (s_scanIndex >= MAX_CHILDREN) {
+        // Do broadcast now
+        s_scanIndex = -1;
+        msgType = POLL_MSG_TYPE_READY_FOR_HELLO;
+        s_lastScanTime = TickGet();
+    }
     
     // Poll the line. Send sync
     BYTE buffer[4] = { 0x55, 0xaa };
-    buffer[2] = s_pollIndex;
+    buffer[2] = s_scanIndex;
     buffer[3] = msgType;
     rs485_write(TRUE, buffer, 4);
     s_waitTxFlush = TRUE;
@@ -112,11 +99,11 @@ static void bus_pollNextKnownChild()
 
 static void bus_registerNewNode() {
     // Find a free slot
-    s_pollIndex = 0;
+    s_scanIndex = 0;
     // Check for valid node
-    while (isChildKnown(s_pollIndex)) {
-        s_pollIndex++;
-        if (s_pollIndex >= MAX_CHILDREN) {
+    while (isChildKnown(s_scanIndex)) {
+        s_scanIndex++;
+        if (s_scanIndex >= MAX_CHILDREN) {
             // Ops, no space
             s_busState = BUS_STATE_IDLE;
             return;
@@ -126,7 +113,7 @@ static void bus_registerNewNode() {
     // Have the good address
     // Send it
     BYTE buffer[4] = { 0x55, 0xaa };
-    buffer[2] = s_pollIndex;
+    buffer[2] = s_scanIndex;
     buffer[3] = POLL_MSG_TYPE_ADDRESS_ASSIGN;
     rs485_write(TRUE, buffer, 4);
     s_waitTxFlush = TRUE;
@@ -142,9 +129,9 @@ static void bus_checkAck()
     // Receive bytes
     // Expected: 0x55, [index], [state]
     rs485_read(buffer, MSG_SIZE, &isAddress);
-    if (!isAddress && buffer[0] == 0xaa && buffer[1] == 0x55 && buffer[2] == s_pollIndex) {
+    if (!isAddress && buffer[0] == 0xaa && buffer[1] == 0x55 && buffer[2] == s_scanIndex) {
         // Ok, good response
-        if (buffer[3] == ACK_MSG_TYPE_HELLO && s_pollIndex == -1) {
+        if (buffer[3] == ACK_MSG_TYPE_HELLO && s_scanIndex == -1) {
             // Need registration.
             bus_registerNewNode();
             return;
@@ -170,7 +157,7 @@ void bus_poll()
             return;
         } else {
             // Start timeout and go ahead
-            s_timer = TickGet();
+            s_lastTime = TickGet();
             s_waitTxFlush = FALSE;
         }
     }
@@ -182,7 +169,11 @@ void bus_poll()
                 bus_socketCreate();
             }
             else {
-                bus_pollNextKnownChild();
+                // Do/doing a scan?
+                TICK_TYPE tick = TickGet();
+                if (tick > s_lastScanTime + BUS_SCAN_TIMEOUT) {
+                    bus_scanNext();
+                }
             }
             break;
         case BUS_STATE_WAIT_ACK:
@@ -192,7 +183,7 @@ void bus_poll()
                 bus_checkAck();
             } else {
                 // Check for timeout
-                if (TickGet() > (s_timer + BUS_ACK_TIMEOUT)) {
+                if (TickGet() > (s_lastTime + BUS_ACK_TIMEOUT)) {
                     // Timeout. Dead bean?
                     // Do nothing, simply skip it for now.
                     s_busState = BUS_STATE_IDLE;
@@ -200,7 +191,7 @@ void bus_poll()
             }
             break;
         case BUS_STATE_SOCKET_CONNECTED:
-            if (TickGet() > (s_timer + BUS_SOCKET_TIMEOUT)) {
+            if (TickGet() > (s_lastTime + BUS_SOCKET_TIMEOUT)) {
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
                 s_busState = BUS_STATE_IDLE;
@@ -218,6 +209,11 @@ void bus_connectSocket(int nodeIdx)
 {
     s_socketConnected = nodeIdx;
     // Next IDLE will start the connection
+}
+
+void bus_disconnectSocket()
+{
+    s_socketConnected = -1;
 }
 
 BUS_SOCKET_STATE bus_isSocketConnected() 
@@ -282,7 +278,7 @@ static void bus_socketPoll()
     }
     
     if (updateTimer) {
-        s_timer = TickGet();
+        s_lastTime = TickGet();
     }
 }
 

@@ -18,7 +18,7 @@
 static UDP_SOCKET s_heloSocket;  
 // TCP lister control socket
 static TCP_SOCKET s_controlSocket;
-BOOL prot_started = FALSE;
+static BOOL s_started = FALSE;
 
 APP_CONFIG AppConfig;
 
@@ -78,9 +78,9 @@ void prot_control_flush()
     TCPFlush(s_controlSocket);
 }
 
-BOOL prot_control_isListening()
+BOOL prot_control_isConnected()
 {
-    return TCPIsConnected(s_controlSocket);
+    return s_started && TCPIsConnected(s_controlSocket);
 }
 
 WORD prot_control_readAvail()
@@ -120,14 +120,14 @@ void ip_prot_init()
 /*
 	Manage slow timer (state transitions)
 */
-void prot_slowTimer()
+void ip_prot_slowTimer()
 {
     char buffer[16];
     int dhcpOk;
 
     dhcpOk = DHCPIsBound(0) != 0;
 
-    if (dhcpOk != prot_started)
+    if (dhcpOk != s_started)
     {
             if (dhcpOk)
             {
@@ -135,15 +135,15 @@ void prot_slowTimer()
                     sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
                     cm1602_setDdramAddr(0x0);
                     cm1602_writeStr(buffer);
-                    prot_started = TRUE;
+                    s_started = TRUE;
             }
             else
             {
-                    prot_started = FALSE;
+                    s_started = FALSE;
                     fatal("DHCP.nok");
             }
     }
-    if (prot_started)
+    if (s_started)
     {
         // Ping server every second
         sendHelo();

@@ -24,6 +24,8 @@ void bus_init();
 void bus_poll();
 // Select a child, and start a private communication bridging the IP protocol socket.
 void bus_connectSocket(int nodeIdx);
+void bus_disconnectSocket();
+
 // Is still in command execution, waiting for command data receive complete?
 BUS_SOCKET_STATE bus_isSocketConnected();
 

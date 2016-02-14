@@ -39,8 +39,11 @@ static BOOL s_rc9;
 
 static TICK_TYPE s_lastTick;
 
+// Transmit timeout should be greater than transmit end
+// so at the end of transmit the master should have the time to
+// switch to rx before slave start transmit
 #define WAIT_FOR_TRANSMIT_TIMEOUT (TICKS_PER_SECOND / 500)  // 2ms
-#define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICKS_PER_SECOND / 500)  // 2ms
+#define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICKS_PER_SECOND / 1000)  // 1ms
 
 void rs485_init()
 {
@@ -132,7 +135,9 @@ error:
     }
 }
 
-// Poll at 1ms
+/**
+ * Poll as much as possible (internal timered)
+ */
 void rs485_poll()
 {
     switch (s_status){

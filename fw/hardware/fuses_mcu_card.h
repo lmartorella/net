@@ -12,8 +12,6 @@
 #define SYSTEM_CLOCK 25000000ull
 #define PRIO_TYPE low_priority
 
-#undef MCU_TEST_APP
-
 // ******* 
 // DISPLAY
 // Uses PORTE, 0, 2-7

@@ -17,17 +17,6 @@
 // Represents one hour in Ticks
 #define TICK_HOUR				((QWORD)TICKS_PER_SECOND * 3600ull)
 
-typedef union
-{
-    struct
-    {
-        unsigned timer_1s: 1;
-        unsigned timer_10ms: 1;
-        unsigned timer_1ms : 1;
-    };
-    BYTE v;
-} TIMER_RES;
-
 #define TICK_TYPE DWORD
 
 TICK_TYPE TickGet(void);
@@ -36,7 +25,5 @@ TICK_TYPE TickGetDiv64K(void);
 void TickUpdate(void);
 
 void timers_init(void);
-// Check if 1sec timer is elapsed, and reset it if so.
-TIMER_RES timers_check();
 
 #endif

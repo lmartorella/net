@@ -14,6 +14,7 @@ static signed char s_inReadSink = -1;
 static signed char s_inWriteSink = -1;
 static int s_commandToRun = -1;
 BOOL prot_registered = FALSE;
+static TICK_TYPE s_slowTimer;
 
 #ifdef HAS_BUS_SERVER
 static BOOL s_socketConnected = FALSE;
@@ -30,6 +31,9 @@ void prot_init()
 #ifdef HAS_BUS_SERVER
     bus_init();
 #endif
+    
+    // Align 1sec to now()
+    s_slowTimer = TickGet();
 }
 
 static void CLOS_command()
@@ -173,8 +177,17 @@ void prot_poll()
     // General poll
     bus_poll();
 #endif
+
+    if (TickGet() > s_slowTimer + TICKS_PER_SECOND)
+    {
+        s_slowTimer = TickGet();
+        ip_prot_slowTimer();
+    }
     
-    if (!prot_started || !prot_control_isListening()) {
+    if (!prot_control_isConnected()) {
+#ifdef HAS_BUS_SERVER
+        bus_disconnectSocket();
+#endif
         return;
     }
 

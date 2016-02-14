@@ -4,8 +4,6 @@
 #define SYSTEM_CLOCK 4000000ull
 #define PRIO_TYPE
 
-#define MINIBEAN_TEST_APP
-
 #undef HAS_CM1602
 #undef HAS_VS1011
 #undef HAS_SPI
