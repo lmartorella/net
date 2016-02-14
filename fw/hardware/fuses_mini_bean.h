@@ -1,7 +1,7 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
-#define SYSTEM_CLOCK 4000000ull
+#define SYSTEM_CLOCK 4000000ul
 #define PRIO_TYPE
 
 #undef HAS_CM1602
@@ -34,18 +34,22 @@
     SPBRG = 12
 
 // *****
-// Tick timer source. Uses TMR1 (16-bit but prescales to 1:8)
+// Tick timer source. Uses TMR0 (8-bit prescales to 1:256), that resolve from 0.25ms to 16.7secs
 // *****
-#define TICK_TMRH TMR1H
-#define TICK_TMRL TMR1L
-#define TICK_TCON T1CON
-// Timer on, internal timer, 1:8 prescalar
-// (T1CKPS1 | T1CKPS0 | TMR1ON)
-#define TICK_TCON_DATA (0x31)
-#define TICK_INTCON_IF PIR1bits.TMR1IF
-#define TICK_INTCON_IE PIE1bits.TMR1IE
-#define TICK_CLOCK_BASE (SYSTEM_CLOCK/4ull)
-#define TICK_PRESCALER 8
+#define TICK_TMR TMR0
+#define TICK_TCON INTCON
+
+// Timer on, internal timer, 1:256 prescalar
+// (!T0CS | !PSA , PS2:PS0)
+#define TICK_TCON_1DATA (0x07)
+#define TICK_TCON_0DATA (0x28)
+
+#define TICK_INTCON_IF INTCONbits.T0IF
+#define TICK_INTCON_IE INTCONbits.T0IE
+#define TICK_CLOCK_BASE (SYSTEM_CLOCK / 4)
+#define TICK_PRESCALER 256
+
+#define TICK_TYPE WORD
 
 #endif
 

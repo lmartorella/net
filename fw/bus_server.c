@@ -191,7 +191,7 @@ void bus_poll()
                 bus_checkAck();
             } else {
                 // Check for timeout
-                if (TickGet() > (s_lastTime + BUS_ACK_TIMEOUT)) {
+                if (TickGet() > (TICK_TYPE)(s_lastTime + BUS_ACK_TIMEOUT)) {
                     // Timeout. Dead bean?
                     // Do nothing, simply skip it for now.
                     s_busState = BUS_PRIV_STATE_IDLE;
@@ -199,7 +199,7 @@ void bus_poll()
             }
             break;
         case BUS_PRIV_STATE_SOCKET_CONNECTED:
-            if (TickGet() > (s_lastTime + BUS_SOCKET_TIMEOUT)) {
+            if (TickGet() > (TICK_TYPE)(s_lastTime + BUS_SOCKET_TIMEOUT)) {
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
                 s_busState = BUS_PRIV_STATE_IDLE;

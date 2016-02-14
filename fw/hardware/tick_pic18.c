@@ -46,10 +46,11 @@ void timers_init(void)
     
 	// Set up the timer interrupt
     TICK_INTCON_IF = 0;
-    TICK_INTCON_IE = 1;		// Enable interrupt
 
     // Set up prescaler and other stuff
     TICK_TCON = TICK_TCON_DATA;   
+
+    TICK_INTCON_IE = 1;		// Enable interrupt
 }
 
 /*****************************************************************************

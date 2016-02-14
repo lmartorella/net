@@ -17,8 +17,6 @@
 // Represents one hour in Ticks
 #define TICK_HOUR				((QWORD)TICKS_PER_SECOND * 3600ull)
 
-#define TICK_TYPE DWORD
-
 TICK_TYPE TickGet(void);
 TICK_TYPE TickGetDiv256(void);
 TICK_TYPE TickGetDiv64K(void);

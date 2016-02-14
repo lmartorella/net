@@ -3,22 +3,24 @@
 #include "appio.h"
 #include "persistence.h"
 #include "bus.h"
+#include "hardware/tick.h"
 
 #ifdef HAS_IP
 #include "Compiler.h"
 #include "TCPIPStack/TCPIP.h"
 #include "ip_client.h"
+
+static TICK_TYPE s_slowTimer;
 #endif
 
 static signed char s_inReadSink;
 static signed char s_inWriteSink;
 static int s_commandToRun;
 BOOL prot_registered;
-static TICK_TYPE s_slowTimer;
-static BOOL s_dirtyChildren;
 
 #ifdef HAS_BUS_SERVER
 static BOOL s_socketConnected;
+static BOOL s_dirtyChildren;
 #endif
 #ifdef HAS_BUS_CLIENT
 static BOOL g_rc9;
@@ -28,15 +30,17 @@ void prot_init()
 {
 #ifdef HAS_IP
     ip_prot_init();
+
+    // Align 1sec to now()
+    s_slowTimer = TickGet();
 #endif
+
 #ifdef HAS_BUS_SERVER
     bus_init();
     s_socketConnected = FALSE;
+    s_dirtyChildren = FALSE;
 #endif
     
-    // Align 1sec to now()
-    s_slowTimer = TickGet();
-    s_dirtyChildren = FALSE;
     prot_registered = FALSE;
     s_commandToRun = -1;
     s_inWriteSink = s_inReadSink = -1;
@@ -185,11 +189,13 @@ void prot_poll()
     bus_poll();
 #endif
 
-    if (TickGet() > s_slowTimer + TICKS_PER_SECOND)
+#ifdef HAS_IP
+    if (TickGet() > (TICK_TYPE)(s_slowTimer + TICKS_PER_SECOND))
     {
         s_slowTimer = TickGet();
         ip_prot_slowTimer(s_dirtyChildren);
     }
+#endif
     
     if (!prot_control_isConnected()) {
 #ifdef HAS_BUS_SERVER

@@ -142,7 +142,7 @@ void rs485_poll()
 {
     switch (s_status){
         case STATUS_WAIT_FOR_TRANSMIT:
-            if (TickGet() > s_lastTick + WAIT_FOR_TRANSMIT_TIMEOUT) {
+            if (TickGet() > (TICK_TYPE)(s_lastTick + WAIT_FOR_TRANSMIT_TIMEOUT)) {
                 // Transmit
                 s_status = STATUS_TRANSMIT;
                 // Feed first byte
@@ -151,7 +151,7 @@ void rs485_poll()
             }
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END:
-            if (TickGet() > s_lastTick + WAIT_FOR_TRANSMIT_END_TIMEOUT) {
+            if (TickGet() > (TICK_TYPE)(s_lastTick + WAIT_FOR_TRANSMIT_END_TIMEOUT)) {
                 s_status = STATUS_IDLE;
                 // Detach TX line
                 RS485_PORT_EN = EN_RECEIVE;

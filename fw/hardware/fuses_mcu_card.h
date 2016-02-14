@@ -125,6 +125,8 @@
 #define TICK_CLOCK_BASE (SYSTEM_CLOCK/4ull)
 #define TICK_PRESCALER 256ull
 
+#define TICK_TYPE DWORD
+
 #ifdef HAS_IO
 #ifdef HAS_SPI
 #error Cannot use SPI and IO togheter

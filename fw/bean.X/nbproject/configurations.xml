@@ -76,7 +76,8 @@
         <itemPath>../hardware/rs485.c</itemPath>
         <itemPath>../hardware/fuses_mcu_card.c</itemPath>
         <itemPath>../hardware/fuses_mini_bean.c</itemPath>
-        <itemPath>../hardware/tick.c</itemPath>
+        <itemPath>../hardware/tick_pic18.c</itemPath>
+        <itemPath>../hardware/tick_pic16.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>
@@ -152,6 +153,8 @@
         </HI-TECH-LINK>
         <XC8-config-global>
         </XC8-config-global>
+      </item>
+      <item path="../hardware/tick_pic16.c" ex="true" overriding="false">
       </item>
       <item path="../tcpipstack/TCPIPStack/ARP.c" ex="false" overriding="false">
         <HI-TECH-COMP>
@@ -372,6 +375,7 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
@@ -456,6 +460,8 @@
         </HI-TECH-LINK>
         <XC8-config-global>
         </XC8-config-global>
+      </item>
+      <item path="../hardware/tick_pic18.c" ex="true" overriding="false">
       </item>
       <item path="../tcpipstack/TCPIPStack/ARP.c" ex="true" overriding="false">
         <HI-TECH-COMP>
