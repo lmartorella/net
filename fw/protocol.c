@@ -19,7 +19,6 @@ static int s_commandToRun;
 BOOL prot_registered;
 
 #ifdef HAS_BUS_SERVER
-static BOOL s_socketConnected;
 static BOOL s_dirtyChildren;
 #endif
 #ifdef HAS_BUS_CLIENT
@@ -35,9 +34,11 @@ void prot_init()
     s_slowTimer = TickGet();
 #endif
 
-#ifdef HAS_BUS_SERVER
+#ifdef HAS_BUS
     bus_init();
-    s_socketConnected = FALSE;
+#endif
+    
+#ifdef HAS_BUS_SERVER
     s_dirtyChildren = FALSE;
 #endif
     
@@ -68,7 +69,6 @@ static void SELE_command()
     {
         // Otherwise connect the socket
         bus_connectSocket(w - 1);
-        s_socketConnected = TRUE;
     }
 #endif
 }

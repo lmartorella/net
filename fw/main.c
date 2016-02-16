@@ -48,7 +48,7 @@ void main()
     if (sys_isResetReasonExc())
     {
         cm1602_setDdramAddr(0x40);
-        cm1602_writeStr(sys_getLastFatal());
+        cm1602_writeStr(s_lastErr);
     }
 
     wait1s();

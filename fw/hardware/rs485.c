@@ -68,12 +68,12 @@ void rs485_init()
     s_lastTick = TickGet();
 }
 
-WORD rs485_readAvail()
+BYTE rs485_readAvail()
 {
     return (WORD)((s_writePtr - s_readPtr) % BUFFER_SIZE);
 }
 
-WORD rs485_writeAvail()
+BYTE rs485_writeAvail()
 {
     return (WORD)((s_readPtr - s_writePtr - 1) % BUFFER_SIZE);
 }
@@ -160,7 +160,7 @@ void rs485_poll()
     }
 }
 
-void rs485_write(BOOL address, const BYTE* data, int size)
+void rs485_write(BOOL address, const BYTE* data, BYTE size)
 { 
     // Truncate reading
     RS485_RCSTA.CREN = 0;
@@ -235,7 +235,7 @@ RS485_STATE rs485_getState() {
     }
 }
 
-BOOL rs485_read(BYTE* data, int size, BOOL* rc9)
+BOOL rs485_read(BYTE* data, BYTE size, BOOL* rc9)
 {
     BOOL ret = FALSE;
 

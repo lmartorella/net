@@ -9,6 +9,10 @@
 #endif
 #endif // HAS_RS485
 
+#ifdef HAS_BUS_SERVER || HAS_BUS_CLIENT
+#define HAS_BUS
+#endif
+
 void bus_poll();
 
 #ifdef HAS_BUS_SERVER

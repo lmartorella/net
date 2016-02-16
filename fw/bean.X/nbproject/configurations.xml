@@ -156,6 +156,12 @@
         </XC8-config-global>
       </item>
       <item path="../hardware/tick_pic16.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-config-global>
+        </XC8-config-global>
       </item>
       <item path="../tcpipstack/TCPIPStack/ARP.c" ex="false" overriding="false">
         <HI-TECH-COMP>
@@ -463,6 +469,12 @@
         </XC8-config-global>
       </item>
       <item path="../hardware/tick_pic18.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-config-global>
+        </XC8-config-global>
       </item>
       <item path="../tcpipstack/TCPIPStack/ARP.c" ex="true" overriding="false">
         <HI-TECH-COMP>
