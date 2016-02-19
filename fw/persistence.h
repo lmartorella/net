@@ -1,6 +1,7 @@
 #ifndef PERSISTENCE_INCLUDE_
 #define PERSISTENCE_INCLUDE_
 
+#include "bus.h"
 #include "hardware/eeprom.h"
 
 /********************
@@ -12,6 +13,12 @@ typedef struct
 {
   	// GUID:  application instance ID (used by user code)
 	GUID deviceId;
+    
+    // Used by PIC16 / bus_client
+#ifdef HAS_BUS_CLIENT
+    BYTE address;
+#endif
+    
 } PersistentData;
 
 // This can be accessed by the running application in read-only mode

@@ -35,7 +35,8 @@ static BYTE* s_writePtr;
 static BYTE* s_readPtr;
 
 // Status of address bit in the serie
-static BOOL s_rc9;
+BOOL rs485_lastRc9;
+BOOL rs485_skipData;
 
 static TICK_TYPE s_lastTick;
 
@@ -64,6 +65,7 @@ void rs485_init()
     RS485_TRIS_EN = 0;
       
     s_status = STATUS_IDLE;
+    rs485_skipData = FALSE;
     s_writePtr = s_readPtr = s_buffer;
     s_lastTick = TickGet();
 }
@@ -83,14 +85,6 @@ static void writeByte()
     // Feed more data, read at read pointer and then increase
     RS485_TXREG = *(s_readPtr++);
     ADJUST_PTR(s_readPtr);
-}
-
-static void readByte()
-{
-    // read data
-    s_rc9 = RS485_RCSTA.RX9D;
-    *(s_writePtr++) = RS485_RCREG;
-    ADJUST_PTR(s_writePtr);
 }
 
 void rs485_interrupt()
@@ -124,7 +118,14 @@ void rs485_interrupt()
                 s_status = STATUS_RECEIVE_FERR;
                 goto error;
             }
-            readByte();
+            // read data
+            BOOL lastrc9 = RS485_RCSTA.RX9D;
+            // Only read data (0) if enabled
+            if (lastrc9 || !rs485_skipData) {
+                rs485_lastRc9 = lastrc9;
+                *(s_writePtr++) = RS485_RCREG;
+                ADJUST_PTR(s_writePtr);
+            }
         } while (RS485_PIR_RCIF);
         return;
 
@@ -235,7 +236,7 @@ RS485_STATE rs485_getState() {
     }
 }
 
-BOOL rs485_read(BYTE* data, BYTE size, BOOL* rc9)
+BOOL rs485_read(BYTE* data, BYTE size)
 {
     BOOL ret = FALSE;
 
@@ -247,7 +248,6 @@ BOOL rs485_read(BYTE* data, BYTE size, BOOL* rc9)
         RS485_PIE_RCIE = 0;
 
         // Active? Read immediately.
-        *rc9 = s_rc9;
         if (rs485_readAvail() >= size) {
             ret = TRUE;
             while (size > 0) {

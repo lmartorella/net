@@ -27,24 +27,6 @@ static int s_socketConnected;
 #define BUS_SOCKET_TIMEOUT (TICKS_PER_SECOND / 2)  // 500ms
 #define BUS_ACK_TIMEOUT (TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
 
-typedef enum { 
-    // Message to beat a bean
-    POLL_MSG_TYPE_HEARTBEAT = 1,
-    // Message to ask unknown bean to present (broadcast)
-    POLL_MSG_TYPE_READY_FOR_HELLO = 2,
-    // Message to ask the only unknown bean to register itself
-    POLL_MSG_TYPE_ADDRESS_ASSIGN = 3,
-    // Command/data will follow: socket open
-    POLL_MSG_CONNECT = 4
-} POLL_MSG_TYPE;
-
-typedef enum { 
-    // Bean: ack heartbeat
-    ACK_MSG_TYPE_HEARTBEAT = 1,
-    // Bean: notify unknown (response to POLL_MSG_TYPE_READY_FOR_REQ)
-    ACK_MSG_TYPE_HELLO = 2,
-} ACK_MSG_TYPE;
-
 static enum {
     // To call next child
     BUS_PRIV_STATE_IDLE,
@@ -79,14 +61,14 @@ void bus_init()
 // Ask for the next known child
 static void bus_scanNext()
 {
-    POLL_MSG_TYPE msgType = POLL_MSG_TYPE_HEARTBEAT;
+    BUS_MSG_TYPE msgType = BUS_MSG_TYPE_HEARTBEAT;
     
     // Poll next child 
     s_scanIndex++;
     if (s_scanIndex >= MAX_CHILDREN) {
         // Do broadcast now
         s_scanIndex = -1;
-        msgType = POLL_MSG_TYPE_READY_FOR_HELLO;
+        msgType = BUS_MSG_TYPE_READY_FOR_HELLO;
         s_lastScanTime = TickGet();
     }
     
@@ -122,7 +104,7 @@ static void bus_registerNewNode() {
     // Send it
     BYTE buffer[4] = { 0x55, 0xaa };
     buffer[2] = s_scanIndex;
-    buffer[3] = POLL_MSG_TYPE_ADDRESS_ASSIGN;
+    buffer[3] = BUS_MSG_TYPE_ADDRESS_ASSIGN;
     rs485_write(TRUE, buffer, 4);
     s_waitTxFlush = TRUE;
 
@@ -133,13 +115,12 @@ static void bus_registerNewNode() {
 static void bus_checkAck()
 {
     BYTE buffer[MSG_SIZE];
-    BOOL isAddress;
     // Receive bytes
-    // Expected: 0x55, [index], [state]
-    rs485_read(buffer, MSG_SIZE, &isAddress);
-    if (!isAddress && buffer[0] == 0xaa && buffer[1] == 0x55 && buffer[2] == s_scanIndex) {
+    // Expected: 0x55, 0xaa, [index], [state] with rc9 = 0
+    rs485_read(buffer, MSG_SIZE);
+    if (!rs485_lastRc9 && buffer[0] == 0x55 && buffer[1] == 0xaa && buffer[2] == s_scanIndex) {
         // Ok, good response
-        if (buffer[3] == ACK_MSG_TYPE_HELLO && s_scanIndex == -1) {
+        if (buffer[3] == BUS_ACK_TYPE_HELLO && s_scanIndex == -1) {
             // Need registration.
             bus_registerNewNode();
             return;
@@ -240,7 +221,7 @@ static void bus_socketCreate()
     // Bus is idle. Start transmitting/receiving.
     BYTE buffer[4] = { 0x55, 0xaa };
     buffer[2] = s_socketConnected;
-    buffer[3] = POLL_MSG_CONNECT;
+    buffer[3] = BUS_MSG_CONNECT;
     rs485_write(TRUE, buffer, 4);
     s_waitTxFlush = TRUE;
 
@@ -268,20 +249,19 @@ static void bus_socketPoll()
         // Data received?
         WORD tx = rs485_readAvail();
         if (tx > 0) {
-            BOOL rc9;
-            
+           
             // Read data and push it into IP
             tx = tx > sizeof(buffer) ? sizeof(buffer) : tx;
-            rs485_read(buffer, tx, &rc9);
+            rs485_read(buffer, tx);
             
-            if (rc9) {
+            if (rs485_lastRc9) {
                 // Socket close. Strip last byte
                 tx--;
             }
 
             prot_control_write(buffer, tx);
             
-            if (rc9) {
+            if (rs485_lastRc9) {
                 // Now the channel is idle again
                 s_busState = BUS_PRIV_STATE_IDLE;
             }

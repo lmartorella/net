@@ -80,11 +80,11 @@ void main()
     
     enableInterrupts();
 
-    prot_init();
-
 #ifdef HAS_RS485
     rs485_init();
 #endif
+
+    prot_init();
         
     // I'm alive
     while (1) {   

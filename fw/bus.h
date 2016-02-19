@@ -15,6 +15,24 @@
 
 void bus_poll();
 
+typedef enum { 
+    // Message to beat a bean
+    BUS_MSG_TYPE_HEARTBEAT = 1,
+    // Message to ask unknown bean to present (broadcast)
+    BUS_MSG_TYPE_READY_FOR_HELLO = 2,
+    // Message to ask the only unknown bean to register itself
+    BUS_MSG_TYPE_ADDRESS_ASSIGN = 3,
+    // Command/data will follow: socket open
+    BUS_MSG_CONNECT = 4
+} BUS_MSG_TYPE;
+
+typedef enum { 
+    // Bean: ack heartbeat
+    BUS_ACK_TYPE_HEARTBEAT = 1,
+    // Bean: notify unknown (response to BUS_MSG_TYPE_READY_FOR_HELLO)
+    BUS_ACK_TYPE_HELLO = 2,
+} BUS_ACK_TYPE;
+
 #ifdef HAS_BUS_SERVER
 
 typedef enum {

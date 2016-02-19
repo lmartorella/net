@@ -21,9 +21,6 @@ BOOL prot_registered;
 #ifdef HAS_BUS_SERVER
 static BOOL s_dirtyChildren;
 #endif
-#ifdef HAS_BUS_CLIENT
-static BOOL g_rc9;
-#endif
 
 void prot_init()
 {
