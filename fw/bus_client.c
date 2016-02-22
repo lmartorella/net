@@ -78,7 +78,6 @@ void bus_poll()
                 }
             }
             else {
-                printch(3);
                 // Header correct. now read the command
                 switch (buf) { 
                     case BUS_MSG_TYPE_HEARTBEAT:

@@ -46,9 +46,6 @@ void appio_init()
 #ifdef HAS_LED
     LED_TRISBIT = 0;
     led_off();
-    if (sys_isResetReasonExc()) {
-        led_on();
-    }
 #endif
 }
 

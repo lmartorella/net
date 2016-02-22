@@ -74,12 +74,12 @@ void rs485_init()
 
 BYTE rs485_readAvail()
 {
-    return (WORD)((s_writePtr - s_readPtr) % BUFFER_SIZE);
+    return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % BUFFER_SIZE);
 }
 
 BYTE rs485_writeAvail()
 {
-    return (WORD)((s_readPtr - s_writePtr - 1) % BUFFER_SIZE);
+    return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % BUFFER_SIZE);
 }
 
 static void writeByte()
