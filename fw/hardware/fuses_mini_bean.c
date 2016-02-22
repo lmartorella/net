@@ -1,4 +1,5 @@
 #include "../pch.h"
+#include "../appio.h"
 
 // CONFIG
 #pragma config FOSC = INTOSCIO  // Oscillator Selection bits (INTOSC oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
@@ -48,5 +49,29 @@ void enableInterrupts()
 
 void sys_storeResetReason()
 {
-    _reason = RESET_MCLR;
+    // See datasheet table 14-5
+    if (PCONbits.nPOR) {
+        if (!PCONbits.nBOR) {
+            g_resetReason = RESET_BROWNOUT;
+        }
+        else {
+            if (!STATUSbits.nTO) {
+                // Watchdog is used for RESET() on pic16!
+                if (g_exception != NULL) { 
+                    g_resetReason = RESET_EXC;
+                    g_lastException = g_exception;
+                    g_exception = NULL;
+                }
+                else {
+                    g_resetReason = RESET_WATCHDOG;
+                }
+            }
+            else {
+                g_resetReason = RESET_MCLR;
+            }
+        }
+    }
+    else {
+        g_resetReason = RESET_POWER;        
+    }
 }

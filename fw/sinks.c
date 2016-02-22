@@ -33,47 +33,21 @@ static BOOL sysSink_read()
     return TRUE;
 }
 
-enum RESET_REASON _reason;
-
-#ifdef HAS_CM1602
-static const char* g_reasonMsgs[] = { 
-				"POR",
-				"BOR",
-				"CFG",
-				"WDT",
-				"STK",
-				"RST",
-				"EXC:"  };
-#endif
-
 const FOURCC ResetCode = "REST";
 const FOURCC ExceptionText = "EXCM";
 const FOURCC EndOfMetadataText = "EOMD";
-
-#ifdef HAS_CM1602
-const char* sys_getResetReasonStr()
-{
-    // Includes the final \0
-    return g_reasonMsgs[_reason];
-}
-#endif
-
-BOOL sys_isResetReasonExc()
-{
-    return _reason == RESET_EXC;
-}
 
 static BOOL sysSink_write()
 {
     // Write reset reason
     prot_control_write(&ResetCode, sizeof(FOURCC));
-    prot_control_writeW(_reason);
+    prot_control_writeW(g_resetReason);
     
     if (sys_isResetReasonExc())
     {
         prot_control_write(&ExceptionText, sizeof(FOURCC));
         
-        const char *exc = s_lastErr;
+        const char *exc = g_lastException;
         WORD l = strlen(exc);
         prot_control_writeW(l);
         prot_control_write(exc, l);

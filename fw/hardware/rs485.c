@@ -9,16 +9,14 @@
 #define EN_RECEIVE 0
 
 static enum {
-    // No trasmit, no receive, channel free
-    STATUS_IDLE,
+    // No transmit, receive mode
+    STATUS_RECEIVE,
     // Wait 1ms tick before transmit, channel engaged
     STATUS_WAIT_FOR_TRANSMIT,
     // Channel engaged, trasmitting
     STATUS_TRANSMIT,
     // Channel engaged, wait 1m ticks before freeing channel
     STATUS_WAIT_FOR_TRANSMIT_END,
-    // Receive mode
-    STATUS_RECEIVE,
     // ERROR in receive, frame error
     STATUS_RECEIVE_FERR,
 } s_status;
@@ -46,6 +44,8 @@ static TICK_TYPE s_lastTick;
 #define WAIT_FOR_TRANSMIT_TIMEOUT (TICKS_PER_SECOND / 500)  // 2ms
 #define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICKS_PER_SECOND / 1000)  // 1ms
 
+static void rs485_startRead();
+
 void rs485_init()
 {
     // Enable EUSART2 on PIC18f
@@ -64,10 +64,12 @@ void rs485_init()
     RS485_PORT_EN = EN_RECEIVE;
     RS485_TRIS_EN = 0;
       
-    s_status = STATUS_IDLE;
     rs485_skipData = FALSE;
     s_writePtr = s_readPtr = s_buffer;
     s_lastTick = TickGet();
+    
+    s_status = STATUS_RECEIVE;
+    rs485_startRead();
 }
 
 BYTE rs485_readAvail()
@@ -153,9 +155,9 @@ void rs485_poll()
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END:
             if (TickGet() > (TICK_TYPE)(s_lastTick + WAIT_FOR_TRANSMIT_END_TIMEOUT)) {
-                s_status = STATUS_IDLE;
                 // Detach TX line
-                RS485_PORT_EN = EN_RECEIVE;
+                s_status = STATUS_RECEIVE;
+                rs485_startRead();
             }
             break;
     }
@@ -195,7 +197,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
         case STATUS_WAIT_FOR_TRANSMIT:
             // Already tx, ok
             break;
-        case STATUS_WAIT_FOR_TRANSMIT_END:
+        //case STATUS_WAIT_FOR_TRANSMIT_END:
         default:
             // Convert it to tx
             s_status = STATUS_WAIT_FOR_TRANSMIT;
@@ -206,6 +208,13 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
 
 static void rs485_startRead()
 {
+    if (s_status != STATUS_RECEIVE) {
+        // Break all
+        s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+        s_lastTick = TickGet();
+        return;
+    }
+    
     // Disable writing
     RS485_TXSTA.TXEN = 0;
     RS485_RCSTA.CREN = 0;
@@ -229,7 +238,6 @@ RS485_STATE rs485_getState() {
         case STATUS_RECEIVE_FERR:
             return RS485_FRAME_ERR;
         case STATUS_RECEIVE:
-        case STATUS_IDLE:
             return RS485_LINE_RX;
         default:
             return RS485_LINE_TX;
@@ -238,12 +246,12 @@ RS485_STATE rs485_getState() {
 
 BOOL rs485_read(BYTE* data, BYTE size)
 {
-    BOOL ret = FALSE;
-
     if (s_status != STATUS_RECEIVE) { 
         rs485_startRead();
+        return FALSE;
     }
     else {
+        BOOL ret = FALSE;
         // Disable RX interrupts
         RS485_PIE_RCIE = 0;
 
@@ -259,9 +267,8 @@ BOOL rs485_read(BYTE* data, BYTE size)
 
         // Re-enabled interrupts
         RS485_PIE_RCIE = 1;
+        return ret;
     }   
-          
-    return ret;
 }
 
 #endif

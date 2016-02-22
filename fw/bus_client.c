@@ -4,6 +4,7 @@
 #include "bus.h"
 #include "protocol.h"
 #include "persistence.h"
+#include "appio.h"
 
 #ifdef HAS_BUS_CLIENT
 
@@ -62,7 +63,7 @@ void bus_poll()
     else {
         // Header decode
         BYTE buf;
-        while (rs485_readAvail() > 0) {
+        while (rs485_readAvail() > 0) {            
             // RC9 will be 1
             rs485_read(&buf, 1);
             // Waiting for header?
@@ -77,6 +78,7 @@ void bus_poll()
                 }
             }
             else {
+                printch(3);
                 // Header correct. now read the command
                 switch (buf) { 
                     case BUS_MSG_TYPE_HEARTBEAT:

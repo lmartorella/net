@@ -53,6 +53,10 @@
 
 #define SHORT_FATAL
 
+#define HAS_LED
+#define LED_PORTBIT PORTBbits.RB0
+#define LED_TRISBIT TRISBbits.TRISB0
+
 #endif
 
 

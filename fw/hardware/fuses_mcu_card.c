@@ -1,4 +1,5 @@
 #include "../pch.h"
+#include "../appio.h"
 
 // For the list of fuses, run "mcc18.exe --help-config -p=18f87j60"
 
@@ -94,17 +95,19 @@ void sys_storeResetReason()
 	{
 		// Software exception. 
 		// Obtain last reason from appio.h 
-		_reason = RESET_EXC;
+		g_resetReason = RESET_EXC;
+        g_lastException = g_exception;
+        g_exception = NULL;
 	}
 	else if (!RCONbits.NOT_POR)
 	{
 		// Normal Power-on startup. Ok.
-		_reason = RESET_POWER;
+		g_resetReason = RESET_POWER;
 	}
 	else if (!RCONbits.NOT_BOR)
 	{
 		// Brown-out reset. Low voltage.
-		_reason = RESET_BROWNOUT;
+		g_resetReason = RESET_BROWNOUT;
 	}
 /*
 	else if (!RCONbits.NOT_CM)
@@ -116,17 +119,17 @@ void sys_storeResetReason()
 	else if (!RCONbits.NOT_TO)
 	{
 		// Watchdog reset. Loop detected.
-		_reason = RESET_WATCHDOG;
+		g_resetReason = RESET_WATCHDOG;
 	}
 	else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
 	{
 		// Stack underrun/overrun reset. 
-		_reason = RESET_STACKFAIL;
+		g_resetReason = RESET_STACKFAIL;
 	}
 	else
 	{
 		// Else it was reset manually (MCLR)
-		_reason = RESET_MCLR;
+		g_resetReason = RESET_MCLR;
 	}
 	RCON = RCON | 0x33;	// reset all flags
 	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;

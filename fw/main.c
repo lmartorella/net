@@ -9,10 +9,6 @@
 #include "audioSink.h"
 #include "hardware/rs485.h"
 
-#ifdef HAS_CM1602
-static const char* msg1 = "Hi world! ";
-#endif
-
 void interrupt PRIO_TYPE low_isr(void)
 {
     // Update tick timers at ~Khz freq
@@ -23,36 +19,13 @@ void interrupt PRIO_TYPE low_isr(void)
 }
 
 void main()
-{
-#ifdef HAS_CM1602
-    const char* errMsg;
-#endif
-   
+{  
     // Analyze RESET reason
     sys_storeResetReason();
 
     // Init Ticks on timer0 (low prio) module
     timers_init();
-
-#ifdef HAS_CM1602
-    // reset display
-    cm1602_reset();
-    cm1602_clear();
-    cm1602_setEntryMode(MODE_INCREMENT | MODE_SHIFTOFF);
-    cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
-
-    cm1602_setDdramAddr(0);
-    cm1602_writeStr(msg1);
-    errMsg = sys_getResetReasonStr();
-    cm1602_writeStr(errMsg);
-    if (sys_isResetReasonExc())
-    {
-        cm1602_setDdramAddr(0x40);
-        cm1602_writeStr(s_lastErr);
-    }
-
-    wait1s();
-#endif
+    appio_init();
 
 #ifdef HAS_SPI
     println("Spi");
@@ -72,12 +45,7 @@ void main()
 #ifdef HAS_VS1011
     vs1011_init();
 #endif
-    
-#ifdef HAS_CM1602
-    wait1s();
-    clearlnUp();
-#endif
-    
+       
     enableInterrupts();
 
 #ifdef HAS_RS485

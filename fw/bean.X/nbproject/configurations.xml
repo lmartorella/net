@@ -16,6 +16,7 @@
         <itemPath>../hardware/hw.h</itemPath>
         <itemPath>../hardware/fuses_mini_bean.h</itemPath>
         <itemPath>../hardware/tick.h</itemPath>
+        <itemPath>../hardware/leds.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -635,6 +636,7 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
