@@ -24,7 +24,7 @@ namespace Lucky.Home.Protocol
         private readonly object _lockObject = new object();
         private bool _inFetchSinkData;
         private bool _inRename;
-        private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(5);
 
         /// <summary>
         /// Valid sinks
@@ -257,6 +257,12 @@ namespace Lucky.Home.Protocol
                     // Ask for GUID
                     connection.Write(new GetChildrenMessage());
                     var childData = connection.Read<GetChildrenMessageResponse>();
+                    if (childData == null)
+                    {
+                        // socket closed
+                        Logger.Warning("Child:SocketClosed", "parent", Id);
+                        return false;
+                    }
                     if (childData.Count > 0)
                     {
                         // ERROR

@@ -73,14 +73,24 @@ void rs485_init()
     rs485_startRead();
 }
 
-BYTE rs485_readAvail()
+static BYTE _rs485_readAvail()
 {
     return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % BUFFER_SIZE);
 }
 
-BYTE rs485_writeAvail()
+static BYTE _rs485_writeAvail()
 {
     return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % BUFFER_SIZE);
+}
+
+BYTE rs485_readAvail()
+{
+    if (s_status == STATUS_RECEIVE) {
+        return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % BUFFER_SIZE);
+    }
+    else {
+        return 0;
+    }
 }
 
 static void writeByte()
@@ -95,7 +105,7 @@ void rs485_interrupt()
     // Empty TX buffer. Check for more data
     if (RS485_PIR_TXIF && RS485_PIE_TXIE) {
         do {
-            if (rs485_readAvail() > 0) {
+            if (_rs485_readAvail() > 0) {
                 // Feed more data, read at read pointer and then increase
                 writeByte();
             }
@@ -170,7 +180,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     // Disable interrupts
     RS485_PIE_TXIE = 0;
 
-    if (size > rs485_writeAvail()) {
+    if (size > _rs485_writeAvail()) {
         // Overflow error
         fatal("RS485.ov");
     }
@@ -269,7 +279,7 @@ BOOL rs485_read(BYTE* data, BYTE size)
         RS485_PIE_RCIE = 0;
 
         // Active? Read immediately.
-        if (rs485_readAvail() >= size) {
+        if (_rs485_readAvail() >= size) {
             ret = TRUE;
             while (size > 0) {
                 *(data++) = *(s_readPtr++);

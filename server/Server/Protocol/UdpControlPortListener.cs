@@ -60,18 +60,10 @@ namespace Lucky.Home.Protocol
 
         private void RaiseNodeMessageEvent(PingMessageType messageType, Guid id, TcpNodeAddress address)
         {
-            if ((messageType != PingMessageType.Hello) && id == Guid.Empty)
+            _logger.Log("NodeMessage", "ID", id, "messageType", messageType);
+            if (NodeMessage != null)
             {
-                // Heartbeat of a empty node??
-                _logger.Warning("NOGUID", "addr", address);
-            }
-            else
-            {
-                _logger.Log("NodeMessage", "ID", id, "messageType", messageType);
-                if (NodeMessage != null)
-                {
-                    NodeMessage(this, new NodeMessageEventArgs(id, address, messageType));
-                }
+                NodeMessage(this, new NodeMessageEventArgs(id, address, messageType));
             }
         }
 

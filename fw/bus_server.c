@@ -125,6 +125,11 @@ static void bus_checkAck()
             bus_registerNewNode();
             return;
         }
+        else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT && !isChildKnown(s_scanIndex)) {
+            // A node with address registered, but I didn't knew it. Register it.
+            setChildKnown(s_scanIndex);
+            s_dirtyChildren = TRUE;
+        }
     }
     // Next one.
     s_busState = BUS_PRIV_STATE_IDLE;
@@ -209,7 +214,7 @@ BUS_STATE bus_getState()
     if (s_socketConnected >= 0)
         return BUS_STATE_SOCKET_CONNECTED;
     if (s_socketConnected == -2) 
-        return BUS_SOCKET_TIMEOUT;
+        return BUS_STATE_SOCKET_TIMEOUT;
     if (s_dirtyChildren)
         return BUS_STATE_DIRTY_CHILDREN;
     return BUS_STATE_NONE;
@@ -246,7 +251,7 @@ static void bus_socketPoll()
     }
     else {
         // Data received?
-        WORD tx = rs485_readAvail();
+        WORD tx = rs485_readAvail(); 
         if (tx > 0) {
            
             // Read data and push it into IP

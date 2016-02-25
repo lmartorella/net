@@ -94,16 +94,24 @@ namespace Lucky.Home.Protocol
             lock (_nodeLock)
             {
                 TcpNode node;
-                _nodes.TryGetValue(guid, out node);
-                if (node == null)
+                if (guid != Guid.Empty)
                 {
-                    // The server was reset?
-                    _nodes[guid] = new TcpNode(guid, address);
+                    node = FindById(guid);
                 }
                 else
                 {
-                    // Refetch children
-                    // TODO: deregister old child nodes
+                    node = FindUnnamed(address);
+                }
+
+                // Not known?
+                if (node == null)
+                {
+                    // The server was reset?
+                    RegisterNode(guid, address);
+                }
+                else
+                {
+                    // Normal heartbeat
                     node.Relogin(address);
                 }
             }
