@@ -182,7 +182,7 @@ void prot_poll()
     // This tasks invokes each of the core stack application tasks
     StackApplications();
 
-    if (TickGet() > (TICK_TYPE)(s_slowTimer + TICKS_PER_SECOND))
+    if (TickGet() - s_slowTimer >= TICKS_PER_SECOND)
     {
         s_slowTimer = TickGet();
         ip_prot_slowTimer(s_dirtyChildren);

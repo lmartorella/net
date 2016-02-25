@@ -23,9 +23,9 @@ static BOOL s_dirtyChildren;
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
 
-#define BUS_SCAN_TIMEOUT (TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
-#define BUS_SOCKET_TIMEOUT (TICKS_PER_SECOND / 2)  // 500ms
-#define BUS_ACK_TIMEOUT (TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
+#define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
+#define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
+#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
 
 static enum {
     // To call next child
@@ -159,8 +159,7 @@ void bus_poll()
             }
             else {
                 // Do/doing a scan?
-                TICK_TYPE tick = TickGet();
-                if (tick > s_lastScanTime + BUS_SCAN_TIMEOUT) {
+                if (TickGet() - s_lastScanTime >= BUS_SCAN_TIMEOUT) {
                     bus_scanNext();
                 }
             }
@@ -172,7 +171,7 @@ void bus_poll()
                 bus_checkAck();
             } else {
                 // Check for timeout
-                if (TickGet() > (TICK_TYPE)(s_lastTime + BUS_ACK_TIMEOUT)) {
+                if (TickGet() - s_lastTime >= BUS_ACK_TIMEOUT) {
                     // Timeout. Dead bean?
                     // Do nothing, simply skip it for now.
                     s_busState = BUS_PRIV_STATE_IDLE;
@@ -180,7 +179,7 @@ void bus_poll()
             }
             break;
         case BUS_PRIV_STATE_SOCKET_CONNECTED:
-            if (TickGet() > (TICK_TYPE)(s_lastTime + BUS_SOCKET_TIMEOUT)) {
+            if (TickGet() - s_lastTime >= BUS_SOCKET_TIMEOUT) {
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
                 s_busState = BUS_PRIV_STATE_IDLE;

@@ -37,7 +37,7 @@
 // Tick timer source. Uses TMR0 (8-bit prescales to 1:256), that resolve from 0.25ms to 16.7secs
 // *****
 #define TICK_TMR TMR0
-#define TICK_TCON INTCON
+#define TICK_TCON OPTION_REG
 
 // Timer on, internal timer, 1:256 prescalar
 // (!T0CS | !PSA , PS2:PS0)

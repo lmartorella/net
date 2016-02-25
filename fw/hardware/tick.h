@@ -8,19 +8,19 @@
 // in Tick.c.  
 
 // Internal core clock drives timer with 1:256 prescaler
-#define TICKS_PER_SECOND		((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
+#define TICKS_PER_SECOND		(TICK_TYPE)((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
 
 // Represents one second in Ticks
-#define TICK_SECOND				((QWORD)TICKS_PER_SECOND)
+#define TICK_SECOND				(TICK_TYPE)(TICKS_PER_SECOND)
 // Represents one minute in Ticks
-#define TICK_MINUTE				((QWORD)TICKS_PER_SECOND * 60ull)
+#define TICK_MINUTE				(TICK_TYPE)(TICKS_PER_SECOND * 60ull)
 // Represents one hour in Ticks
-#define TICK_HOUR				((QWORD)TICKS_PER_SECOND * 3600ull)
+#define TICK_HOUR				(TICK_TYPE)(TICKS_PER_SECOND * 3600ull)
 
-TICK_TYPE TickGet(void);
-TICK_TYPE TickGetDiv256(void);
-TICK_TYPE TickGetDiv64K(void);
-void TickUpdate(void);
+TICK_TYPE TickGet();
+TICK_TYPE TickGetDiv256();
+TICK_TYPE TickGetDiv64K();
+void TickUpdate();
 
 void timers_init(void);
 

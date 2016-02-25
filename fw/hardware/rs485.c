@@ -2,6 +2,7 @@
 #include "rs485.h"
 #include "tick.h"
 #include "../appio.h"
+#include "leds.h"
 
 #ifdef HAS_RS485
 
@@ -41,8 +42,8 @@ static TICK_TYPE s_lastTick;
 // Transmit timeout should be greater than transmit end
 // so at the end of transmit the master should have the time to
 // switch to rx before slave start transmit
-#define WAIT_FOR_TRANSMIT_TIMEOUT (TICKS_PER_SECOND / 500)  // 2ms
-#define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICKS_PER_SECOND / 1000)  // 1ms
+#define WAIT_FOR_TRANSMIT_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 500)  // 2ms
+#define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 1000)  // 1ms
 
 static void rs485_startRead();
 
@@ -83,7 +84,7 @@ BYTE rs485_writeAvail()
 }
 
 static void writeByte()
-{
+{   
     // Feed more data, read at read pointer and then increase
     RS485_TXREG = *(s_readPtr++);
     ADJUST_PTR(s_readPtr);
@@ -145,16 +146,17 @@ void rs485_poll()
 {
     switch (s_status){
         case STATUS_WAIT_FOR_TRANSMIT:
-            if (TickGet() > (TICK_TYPE)(s_lastTick + WAIT_FOR_TRANSMIT_TIMEOUT)) {
+            if (TickGet() - s_lastTick >= WAIT_FOR_TRANSMIT_TIMEOUT) {
                 // Transmit
                 s_status = STATUS_TRANSMIT;
                 // Feed first byte
                 writeByte();
+                // Enable interrupts now
                 RS485_PIE_TXIE = 1;
             }
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END:
-            if (TickGet() > (TICK_TYPE)(s_lastTick + WAIT_FOR_TRANSMIT_END_TIMEOUT)) {
+            if (TickGet() - s_lastTick >= WAIT_FOR_TRANSMIT_END_TIMEOUT) {
                 // Detach TX line
                 s_status = STATUS_RECEIVE;
                 rs485_startRead();
@@ -165,10 +167,6 @@ void rs485_poll()
 
 void rs485_write(BOOL address, const BYTE* data, BYTE size)
 { 
-    // Truncate reading
-    RS485_RCSTA.CREN = 0;
-    RS485_PIE_RCIE = 0;
-
     // Disable interrupts
     RS485_PIE_TXIE = 0;
 
@@ -186,22 +184,37 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
 
     // 9-bit address
     RS485_TXSTA.TX9D = address;
-    // Enable RS485 driver
-    RS485_PORT_EN = EN_TRANSMIT;
-    // Enable UART transmit
-    RS485_TXSTA.TXEN = 1;
-    
+   
     // Schedule trasmitting, if not yet ready
     switch (s_status) {
-        case STATUS_TRANSMIT:
-        case STATUS_WAIT_FOR_TRANSMIT:
-            // Already tx, ok
-            break;
-        //case STATUS_WAIT_FOR_TRANSMIT_END:
-        default:
+        case STATUS_RECEIVE:
+        case STATUS_RECEIVE_FERR:
+            // Truncate reading
+            RS485_RCSTA.CREN = 0;
+            RS485_PIE_RCIE = 0;
+
+            // Enable RS485 driver
+            RS485_PORT_EN = EN_TRANSMIT;
+
+            // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
+            RS485_TXSTA.TXEN = 1;
+
+            // Convert it to tx
+            // NOBREAK
+
+        case STATUS_WAIT_FOR_TRANSMIT_END:
             // Convert it to tx
             s_status = STATUS_WAIT_FOR_TRANSMIT;
             s_lastTick = TickGet();
+            break;
+            
+        case STATUS_TRANSMIT:
+            // Reenable interrupts
+            RS485_PIE_TXIE = 1;
+            break;
+
+        case STATUS_WAIT_FOR_TRANSMIT:
+            // Already tx, ok
             break;
     }
 }

@@ -151,13 +151,11 @@ static AUDIO_RESPONSE _sineTest()
 
 /*static*/ WORD _streamSize;
 static void _processData(WORD len);
-static DWORD _startTime;
 static int _dequeueCallCount;
 
 static AUDIO_RESPONSE _startStream()
 {
     // Read packet size
-    _startTime = TickGet();
     _dequeueCallCount = 0;
     AUDIO_STREAM_DATA msg;
     if (TCPGetArray(s_listenerSocket, (BYTE*)&msg, sizeof(AUDIO_STREAM_DATA)) != sizeof(AUDIO_STREAM_DATA))

@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "persistence.h"
 #include "appio.h"
+#include "hardware/leds.h"
 
 #ifdef HAS_BUS_CLIENT
 
@@ -63,7 +64,7 @@ void bus_poll()
     else {
         // Header decode
         BYTE buf;
-        while (rs485_readAvail() > 0) {            
+        if (rs485_readAvail() > 0) {            
             // RC9 will be 1
             rs485_read(&buf, 1);
             // Waiting for header?
@@ -98,6 +99,7 @@ void bus_poll()
                         // Unknown command. Reset
                         // Restart from 0x55
                         bus_reinit();
+                        break;
                 }
             }
         }
