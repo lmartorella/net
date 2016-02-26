@@ -28,9 +28,9 @@ typedef enum {
 
 typedef enum { 
     // Bean: ack heartbeat
-    BUS_ACK_TYPE_HEARTBEAT = 1,
+    BUS_ACK_TYPE_HEARTBEAT = 0x20,
     // Bean: notify unknown (response to BUS_MSG_TYPE_READY_FOR_HELLO)
-    BUS_ACK_TYPE_HELLO = 2,
+    BUS_ACK_TYPE_HELLO = 0x21
 } BUS_ACK_TYPE;
 
 #ifdef HAS_BUS_SERVER
@@ -48,7 +48,7 @@ void bus_init();
 void bus_poll();
 // Select a child, and start a private communication bridging the IP protocol socket.
 void bus_connectSocket(int nodeIdx);
-void bus_disconnectSocket();
+void bus_disconnectSocket(int val);
 
 // Is still in command execution, waiting for command data receive complete?
 BUS_STATE bus_getState();

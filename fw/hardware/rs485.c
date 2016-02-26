@@ -125,7 +125,7 @@ void rs485_interrupt()
         do {
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
-                fatal("UART.OERR");
+                fatal("UART.OER");
             }
             if (RS485_RCSTA.FERR) {
                 s_status = STATUS_RECEIVE_FERR;

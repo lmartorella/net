@@ -1,6 +1,8 @@
 #ifndef _APPIO_INCLUDE_
 #define _APPIO_INCLUDE_
 
+#include "hardware/leds.h"
+
 void appio_init();
 
 // Clear the upper row (status)

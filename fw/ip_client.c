@@ -106,14 +106,14 @@ void ip_prot_init()
 	s_heloSocket = UDPOpenEx(NULL, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
 	if (s_heloSocket == INVALID_UDP_SOCKET)
 	{
-		fatal("SOCK.opn1");
+		fatal("SOC.opn1");
 	}
 
     // Open the sever TCP channel
 	s_controlSocket = TCPOpen(0, TCP_OPEN_SERVER, CLIENT_TCP_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
 	if (s_controlSocket == INVALID_SOCKET)
 	{
-		fatal("SOCK.opn2");
+		fatal("SOC.opn2");
 	}
 }
 

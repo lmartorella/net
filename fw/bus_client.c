@@ -42,6 +42,19 @@ void bus_init()
     bus_reinit();
 }
 
+static void writeExc()
+{
+    char msg[8];
+    for (char i = 0; i < 8; i++) {
+        msg[i] = 0;
+    }
+    if (sys_isResetReasonExc())
+    {
+        strncpy(msg, g_lastException, 8);
+    }
+    rs485_write(FALSE, msg, 8);
+}
+
 // Called often
 void bus_poll()
 {
@@ -86,6 +99,8 @@ void bus_poll()
                         rs485_write(FALSE, s_header, 3);
                         buf = BUS_ACK_TYPE_HEARTBEAT;
                         rs485_write(FALSE, &buf, 1);
+                        // Add 8 bytes of exc string
+                        writeExc();
                         // And then wait for TX end before going idle
                         s_state = STATE_WAIT_TX;
                         break;

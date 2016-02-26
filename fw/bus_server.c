@@ -11,7 +11,7 @@
 #define MAX_CHILDREN 64
 static BYTE s_childKnown[MAX_CHILDREN / 8];
 
-#define MSG_SIZE 4
+#define ACK_MSG_SIZE (4+8)
 #define isChildKnown(i) (s_childKnown[i / 8] & (1 << (i % 8)))
 #define setChildKnown(i) s_childKnown[i / 8] |= (1 << (i % 8))
 
@@ -25,7 +25,7 @@ static int s_socketConnected;
 
 #define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
 #define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
-#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 100) //10ms (19200,9,1 4bytes = ~2.3ms)
+#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 30) // 33ms (19200,9,1 4+8bytes = ~6.25ms + 2ms + 1ms)
 
 static enum {
     // To call next child
@@ -65,7 +65,7 @@ static void bus_scanNext()
     
     // Poll next child 
     s_scanIndex++;
-    if (s_scanIndex >= MAX_CHILDREN) {
+    if (s_scanIndex >= 1/*MAX_CHILDREN*/) {
         // Do broadcast now
         s_scanIndex = -1;
         msgType = BUS_MSG_TYPE_READY_FOR_HELLO;
@@ -114,10 +114,10 @@ static void bus_registerNewNode() {
 
 static void bus_checkAck()
 {
-    BYTE buffer[MSG_SIZE];
+    BYTE buffer[ACK_MSG_SIZE];
     // Receive bytes
-    // Expected: 0x55, 0xaa, [index], [state] with rc9 = 0
-    rs485_read(buffer, MSG_SIZE);
+    // Expected: 0x55, 0xaa, [index], [state] with rc9 = 0 + EXC
+    rs485_read(buffer, ACK_MSG_SIZE);
     if (!rs485_lastRc9 && buffer[0] == 0x55 && buffer[1] == 0xaa && buffer[2] == s_scanIndex) {
         // Ok, good response
         if (buffer[3] == BUS_ACK_TYPE_HELLO && s_scanIndex == -1) {
@@ -171,7 +171,7 @@ void bus_poll()
             break;
         case BUS_PRIV_STATE_WAIT_ACK:
             // Wait timeout for response
-            if (rs485_readAvail() >= MSG_SIZE) {
+            if (rs485_readAvail() >= ACK_MSG_SIZE) {
                 // Check what is received
                 bus_checkAck();
             } else {
@@ -187,8 +187,7 @@ void bus_poll()
             if (TickGet() - s_lastTime >= BUS_SOCKET_TIMEOUT) {
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
-                s_busState = BUS_PRIV_STATE_IDLE;
-                s_socketConnected = -2;
+                bus_disconnectSocket(-2);
             }
             else {
                 bus_socketPoll();
@@ -204,9 +203,16 @@ void bus_connectSocket(int nodeIdx)
     // Next IDLE will start the connection
 }
 
-void bus_disconnectSocket()
+void bus_disconnectSocket(int val)
 {
-    s_socketConnected = -1;
+    if (s_socketConnected >= 0) {
+        // Send break char
+        BYTE breakChar = 0xff;
+        rs485_write(TRUE, &breakChar, 1);
+        s_waitTxFlush = TRUE;
+    }
+    s_socketConnected = val;
+    s_busState = BUS_PRIV_STATE_IDLE;
 }
 
 BUS_STATE bus_getState() 

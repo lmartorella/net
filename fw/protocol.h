@@ -7,7 +7,7 @@
 #ifdef HAS_BUS_CLIENT
 #define prot_control_readW(w) rs485_read((BYTE*)w, 2) 
 #define prot_control_read(data, size) rs485_read((BYTE*)data, size)
-#define prot_control_writeW(w) rs485_write(FALSE, (BYTE*)w, 2)
+#define prot_control_writeW(w) rs485_write(FALSE, (BYTE*)&w, 2)
 #define prot_control_write(data, size) rs485_write(FALSE, (BYTE*)data, size)
 #define prot_control_flush() 
 #define prot_control_readAvail() rs485_readAvail()

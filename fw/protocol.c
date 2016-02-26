@@ -56,7 +56,7 @@ static void SELE_command()
     // Select subnode. 
     WORD w;
     if (!prot_control_readW(&w)) {
-        fatal("SELE.undr");
+        fatal("SEL.undr");
     }
     
     // Select subnode.
@@ -76,18 +76,19 @@ static void CHIL_command()
     // Fetch my GUID
     PersistentData persistence;
     boot_getUserData(&persistence);
- 
+    
 #ifdef HAS_BUS_SERVER
     // Propagate the request to all children to fetch their GUIDs
     prot_control_writeW(1 + bus_getAliveCountAndResetDirty());
 #else    
     // Only 1 children: me
-    prot_control_writeW(1);
+    WORD w = 1;
+    prot_control_writeW(w);
 #endif
     
     // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
     prot_control_write(&persistence.deviceId, sizeof(GUID));
-    prot_control_flush();   
+    prot_control_flush();      
 }
 
 // 0 bytes to receive
@@ -106,7 +107,7 @@ static void GUID_command()
 {
     GUID guid;
     if (!prot_control_read(&guid, sizeof(GUID))) {
-        fatal("GUID.undr");
+        fatal("GUI.undr");
     }
 
     PersistentData persistence;
@@ -122,7 +123,7 @@ static void READ_command()
     WORD sinkId;
     if (!prot_control_readW(&sinkId))
     {
-        fatal("READ.undr");
+        fatal("REA.undr");
     }   
     s_inWriteSink = sinkId;
 }
@@ -133,7 +134,7 @@ static void WRIT_command()
     WORD sinkId;
     if (!prot_control_readW(&sinkId))
     {
-        fatal("WRIT.undr");
+        fatal("WRI.undr");
     }
     s_inReadSink = sinkId;
 }
@@ -191,7 +192,7 @@ void prot_poll()
     
     if (!prot_control_isConnected()) {
 #ifdef HAS_BUS_SERVER
-        bus_disconnectSocket();
+        bus_disconnectSocket(-1);
 #endif
         return;
     }
@@ -204,7 +205,7 @@ void prot_poll()
             // TCP is still polled by bus
             return;
         case BUS_STATE_SOCKET_TIMEOUT:
-            // drop the connection        
+            // drop the TCP connection        
             prot_control_close();
             break;
         case BUS_STATE_DIRTY_CHILDREN:
