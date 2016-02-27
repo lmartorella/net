@@ -211,9 +211,10 @@ void bus_disconnectSocket(int val)
         BYTE breakChar = 0xff;
         rs485_write(TRUE, &breakChar, 1);
         s_waitTxFlush = TRUE;
+        
+        s_busState = BUS_PRIV_STATE_IDLE;
     }
     s_socketConnected = val;
-    s_busState = BUS_PRIV_STATE_IDLE;
 }
 
 BUS_STATE bus_getState() 
