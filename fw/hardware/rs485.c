@@ -12,8 +12,10 @@
 static enum {
     // No transmit, receive mode
     STATUS_RECEIVE,
-    // Wait 1ms tick before transmit, channel engaged
-    STATUS_WAIT_FOR_TRANSMIT,
+    // Wait tick before transmit, channel still disengaged
+    STATUS_WAIT_FOR_ENGAGE,
+    // Wait tick before transmit, channel now engaged
+    STATUS_WAIT_FOR_START_TRANSMIT,
     // Channel engaged, trasmitting
     STATUS_TRANSMIT,
     // Channel engaged, wait 1m ticks before freeing channel
@@ -39,11 +41,13 @@ BOOL rs485_skipData;
 
 static TICK_TYPE s_lastTick;
 
-// Transmit timeout should be greater than transmit end
-// so at the end of transmit the master should have the time to
-// switch to rx before slave start transmit
-#define WAIT_FOR_TRANSMIT_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 500)  // 2ms
-#define WAIT_FOR_TRANSMIT_END_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 1000)  // 1ms
+// time to wait before engaging the channel (after other station finished to transmit)
+#define ENGAGE_CHANNEL_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 1)  
+// additional time to wait after channel engaged to start transmit
+#define START_TRANSMIT_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 2)
+// time to wait before releasing the channel = 2 bytes,
+// but let's wait an additional byte since USART is free when still transmitting the last byte.
+#define DISENGAGE_CHANNEL_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 3)  // 3 bytes
 
 static void rs485_startRead();
 
@@ -55,7 +59,7 @@ void rs485_init()
     RS485_TXSTA.SYNC = 0;
     RS485_TXSTA.TX9 = 1;
     
-    RS485_INIT_19K_BAUD();
+    RS485_INIT_BAUD();
     
     // Enable ports
     RS485_TRIS_RX = 1;
@@ -154,9 +158,19 @@ error:
  */
 void rs485_poll()
 {
+    TICK_TYPE elapsed = TickGet() - s_lastTick;
     switch (s_status){
-        case STATUS_WAIT_FOR_TRANSMIT:
-            if (TickGet() - s_lastTick >= WAIT_FOR_TRANSMIT_TIMEOUT) {
+        case STATUS_WAIT_FOR_ENGAGE:
+            if (elapsed >= ENGAGE_CHANNEL_TIMEOUT) {
+                // Engage
+                s_status = STATUS_WAIT_FOR_START_TRANSMIT;
+                // Enable RS485 driver
+                RS485_PORT_EN = EN_TRANSMIT;
+                s_lastTick = TickGet();
+            }
+            break;
+        case STATUS_WAIT_FOR_START_TRANSMIT:
+            if (elapsed >= START_TRANSMIT_TIMEOUT) {
                 // Transmit
                 s_status = STATUS_TRANSMIT;
                 // Feed first byte
@@ -166,7 +180,7 @@ void rs485_poll()
             }
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END:
-            if (TickGet() - s_lastTick >= WAIT_FOR_TRANSMIT_END_TIMEOUT) {
+            if (elapsed >= DISENGAGE_CHANNEL_TIMEOUT) {
                 // Detach TX line
                 s_status = STATUS_RECEIVE;
                 rs485_startRead();
@@ -177,6 +191,25 @@ void rs485_poll()
 
 void rs485_write(BOOL address, const BYTE* data, BYTE size)
 { 
+    // Reset reader, if in progress
+    switch (s_status) {
+        case STATUS_RECEIVE:
+        case STATUS_RECEIVE_FERR:
+            // Truncate reading
+            RS485_RCSTA.CREN = 0;
+            RS485_PIE_RCIE = 0;
+            s_readPtr = s_writePtr = s_buffer;
+
+            // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
+            RS485_TXSTA.TXEN = 1;
+
+            s_status = STATUS_WAIT_FOR_ENGAGE;
+            s_lastTick = TickGet();
+            break;
+    }
+
+    BOOL ie = RS485_PIE_TXIE;
+    
     // Disable interrupts
     RS485_PIE_TXIE = 0;
 
@@ -194,38 +227,23 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
 
     // 9-bit address
     RS485_TXSTA.TX9D = address;
-   
+
+    // Re-enable if it was
+    RS485_PIE_TXIE = ie;
+
     // Schedule trasmitting, if not yet ready
     switch (s_status) {
-        case STATUS_RECEIVE:
-        case STATUS_RECEIVE_FERR:
-            // Truncate reading
-            RS485_RCSTA.CREN = 0;
-            RS485_PIE_RCIE = 0;
-
-            // Enable RS485 driver
-            RS485_PORT_EN = EN_TRANSMIT;
-
-            // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
-            RS485_TXSTA.TXEN = 1;
-
-            // Convert it to tx
-            // NOBREAK
-
         case STATUS_WAIT_FOR_TRANSMIT_END:
-            // Convert it to tx
-            s_status = STATUS_WAIT_FOR_TRANSMIT;
+            // Re-convert it to tx
+            s_status = STATUS_WAIT_FOR_START_TRANSMIT;
             s_lastTick = TickGet();
             break;
             
-        case STATUS_TRANSMIT:
-            // Reenable interrupts
-            RS485_PIE_TXIE = 1;
-            break;
-
-        case STATUS_WAIT_FOR_TRANSMIT:
+        //case STATUS_TRANSMIT:
+        //case STATUS_WAIT_FOR_START_TRANSMIT:
+        //case STATUS_WAIT_FOR_ENGAGE:
             // Already tx, ok
-            break;
+        //    break;
     }
 }
 

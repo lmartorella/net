@@ -35,6 +35,14 @@ extern BOOL rs485_skipData;
 
 RS485_STATE rs485_getState();
 
+// See OSI model document for timings.
+// TICKS_PER_SECOND = 3906 on PIC16 @4MHz
+// TICKS_PER_SECOND = 24414 on PIC18 @25MHz
+// BYTES_PER_SECONDS = (BAUD / 11 (9+1+1)) = 1744 (round down) = 0.57ms
+#define BYTES_PER_SECONDS (DWORD)((RS485_BAUD - 11) / 11)
+// 2 ticks per byte, but let's do 3 (round up) for PIC16 @4MHz
+// 14 ticks per byte (round up) on PIC18 @25MHz
+#define TICKS_PER_BYTE (TICK_TYPE)((TICKS_PER_SECOND + BYTES_PER_SECONDS) / BYTES_PER_SECONDS)
 
 #endif
 

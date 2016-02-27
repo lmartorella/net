@@ -11,6 +11,7 @@
 #define MAX_CHILDREN 64
 static BYTE s_childKnown[MAX_CHILDREN / 8];
 
+// Ack message contains ACK + ERRCODE now
 #define ACK_MSG_SIZE (4+8)
 #define isChildKnown(i) (s_childKnown[i / 8] & (1 << (i % 8)))
 #define setChildKnown(i) s_childKnown[i / 8] |= (1 << (i % 8))
@@ -23,9 +24,9 @@ static BOOL s_dirtyChildren;
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
 
-#define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 5) // 5000ms (it takes BUS_ACK_TIMEOUT * MAX_CHILDREN = 640ms)
+#define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 1.5) // 1500ms 
 #define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
-#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 30) // 33ms (19200,9,1 4+8bytes = ~6.25ms + 2ms + 1ms)
+#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * ACK_MSG_SIZE * 2) // 33ms (19200,9,1 4+8bytes = ~6.25ms + 2ms + 1ms)
 
 static enum {
     // To call next child
@@ -49,7 +50,7 @@ void bus_init()
     }
     
     // Starts from zero
-    s_scanIndex = MAX_CHILDREN - 1;
+    s_scanIndex = -1;
     s_socketConnected = -1;
     s_waitTxFlush = FALSE;
     s_dirtyChildren = FALSE;
@@ -62,6 +63,7 @@ void bus_init()
 static void bus_scanNext()
 {
     BUS_MSG_TYPE msgType = BUS_MSG_TYPE_HEARTBEAT;
+    s_lastScanTime = TickGet();
     
     // Poll next child 
     s_scanIndex++;
@@ -69,7 +71,6 @@ static void bus_scanNext()
         // Do broadcast now
         s_scanIndex = -1;
         msgType = BUS_MSG_TYPE_READY_FOR_HELLO;
-        s_lastScanTime = TickGet();
     }
     
     // Poll the line. Send sync
