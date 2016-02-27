@@ -87,7 +87,11 @@ void enableInterrupts()
     RS485_IPR.RC2IP = 0;
 #endif
 }
- 
+
+// The pointer is pointing to ROM space that will not be reset
+// otherwise after the RESET the variable content can be lost.
+static persistent const char* g_exception;
+
 // Check RCON and STKPTR register for anormal reset cause
 void sys_storeResetReason()
 {
@@ -134,10 +138,6 @@ void sys_storeResetReason()
 	RCON = RCON | 0x33;	// reset all flags
 	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
 }
-
-// The pointer is pointing to ROM space that will not be reset
-// otherwise after the RESET the variable content can be lost.
-static persistent const char* g_exception;
 
 // Long (callable) version of fatal
 void fatal(const char* str)

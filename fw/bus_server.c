@@ -13,8 +13,6 @@ static BYTE s_childKnown[MAX_CHILDREN / 8];
 
 // Ack message contains ACK + ERRCODE now
 #define ACK_MSG_SIZE (4+8)
-#define isChildKnown(i) (s_childKnown[i / 8] & (1 << (i % 8)))
-#define setChildKnown(i) s_childKnown[i / 8] |= (1 << (i % 8))
 
 static signed char s_scanIndex;
 static TICK_TYPE s_lastScanTime;
@@ -41,6 +39,16 @@ static BOOL s_waitTxFlush;
 
 static void bus_socketCreate();
 static void bus_socketPoll();
+
+static BOOL isChildKnown(signed char i)
+{
+    return (s_childKnown[i / 8] & (1 << (i % 8))) != 0;
+}
+
+static void setChildKnown(signed char i)
+{
+    s_childKnown[i / 8] |= (1 << (i % 8));
+}
 
 void bus_init()
 {
@@ -233,7 +241,7 @@ static void bus_socketCreate()
     // Bus is idle. Start transmitting/receiving.
     BYTE buffer[4] = { 0x55, 0xaa };
     buffer[2] = s_socketConnected;
-    buffer[3] = BUS_MSG_CONNECT;
+    buffer[3] = BUS_MSG_TYPE_CONNECT;
     rs485_write(TRUE, buffer, 4);
     s_waitTxFlush = TRUE;
 

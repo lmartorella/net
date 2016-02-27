@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
+using Lucky.Services;
 
 namespace Lucky.Home.Sinks
 {
@@ -22,6 +23,7 @@ namespace Lucky.Home.Sinks
 
         private async Task<NodeStatus> GetBootStatus()
         {
+            Logger.Log("Getting boot status");
             NodeStatus status = new NodeStatus();
             await Read(reader =>
             {

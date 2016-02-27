@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
+using Lucky.Services;
 
 namespace Lucky.Home.Sinks
 {
@@ -11,9 +12,11 @@ namespace Lucky.Home.Sinks
     internal class SinkBase : IDisposable, ISink
     {
         private int _index;
+        protected readonly ILogger Logger;
 
-        public SinkBase()
+        protected SinkBase()
         {
+            Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name);
             SubCount = 0;
         }
 

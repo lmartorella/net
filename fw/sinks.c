@@ -39,16 +39,17 @@ const FOURCC EndOfMetadataText = "EOMD";
 
 static BOOL sysSink_write()
 {
+    WORD l = g_resetReason;
     // Write reset reason
     prot_control_write(&ResetCode, sizeof(FOURCC));
-    prot_control_writeW(g_resetReason);
+    prot_control_writeW(l);
     
     if (sys_isResetReasonExc())
     {
         prot_control_write(&ExceptionText, sizeof(FOURCC));
         
         const char *exc = g_lastException;
-        WORD l = strlen(exc);
+        l = strlen(exc);
         prot_control_writeW(l);
         prot_control_write(exc, l);
     }
