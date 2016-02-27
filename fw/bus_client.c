@@ -107,7 +107,7 @@ void bus_poll()
                         break;
                     case BUS_MSG_TYPE_CONNECT:
                         // Start reading data with rc9 not set
-                        rs485_skipData = FALSE;
+                        rs485_skipData = rs485_lastRc9 = FALSE;
                         // Socket, direct connect
                         s_state = STATE_SOCKET_OPEN;
                         break;

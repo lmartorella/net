@@ -240,7 +240,7 @@ void prot_poll()
     }
 
     // So decode message then
-    if (s >= 4) // Minimum msg size
+    if (s >= sizeof(FOURCC)) // Minimum msg size
     {
         // This can even peek only one command.
         // Until not closed by server, or CLOS command sent, the channel can stay open.
@@ -250,11 +250,13 @@ void prot_poll()
         FOURCC msg;
         prot_control_read(&msg, sizeof(FOURCC));
         for (BYTE i = 0; i < COMMAND_COUNT; i++) {
-            if (memcmp(msg.str, s_table[i].cmd, 4) == 0) {
+            if (memcmp(msg.str, s_table[i].cmd, sizeof(FOURCC)) == 0) {
                 s_commandToRun = i;
                 return;
             }
         }
+        
+        // Unknown command
         fatal("CMD.unkn");
     }
     // Otherwise wait for data
