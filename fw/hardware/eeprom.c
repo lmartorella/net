@@ -126,6 +126,7 @@ void rom_read(int sourceAddress, BYTE* destination, WORD length)
         EEADR = sourceAddress++;
         EECON1bits.RD = 1;
         *(destination++) = EEDATA;
+        CLRWDT();
     }
 }
 
@@ -139,7 +140,7 @@ void rom_write(int destinationAddr, const BYTE* source, WORD length)
 
     for (; length > 0; length--) { 
         // Wait for previous WR to finish
-        while (EECON1bits.WR);
+        while (EECON1bits.WR) CLRWDT();
         EEADR = destinationAddr++;
         EEDATA = *(source++);
         EECON2 = 0x55;
