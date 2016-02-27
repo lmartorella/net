@@ -52,6 +52,7 @@ static void writeExc()
     {
         strncpy(msg, g_lastException, 8);
     }
+    msg[7] = g_resetReason;
     rs485_write(FALSE, msg, 8);
 }
 
@@ -104,7 +105,7 @@ void bus_poll()
                         // And then wait for TX end before going idle
                         s_state = STATE_WAIT_TX;
                         break;
-                    case BUS_MSG_CONNECT:
+                    case BUS_MSG_TYPE_CONNECT:
                         // Start reading data with rc9 not set
                         rs485_skipData = FALSE;
                         // Socket, direct connect

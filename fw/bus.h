@@ -23,7 +23,7 @@ typedef enum {
     // Message to ask the only unknown bean to register itself
     BUS_MSG_TYPE_ADDRESS_ASSIGN = 3,
     // Command/data will follow: socket open
-    BUS_MSG_CONNECT = 4
+    BUS_MSG_TYPE_CONNECT = 4
 } BUS_MSG_TYPE;
 
 typedef enum { 

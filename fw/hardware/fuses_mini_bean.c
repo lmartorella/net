@@ -47,20 +47,23 @@ void enableInterrupts()
 	INTCONbits.PEIE = 1;
 }
 
+extern unsigned char __resetbits;
+#define nTObit 0x10
+
 void sys_storeResetReason()
 {
     // See datasheet table 14-5
     if (PCONbits.nPOR) {
         if (!PCONbits.nBOR) {
             g_resetReason = RESET_BROWNOUT;
+            PCONbits.nBOR = 1;
         }
         else {
-            if (!STATUSbits.nTO) {
+            if (!(__resetbits & nTObit)) {
                 // Watchdog is used for RESET() on pic16!
                 if (g_exception != NULL) { 
                     g_resetReason = RESET_EXC;
                     g_lastException = g_exception;
-                    g_exception = NULL;
                 }
                 else {
                     g_resetReason = RESET_WATCHDOG;
@@ -73,5 +76,8 @@ void sys_storeResetReason()
     }
     else {
         g_resetReason = RESET_POWER;        
+        PCONbits.nPOR = 1;
+        PCONbits.nBOR = 1;
     }
+    g_exception = NULL;
 }
