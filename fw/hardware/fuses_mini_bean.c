@@ -47,8 +47,13 @@ void enableInterrupts()
 	INTCONbits.PEIE = 1;
 }
 
+// Get a copy version of STATUS
 extern unsigned char __resetbits;
 #define nTObit 0x10
+
+// The pointer is pointing to ROM space that will not be reset
+// otherwise after the RESET the variable content can be lost.
+persistent BYTE g_exceptionPtr;
 
 void sys_storeResetReason()
 {
@@ -61,9 +66,9 @@ void sys_storeResetReason()
         else {
             if (!(__resetbits & nTObit)) {
                 // Watchdog is used for RESET() on pic16!
-                if (g_exception != NULL) { 
+                if (g_exceptionPtr != 0) { 
                     g_resetReason = RESET_EXC;
-                    g_lastException = g_exception;
+                    g_lastException = (const char*)g_exceptionPtr;
                 }
                 else {
                     g_resetReason = RESET_WATCHDOG;
@@ -79,5 +84,6 @@ void sys_storeResetReason()
         PCONbits.nPOR = 1;
         PCONbits.nBOR = 1;
     }
-    g_exception = NULL;
+    g_exceptionPtr = 0;
 }
+

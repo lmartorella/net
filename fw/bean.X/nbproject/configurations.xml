@@ -600,7 +600,7 @@
         <property key="backup-reset-condition-flags" value="true"/>
         <property key="calibrate-oscillator" value="false"/>
         <property key="calibrate-oscillator-value" value="0x3400"/>
-        <property key="clear-bss" value="false"/>
+        <property key="clear-bss" value="true"/>
         <property key="code-model-external" value="wordwrite"/>
         <property key="code-model-rom" value=""/>
         <property key="create-html-files" value="false"/>

@@ -51,12 +51,15 @@
 
 #define TICK_TYPE WORD
 
-#define SHORT_FATAL
-
 #define HAS_LED
 #define LED_PORTBIT PORTBbits.RB0
 #define LED_TRISBIT TRISBbits.TRISB0
 
+// Reset the device with fatal error
+extern persistent BYTE g_exceptionPtr;
+#define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }
+
 #endif
+
 
 

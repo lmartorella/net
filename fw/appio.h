@@ -28,15 +28,6 @@ typedef enum
 	RESET_EXC
 } RESET_REASON;
 
-#ifdef SHORT_FATAL
-// Reset the device with fatal error
-#define fatal(msg) { g_exception = msg; RESET(); }
-#else
-// Reset the device with fatal error
-void fatal(const char* msg);
-#endif
-
-extern persistent const char* g_exception;
 extern const char* g_lastException;
 extern RESET_REASON g_resetReason;
 

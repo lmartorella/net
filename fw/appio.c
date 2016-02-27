@@ -3,9 +3,6 @@
 #include "hardware/cm1602.h"
 #include "hardware/leds.h"
 
-// The pointer is pointing to ROM space that will not be reset
-// otherwise after the RESET the variable content can be lost.
-persistent const char* g_exception;
 const char* g_lastException;
 RESET_REASON g_resetReason;
 
@@ -42,7 +39,7 @@ void appio_init()
 
     wait1s();
 #endif
-    
+
 #ifdef HAS_LED
     LED_TRISBIT = 0;
     led_off();
@@ -114,16 +111,6 @@ void printch(char ch)
     led_on();
 #endif
 }
-
-#ifndef SHORT_FATAL
-// Long (callable) version of fatal
-void fatal(const char* str)
-{
-    g_exception = str;
-    wait30ms();
-    RESET();
-}
-#endif
 
 BOOL sys_isResetReasonExc()
 {

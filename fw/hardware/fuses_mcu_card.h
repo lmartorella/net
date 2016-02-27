@@ -133,4 +133,10 @@
 #elif HAS_SPI_RAM
 #error Cannot use SPI RAM and IO togheter
 #endif
+
+// Reset the device with fatal error
+void fatal(const char* msg);
+
 #endif
+
+
