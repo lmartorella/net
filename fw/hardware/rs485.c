@@ -135,12 +135,15 @@ void rs485_interrupt()
                 s_status = STATUS_RECEIVE_FERR;
                 goto error;
             }
-            // read data
+
+            // read data to reset IF
             BOOL lastrc9 = RS485_RCSTA.RX9D;
+            BYTE data = RS485_RCREG;
+            
             // Only read data (0) if enabled
             if (lastrc9 || !rs485_skipData) {
                 rs485_lastRc9 = lastrc9;
-                *(s_writePtr++) = RS485_RCREG;
+                *(s_writePtr++) = data;
                 ADJUST_PTR(s_writePtr);
             }
         } while (RS485_PIR_RCIF);
