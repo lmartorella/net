@@ -46,15 +46,15 @@ except:
 def processLine(arr, count, start):
 	print()
 	lineAddress = arr[start + 1]
-	print(datetime.now().strftime('%H:%M:%S.%f')," ",lineAddress,":",sep="",end="\t")
+	print(datetime.now().strftime('%H:%M:%S.%f')," ",lineAddress,":",sep="",end="  ")
 	for i in range(int(count / 2)):
 		if arr[start + i * 2 + 1] != lineAddress:
 			processLine(arr, count - i * 2, i * 2)
 			return
 		val = arr[start + i * 2]
-		print(format(val, "02x"), end=" ")
+		print(format(val, "02x"), sep="", end=" ")
 
-	for i in range(20-int(count/2*3)):
+	for i in range(40-int(count/2*3)):
 		print(" ", end="")
 	for i in range(int(count / 2)):
 		val = arr[start + i * 2]
