@@ -9,6 +9,7 @@ namespace Lucky.Home.Protocol
         void RegisterNode(Guid guid, TcpNodeAddress address);
         void HeartbeatNode(Guid guid, TcpNodeAddress address);
         void RefetchSubNodes(Guid guid, TcpNodeAddress address);
+        void RegisterUnknownNode(TcpNodeAddress address);
 
         ITcpNode FindNode(Guid guid);
         ITcpNode FindNode(TcpNodeAddress address);
@@ -16,6 +17,5 @@ namespace Lucky.Home.Protocol
 
         void BeginRenameNode(TcpNode node, Guid newId);
         void EndRenameNode(TcpNode node, Guid oldId, Guid newId, bool success);
-        Guid CreateNewGuid();
     }
 }

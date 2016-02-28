@@ -16,10 +16,10 @@ static TICK_TYPE s_slowTimer;
 static signed char s_inReadSink;
 static signed char s_inWriteSink;
 static int s_commandToRun;
-BOOL prot_registered;
 
 #ifdef HAS_BUS_SERVER
 static BOOL s_dirtyChildren;
+BOOL prot_registered;
 #endif
 
 void prot_init()
@@ -31,15 +31,15 @@ void prot_init()
     s_slowTimer = TickGet();
 #endif
 
-#ifdef HAS_BUS
+#ifdef HAS_RS485
     bus_init();
 #endif
     
 #ifdef HAS_BUS_SERVER
     s_dirtyChildren = FALSE;
+    prot_registered = FALSE;
 #endif
     
-    prot_registered = FALSE;
     s_commandToRun = -1;
     s_inWriteSink = s_inReadSink = -1;
 }
@@ -51,8 +51,6 @@ static void CLOS_command()
 
 static void SELE_command()
 {
-    prot_registered = TRUE;
- 
     // Select subnode. 
     WORD w;
     if (!prot_control_readW(&w)) {
@@ -67,6 +65,7 @@ static void SELE_command()
         // Otherwise connect the socket
         bus_connectSocket(w - 1);
     }
+    prot_registered = TRUE;
 #endif
 }
 
@@ -251,7 +250,7 @@ void prot_poll()
         FOURCC msg;
         prot_control_read(&msg, sizeof(FOURCC));
         for (BYTE i = 0; i < COMMAND_COUNT; i++) {
-            if (memcmp(msg.str, s_table[i].cmd, sizeof(FOURCC)) == 0) {
+            if (!memcmp(msg.str, s_table[i].cmd, sizeof(FOURCC))) {
                 s_commandToRun = i;
                 return;
             }

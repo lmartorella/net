@@ -18,9 +18,9 @@ void prot_control_writeW(WORD w);
 void prot_control_write(const void* data, WORD size);
 void prot_control_flush();
 WORD prot_control_readAvail();
+extern BOOL prot_registered;
 #endif
 
-extern BOOL prot_registered;
 void prot_control_close();
 BOOL prot_control_isConnected();
 

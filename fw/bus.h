@@ -9,10 +9,8 @@
 #endif
 #endif // HAS_RS485
 
-#ifdef HAS_BUS_SERVER || HAS_BUS_CLIENT
-#define HAS_BUS
-#endif
-
+void bus_init();
+// Poll general bus activities
 void bus_poll();
 
 typedef enum { 
@@ -43,9 +41,6 @@ typedef enum {
 } BUS_STATE;
 
 
-void bus_init();
-// Poll general bus activities
-void bus_poll();
 // Select a child, and start a private communication bridging the IP protocol socket.
 void bus_connectSocket(int nodeIdx);
 void bus_disconnectSocket(int val);

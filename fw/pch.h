@@ -9,5 +9,8 @@
 #include "hardware/utilities.h"
 #include "guid.h"
 
+// Size optimized
+bit memcmp8(void* p1, void* p2, BYTE size);
+
 #endif	/* PCH_H */
 

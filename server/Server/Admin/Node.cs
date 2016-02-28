@@ -40,7 +40,8 @@ namespace Lucky.Home.Admin
         {
             TcpNode = tcpNode;
             Id = tcpNode.Id;
-            Status = tcpNode.Sink<ISystemSink>().Status;
+            var systemSink = tcpNode.Sink<ISystemSink>();
+            Status = systemSink != null ? systemSink.Status : null;
             Address = tcpNode.Address.ToString();
             Sinks = tcpNode.Sinks.Select(s => s.FourCc).ToArray();
             SubSinkCount = tcpNode.Sinks.Select(s => s.SubCount).ToArray();

@@ -31,7 +31,7 @@ void appio_init()
     cm1602_setDdramAddr(0);
     cm1602_writeStr(msg1);
     cm1602_writeStr(g_resetReasonMsgs[g_resetReason]);
-    if (sys_isResetReasonExc())
+    if (g_resetReason == RESET_EXC)
     {
         cm1602_setDdramAddr(0x40);
         cm1602_writeStr(g_lastException);
@@ -41,7 +41,7 @@ void appio_init()
 #endif
 
 #ifdef HAS_LED
-    LED_TRISBIT = 0;
+    led_init();
     led_off();
 #endif
 }
@@ -63,9 +63,6 @@ void clearln()
 {
 #ifdef HAS_CM1602
 	_clr(0x40);
-#endif
-#ifdef HAS_LED
-    led_off();
 #endif
 }
 
@@ -90,9 +87,6 @@ void println(const char* str)
 #ifdef HAS_CM1602
 	_print(str, 0x40);	
 #endif
-#ifdef HAS_LED
-    led_on();
-#endif
 }
 
 void printlnUp(const char* str)
@@ -107,12 +101,4 @@ void printch(char ch)
 #ifdef HAS_CM1602
     cm1602_write(ch);
 #endif
-#ifdef HAS_LED
-    led_on();
-#endif
-}
-
-BOOL sys_isResetReasonExc()
-{
-    return g_resetReason == RESET_EXC;
 }

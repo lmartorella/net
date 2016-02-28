@@ -11,6 +11,8 @@ namespace Lucky.Home.Protocol
 {
     class TcpNode : ITcpNode
     {
+        private readonly bool _guidShouldBeFetched;
+
         /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
@@ -31,12 +33,16 @@ namespace Lucky.Home.Protocol
         /// </summary>
         private readonly List<SinkBase> _sinks = new List<SinkBase>();
 
-        internal TcpNode(Guid guid, TcpNodeAddress address)
+        internal TcpNode(Guid guid, TcpNodeAddress address, bool guidShouldBeFetched = false)
         {
             Id = guid;
             Address = address;
             Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
-            
+            _guidShouldBeFetched = guidShouldBeFetched;
+        }
+
+        public void Init()
+        {
             // Start data fetch asynchrously
             Logger.Log("Fetching metadata");
             FetchMetadata();
@@ -149,13 +155,31 @@ namespace Lucky.Home.Protocol
                 }
                 _inFetchSinkData = true;
             }
-            while (!await TryFetchMetadata())
+
+            Tuple<bool, TcpNodeAddress[]> ret;
+            // Repeat until metadata are OK
+            while (!(ret = await TryFetchMetadata()).Item1)
             {
                 await Task.Delay(RetryTime);
             }
+
+            // Ok, metadata of the master node are OK
             lock (_lockObject)
             {
                 _inFetchSinkData = false;
+            }
+
+            // Now register all the children
+            RegisterChildrenNodes(ret.Item2);
+        }
+
+        private void RegisterChildrenNodes(TcpNodeAddress[] addresses)
+        {
+            // Now register children
+            // Register subnodes, asking for identity
+            foreach (var address in addresses)
+            {
+                Manager.GetService<INodeManager>().RegisterUnknownNode(address);
             }
         }
 
@@ -204,31 +228,39 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
-        private async Task<bool> TryFetchMetadata()
+        private async Task<Tuple<bool, TcpNodeAddress[]>> TryFetchMetadata()
         {
             // Init a METADATA fetch connection
             string[] sinks = null;
-            int childCount = 1;
+            int childCount = 0;
             TcpNodeAddress address = null;
+            Guid newGuidToAssign = Guid.Empty;
+
             if (!await OpenNodeSession((connection, addr) =>
             {
                 address = addr;
-                if (!address.IsSubNode)
+
+                // Ask for subnodes
+                connection.Write(new GetChildrenMessage());
+                var childNodes = connection.Read<GetChildrenMessageResponse>();
+                if (childNodes == null)
                 {
-                    // Ask for subnodes
-                    connection.Write(new GetChildrenMessage());
-                    var childNodes = connection.Read<GetChildrenMessageResponse>();
-                    if (childNodes == null)
+                    // Stop here
+                    return false;
+                }
+                if (childNodes.Guid != Id)
+                {
+                    if (_guidShouldBeFetched)
                     {
-                        return false;
+                        newGuidToAssign = childNodes.Guid;
                     }
-                    if (childNodes.Guid != Id)
+                    else
                     {
                         // ERROR
                         Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childNodes.Guid);
                     }
-                    childCount = childNodes.Count;
                 }
+                childCount = childNodes.Count - 1;
 
                 // Then ask for sinks
                 connection.Write(new GetSinksMessage());
@@ -241,42 +273,21 @@ namespace Lucky.Home.Protocol
                 return true;
             }))
             {
-                return false;
+                // Error, no metadata
+                return Tuple.Create(false, new TcpNodeAddress[0]);
+            }
+
+            if (newGuidToAssign != Guid.Empty)
+            {
+                // Rename node
+                RenameInternal(newGuidToAssign);
             }
 
             // Now register sinks
             RegisterSinks(sinks);
 
-            // Now register children
-            // Register subnodes, asking for identity
-            for (int index = 0; index < childCount - 1; index++)
-            {
-                var childAddr = address.SubNode(index + 1);
-                if (!await OpenNodeSession(Logger, childAddr, (connection, addr) =>
-                {
-                    // Ask for GUID
-                    connection.Write(new GetChildrenMessage());
-                    var childData = connection.Read<GetChildrenMessageResponse>();
-                    if (childData == null)
-                    {
-                        // socket closed
-                        Logger.Warning("Child:SocketClosed", "parent", Id);
-                        return false;
-                    }
-                    if (childData.Count > 0)
-                    {
-                        // ERROR
-                        Logger.Warning("InvalidNestedChild", "Id", childData.Guid, "parent", Id, "reportedCount", childData.Count);
-                    }
-                    // Register it
-                    Manager.GetService<INodeManager>().RegisterNode(childData.Guid, addr);
-                    return true;
-                }))
-                {
-                    return false;
-                }
-            }
-            return true;
+            var children = Enumerable.Range(1, childCount).Select(i => address.SubNode(i)).ToArray();
+            return Tuple.Create(true, children);
         }
 
         private void RegisterSinks(string[] sinks)
@@ -305,6 +316,14 @@ namespace Lucky.Home.Protocol
                 }
                 _sinks.Clear();
             }
+        }
+
+        private void RenameInternal(Guid newId)
+        {
+            Guid oldId = Id;
+            Id = newId;
+            Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
+            Manager.GetService<INodeManager>().EndRenameNode(this, oldId, newId, true);
         }
 
         /// <summary>

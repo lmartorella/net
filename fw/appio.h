@@ -33,6 +33,5 @@ extern RESET_REASON g_resetReason;
 
 // Get last reset reason as 3 char code
 void sys_storeResetReason();
-BOOL sys_isResetReasonExc();
 
 #endif

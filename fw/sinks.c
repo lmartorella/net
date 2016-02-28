@@ -44,7 +44,7 @@ static BOOL sysSink_write()
     prot_control_write(&ResetCode, sizeof(FOURCC));
     prot_control_writeW(l);
     
-    if (sys_isResetReasonExc())
+    if (g_resetReason == RESET_EXC)
     {
         prot_control_write(&ExceptionText, sizeof(FOURCC));
         

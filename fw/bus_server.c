@@ -8,16 +8,17 @@
 #ifdef HAS_BUS_SERVER
 
 // 8*8 = 63 max children (last is broadcast)
-#define MAX_CHILDREN 64
-static BYTE s_childKnown[MAX_CHILDREN / 8];
+#define MAX_CHILDREN 2
+static BYTE s_childKnown[(MAX_CHILDREN + 7) / 8];
 
-// Ack message contains ACK + ERRCODE now
-#define ACK_MSG_SIZE (4+8)
+// Ack message contains ACK
+#define ACK_MSG_SIZE 4
+#define BROADCAST_ADDRESS 0xff
 
-static signed char s_scanIndex;
+static BYTE s_scanIndex;
 static TICK_TYPE s_lastScanTime;
 static TICK_TYPE s_lastTime;
-static BOOL s_dirtyChildren;
+static bit s_dirtyChildren;
 
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
@@ -35,12 +36,12 @@ static enum {
     BUS_PRIV_STATE_SOCKET_CONNECTED
 } s_busState;
 
-static BOOL s_waitTxFlush;
+static bit s_waitTxFlush;
 
 static void bus_socketCreate();
 static void bus_socketPoll();
 
-static BOOL isChildKnown(signed char i)
+static bit isChildKnown(signed char i)
 {
     return (s_childKnown[i / 8] & (1 << (i % 8))) != 0;
 }
@@ -53,12 +54,12 @@ static void setChildKnown(signed char i)
 void bus_init()
 {
     // No beans are known
-    for (int i = 0; i < MAX_CHILDREN / 8; i++) {
+    for (int i = 0; i < ((MAX_CHILDREN + 7) / 8); i++) {
         s_childKnown[i] = 0;
     }
     
     // Starts from zero
-    s_scanIndex = -1;
+    s_scanIndex = BROADCAST_ADDRESS;
     s_socketConnected = -1;
     s_waitTxFlush = FALSE;
     s_dirtyChildren = FALSE;
@@ -75,9 +76,9 @@ static void bus_scanNext()
     
     // Poll next child 
     s_scanIndex++;
-    if (s_scanIndex >= 1/*MAX_CHILDREN*/) {
+    if (s_scanIndex >= MAX_CHILDREN) {
         // Do broadcast now
-        s_scanIndex = -1;
+        s_scanIndex = BROADCAST_ADDRESS;
         msgType = BUS_MSG_TYPE_READY_FOR_HELLO;
     }
     
@@ -106,9 +107,7 @@ static void bus_registerNewNode() {
     };
     
     // Have the good address
-    // Store it
-    setChildKnown(s_scanIndex);
-    s_dirtyChildren = TRUE;
+    // Do not store it now, store it after the ack
     
     // Send it
     BYTE buffer[4] = { 0x55, 0xaa };
@@ -129,12 +128,12 @@ static void bus_checkAck()
     rs485_read(buffer, ACK_MSG_SIZE);
     if (!rs485_lastRc9 && buffer[0] == 0x55 && buffer[1] == 0xaa && buffer[2] == s_scanIndex) {
         // Ok, good response
-        if (buffer[3] == BUS_ACK_TYPE_HELLO && s_scanIndex == -1) {
+        if (buffer[3] == BUS_ACK_TYPE_HELLO && s_scanIndex == BROADCAST_ADDRESS) {
             // Need registration.
             bus_registerNewNode();
             return;
         }
-        else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT && !isChildKnown(s_scanIndex)) {
+        else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT && !isChildKnown(s_scanIndex) && s_scanIndex != BROADCAST_ADDRESS) {
             // A node with address registered, but I didn't knew it. Register it.
             setChildKnown(s_scanIndex);
             s_dirtyChildren = TRUE;

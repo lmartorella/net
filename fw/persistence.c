@@ -8,7 +8,10 @@ EEPROM_MODIFIER char g_persistentDataFiller[0x400 - 16] @ 0x1F810;
 #define ROM_ADDR ((const void*)&g_persistentData)
 #elif _CONF_MINI_BEAN
 #define ROM_ADDR 0
-EEPROM_MODIFIER PersistentData g_persistentData = { {0x00000000, 0x0000, 0x0000, 0x00000000, 0x00000000 } };
+EEPROM_MODIFIER PersistentData g_persistentData = { 
+    {0x00000000, 0x0000, 0x0000, 0x00000000, 0x00000000 }, 
+    0xff
+};
 #endif
 
 void boot_getUserData(PersistentData* newData)

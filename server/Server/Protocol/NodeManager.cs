@@ -36,7 +36,9 @@ namespace Lucky.Home.Protocol
                 if (node == null)
                 {
                     // New node!
-                    _nodes.Add(guid, new TcpNode(guid, address));
+                    var tcpNode = new TcpNode(guid, address);
+                    _nodes.Add(guid, tcpNode);
+                    tcpNode.Init();
                 }
                 else
                 {
@@ -48,7 +50,6 @@ namespace Lucky.Home.Protocol
 
         private void RegisterNewNode(TcpNodeAddress address)
         {
-            TcpNode newNode;
             lock (_nodeLock)
             {
                 // Ignore consecutive messages
@@ -56,8 +57,24 @@ namespace Lucky.Home.Protocol
                 {
                     return;
                 }
-                newNode = new TcpNode(Guid.Empty, address);
+                var newNode = new TcpNode(Guid.Empty, address);
                 _unnamedNodes.Add(address, newNode);
+                newNode.Init();
+            }
+        }
+
+        public void RegisterUnknownNode(TcpNodeAddress address)
+        {
+            lock (_nodeLock)
+            {
+                // Ignore consecutive messages
+                if (_unnamedNodes.ContainsKey(address))
+                {
+                    return;
+                }
+                var newNode = new TcpNode(Guid.Empty, address, true);
+                _unnamedNodes.Add(address, newNode);
+                newNode.Init();
             }
         }
 
@@ -115,17 +132,6 @@ namespace Lucky.Home.Protocol
                     node.Relogin(address);
                 }
             }
-        }
-
-        public Guid CreateNewGuid()
-        {
-            // Avoid 55aa string
-            Guid ret;
-            do
-            {
-                ret = Guid.NewGuid();
-            } while (ret.ToString().ToLower().Contains("55aa") || ret.ToString().ToLower().Contains("55-aa"));
-            return ret;
         }
 
         private TcpNode FindById(Guid guid)
