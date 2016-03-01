@@ -9,7 +9,8 @@
 
 // 8*8 = 63 max children (last is broadcast)
 #define MAX_CHILDREN 2
-static BYTE s_childKnown[(MAX_CHILDREN + 7) / 8];
+#define BUFFER_MASK_SIZE ((MAX_CHILDREN + 7) / 8)
+static BYTE s_childKnown[BUFFER_MASK_SIZE];
 
 // Ack message contains ACK
 #define ACK_MSG_SIZE 4
@@ -18,7 +19,7 @@ static BYTE s_childKnown[(MAX_CHILDREN + 7) / 8];
 static BYTE s_scanIndex;
 static TICK_TYPE s_lastScanTime;
 static TICK_TYPE s_lastTime;
-static bit s_dirtyChildren;
+bit bus_dirtyChildren;
 
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
@@ -54,7 +55,7 @@ static void setChildKnown(signed char i)
 void bus_init()
 {
     // No beans are known
-    for (int i = 0; i < ((MAX_CHILDREN + 7) / 8); i++) {
+    for (int i = 0; i < BUFFER_MASK_SIZE; i++) {
         s_childKnown[i] = 0;
     }
     
@@ -62,7 +63,7 @@ void bus_init()
     s_scanIndex = BROADCAST_ADDRESS;
     s_socketConnected = -1;
     s_waitTxFlush = FALSE;
-    s_dirtyChildren = FALSE;
+    bus_dirtyChildren = FALSE;
     
     // Do full scan
     s_lastScanTime = TickGet();
@@ -102,6 +103,7 @@ static void bus_registerNewNode() {
         if (s_scanIndex >= MAX_CHILDREN) {
             // Ops, no space
             s_busState = BUS_PRIV_STATE_IDLE;
+            s_scanIndex = 0;
             return;
         }
     };
@@ -135,8 +137,8 @@ static void bus_checkAck()
         }
         else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT && !isChildKnown(s_scanIndex) && s_scanIndex != BROADCAST_ADDRESS) {
             // A node with address registered, but I didn't knew it. Register it.
+            bus_dirtyChildren = TRUE;
             setChildKnown(s_scanIndex);
-            s_dirtyChildren = TRUE;
         }
     }
     // Next one.
@@ -230,8 +232,6 @@ BUS_STATE bus_getState()
         return BUS_STATE_SOCKET_CONNECTED;
     if (s_socketConnected == -2) 
         return BUS_STATE_SOCKET_TIMEOUT;
-    if (s_dirtyChildren)
-        return BUS_STATE_DIRTY_CHILDREN;
     return BUS_STATE_NONE;
 }
 
@@ -252,7 +252,6 @@ static void bus_socketPoll()
 {
     // Bus line is slow, though
     BYTE buffer[8];
-    BOOL updateTimer = FALSE;
             
     // Data from IP?
     WORD rx = prot_control_readAvail();
@@ -262,7 +261,7 @@ static void bus_socketPoll()
         prot_control_read(buffer, rx);
         
         rs485_write(FALSE, buffer, rx);
-        updateTimer = TRUE;
+        s_lastTime = TickGet();
     }
     else {
         // Data received?
@@ -285,25 +284,20 @@ static void bus_socketPoll()
                 s_busState = BUS_PRIV_STATE_IDLE;
             }
             else {
-                updateTimer = TRUE;
+                s_lastTime = TickGet();
             }
         }
     }
-    
-    if (updateTimer) {
-        s_lastTime = TickGet();
-    }
 }
 
-int bus_getAliveCountAndResetDirty() {
-    int res = 0;
-    for (int i = 0; i < MAX_CHILDREN; i++) {
-        if (isChildKnown(i)) {
-            res++;
-        }
-    }
-    s_dirtyChildren = FALSE;
-    return res;
+int bus_getChildrenMaskSize()
+{
+    return BUFFER_MASK_SIZE;
+}
+
+const BYTE* bus_getChildrenMask()
+{
+    return s_childKnown;
 }
 
 #endif

@@ -26,12 +26,12 @@ void rs485_poll();
 // Enqueue bytes to send. Use 9-bit address. Buffer is copied (max. 32 bytes)
 void rs485_write(BOOL address, const BYTE* data, BYTE size);
 // Read data, if available.
-BOOL rs485_read(BYTE* data, BYTE size);
+bit rs485_read(BYTE* data, BYTE size);
 BYTE rs485_readAvail();
 // Get the last bit9 received
-extern BOOL rs485_lastRc9;
+extern bit rs485_lastRc9;
 // Get/set the skip flag. If set, rc9 = 0 bytes are skipped by receiver
-extern BOOL rs485_skipData;
+extern bit rs485_skipData;
 
 RS485_STATE rs485_getState();
 

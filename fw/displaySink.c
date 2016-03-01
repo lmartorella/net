@@ -6,15 +6,15 @@
 
 #ifdef HAS_CM1602
 
-static BOOL readHandler();
-static BOOL writeHandler();
+static bit readHandler();
+static bit writeHandler();
 
 const Sink g_displaySink = { { "LINE" },
                              &readHandler,
                              &writeHandler
 };
 
-static BOOL readHandler()
+static bit readHandler()
 {
     // Only single packet messages are supported
     WORD length, p = 0;
@@ -37,7 +37,7 @@ static BOOL readHandler()
     return FALSE;
 }
 
-static BOOL writeHandler()
+static bit writeHandler()
 {
     // Num of lines
    prot_control_writeW(1);

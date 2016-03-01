@@ -178,7 +178,7 @@ void prot_control_close()
 }
 
 // Socket connected?
-BOOL prot_control_isConnected()
+bit prot_control_isConnected()
 {
     return s_state == STATE_SOCKET_OPEN;
 }

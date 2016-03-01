@@ -86,8 +86,9 @@ namespace Lucky.Home.Protocol
 
         private class GetChildrenMessageResponse
         {
-            public short Count;
             public Guid Guid;
+            [SerializeAsDynArray()]
+            public byte[] Mask;
         }
 
         private class SelectNodeMessage
@@ -232,7 +233,7 @@ namespace Lucky.Home.Protocol
         {
             // Init a METADATA fetch connection
             string[] sinks = null;
-            int childCount = 0;
+            byte[] childMask = new byte[0];
             TcpNodeAddress address = null;
             Guid newGuidToAssign = Guid.Empty;
 
@@ -260,7 +261,7 @@ namespace Lucky.Home.Protocol
                         Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childNodes.Guid);
                     }
                 }
-                childCount = childNodes.Count - 1;
+                childMask = childNodes.Mask;
 
                 // Then ask for sinks
                 connection.Write(new GetSinksMessage());
@@ -286,8 +287,24 @@ namespace Lucky.Home.Protocol
             // Now register sinks
             RegisterSinks(sinks);
 
-            var children = Enumerable.Range(1, childCount).Select(i => address.SubNode(i)).ToArray();
+            var children = ToIntEnumerable(childMask).Select(i => address.SubNode(i + 1)).ToArray();
             return Tuple.Create(true, children);
+        }
+
+        private static IEnumerable<int> ToIntEnumerable(byte[] mask)
+        {
+            int index = 0;
+            for (int j = 0; j < mask.Length; j++)
+            {
+                var b = mask[j];
+                for (int i = 0; i < 8; i++, index++, b >>= 1)
+                {
+                    if ((b & 1) != 0)
+                    {
+                        yield return index;
+                    }
+                }
+            }
         }
 
         private void RegisterSinks(string[] sinks)

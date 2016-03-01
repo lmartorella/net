@@ -18,7 +18,7 @@
 static UDP_SOCKET s_heloSocket;  
 // TCP lister control socket
 static TCP_SOCKET s_controlSocket;
-static BOOL s_started = FALSE;
+static bit s_started = FALSE;
 
 APP_CONFIG AppConfig;
 
@@ -33,7 +33,7 @@ __PACK typedef struct
 	WORD controlPort;
 } HOME_REQUEST;
 
-static void sendHelo(BOOL dirtyChildren);
+static void sendHelo();
 static void pollControlPort();
 
 // Close the control port listener
@@ -44,7 +44,7 @@ void prot_control_close()
     TCPDisconnect(s_controlSocket);
 }
 
-BOOL prot_control_readW(WORD* w)
+bit prot_control_readW(WORD* w)
 {
     WORD l = TCPIsGetReady(s_controlSocket);
 	if (l < 2) 
@@ -53,7 +53,7 @@ BOOL prot_control_readW(WORD* w)
 	return TRUE;
 }
 
-BOOL prot_control_read(void* data, WORD size)
+bit prot_control_read(void* data, WORD size)
 {
     WORD l = TCPIsGetReady(s_controlSocket);
 	if (l < size)
@@ -78,7 +78,7 @@ void prot_control_flush()
     TCPFlush(s_controlSocket);
 }
 
-BOOL prot_control_isConnected()
+bit prot_control_isConnected()
 {
     return s_started && TCPIsConnected(s_controlSocket);
 }
@@ -120,7 +120,7 @@ void ip_prot_init()
 /*
 	Manage slow timer (heartbeats)
 */
-void ip_prot_slowTimer(BOOL dirtyChildren)
+void ip_prot_slowTimer()
 {
     char buffer[16];
     int dhcpOk;
@@ -146,11 +146,11 @@ void ip_prot_slowTimer(BOOL dirtyChildren)
     if (s_started)
     {
         // Ping server every second
-        sendHelo(dirtyChildren);
+        sendHelo(bus_dirtyChildren);
     }
 }
 
-static void sendHelo(BOOL dirtyChildren)
+static void sendHelo()
 {
     PersistentData persistence;
     boot_getUserData(&persistence);
@@ -162,7 +162,7 @@ static void sendHelo(BOOL dirtyChildren)
 	}
 
 	UDPPutString("HOME");
-	UDPPutString(prot_registered ? (dirtyChildren ? "NWND" : "HTBT") : "HEL3");
+	UDPPutString(prot_registered ? (bus_dirtyChildren ? "NWND" : "HTBT") : "HEL3");
 	UDPPutArray((BYTE*)(&persistence.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();   

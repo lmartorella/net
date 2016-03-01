@@ -8,7 +8,7 @@
 // Manage poll activities
 void ip_prot_init();
 // Manage slow timer (heartbeats)
-void ip_prot_slowTimer(BOOL dirtyChildren);
+void ip_prot_slowTimer();
 
 #endif
 

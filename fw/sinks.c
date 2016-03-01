@@ -3,8 +3,8 @@
 #include "appio.h"
 #include "displaySink.h"
 
-static BOOL sysSink_read();
-static BOOL sysSink_write();
+static bit sysSink_read();
+static bit sysSink_write();
 
 static const Sink s_sysSink = {
     "SYS ",
@@ -26,7 +26,7 @@ int AllSinksSize =
 #endif
 ;
 
-static BOOL sysSink_read()
+static bit sysSink_read()
 {
     // No read implemented so far
     fatal("SYS.WR");
@@ -37,7 +37,7 @@ const FOURCC ResetCode = "REST";
 const FOURCC ExceptionText = "EXCM";
 const FOURCC EndOfMetadataText = "EOMD";
 
-static BOOL sysSink_write()
+static bit sysSink_write()
 {
     WORD l = g_resetReason;
     // Write reset reason

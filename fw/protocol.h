@@ -12,27 +12,27 @@
 #define prot_control_flush() 
 #define prot_control_readAvail() rs485_readAvail()
 #else
-BOOL prot_control_readW(WORD* w);
-BOOL prot_control_read(void* data, WORD size);
+bit prot_control_readW(WORD* w);
+bit prot_control_read(void* data, WORD size);
 void prot_control_writeW(WORD w);
 void prot_control_write(const void* data, WORD size);
 void prot_control_flush();
 WORD prot_control_readAvail();
-extern BOOL prot_registered;
+extern bit prot_registered;
 #endif
 
 void prot_control_close();
-BOOL prot_control_isConnected();
+bit prot_control_isConnected();
 
 void prot_init();
 void prot_poll();
 
 // Process WRIT message: read data for sink
 // Return TRUE to continue to read, FALSE if read process finished
-typedef BOOL (*Sink_ReadHandler)();
+typedef bit (*Sink_ReadHandler)();
 // Process READ message: write data from sink
 // Return TRUE to continue to write, FALSE if write process finished
-typedef BOOL (*Sink_WriteHandler)();
+typedef bit (*Sink_WriteHandler)();
 
 // Class virtual pointers
 typedef struct SinkStruct

@@ -36,8 +36,8 @@ static BYTE* s_writePtr;
 static BYTE* s_readPtr;
 
 // Status of address bit in the serie
-BOOL rs485_lastRc9;
-BOOL rs485_skipData;
+bit rs485_lastRc9;
+bit rs485_skipData;
 
 static TICK_TYPE s_lastTick;
 
@@ -288,14 +288,14 @@ RS485_STATE rs485_getState() {
     }
 }
 
-BOOL rs485_read(BYTE* data, BYTE size)
+bit rs485_read(BYTE* data, BYTE size)
 {
     if (s_status != STATUS_RECEIVE) { 
         rs485_startRead();
         return FALSE;
     }
     else {
-        BOOL ret = FALSE;
+        static bit ret = FALSE;
         // Disable RX interrupts
         RS485_PIE_RCIE = 0;
 

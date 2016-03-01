@@ -9,6 +9,7 @@ namespace Lucky.Home.Protocol
         void RegisterNode(Guid guid, TcpNodeAddress address);
         void HeartbeatNode(Guid guid, TcpNodeAddress address);
         void RefetchSubNodes(Guid guid, TcpNodeAddress address);
+        // Register a unknown (no GUID) node, typically subnode, if not registered yet
         void RegisterUnknownNode(TcpNodeAddress address);
 
         ITcpNode FindNode(Guid guid);

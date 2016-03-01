@@ -36,8 +36,7 @@ typedef enum {
 typedef enum {
     BUS_STATE_NONE,
     BUS_STATE_SOCKET_CONNECTED,
-    BUS_STATE_SOCKET_TIMEOUT,
-    BUS_STATE_DIRTY_CHILDREN
+    BUS_STATE_SOCKET_TIMEOUT
 } BUS_STATE;
 
 
@@ -47,9 +46,11 @@ void bus_disconnectSocket(int val);
 
 // Is still in command execution, waiting for command data receive complete?
 BUS_STATE bus_getState();
+extern bit bus_dirtyChildren;
 
-// Get known children count
-int bus_getAliveCountAndResetDirty();
+// Get active children mask & size
+int bus_getChildrenMaskSize();
+const BYTE* bus_getChildrenMask();
 
 
 #endif

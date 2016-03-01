@@ -18,8 +18,7 @@ static signed char s_inWriteSink;
 static int s_commandToRun;
 
 #ifdef HAS_BUS_SERVER
-static BOOL s_dirtyChildren;
-BOOL prot_registered;
+bit prot_registered;
 #endif
 
 void prot_init()
@@ -36,7 +35,6 @@ void prot_init()
 #endif
     
 #ifdef HAS_BUS_SERVER
-    s_dirtyChildren = FALSE;
     prot_registered = FALSE;
 #endif
     
@@ -73,20 +71,29 @@ static void SELE_command()
 static void CHIL_command()
 {
     // Fetch my GUID
-    PersistentData persistence;
-    boot_getUserData(&persistence);
+    union {
+        PersistentData persistence;
+        WORD count;
+    } buffer;
+    
+    boot_getUserData(&buffer.persistence);
+
+    // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
+    prot_control_write(&buffer.persistence.deviceId, sizeof(GUID));
     
 #ifdef HAS_BUS_SERVER
     // Propagate the request to all children to fetch their GUIDs
-    prot_control_writeW(1 + bus_getAliveCountAndResetDirty());
+    buffer.count = bus_getChildrenMaskSize();
+    prot_control_writeW(buffer.count);
+    prot_control_write(bus_getChildrenMask(), buffer.count);
+
+    bus_dirtyChildren = FALSE;
 #else    
-    // Only 1 children: me
-    WORD w = 1;
-    prot_control_writeW(w);
+    // No children
+    buffer.count = 0;
+    prot_control_writeW(buffer.count);
 #endif
     
-    // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
-    prot_control_write(&persistence.deviceId, sizeof(GUID));
     prot_control_flush();      
 }
 
@@ -185,7 +192,7 @@ void prot_poll()
     if (TickGet() - s_slowTimer >= TICKS_PER_SECOND)
     {
         s_slowTimer = TickGet();
-        ip_prot_slowTimer(s_dirtyChildren);
+        ip_prot_slowTimer();
     }
 #endif
     
@@ -199,7 +206,6 @@ void prot_poll()
 #ifdef HAS_BUS_SERVER
     // Socket connected?
     BUS_STATE busState = bus_getState(); 
-    s_dirtyChildren = FALSE;
     switch (busState) {
         case BUS_STATE_SOCKET_CONNECTED:
             // TCP is still polled by bus
@@ -207,9 +213,6 @@ void prot_poll()
         case BUS_STATE_SOCKET_TIMEOUT:
             // drop the TCP connection        
             prot_control_close();
-            break;
-        case BUS_STATE_DIRTY_CHILDREN:
-            s_dirtyChildren = TRUE;
             break;
     }
 #endif
