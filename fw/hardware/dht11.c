@@ -48,6 +48,8 @@ static BYTE readByte()
 
 bit dht11_read(BYTE* buffer)
 {
+    di();    
+    
     DHT11_PORT_TRIS = 0; // Data port is output
     DHT11_PORT = 0;     // low
     
@@ -66,15 +68,25 @@ bit dht11_read(BYTE* buffer)
     
     // Check response
     US_TIMER = 0;
-    while (!DHT11_PORT) 
-        if (US_TIMER > 200) return FALSE;
+    while (!DHT11_PORT) {
+        if (US_TIMER > 200) {
+            ei();
+            return FALSE;
+        }
+    }
     US_TIMER = 0;
-    while (DHT11_PORT) 
-        if (US_TIMER > 200) return FALSE;
-    
+    while (DHT11_PORT) {
+        if (US_TIMER > 200) {
+            ei();
+            return FALSE;
+        }
+    }
+
     for (char i = 0; i < 5; i++, buffer++) {
         *buffer = readByte();
     }
+    
+    ei();
     return TRUE;
 }
 
