@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using Lucky.Home.Serialization;
 
-namespace Lucky.Home.Sinks
+namespace Lucky.Home.Sinks.App
 {
     /// <summary>
     /// Passive/poll based switch array

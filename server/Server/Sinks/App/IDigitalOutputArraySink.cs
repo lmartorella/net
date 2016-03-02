@@ -1,4 +1,4 @@
-namespace Lucky.Home.Sinks
+namespace Lucky.Home.Sinks.App
 {
     /// <summary>
     /// Digital outputs array

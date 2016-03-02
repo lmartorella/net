@@ -45,7 +45,11 @@ void main()
 #ifdef HAS_VS1011
     vs1011_init();
 #endif
-       
+
+#ifdef HAS_DHT11
+    dht11_init();
+#endif
+
     enableInterrupts();
 
 #ifdef HAS_RS485

@@ -98,21 +98,13 @@ namespace Lucky.Home.Protocol
             {
                 try
                 {
-                    byte[] raw = data as byte[];
-                    if (raw != null)
-                    {
-                        _stream.Write(raw, 0, raw.Length);
-                    }
-                    else
-                    {
-                        MemoryStream stream = new MemoryStream();
-                        var writer = new BinaryWriter(stream);
-                        NetSerializer<T>.Write(data, writer);
-                        writer.Flush();
-                        byte[] data1 = stream.ToArray();
-                        stream.Position = 0;
-                        _stream.Write(data1, 0, data1.Length);
-                    }
+                    MemoryStream stream = new MemoryStream();
+                    var writer = new BinaryWriter(stream);
+                    NetSerializer<T>.Write(data, writer);
+                    writer.Flush();
+                    byte[] data1 = stream.ToArray();
+                    stream.Position = 0;
+                    _stream.Write(data1, 0, data1.Length);
                     _stream.Flush();
                 }
                 catch (Exception exc)
@@ -121,6 +113,12 @@ namespace Lucky.Home.Protocol
                     // Destroy the channel
                     TcpConnection.Close(_endPoint, false);
                 }
+            }
+
+            public void WriteBytes(byte[] data)
+            {
+                _stream.Write(data, 0, data.Length);
+                _stream.Flush();
             }
 
             public T Read<T>()
@@ -136,6 +134,11 @@ namespace Lucky.Home.Protocol
                     TcpConnection.Close(_endPoint, false);
                     return default(T);
                 }
+            }
+
+            public byte[] ReadBytes(int byteCount)
+            {
+                return _reader.ReadBytes(byteCount);
             }
         }
 
@@ -175,6 +178,16 @@ namespace Lucky.Home.Protocol
         public T Read<T>()
         {
             return GetClient().Read<T>();
+        }
+
+        public byte[] ReadBytes(int byteCount)
+        {
+            return GetClient().ReadBytes(byteCount);
+        }
+
+        public void WriteBytes(byte[] bytes)
+        {
+            GetClient().WriteBytes(bytes);
         }
 
         private Client GetClient()

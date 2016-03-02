@@ -17,6 +17,7 @@
         <itemPath>../hardware/fuses_mini_bean.h</itemPath>
         <itemPath>../hardware/tick.h</itemPath>
         <itemPath>../hardware/leds.h</itemPath>
+        <itemPath>../hardware/dht11.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -79,6 +80,7 @@
         <itemPath>../hardware/fuses_mini_bean.c</itemPath>
         <itemPath>../hardware/tick_pic18.c</itemPath>
         <itemPath>../hardware/tick_pic16.c</itemPath>
+        <itemPath>../hardware/dht11.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>

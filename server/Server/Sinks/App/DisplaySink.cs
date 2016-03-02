@@ -3,7 +3,7 @@ using Lucky.Home.Serialization;
 
 // ReSharper disable once UnusedMember.Global
 
-namespace Lucky.Home.Sinks
+namespace Lucky.Home.Sinks.App
 {
     /// <summary>
     /// Simple line display protocol

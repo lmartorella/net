@@ -34,6 +34,8 @@ typedef bit (*Sink_ReadHandler)();
 // Return TRUE to continue to write, FALSE if write process finished
 typedef bit (*Sink_WriteHandler)();
 
+bit sink_nullFunc();
+
 // Class virtual pointers
 typedef struct SinkStruct
 {	

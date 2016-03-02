@@ -2,6 +2,7 @@
 #include "protocol.h"
 #include "appio.h"
 #include "displaySink.h"
+#include "hardware/dht11.h"
 
 static bit sysSink_read();
 static bit sysSink_write();
@@ -15,16 +16,26 @@ static const Sink s_sysSink = {
 const Sink* AllSinks[] = { 
     &s_sysSink,
 #ifdef HAS_CM1602
-    &g_displaySink 
+    &g_displaySink, 
+#endif
+#ifdef HAS_DHT11
+    &g_tempSink 
 #endif
 };
+
 int AllSinksSize = 
-#ifdef HAS_CM1602
+#if defined(HAS_CM1602) || defined(HAS_DHT11)
     2
 #else
     1
 #endif
 ;
+
+bit sink_nullFunc()
+{
+    // No data
+    return FALSE;
+}
 
 static bit sysSink_read()
 {

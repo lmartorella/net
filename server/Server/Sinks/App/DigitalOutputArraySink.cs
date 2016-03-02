@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 
-namespace Lucky.Home.Sinks
+namespace Lucky.Home.Sinks.App
 {
     /// <summary>
     /// Passive output array

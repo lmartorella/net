@@ -2,6 +2,7 @@
 #define _FUSES_INCLUDE_
 
 #define SYSTEM_CLOCK 4000000ul
+#define _XTAL_FREQ SYSTEM_CLOCK
 #define PRIO_TYPE
 
 #undef HAS_CM1602
@@ -59,6 +60,14 @@
 extern persistent BYTE g_exceptionPtr;
 #define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }
 
+
+#define HAS_DHT11
+#define DHT11_PORT_PULLUPS OPTION_REGbits.nRBPU
+#define DHT11_PORT PORTBbits.RB5
+#define DHT11_PORT_TRIS TRISBbits.TRISB5
+#define US_TIMER TMR1L
+    // Prescaler 1:1, = 1MHz timer (us), started
+#define US_TIMER_INIT() { T1CON = 1; }
 #endif
 
 
