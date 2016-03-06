@@ -23,7 +23,6 @@ namespace Lucky.Home.Sinks
 
         private async Task<NodeStatus> GetBootStatus()
         {
-            Logger.Log("Getting boot status");
             NodeStatus status = new NodeStatus();
             await Read(reader =>
             {
@@ -45,6 +44,7 @@ namespace Lucky.Home.Sinks
                     }
                 }
             });
+            Logger.Log("Getting boot status: " + status);
             return status;
         }
     }

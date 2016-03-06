@@ -184,6 +184,11 @@ namespace Lucky.Home.Protocol
             }
         }
 
+        private class CloseMessage
+        {
+            public Fourcc Cmd = new Fourcc("CLOS");
+        }
+
         private static async Task<bool> OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
         {
             // Init a METADATA fetch connection
@@ -341,6 +346,8 @@ namespace Lucky.Home.Protocol
             Id = newId;
             Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
             Manager.GetService<INodeManager>().EndRenameNode(this, oldId, newId, true);
+
+            Logger.Warning("CorrectGuidAssigned", "oldId", oldId, "newId", newId);
         }
 
         /// <summary>

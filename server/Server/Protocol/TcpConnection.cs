@@ -51,11 +51,14 @@ namespace Lucky.Home.Protocol
             public void Release()
             {
                 _cancellationToken = new CancellationTokenSource();
+
                 // Start timeout auto-disposal timer
-                Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
+                // TODO: disabled since cause issues when cross-talking between sub-clients 
+                // of same node (line not released, SELE not readdress)
+                //Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
                 {
                     Close(_endPoint, true);
-                }, _cancellationToken.Token);
+                }//, _cancellationToken.Token);
                 _mutex.ReleaseMutex();
             }
         }

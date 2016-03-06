@@ -12,7 +12,7 @@ namespace Lucky.Home.Sinks
     internal class SinkBase : IDisposable, ISink
     {
         private int _index;
-        protected readonly ILogger Logger;
+        protected ILogger Logger;
 
         protected SinkBase()
         {
@@ -24,6 +24,9 @@ namespace Lucky.Home.Sinks
         {
             Node = node;
             _index = index;
+
+            Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name + ":" + node.Address);
+
             OnInitialize();
         }
 
