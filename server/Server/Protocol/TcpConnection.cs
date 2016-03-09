@@ -27,6 +27,11 @@ namespace Lucky.Home.Protocol
             public Fourcc Cmd = new Fourcc("CLOS");
         }
 
+        private class CloseMessageResponse
+        {
+            public byte Ack;
+        }
+
         private class ClientMutex
         {
             private readonly IPEndPoint _endPoint;
@@ -53,12 +58,10 @@ namespace Lucky.Home.Protocol
                 _cancellationToken = new CancellationTokenSource();
 
                 // Start timeout auto-disposal timer
-                // TODO: disabled since cause issues when cross-talking between sub-clients 
-                // of same node (line not released, SELE not readdress)
-                //Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
+                Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
                 {
-                    Close(_endPoint, true);
-                }//, _cancellationToken.Token);
+                    CleanClose(_endPoint);
+                }, _cancellationToken.Token);
                 _mutex.ReleaseMutex();
             }
         }
@@ -89,6 +92,7 @@ namespace Lucky.Home.Protocol
                     if (sendCloseMessage)
                     {
                         Write(new CloseMessage());
+                        Read<CloseMessageResponse>();
                     }
 
                     _stream.Flush();
@@ -114,7 +118,7 @@ namespace Lucky.Home.Protocol
                 {
                     Logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
                     // Destroy the channel
-                    TcpConnection.Close(_endPoint, false);
+                    Abort(_endPoint);
                 }
             }
 
@@ -134,7 +138,7 @@ namespace Lucky.Home.Protocol
                 {
                     Logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
                     // Destroy the channel
-                    TcpConnection.Close(_endPoint, false);
+                    Abort(_endPoint);
                     return default(T);
                 }
             }
@@ -205,7 +209,7 @@ namespace Lucky.Home.Protocol
             return client;
         }
 
-        public static void Close(IPEndPoint endPoint, bool sendCloseMessage = false)
+        public static void CleanClose(IPEndPoint endPoint)
         {
             lock (s_lockObject)
             {
@@ -213,7 +217,22 @@ namespace Lucky.Home.Protocol
                 if (s_activeClients.TryGetValue(endPoint, out client))
                 {
                     // Destroy the channel
-                    client.Close(sendCloseMessage);
+                    client.Close(true);
+                    s_activeClients.Remove(endPoint);
+                }
+                s_mutexes.Remove(endPoint);
+            }
+        }
+
+        public static void Abort(IPEndPoint endPoint)
+        {
+            lock (s_lockObject)
+            {
+                Client client;
+                if (s_activeClients.TryGetValue(endPoint, out client))
+                {
+                    // Destroy the channel
+                    client.Close(false);
                     s_activeClients.Remove(endPoint);
                 }
                 s_mutexes.Remove(endPoint);

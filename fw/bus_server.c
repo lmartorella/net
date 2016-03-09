@@ -272,13 +272,9 @@ static void bus_socketPoll()
             tx = tx > sizeof(buffer) ? sizeof(buffer) : tx;
             rs485_read(buffer, tx);
             
-            if (rs485_lastRc9) {
-                // Socket close. Strip last byte
-                tx--;
-            }
-
             prot_control_write(buffer, tx);
-            
+          
+            // Socket close?
             if (rs485_lastRc9) {
                 // Now the channel is idle again
                 s_busState = BUS_PRIV_STATE_IDLE;

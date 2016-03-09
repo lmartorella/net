@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using Lucky.HomeMock.Sinks;
 using Lucky.Services;
 
@@ -41,15 +42,18 @@ namespace Lucky.HomeMock.Core
                     _serviceListener = null;
                 }
             }
+        }
 
-            AsyncCallback handler = null;
-            handler = ar =>
+        public void StartServer()
+        {
+            System.Threading.Tasks.Task.Run(async () =>
             {
-                var tcpClient = _serviceListener.EndAcceptTcpClient(ar);
-                HandleServiceSocketAccepted(tcpClient);
-                _serviceListener.BeginAcceptTcpClient(handler, null);
-            };
-            _serviceListener.BeginAcceptTcpClient(handler, null);
+                while (true)
+                {
+                    var tcpClient = await _serviceListener.AcceptTcpClientAsync();
+                    HandleServiceSocketAccepted(tcpClient);
+                }
+            });
         }
 
         public void InitSinks(IEnumerable<SinkMockBase> sinks)
@@ -71,9 +75,8 @@ namespace Lucky.HomeMock.Core
             private readonly ControlPortListener _listener;
             private readonly BinaryWriter _writer;
             private readonly BinaryReader _reader;
-            private int _nodeIdx = 0;
 
-            public ControlSession(Stream stream, ILogger logger, ControlPortListener listener)
+            public ControlSession(NetworkStream stream, ILogger logger, ControlPortListener listener)
             {
                 _logger = logger;
                 _listener = listener;
@@ -90,25 +93,35 @@ namespace Lucky.HomeMock.Core
             private string ReadCommand()
             {
                 byte[] buffer = new byte[4];
-                _reader.Read(buffer, 0, 4);
+                if (_reader.Read(buffer, 0, 4) < 4)
+                {
+                    return null;
+                }
                 return Encoding.ASCII.GetString(buffer);
             }
 
             private bool RunServer()
             {
                 string command = ReadCommand();
+                if (command == null)
+                {
+                    return false;
+                }
+
                 _logger.Log("Msg: " + command);
                 ushort sinkIdx;
                 switch (command)
                 {
                     case "CLOS":
-                        return false;
+                        // Ack
+                        _writer.Write(new byte[] { 1 });
+                        break;
                     case "CHIL":
-                        Write(1);
                         Write(_listener.State.DeviceId);
+                        Write(0);
                         break;
                     case "SELE":
-                        _nodeIdx = ReadUint16();
+                        ReadUint16();
                         break;
                     case "SINK":
                         Write((ushort)_listener._sinks.Length);
@@ -183,7 +196,7 @@ namespace Lucky.HomeMock.Core
         private void HandleServiceSocketAccepted(TcpClient tcpClient)
         {
             tcpClient.NoDelay = true;
-            using (Stream stream = tcpClient.GetStream())
+            using (var stream = tcpClient.GetStream())
             {
                 Logger.Log("Incoming connection", "from", tcpClient.Client.RemoteEndPoint);
 

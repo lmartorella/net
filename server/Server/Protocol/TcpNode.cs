@@ -184,11 +184,6 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private class CloseMessage
-        {
-            public Fourcc Cmd = new Fourcc("CLOS");
-        }
-
         private static async Task<bool> OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
         {
             // Init a METADATA fetch connection
@@ -204,7 +199,7 @@ namespace Lucky.Home.Protocol
             catch (Exception exc)
             {
                 // Forbicly close the channel
-                TcpConnection.Close(new IPEndPoint(address.Address, address.ControlPort));
+                TcpConnection.Abort(new IPEndPoint(address.Address, address.ControlPort));
                 // Log exc
                 logger.Exception(exc);
                 return false;

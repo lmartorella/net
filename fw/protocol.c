@@ -44,7 +44,9 @@ void prot_init()
 
 static void CLOS_command()
 {
-	prot_control_close();
+    BYTE resp = 0;
+    // Send OK but don't close the IP socket
+    prot_control_write(&resp, 1);
 }
 
 static void SELE_command()

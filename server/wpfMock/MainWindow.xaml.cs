@@ -45,6 +45,7 @@ namespace Lucky.HomeMock
             _digitalOutputsSink = new DigitalOutputArraySink(this);
 
             var controlPort = Manager.GetService<ControlPortListener>();
+            controlPort.StartServer();
             controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
