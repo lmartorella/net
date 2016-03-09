@@ -44,9 +44,7 @@ void prot_init()
 
 static void CLOS_command()
 {
-    BYTE resp = 0;
-    // Send OK but don't close the IP socket
-    prot_control_write(&resp, 1);
+    prot_control_close();
 }
 
 static void SELE_command()
@@ -214,7 +212,7 @@ void prot_poll()
             return;
         case BUS_STATE_SOCKET_TIMEOUT:
             // drop the TCP connection        
-            prot_control_close();
+            prot_control_abort();
             break;
     }
 #endif

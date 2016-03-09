@@ -36,8 +36,14 @@ __PACK typedef struct
 static void sendHelo();
 static void pollControlPort();
 
-// Close the control port listener
 void prot_control_close()
+{
+    // Send OK but don't close the IP socket
+    prot_control_write("\x1E", 1);
+}
+
+// Close the control port listener
+void prot_control_abort()
 {
     // Returns in listening state
     TCPDiscard(s_controlSocket);

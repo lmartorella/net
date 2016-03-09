@@ -114,7 +114,7 @@ namespace Lucky.HomeMock.Core
                 {
                     case "CLOS":
                         // Ack
-                        _writer.Write(new byte[] { 1 });
+                        _writer.Write(new byte[] { 0x1e });
                         break;
                     case "CHIL":
                         Write(_listener.State.DeviceId);

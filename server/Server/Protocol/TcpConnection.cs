@@ -22,16 +22,6 @@ namespace Lucky.Home.Protocol
         private ClientMutex _mutex;
         private readonly IPEndPoint _endPoint;
 
-        private class CloseMessage
-        {
-            public Fourcc Cmd = new Fourcc("CLOS");
-        }
-
-        private class CloseMessageResponse
-        {
-            public byte Ack;
-        }
-
         private class ClientMutex
         {
             private readonly IPEndPoint _endPoint;
@@ -60,7 +50,7 @@ namespace Lucky.Home.Protocol
                 // Start timeout auto-disposal timer
                 Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(task =>
                 {
-                    CleanClose(_endPoint);
+                    Abort(_endPoint);
                 }, _cancellationToken.Token);
                 _mutex.ReleaseMutex();
             }
@@ -85,16 +75,10 @@ namespace Lucky.Home.Protocol
                 _stream.ReadTimeout = 5000;
             }
 
-            public void Close(bool sendCloseMessage)
+            public void Close()
             {
                 if (_tcpClient != null)
                 {
-                    if (sendCloseMessage)
-                    {
-                        Write(new CloseMessage());
-                        Read<CloseMessageResponse>();
-                    }
-
                     _stream.Flush();
                     _reader.Close();
                     _tcpClient = null;
@@ -209,21 +193,6 @@ namespace Lucky.Home.Protocol
             return client;
         }
 
-        public static void CleanClose(IPEndPoint endPoint)
-        {
-            lock (s_lockObject)
-            {
-                Client client;
-                if (s_activeClients.TryGetValue(endPoint, out client))
-                {
-                    // Destroy the channel
-                    client.Close(true);
-                    s_activeClients.Remove(endPoint);
-                }
-                s_mutexes.Remove(endPoint);
-            }
-        }
-
         public static void Abort(IPEndPoint endPoint)
         {
             lock (s_lockObject)
@@ -232,7 +201,7 @@ namespace Lucky.Home.Protocol
                 if (s_activeClients.TryGetValue(endPoint, out client))
                 {
                     // Destroy the channel
-                    client.Close(false);
+                    client.Close();
                     s_activeClients.Remove(endPoint);
                 }
                 s_mutexes.Remove(endPoint);

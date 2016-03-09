@@ -22,6 +22,7 @@ extern bit prot_registered;
 #endif
 
 void prot_control_close();
+void prot_control_abort();
 bit prot_control_isConnected();
 
 void prot_init();

@@ -7,6 +7,8 @@ using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 
+// ReSharper disable ClassNeverInstantiated.Local
+
 namespace Lucky.Home.Protocol
 {
     class TcpNode : ITcpNode
@@ -146,6 +148,18 @@ namespace Lucky.Home.Protocol
             public short SinkIndex;
         }
 
+        private class CloseMessage
+        {
+            public Fourcc Cmd = new Fourcc("CLOS");
+        }
+
+        private class CloseMessageResponse
+        {
+            // 0x1e
+            public byte Ack;
+        }
+
+
         private async Task FetchMetadata()
         {
             lock (_lockObject)
@@ -193,7 +207,17 @@ namespace Lucky.Home.Protocol
                 {
                     // Connecion can be recycled
                     connection.Write(new SelectNodeMessage(address.Index));
-                    return handler(connection, address);
+                    var ret = handler(connection, address);
+                    if (ret)
+                    {
+                        connection.Write(new CloseMessage());
+                        var ack = connection.Read<CloseMessageResponse>();
+                        if (ack == null || ack.Ack != 0x1e)
+                        {
+                            throw new InvalidOperationException("Missing CLOS response");
+                        }
+                    }
+                    return ret;
                 }
             }
             catch (Exception exc)

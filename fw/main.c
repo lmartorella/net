@@ -8,6 +8,7 @@
 #include "appio.h"
 #include "audioSink.h"
 #include "hardware/rs485.h"
+#include "hardware/dht11.h"
 
 void interrupt PRIO_TYPE low_isr(void)
 {

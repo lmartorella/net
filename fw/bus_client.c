@@ -170,7 +170,7 @@ void prot_control_close()
 {
     if (s_state == STATE_SOCKET_OPEN) {
         // Respond OK with bit9=1, that closes the bus
-        rs485_write(TRUE, "\x00", 1);
+        rs485_write(TRUE, "\x1E", 1);
         
         // Idle bus
         bus_reinit();

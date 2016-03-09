@@ -278,6 +278,7 @@ static void bus_socketPoll()
             if (rs485_lastRc9) {
                 // Now the channel is idle again
                 s_busState = BUS_PRIV_STATE_IDLE;
+                s_socketConnected = -1;
             }
             else {
                 s_lastTime = TickGet();
