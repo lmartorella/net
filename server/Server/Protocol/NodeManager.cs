@@ -63,18 +63,19 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public void RegisterUnknownNode(TcpNodeAddress address)
+        public ITcpNode RegisterUnknownNode(TcpNodeAddress address)
         {
             lock (_nodeLock)
             {
                 // Ignore consecutive messages
                 if (_unnamedNodes.ContainsKey(address))
                 {
-                    return;
+                    return _unnamedNodes[address];
                 }
                 var newNode = new TcpNode(Guid.Empty, address, true);
                 _unnamedNodes.Add(address, newNode);
                 newNode.Init();
+                return newNode;
             }
         }
 

@@ -129,7 +129,7 @@ void rs485_interrupt()
         do {
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
-                fatal("UART.OER");
+                fatal("U.OER");
             }
             if (RS485_RCSTA.FERR) {
                 s_status = STATUS_RECEIVE_FERR;
@@ -218,7 +218,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
 
     if (size > _rs485_writeAvail()) {
         // Overflow error
-        fatal("RS485.ov");
+        fatal("U.ov");
     }
     
     // Copy to buffer

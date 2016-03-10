@@ -109,9 +109,12 @@ namespace Lucky.Home.Devices.App
         {
             foreach (var output in _outputs)
             {
-                var state = output.Sink.Status;
-                state[output.SubIndex] = Status;
-                output.Sink.Status = state;
+                if (output.SubIndex < output.Sink.Status.Length)
+                {
+                    var state = output.Sink.Status;
+                    state[output.SubIndex] = Status;
+                    output.Sink.Status = state;
+                }
             }
         }
 

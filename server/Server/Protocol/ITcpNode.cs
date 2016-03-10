@@ -19,7 +19,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// If some active connection action was previously failed, and not yet restored by a heartbeat
         /// </summary>
-        bool IsZombie { get; }
+        bool IsZombie { get; set; }
 
         /// <summary>
         /// Get all available sinks

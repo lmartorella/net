@@ -52,7 +52,7 @@ static void SELE_command()
     // Select subnode. 
     WORD w;
     if (!prot_control_readW(&w)) {
-        fatal("SEL.undr");
+        fatal("SE.u");
     }
     
     // Select subnode.
@@ -113,7 +113,7 @@ static void GUID_command()
 {
     GUID guid;
     if (!prot_control_read(&guid, sizeof(GUID))) {
-        fatal("GUI.undr");
+        fatal("GU.u");
     }
 
     PersistentData persistence;
@@ -129,7 +129,7 @@ static void READ_command()
     WORD sinkId;
     if (!prot_control_readW(&sinkId))
     {
-        fatal("REA.undr");
+        fatal("RD.u");
     }   
     s_inWriteSink = sinkId;
 }
@@ -140,7 +140,7 @@ static void WRIT_command()
     WORD sinkId;
     if (!prot_control_readW(&sinkId))
     {
-        fatal("WRI.undr");
+        fatal("WR.u");
     }
     s_inReadSink = sinkId;
 }
@@ -260,7 +260,7 @@ void prot_poll()
         }
         
         // Unknown command
-        fatal("CMD.unkn");
+        fatal("CM.u");
     }
     // Otherwise wait for data
 }

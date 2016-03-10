@@ -23,7 +23,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// If some active connection action was previously failed, and not yet restored by a heartbeat
         /// </summary>
-        public bool IsZombie { get; private set; }
+        public bool IsZombie { get; set; }
 
         private readonly object _lockObject = new object();
         private bool _inFetchSinkData;
@@ -34,6 +34,8 @@ namespace Lucky.Home.Protocol
         /// Valid sinks
         /// </summary>
         private readonly List<SinkBase> _sinks = new List<SinkBase>();
+
+        private ITcpNode[] _lastKnownChildren = new ITcpNode[0];
 
         internal TcpNode(Guid guid, TcpNodeAddress address, bool guidShouldBeFetched = false)
         {
@@ -54,7 +56,7 @@ namespace Lucky.Home.Protocol
 
         private ILogger Logger { get; set; }
 
-        public void Heartbeat(TcpNodeAddress address)
+        public async void Heartbeat(TcpNodeAddress address)
         {
             // Update address!
             lock (Address)
@@ -62,6 +64,30 @@ namespace Lucky.Home.Protocol
                 Address = address;
             }
             IsZombie = false;
+
+            // Check for zombied children and try to de-zombie it
+            var lastKnownChildren = (ITcpNode[])_lastKnownChildren.Clone();
+            if (lastKnownChildren.Any(n => n.IsZombie))
+            {
+                // Re-fire the children request and de-zombie
+                var subNodes = await GetChildrenIndexes();
+                // If same children, simply de-zombie
+                var sameChildren = lastKnownChildren.Select(n => n.Address.Index).SequenceEqual(subNodes);
+                if (sameChildren)
+                {
+                    // Directly de-zombie all children
+                    foreach (var node in lastKnownChildren.Where(c => c.IsZombie))
+                    {
+                        // Re-fetch reset status
+                        await node.Relogin(node.Address);
+                    }
+                }
+                else
+                {
+                    // Else refetch metadata, something changed
+                    await FetchMetadata();
+                }
+            }
         }
 
         /// <summary>
@@ -190,12 +216,10 @@ namespace Lucky.Home.Protocol
 
         private void RegisterChildrenNodes(TcpNodeAddress[] addresses)
         {
+            var nodeManager = Manager.GetService<INodeManager>();
             // Now register children
             // Register subnodes, asking for identity
-            foreach (var address in addresses)
-            {
-                Manager.GetService<INodeManager>().RegisterUnknownNode(address);
-            }
+            _lastKnownChildren = addresses.Select(address => nodeManager.RegisterUnknownNode(address)).ToArray();
         }
 
         private static async Task<bool> OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
@@ -250,6 +274,19 @@ namespace Lucky.Home.Protocol
                 // Mark the node as a zombie
                 IsZombie = true;
             }
+            return ret;
+        }
+
+        private async Task<int[]> GetChildrenIndexes()
+        {
+            int[] ret = null;
+            await OpenNodeSession((connection, addr) =>
+            {
+                connection.Write(new GetChildrenMessage());
+                var childNodes = connection.Read<GetChildrenMessageResponse>();
+                ret = ToIntEnumerable(childNodes.Mask).Select(i => i + 1).ToArray();
+                return true;
+            });
             return ret;
         }
 
