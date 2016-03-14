@@ -16,6 +16,8 @@ namespace Lucky.Home.Converters
         {
             switch (status.ResetReason)
             {
+                case ResetReason.None:
+                    return "None";
                 case ResetReason.Power:
                     return "POW";
                 case ResetReason.Brownout:

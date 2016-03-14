@@ -23,6 +23,8 @@ bit bus_dirtyChildren;
 
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
+#define SOCKET_NOT_CONNECTED -1
+#define SOCKET_ERR_TIMEOUT -2
 
 #define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 1.5) // 1500ms 
 #define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
@@ -61,7 +63,7 @@ void bus_init()
     
     // Starts from zero
     s_scanIndex = BROADCAST_ADDRESS;
-    s_socketConnected = -1;
+    s_socketConnected = SOCKET_NOT_CONNECTED;
     s_waitTxFlush = FALSE;
     bus_dirtyChildren = FALSE;
     
@@ -149,7 +151,7 @@ void bus_poll()
 {
     if (rs485_getState() == RS485_FRAME_ERR) {
         // Error. Reset to idle
-        s_busState = BUS_PRIV_STATE_IDLE;
+        bus_disconnectSocket(SOCKET_NOT_CONNECTED);
         // Reinit the bus
         rs485_init();
     }
@@ -197,7 +199,7 @@ void bus_poll()
             if (TickGet() - s_lastTime >= BUS_SOCKET_TIMEOUT) {
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
-                bus_disconnectSocket(-2);
+                bus_disconnectSocket(SOCKET_ERR_TIMEOUT);
             }
             else {
                 bus_socketPoll();
@@ -230,7 +232,7 @@ BUS_STATE bus_getState()
 {
     if (s_socketConnected >= 0)
         return BUS_STATE_SOCKET_CONNECTED;
-    if (s_socketConnected == -2) 
+    if (s_socketConnected == SOCKET_ERR_TIMEOUT) 
         return BUS_STATE_SOCKET_TIMEOUT;
     return BUS_STATE_NONE;
 }
@@ -274,11 +276,11 @@ static void bus_socketPoll()
             
             prot_control_write(buffer, tx);
           
-            // Socket close?
+            // Socket gracefully closed?
             if (rs485_lastRc9) {
                 // Now the channel is idle again
                 s_busState = BUS_PRIV_STATE_IDLE;
-                s_socketConnected = -1;
+                s_socketConnected = SOCKET_NOT_CONNECTED;
             }
             else {
                 s_lastTime = TickGet();

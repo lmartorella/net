@@ -45,6 +45,11 @@ namespace Lucky.Home.Sinks
                 }
             });
             Logger.Log("Getting boot status: " + status);
+
+            await Write(writer =>
+            {
+                // Write none. Reset the reset reason to NONE
+            });
             return status;
         }
     }

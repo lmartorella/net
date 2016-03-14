@@ -12,7 +12,7 @@ static bit inSink_write();
 
 static const Sink s_sysSink = {
     "SYS ",
-    &sink_nullFunc,
+    &sysSink_read,
     &sysSink_write
 };
 
@@ -56,6 +56,14 @@ bit sink_nullFunc()
 const TWOCC ResetCode = "RS";
 const TWOCC ExceptionText = "EX";
 const TWOCC EndOfMetadataText = "EN";
+
+static bit sysSink_read()
+{
+    // Reset reset reason
+    g_resetReason = RESET_NONE;
+    // No more data
+    return FALSE;
+}
 
 static bit sysSink_write()
 {

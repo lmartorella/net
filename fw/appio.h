@@ -19,6 +19,7 @@ void printch(char ch);
 // The smallest type capable of representing all values in the enumeration type.
 typedef enum 
 {
+    RESET_NONE = 0, // Manually set to none
 	RESET_POWER = 1,  // Power-on reset
 	RESET_BROWNOUT,
 	RESET_CONFIGMISMATCH,
