@@ -53,20 +53,20 @@ bit sink_nullFunc()
     // No data
     return FALSE;
 }
-const FOURCC ResetCode = "REST";
-const FOURCC ExceptionText = "EXCM";
-const FOURCC EndOfMetadataText = "EOMD";
+const TWOCC ResetCode = "RS";
+const TWOCC ExceptionText = "EX";
+const TWOCC EndOfMetadataText = "EN";
 
 static bit sysSink_write()
 {
     WORD l = g_resetReason;
     // Write reset reason
-    prot_control_write(&ResetCode, sizeof(FOURCC));
+    prot_control_write(&ResetCode, sizeof(TWOCC));
     prot_control_writeW(l);
     
     if (g_resetReason == RESET_EXC)
     {
-        prot_control_write(&ExceptionText, sizeof(FOURCC));
+        prot_control_write(&ExceptionText, sizeof(TWOCC));
         
         const char *exc = g_lastException;
         l = strlen(exc);
@@ -74,15 +74,15 @@ static bit sysSink_write()
         prot_control_write(exc, l);
     }
 
-    prot_control_write(&EndOfMetadataText, sizeof(FOURCC));
+    prot_control_write(&EndOfMetadataText, sizeof(TWOCC));
     // Finish
     return FALSE;
 }
 
-#define TRIS_IN_BIT TRISAbits.TRISA0
-#define TRIS_OUT_BIT TRISAbits.TRISA1
-#define PORT_IN_BIT PORTAbits.RA0
-#define PORT_OUT_BIT PORTAbits.RA1
+#define TRIS_IN_BIT TRISAbits.TRISA1
+#define PORT_IN_BIT PORTAbits.RA1
+#define TRIS_OUT_BIT TRISAbits.TRISA0
+#define PORT_OUT_BIT PORTAbits.RA0
 
 static bit outSink_write()
 {
@@ -116,10 +116,9 @@ static bit inSink_write()
     TRIS_IN_BIT = 1;
     
     WORD swCount = 1;
-    BYTE arr;
     prot_control_write(&swCount, 2);
     prot_control_write(&swCount, 2);
-    arr = PORT_IN_BIT ? 1 : 0;
+    BYTE arr = PORT_IN_BIT || 1;
     prot_control_write(&arr, 1);
     return FALSE;
 }

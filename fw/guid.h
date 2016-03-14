@@ -14,6 +14,15 @@ typedef struct
 } GUID;
 
 typedef union {
+    char str[2];
+    struct {
+        char c1;
+        char c2;
+    } chars;
+    BYTE bytes[2];
+} TWOCC;
+
+typedef union {
     char str[4];
     struct {
         char c1;

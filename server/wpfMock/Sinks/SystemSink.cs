@@ -81,14 +81,14 @@ namespace Lucky.HomeMock.Sinks
 
         public override void Write(BinaryWriter writer)
         {
-            WriteFourcc(writer, "REST");
+            WriteFourcc(writer, "RS");
             writer.Write((ushort)ResetReason);
             if (!string.IsNullOrEmpty(ExcMsg))
             {
-                WriteFourcc(writer, "EXCM");
+                WriteFourcc(writer, "EX");
                 WriteString(writer, ExcMsg);
             }
-            WriteFourcc(writer, "EOMD");
+            WriteFourcc(writer, "EN");
         }
     }
 }

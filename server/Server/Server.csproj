@@ -61,6 +61,7 @@
     <Compile Include="Devices\SubSink.cs" />
     <Compile Include="Protocol\IConnectionReader.cs" />
     <Compile Include="Protocol\IConnectionWriter.cs" />
+    <Compile Include="Serialization\Twocc.cs" />
     <Compile Include="Sinks\App\TemperatureSink.cs" />
     <Compile Include="Sinks\App\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\App\IDigitalInputArraySink.cs" />

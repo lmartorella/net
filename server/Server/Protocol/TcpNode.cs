@@ -108,8 +108,8 @@ namespace Lucky.Home.Protocol
 
         private class GetChildrenMessage
         {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "CHIL";
+            [SerializeAsFixedString(2)]
+            public string Cmd = "CH";
         }
 
         private class GetChildrenMessageResponse
@@ -121,8 +121,8 @@ namespace Lucky.Home.Protocol
 
         private class SelectNodeMessage
         {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "SELE";
+            [SerializeAsFixedString(2)]
+            public string Cmd = "SL";
 
             public short Index;
 
@@ -134,14 +134,14 @@ namespace Lucky.Home.Protocol
 
         private class GetSinksMessage
         {
-            [SerializeAsFixedString(4)] 
-            public string Cmd = "SINK";
+            [SerializeAsFixedString(2)] 
+            public string Cmd = "SK";
         }
 
         private class NewGuidMessage
         {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "GUID";
+            [SerializeAsFixedString(2)]
+            public string Cmd = "GU";
 
             public readonly Guid Guid;
 
@@ -160,23 +160,24 @@ namespace Lucky.Home.Protocol
 
         private class WriteDataMessage
         {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "WRIT";
+            [SerializeAsFixedString(2)]
+            public string Cmd = "WR";
 
             public short SinkIndex;
         }
 
         private class ReadDataMessage
         {
-            [SerializeAsFixedString(4)]
-            public string Cmd = "READ";
+            [SerializeAsFixedString(2)]
+            public string Cmd = "RD";
 
             public short SinkIndex;
         }
 
         private class CloseMessage
         {
-            public Fourcc Cmd = new Fourcc("CLOS");
+            [SerializeAsFixedString(2)]
+            public string Cmd = "CL";
         }
 
         private class CloseMessageResponse

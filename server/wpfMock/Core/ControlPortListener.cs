@@ -92,8 +92,8 @@ namespace Lucky.HomeMock.Core
 
             private string ReadCommand()
             {
-                byte[] buffer = new byte[4];
-                if (_reader.Read(buffer, 0, 4) < 4)
+                byte[] buffer = new byte[2];
+                if (_reader.Read(buffer, 0, 2) < 2)
                 {
                     return null;
                 }
@@ -112,33 +112,33 @@ namespace Lucky.HomeMock.Core
                 ushort sinkIdx;
                 switch (command)
                 {
-                    case "CLOS":
+                    case "CL":
                         // Ack
                         _writer.Write(new byte[] { 0x1e });
                         break;
-                    case "CHIL":
+                    case "CH":
                         Write(_listener.State.DeviceId);
                         Write(0);
                         break;
-                    case "SELE":
+                    case "SL":
                         ReadUint16();
                         break;
-                    case "SINK":
+                    case "SK":
                         Write((ushort)_listener._sinks.Length);
                         foreach (var sink in _listener._sinks)
                         {
                             Write(sink.FourCc);
                         }
                         break;
-                    case "GUID":
+                    case "GU":
                         _listener.State = new Data { DeviceId = ReadGuid() };
                         _logger.Log("New guid: " + _listener.State.DeviceId);
                         break;
-                    case "WRIT":
+                    case "WR":
                         sinkIdx = ReadUint16();
                         _listener._sinks[sinkIdx].Read(_reader);
                         break;
-                    case "READ":
+                    case "RD":
                         sinkIdx = ReadUint16();
                         _listener._sinks[sinkIdx].Write(_writer);
                         break;

@@ -146,30 +146,30 @@ static void WRIT_command()
 }
 
 const struct {
-    char cmd[4];
+    TWOCC cmd;
     void (*fptr)();
     char readSize;
 } s_table[] = {
     { 
-        "READ", READ_command, 2
+        "RD", READ_command, 2
     },
     { 
-        "WRIT", WRIT_command, 2
+        "WR", WRIT_command, 2
     },
     { 
-        "CLOS", CLOS_command, 0
+        "CL", CLOS_command, 0
     },
     { 
-        "SELE", SELE_command, 2
+        "SL", SELE_command, 2
     },
     { 
-        "SINK", SINK_command, 0
+        "SK", SINK_command, 0
     },
     { 
-        "CHIL", CHIL_command, 0
+        "CH", CHIL_command, 0
     },
     { 
-        "GUID", GUID_command, 16
+        "GU", GUID_command, 16
     }
 };
 #define COMMAND_COUNT 7
@@ -243,17 +243,17 @@ void prot_poll()
     }
 
     // So decode message then
-    if (s >= sizeof(FOURCC)) // Minimum msg size
+    if (s >= sizeof(TWOCC)) // Minimum msg size
     {
         // This can even peek only one command.
         // Until not closed by server, or CLOS command sent, the channel can stay open.
 
         // TODO: Limitation: both the command and its data should be in the read buffer
         // at the same time
-        FOURCC msg;
-        prot_control_read(&msg, sizeof(FOURCC));
+        TWOCC msg;
+        prot_control_read(&msg, sizeof(TWOCC));
         for (BYTE i = 0; i < COMMAND_COUNT; i++) {
-            if (!memcmp(msg.str, s_table[i].cmd, sizeof(FOURCC))) {
+            if (!memcmp(msg.str, s_table[i].cmd.str, sizeof(TWOCC))) {
                 s_commandToRun = i;
                 return;
             }

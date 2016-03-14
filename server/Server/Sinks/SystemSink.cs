@@ -28,16 +28,16 @@ namespace Lucky.Home.Sinks
             {
                 while (true)
                 {
-                    var code = reader.Read<Fourcc>().Code;
+                    var code = reader.Read<Twocc>().Code;
                     switch (code)
                     {
-                        case "REST":
+                        case "RS":
                             status.ResetReason = (ResetReason) reader.Read<ushort>();
                             break;
-                        case "EXCM":
+                        case "EX":
                             status.ExceptionMessage = reader.Read<DynamicString>().Str;
                             break;
-                        case "EOMD":
+                        case "EN":
                             return;
                         default:
                             throw new InvalidOperationException("Unknown system");
