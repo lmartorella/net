@@ -51,19 +51,19 @@ namespace Lucky.Home.Protocol
             _helloListeners = new UdpControlPortListener[0];
         }
 
-        private void HandleNodeMessage(Guid guid, TcpNodeAddress address, PingMessageType messageType)
+        private async void HandleNodeMessage(Guid guid, TcpNodeAddress address, PingMessageType messageType)
         {
             // Messages from level-0
             switch (messageType)
             {
                 case PingMessageType.Hello:
-                    _nodeManager.RegisterNode(guid, address);
+                    await _nodeManager.RegisterNode(guid, address);
                     break;
                 case PingMessageType.Heartbeat:
-                    _nodeManager.HeartbeatNode(guid, address);
+                    await _nodeManager.HeartbeatNode(guid, address);
                     break;
                 case PingMessageType.SubNodeChanged:
-                    _nodeManager.RefetchSubNodes(guid, address);
+                    await _nodeManager.RefetchSubNodes(guid, address);
                     break;
             }
         }

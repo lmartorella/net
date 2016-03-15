@@ -1,6 +1,9 @@
 using System;
-using System.Threading.Tasks;
 using Lucky.Home.Serialization;
+
+// ReSharper disable NotAccessedField.Local
+// ReSharper disable UnusedMember.Global
+#pragma warning disable 649
 
 namespace Lucky.Home.Sinks.App
 {
@@ -35,17 +38,18 @@ namespace Lucky.Home.Sinks.App
             public byte[] Data;
         }
 
-        protected override async void OnInitialize()
+        protected override void OnInitialize()
         {
             base.OnInitialize();
-            await Read(reader =>
+            Read(reader =>
             {
                 var resp = reader.Read<ReadStatusResponse>();
                 SubCount = resp.SwitchCount;
                 _status = new bool[SubCount];
             });
+
             // Align ext data
-            await UpdateValues();
+            UpdateValues(_status);
         }
 
         public bool[] Status
@@ -57,26 +61,26 @@ namespace Lucky.Home.Sinks.App
             set
             {
                 _status = value;
-                UpdateValues();
+                UpdateValues(value);
             }
         }
 
-        private async Task UpdateValues()
+        private void UpdateValues(bool[] value)
         {
             if (SubCount <= 0)
             {
                 return;
             }
 
-            await Write(writer =>
+            Write(writer =>
             {
-                int swCount = Math.Min(SubCount, _status.Length);
+                int swCount = Math.Min(SubCount, value.Length);
                 var msg = new WriterStatusMessage();
                 msg.SwitchCount = (ushort)swCount;
                 msg.Data = new byte[(swCount - 1) / 8 + 1];
                 for (int i = 0; i < swCount; i++)
                 {
-                    msg.Data[i / 8] |= (byte)((_status[i] ? 1 : 0) << (i % 8));
+                    msg.Data[i / 8] |= (byte)((value[i] ? 1 : 0) << (i % 8));
                 }
                 writer.Write(msg);
             });

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Services;
@@ -54,7 +53,7 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        protected Task Read(Action<IConnectionReader> readHandler)
+        protected bool Read(Action<IConnectionReader> readHandler)
         {
             if (Node != null)
             {
@@ -66,7 +65,7 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        protected Task Write(Action<IConnectionWriter> writeHandler)
+        protected bool Write(Action<IConnectionWriter> writeHandler)
         {
             if (Node != null)
             {

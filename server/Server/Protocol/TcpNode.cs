@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 
+#pragma warning disable 414
+#pragma warning disable 649
+#pragma warning disable 169
 // ReSharper disable ClassNeverInstantiated.Local
+// ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable NotAccessedField.Local
 
 namespace Lucky.Home.Protocol
 {
@@ -45,18 +49,18 @@ namespace Lucky.Home.Protocol
             _guidShouldBeFetched = guidShouldBeFetched;
         }
 
-        public void Init()
+        public async Task Init()
         {
             // Start data fetch asynchrously
             Logger.Log("Fetching metadata");
-            FetchMetadata();
+            await FetchMetadata();
         }
 
         public TcpNodeAddress Address { get; private set; }
 
         private ILogger Logger { get; set; }
 
-        public async void Heartbeat(TcpNodeAddress address)
+        public async Task Heartbeat(TcpNodeAddress address)
         {
             // Update address!
             lock (Address)
@@ -70,7 +74,7 @@ namespace Lucky.Home.Protocol
             if (lastKnownChildren.Any(n => n.IsZombie))
             {
                 // Re-fire the children request and de-zombie
-                var subNodes = await GetChildrenIndexes();
+                var subNodes = GetChildrenIndexes();
                 // If same children, simply de-zombie
                 var sameChildren = lastKnownChildren.Select(n => n.Address.Index).SequenceEqual(subNodes);
                 if (sameChildren)
@@ -200,7 +204,7 @@ namespace Lucky.Home.Protocol
 
             Tuple<bool, TcpNodeAddress[]> ret;
             // Repeat until metadata are OK
-            while (!(ret = await TryFetchMetadata()).Item1)
+            while (!(ret = TryFetchMetadata()).Item1)
             {
                 await Task.Delay(RetryTime);
             }
@@ -215,20 +219,22 @@ namespace Lucky.Home.Protocol
             RegisterChildrenNodes(ret.Item2);
         }
 
-        private void RegisterChildrenNodes(TcpNodeAddress[] addresses)
+        private async void RegisterChildrenNodes(TcpNodeAddress[] addresses)
         {
             var nodeManager = Manager.GetService<INodeManager>();
             // Now register children
             // Register subnodes, asking for identity
-            _lastKnownChildren = addresses.Select(address => nodeManager.RegisterUnknownNode(address)).ToArray();
+            _lastKnownChildren = await Task.WhenAll(addresses.Select(async address => await nodeManager.RegisterUnknownNode(address)));
         }
 
-        private static async Task<bool> OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
+        private static bool OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
         {
+            var tcpConnectionFactory = Manager.GetService<TcpConnectionFactory>();
+
             // Init a METADATA fetch connection
             try
             {
-                using (var connection = new TcpConnection(address.Address, address.ControlPort))
+                using (var connection = tcpConnectionFactory.Create(address.IPEndPoint))
                 {
                     // Connecion can be recycled
                     connection.Write(new SelectNodeMessage(address.Index));
@@ -248,14 +254,14 @@ namespace Lucky.Home.Protocol
             catch (Exception exc)
             {
                 // Forbicly close the channel
-                TcpConnection.Abort(new IPEndPoint(address.Address, address.ControlPort));
+                tcpConnectionFactory.Abort(address.IPEndPoint);
                 // Log exc
                 logger.Exception(exc);
                 return false;
             }
         }
 
-        private async Task<bool> OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler)
+        private bool OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler)
         {
             if (IsZombie)
             {
@@ -269,7 +275,7 @@ namespace Lucky.Home.Protocol
                 address = Address.Clone();
             }
 
-            var ret = await OpenNodeSession(Logger, address, handler);
+            var ret = OpenNodeSession(Logger, address, handler);
             if (!ret)
             {
                 // Mark the node as a zombie
@@ -278,10 +284,10 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
-        private async Task<int[]> GetChildrenIndexes()
+        private int[] GetChildrenIndexes()
         {
             int[] ret = null;
-            await OpenNodeSession((connection, addr) =>
+            OpenNodeSession((connection, addr) =>
             {
                 connection.Write(new GetChildrenMessage());
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
@@ -291,7 +297,7 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
-        private async Task<Tuple<bool, TcpNodeAddress[]>> TryFetchMetadata()
+        private Tuple<bool, TcpNodeAddress[]> TryFetchMetadata()
         {
             // Init a METADATA fetch connection
             string[] sinks = null;
@@ -299,18 +305,13 @@ namespace Lucky.Home.Protocol
             TcpNodeAddress address = null;
             Guid newGuidToAssign = Guid.Empty;
 
-            if (!await OpenNodeSession((connection, addr) =>
+            if (!OpenNodeSession((connection, addr) =>
             {
                 address = addr;
 
                 // Ask for subnodes
                 connection.Write(new GetChildrenMessage());
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
-                if (childNodes == null)
-                {
-                    // Stop here
-                    return false;
-                }
                 if (childNodes.Guid != Id)
                 {
                     if (_guidShouldBeFetched)
@@ -410,7 +411,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Change the ID of the node
         /// </summary>
-        public async Task<bool> Rename(Guid newId)
+        public bool Rename(Guid newId)
         {
             if (newId == Guid.Empty)
             {
@@ -436,7 +437,7 @@ namespace Lucky.Home.Protocol
                 // Notify the node registrar too
                 Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
 
-                await OpenNodeSession((connection, address) =>
+                OpenNodeSession((connection, address) =>
                 {
                     connection.Write(new NewGuidMessage(newId));
                     return true;
@@ -462,7 +463,7 @@ namespace Lucky.Home.Protocol
             return success;
         }
 
-        public Task WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
+        public bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
         {
             return OpenNodeSession((connection, address) =>
             {
@@ -475,7 +476,7 @@ namespace Lucky.Home.Protocol
             });
         }
 
-        public Task ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
+        public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
         {
             return OpenNodeSession((connection, address) =>
             {

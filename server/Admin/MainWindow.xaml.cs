@@ -39,7 +39,7 @@ namespace Lucky.Home
             {
                 Connection.Dispose();
             }
-            Connection = new TcpConnection(() => IsRefreshEnabled = true);
+            Connection = new Connection(() => IsRefreshEnabled = true);
         }
     }
 }

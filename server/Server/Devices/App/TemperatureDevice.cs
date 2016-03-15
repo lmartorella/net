@@ -4,6 +4,8 @@ using System.Threading;
 using Lucky.Home.Sinks.App;
 using Lucky.Services;
 
+// ReSharper disable UnusedMember.Global
+
 namespace Lucky.Home.Devices.App
 {
     [Device(new[] { typeof(TemperatureSink) })]
@@ -16,11 +18,11 @@ namespace Lucky.Home.Devices.App
         {
             Logger = Manager.GetService<LoggerFactory>().Create("TempDevice");
 
-            _timer = new Timer(async o =>
+            _timer = new Timer(o =>
             {
                 if (IsFullOnline)
                 {
-                    byte[] reading = await ((TemperatureSink) Sinks[0].Sink).Read();
+                    byte[] reading = ((TemperatureSink) Sinks[0].Sink).Read();
                     if (reading == null || reading.Length != 6)
                     {
                         Logger.Error("ProtocolError", "Len", reading != null ? reading.Length : -1);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Lucky.Services;
 
 namespace Lucky.Home.Protocol
@@ -16,40 +17,52 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// A node is discovered through heartbeat
         /// </summary>
-        public void RegisterNode(Guid guid, TcpNodeAddress address)
+        public async Task RegisterNode(Guid guid, TcpNodeAddress address)
         {
             if (guid == Guid.Empty)
             {
-                RegisterNewNode(address);
+                await RegisterNewNode(address);
             }
             else
             {
-                RegisterNamedNode(guid, address);
+                await RegisterNamedNode(guid, address);
             }
         }
 
-        private void RegisterNamedNode(Guid guid, TcpNodeAddress address)
+        private async Task RegisterNamedNode(Guid guid, TcpNodeAddress address)
         {
+            TcpNode node;
+            bool relogin;
             lock (_nodeLock)
             {
-                TcpNode node = FindById(guid);
+                node = FindById(guid);
                 if (node == null)
                 {
                     // New node!
-                    var tcpNode = new TcpNode(guid, address);
-                    _nodes.Add(guid, tcpNode);
-                    tcpNode.Init();
+                    node = new TcpNode(guid, address);
+                    _nodes.Add(guid, node);
+                    relogin = false;
                 }
                 else
                 {
-                    // The node was reset (Whatchdog?)
-                    node.Relogin(address);
+                    relogin = true;
                 }
+            }
+
+            if (relogin)
+            {
+                // The node was reset (Whatchdog?)
+                await node.Relogin(address);
+            }
+            else
+            {
+                await node.Init();
             }
         }
 
-        private void RegisterNewNode(TcpNodeAddress address)
+        private async Task RegisterNewNode(TcpNodeAddress address)
         {
+            TcpNode newNode;
             lock (_nodeLock)
             {
                 // Ignore consecutive messages
@@ -57,14 +70,15 @@ namespace Lucky.Home.Protocol
                 {
                     return;
                 }
-                var newNode = new TcpNode(Guid.Empty, address);
+                newNode = new TcpNode(Guid.Empty, address);
                 _unnamedNodes.Add(address, newNode);
-                newNode.Init();
             }
+            await newNode.Init();
         }
 
-        public ITcpNode RegisterUnknownNode(TcpNodeAddress address)
+        public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
         {
+            TcpNode newNode;
             lock (_nodeLock)
             {
                 // Ignore consecutive messages
@@ -72,66 +86,52 @@ namespace Lucky.Home.Protocol
                 {
                     return _unnamedNodes[address];
                 }
-                var newNode = new TcpNode(Guid.Empty, address, true);
+                newNode = new TcpNode(Guid.Empty, address, true);
                 _unnamedNodes.Add(address, newNode);
-                newNode.Init();
-                return newNode;
+            }
+            await newNode.Init();
+            return newNode;
+        }
+
+        public async Task HeartbeatNode(Guid guid, TcpNodeAddress address)
+        {
+            TcpNode node;
+            lock (_nodeLock)
+            {
+                node = guid != Guid.Empty ? FindById(guid) : FindUnnamed(address);
+            }
+
+            // Not known?
+            if (node == null)
+            {
+                // The server was reset?
+                await RegisterNode(guid, address);
+            }
+            else
+            {
+                // Normal heartbeat
+                await node.Heartbeat(address);
             }
         }
 
-        public void HeartbeatNode(Guid guid, TcpNodeAddress address)
+        public async Task RefetchSubNodes(Guid guid, TcpNodeAddress address)
         {
+            TcpNode node;
             lock (_nodeLock)
             {
-                TcpNode node;
-                if (guid != Guid.Empty)
-                {
-                    node = FindById(guid);
-                }
-                else
-                {
-                    node = FindUnnamed(address);
-                }
-
-                // Not known?
-                if (node == null)
-                {
-                    // The server was reset?
-                    RegisterNode(guid, address);
-                }
-                else
-                {
-                    // Normal heartbeat
-                    node.Heartbeat(address);
-                }
+                node = guid != Guid.Empty ? FindById(guid) : FindUnnamed(address);
             }
-        }
 
-        public void RefetchSubNodes(Guid guid, TcpNodeAddress address)
-        {
-            lock (_nodeLock)
+            // Not known?
+            if (node == null)
             {
-                TcpNode node;
-                if (guid != Guid.Empty)
-                {
-                    node = FindById(guid);
-                }
-                else
-                {
-                    node = FindUnnamed(address);
-                }
-
-                // Not known?
-                if (node == null)
-                {
-                    // The server was reset?
-                    RegisterNode(guid, address);
-                }
-                else
-                {
-                    // Normal heartbeat
-                    node.Relogin(address);
-                }
+                // The server was reset?
+                await RegisterNode(guid, address);
+            }
+            else
+            {
+                // Normal heartbeat
+                await node.Relogin(address);
             }
         }
 

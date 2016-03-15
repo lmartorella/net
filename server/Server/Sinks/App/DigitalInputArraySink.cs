@@ -3,6 +3,9 @@ using System.Linq;
 using System.Threading;
 using Lucky.Home.Serialization;
 
+// ReSharper disable UnusedMember.Global
+#pragma warning disable 649
+
 namespace Lucky.Home.Sinks.App
 {
     /// <summary>
@@ -74,9 +77,9 @@ namespace Lucky.Home.Sinks.App
             }
         }
 
-        private async void OnPoll(object state)
+        private void OnPoll(object state)
         {
-            await Read(reader =>
+            Read(reader =>
             {
                 var resp = reader.Read<ReadStatusResponse>();
                 if (resp == null || _lastData != null && resp.Data.SequenceEqual(_lastData))

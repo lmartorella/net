@@ -58,6 +58,14 @@ namespace Lucky.Home.Protocol
             return new TcpNodeAddress(Address, ControlPort, index);
         }
 
+        public IPEndPoint IPEndPoint
+        {
+            get
+            {
+                return new IPEndPoint(Address, ControlPort);
+            }
+        }
+
         public static TcpNodeAddress Parse(string nodeAddress)
         {
             var groups = new Regex("(?<address>.*):(?<port>.*)\\[(?<index>.*)\\]").Match(nodeAddress).Groups;

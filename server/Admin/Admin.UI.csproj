@@ -63,7 +63,6 @@
     <Compile Include="SinkNode.cs" />
     <Compile Include="UiDevice.cs" />
     <Compile Include="UiNode.cs" />
-    <Compile Include="TcpConnection.cs" />
     <Compile Include="UiCommand.cs" />
     <Compile Include="TreeNode.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -83,7 +82,6 @@
     </Compile>
     <Compile Include="Connection.cs" />
     <Compile Include="Converters\NodeStatusToTextConverter.cs" />
-    <Compile Include="Design\SampleData1.cs" />
     <Compile Include="TopologicalView.xaml.cs">
       <DependentUpon>TopologicalView.xaml</DependentUpon>
       <SubType>Code</SubType>

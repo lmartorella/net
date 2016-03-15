@@ -1,16 +1,14 @@
-﻿using System.Threading.Tasks;
-
-// ReSharper disable once UnusedMember.Global
+﻿// ReSharper disable once UnusedMember.Global
 
 namespace Lucky.Home.Sinks.App
 {
     [SinkId("TEMP")]
     class TemperatureSink : SinkBase
     {
-        public async Task<byte[]> Read()
+        public byte[] Read()
         {
             byte[] data = null;
-            await Read(reader =>
+            Read(reader =>
             {
                 data = reader.ReadBytes(6);
             });

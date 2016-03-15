@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using Lucky.Home.Serialization;
 
+#pragma warning disable 414
+#pragma warning disable 649
 // ReSharper disable once UnusedMember.Global
 
 namespace Lucky.Home.Sinks.App

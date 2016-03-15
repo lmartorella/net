@@ -16,17 +16,17 @@ namespace Lucky.Home.Admin
             _manager = Manager.GetService<NodeManager>();
         }
 
-        public async Task<Node[]> GetTopology()
+        public Task<Node[]> GetTopology()
         {
-            return BuildTree();
+            return Task.FromResult(BuildTree());
         }
 
-        public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
+        public Task<DeviceTypeDescriptor[]> GetDeviceTypes()
         {
-            return Manager.GetService<DeviceManager>().DeviceTypes;
+            return Task.FromResult(Manager.GetService<DeviceManager>().DeviceTypes);
         }
 
-        public async Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId)
+        public Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId)
         {
             ITcpNode node;
             if (oldId == Guid.Empty)
@@ -39,16 +39,16 @@ namespace Lucky.Home.Admin
             }
             if (node != null)
             {
-                await node.Rename(newId);
-                return true;
+                node.Rename(newId);
+                return Task.FromResult(true);
             }
             else
             {
-                return false;
+                return Task.FromResult(false);
             }
         }
 
-        public async Task<string> CreateDevice(DeviceDescriptor descriptor)
+        public Task<string> CreateDevice(DeviceDescriptor descriptor)
         {
             string err = null;
             try
@@ -59,7 +59,7 @@ namespace Lucky.Home.Admin
             {
                 err = exc.Message;
             }
-            return err;
+            return Task.FromResult(err);
         }
 
         public Task<DeviceDescriptor[]> GetDevices()

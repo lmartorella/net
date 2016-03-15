@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 using Lucky.Services;
+
+// ReSharper disable UnusedMember.Global
 
 namespace Lucky.Home.Sinks
 {
@@ -15,16 +16,16 @@ namespace Lucky.Home.Sinks
             Status = new NodeStatus { ResetReason = ResetReason.Waiting };
         }
 
-        protected override async void OnInitialize()
+        protected override void OnInitialize()
         {
             base.OnInitialize();
-            Status = await GetBootStatus();
+            Status = GetBootStatus();
         }
 
-        private async Task<NodeStatus> GetBootStatus()
+        private NodeStatus GetBootStatus()
         {
             NodeStatus status = new NodeStatus();
-            await Read(reader =>
+            Read(reader =>
             {
                 while (true)
                 {
@@ -46,7 +47,7 @@ namespace Lucky.Home.Sinks
             });
             Logger.Log("Getting boot status: " + status);
 
-            await Write(writer =>
+            Write(writer =>
             {
                 // Write none. Reset the reset reason to NONE
             });

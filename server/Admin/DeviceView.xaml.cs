@@ -46,22 +46,22 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty TcpConnectionProperty = DependencyProperty.Register(
-    "TcpConnection", typeof(TcpConnection), typeof(DeviceView), new PropertyMetadata(null, HandleConnectionChanged));
+    "TcpConnection", typeof(Connection), typeof(DeviceView), new PropertyMetadata(null, HandleConnectionChanged));
 
         private static void HandleConnectionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue != null)
             {
-                ((TcpConnection)e.NewValue).NodeSelectionChanged += (o, e1) =>
+                ((Connection)e.NewValue).NodeSelectionChanged += (o, e1) =>
                 {
                     ((DeviceView)d).UpdateMenuItems();
                 };
             }
         }
 
-        public TcpConnection TcpConnection
+        public Connection TcpConnection
         {
-            get { return (TcpConnection)GetValue(TcpConnectionProperty); }
+            get { return (Connection)GetValue(TcpConnectionProperty); }
             set { SetValue(TcpConnectionProperty, value); }
         }
 

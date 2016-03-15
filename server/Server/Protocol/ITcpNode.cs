@@ -27,11 +27,6 @@ namespace Lucky.Home.Protocol
         ISink[] Sinks { get; }
 
         /// <summary>
-        /// Manage heartbeat
-        /// </summary>
-        void Heartbeat(TcpNodeAddress address);
-
-        /// <summary>
         /// An already logged-in node relogs in (e.g. after node reset)
         /// </summary>
         Task Relogin(TcpNodeAddress address);
@@ -39,13 +34,13 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Open sink communication for write
         /// </summary>
-        Task WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler);
+        bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler);
 
         /// <summary>
         /// Open sink communication for read
         /// </summary>
         /// <returns>True if communication succeded</returns>
-        Task ReadFromSink(int sinkId, Action<IConnectionReader> readHandler);
+        bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler);
 
         /// <summary>
         /// Get the sink with the given type
@@ -55,6 +50,6 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Change the ID of the node
         /// </summary>
-        Task<bool> Rename(Guid newId);
+        bool Rename(Guid newId);
     }
 }
