@@ -17,19 +17,19 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// A node is discovered through heartbeat
         /// </summary>
-        public async Task RegisterNode(Guid guid, TcpNodeAddress address)
+        public async Task<ITcpNode> RegisterNode(Guid guid, TcpNodeAddress address)
         {
             if (guid == Guid.Empty)
             {
-                await RegisterNewNode(address);
+                return await RegisterNewNode(address);
             }
             else
             {
-                await RegisterNamedNode(guid, address);
+                return await RegisterNamedNode(guid, address);
             }
         }
 
-        private async Task RegisterNamedNode(Guid guid, TcpNodeAddress address)
+        private async Task<ITcpNode> RegisterNamedNode(Guid guid, TcpNodeAddress address)
         {
             TcpNode node;
             bool relogin;
@@ -56,41 +56,41 @@ namespace Lucky.Home.Protocol
             }
             else
             {
-                await node.Init();
+                await node.FetchMetadata();
             }
+            return node;
         }
 
-        private async Task RegisterNewNode(TcpNodeAddress address)
+        private async Task<ITcpNode> RegisterNewNode(TcpNodeAddress address)
         {
             TcpNode newNode;
             lock (_nodeLock)
             {
                 // Ignore consecutive messages
-                if (_unnamedNodes.ContainsKey(address))
+                if (_unnamedNodes.TryGetValue(address, out newNode))
                 {
-                    return;
+                    return newNode;
                 }
                 newNode = new TcpNode(Guid.Empty, address);
                 _unnamedNodes.Add(address, newNode);
             }
-            await newNode.Init();
+            await newNode.FetchMetadata();
+            return newNode;
         }
 
         public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
         {
-            TcpNode newNode;
-            lock (_nodeLock)
+            // Ask for guid
+            var guid = new TcpNode(Guid.Empty, address).TryFetchGuid();
+            if (!guid.HasValue)
             {
-                // Ignore consecutive messages
-                if (_unnamedNodes.ContainsKey(address))
-                {
-                    return _unnamedNodes[address];
-                }
-                newNode = new TcpNode(Guid.Empty, address, true);
-                _unnamedNodes.Add(address, newNode);
+                // Error in fetching
+                return null;
             }
-            await newNode.Init();
-            return newNode;
+            else
+            {
+                return await RegisterNode((Guid)guid, address);
+            }
         }
 
         public async Task HeartbeatNode(Guid guid, TcpNodeAddress address)

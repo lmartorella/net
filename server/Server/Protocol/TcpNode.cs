@@ -17,8 +17,6 @@ namespace Lucky.Home.Protocol
 {
     class TcpNode : ITcpNode
     {
-        private readonly bool _guidShouldBeFetched;
-
         /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
@@ -41,19 +39,11 @@ namespace Lucky.Home.Protocol
 
         private ITcpNode[] _lastKnownChildren = new ITcpNode[0];
 
-        internal TcpNode(Guid guid, TcpNodeAddress address, bool guidShouldBeFetched = false)
+        internal TcpNode(Guid guid, TcpNodeAddress address)
         {
             Id = guid;
             Address = address;
             Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
-            _guidShouldBeFetched = guidShouldBeFetched;
-        }
-
-        public async Task Init()
-        {
-            // Start data fetch asynchrously
-            Logger.Log("Fetching metadata");
-            await FetchMetadata();
         }
 
         public TcpNodeAddress Address { get; private set; }
@@ -189,10 +179,10 @@ namespace Lucky.Home.Protocol
             // 0x1e
             public byte Ack;
         }
-
-
-        private async Task FetchMetadata()
+        
+        internal async Task FetchMetadata()
         {
+            Logger.Log("Fetching metadata");
             lock (_lockObject)
             {
                 if (_inFetchSinkData)
@@ -297,6 +287,27 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
+        internal Guid? TryFetchGuid()
+        {
+            // Init a METADATA fetch connection
+            Guid guid = Guid.Empty;
+
+            if (!OpenNodeSession((connection, addr) =>
+            {
+                // Ask for subnodes
+                connection.Write(new GetChildrenMessage());
+                var childNodes = connection.Read<GetChildrenMessageResponse>();
+                guid = childNodes.Guid;
+                return true;
+            }))
+            {
+                // Error, no metadata
+                return null;
+            }
+
+            return guid;
+        }
+
         private Tuple<bool, TcpNodeAddress[]> TryFetchMetadata()
         {
             // Init a METADATA fetch connection
@@ -314,15 +325,8 @@ namespace Lucky.Home.Protocol
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
                 if (childNodes.Guid != Id)
                 {
-                    if (_guidShouldBeFetched)
-                    {
-                        newGuidToAssign = childNodes.Guid;
-                    }
-                    else
-                    {
-                        // ERROR
-                        Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childNodes.Guid);
-                    }
+                    // ERROR
+                    Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childNodes.Guid);
                 }
                 childMask = childNodes.Mask;
 

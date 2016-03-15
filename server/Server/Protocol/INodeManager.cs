@@ -7,7 +7,7 @@ namespace Lucky.Home.Protocol
 {
     interface INodeManager : IService
     {
-        Task RegisterNode(Guid guid, TcpNodeAddress address);
+        Task<ITcpNode> RegisterNode(Guid guid, TcpNodeAddress address);
         Task HeartbeatNode(Guid guid, TcpNodeAddress address);
         Task RefetchSubNodes(Guid guid, TcpNodeAddress address);
         // Register a unknown (no GUID) node, typically subnode, if not registered yet
