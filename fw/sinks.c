@@ -3,12 +3,10 @@
 #include "appio.h"
 #include "displaySink.h"
 #include "hardware/dht11.h"
+#include "hardware/digio.h"
 
 static bit sysSink_read();
 static bit sysSink_write();
-static bit outSink_read();
-static bit outSink_write();
-static bit inSink_write();
 
 static const Sink s_sysSink = {
     "SYS ",
@@ -16,35 +14,35 @@ static const Sink s_sysSink = {
     &sysSink_write
 };
 
-static const Sink s_outSink = {
-    "DOAR",
-    &outSink_read,
-    &outSink_write
-};
-
-static const Sink s_inSink = {
-    "DIAR",
-    &sink_nullFunc,
-    &inSink_write,
-};
-
 const Sink* AllSinks[] = { 
     &s_sysSink,
-    &s_outSink,
-    &s_inSink,
+#ifdef HAS_DIGIO
+    &g_outSink,
+    &g_inSink,
+#endif
+    
 #ifdef HAS_CM1602
     &g_displaySink, 
 #endif
+    
 #ifdef HAS_DHT11
     &g_tempSink 
 #endif
 };
 
-int AllSinksSize = 
-#if defined(HAS_CM1602) || defined(HAS_DHT11)
+int AllSinksSize =
+#if defined(HAS_DIGIO) && defined(HAS_CM1602) && defined(HAS_DHT11)
+    5
+#elif (defined(HAS_DIGIO) && defined(HAS_CM1602)) || (defined(HAS_DIGIO) && defined(HAS_DHT11))
     4
-#else
+#elif defined(HAS_DIGIO)
     3
+#elif defined(HAS_CM1602) && defined(HAS_DHT11)
+    3
+#elif defined(HAS_CM1602) || defined(HAS_DHT11)
+    2
+#else
+    1
 #endif
 ;
 
@@ -84,49 +82,5 @@ static bit sysSink_write()
 
     prot_control_write(&EndOfMetadataText, sizeof(TWOCC));
     // Finish
-    return FALSE;
-}
-
-#define TRIS_IN_BIT TRISAbits.TRISA1
-#define PORT_IN_BIT PORTAbits.RA1
-#define TRIS_OUT_BIT TRISAbits.TRISA0
-#define PORT_OUT_BIT PORTAbits.RA0
-
-static bit outSink_write()
-{
-    TRIS_OUT_BIT = 0;
-
-    // One port
-    WORD b = 1;
-    prot_control_write(&b, sizeof(WORD));
-    return FALSE;
-}
-
-// Read bits to set as output
-static bit outSink_read()
-{
-    if (prot_control_readAvail() < 5) {
-        // Need more data
-        return TRUE;
-    }
-    WORD swCount;
-    BYTE arr;
-    prot_control_read(&swCount, 2);
-    prot_control_read(&swCount, 2);
-    prot_control_read(&arr, 1);
-    PORT_OUT_BIT = !!arr;
-    return FALSE;
-}
-
-// Write bits read as input
-static bit inSink_write()
-{
-    TRIS_IN_BIT = 1;
-    
-    WORD swCount = 1;
-    prot_control_write(&swCount, 2);
-    prot_control_write(&swCount, 2);
-    BYTE arr = PORT_IN_BIT || 1;
-    prot_control_write(&arr, 1);
     return FALSE;
 }

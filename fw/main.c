@@ -51,6 +51,10 @@ void main()
     dht11_init();
 #endif
 
+#ifdef HAS_DIGIO
+    digio_init();
+#endif
+
     enableInterrupts();
 
 #ifdef HAS_RS485

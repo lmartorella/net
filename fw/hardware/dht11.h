@@ -4,7 +4,6 @@
 #ifdef HAS_DHT11
 
 extern const Sink g_tempSink;
-
 void dht11_init();
 
 #endif

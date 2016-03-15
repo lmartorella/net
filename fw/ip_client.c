@@ -152,7 +152,7 @@ void ip_prot_slowTimer()
     if (s_started)
     {
         // Ping server every second
-        sendHelo(bus_dirtyChildren);
+        sendHelo();
     }
 }
 
