@@ -9,6 +9,11 @@ namespace Lucky.Home
         public ResetReason ResetReason { get; set; }
 
         [DataMember]
-        public string ExceptionMessage { get; set; }        
+        public string ExceptionMessage { get; set; }
+
+        public override string ToString()
+        {
+            return "Reason: " + ResetReason + ", Exc: " + ExceptionMessage;
+        }
     }
 }

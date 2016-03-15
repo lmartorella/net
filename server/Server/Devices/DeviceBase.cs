@@ -110,7 +110,7 @@ namespace Lucky.Home.Devices
             }
             else if (e.Action == CollectionChangeAction.Remove)
             {
-                var sinks = _sinks.Where(s => s.Sink == item);
+                var sinks = _sinks.Where(s => s.Sink == item).ToArray();
                 foreach (var sink in sinks)
                 {
                     _sinks.Remove(sink);
