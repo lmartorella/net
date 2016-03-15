@@ -17,19 +17,22 @@ namespace Lucky.Home
         private bool _connected;
         private readonly AdminInterface _adminInterface;
 
-        public TcpConnection()
+        public TcpConnection(Action connectedHandler)
         {
             Connected = false;
             _adminInterface = new AdminInterface(this);
             _client = new TcpClient();
-            Connect();
+            Connect(connectedHandler);
         }
 
-        public async void Connect()
+        public async void Connect(Action connectedHandler)
         {
             // Start listener
             await _client.ConnectAsync("localhost", Constants.DefaultAdminPort);
-            await HandleConnected();
+            await FetchTree();
+            await FetchDevices();
+            Connected = true;
+            App.Current.Dispatcher.Invoke(connectedHandler);
         }
 
         private bool Connected
@@ -43,13 +46,6 @@ namespace Lucky.Home
                 _connected = value;
                 App.Current.Dispatcher.Invoke(() => StatusText = _connected ? "Connected" : "Disconnected");
             }
-        }
-
-        private async Task HandleConnected()
-        {
-            Connected = true;
-            await FetchTree();
-            await FetchDevices();
         }
 
         private async Task FetchTree()

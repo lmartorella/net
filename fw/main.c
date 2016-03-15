@@ -9,6 +9,7 @@
 #include "audioSink.h"
 #include "hardware/rs485.h"
 #include "hardware/dht11.h"
+#include "hardware/digio.h"
 
 void interrupt PRIO_TYPE low_isr(void)
 {

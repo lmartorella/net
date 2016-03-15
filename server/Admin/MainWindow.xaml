@@ -16,7 +16,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="{Binding Connection.StatusText}" HorizontalAlignment="Center"/>
             <TextBlock Grid.Column="1" HorizontalAlignment="Right">
-                <Hyperlink Click="RefreshClicked">Refresh</Hyperlink>
+                <Hyperlink Click="RefreshClicked" IsEnabled="{Binding IsRefreshEnabled}">Refresh</Hyperlink>
             </TextBlock>
         </Grid>
 

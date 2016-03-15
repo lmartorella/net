@@ -11,9 +11,7 @@ namespace Lucky.Home
         {
             InitializeComponent();
             DataContext = this;
-
-            Connection = new TcpConnection();
-            //Connection = new SampleData1();
+            RefreshClicked(null, null);
         }
 
         public static readonly DependencyProperty ConnectionProperty = DependencyProperty.Register(
@@ -25,10 +23,23 @@ namespace Lucky.Home
             set { SetValue(ConnectionProperty, value); }
         }
 
+        public static readonly DependencyProperty IsRefreshEnabledProperty = DependencyProperty.Register(
+            "IsRefreshEnabled", typeof (bool), typeof (MainWindow), new PropertyMetadata(default(bool)));
+
+        public bool IsRefreshEnabled
+        {
+            get { return (bool) GetValue(IsRefreshEnabledProperty); }
+            set { SetValue(IsRefreshEnabledProperty, value); }
+        }
+
         private void RefreshClicked(object sender, RoutedEventArgs routedEventArgs)
         {
-            Connection.Dispose();
-            Connection = new TcpConnection();
+            IsRefreshEnabled = false;
+            if (Connection != null)
+            {
+                Connection.Dispose();
+            }
+            Connection = new TcpConnection(() => IsRefreshEnabled = true);
         }
     }
 }
