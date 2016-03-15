@@ -44,18 +44,11 @@
   <ItemGroup>
     <Compile Include="Admin\AdminInterface.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="Admin\IAdminInterface.cs" />
-    <Compile Include="Admin\MessageRequest.cs" />
-    <Compile Include="Admin\MessageResponse.cs" />
-    <Compile Include="Admin\MessageSerializerFactory.cs" />
-    <Compile Include="Admin\Node.cs" />
     <Compile Include="Application\AppService.cs" />
     <Compile Include="Devices\App\TemperatureDevice.cs" />
     <Compile Include="Devices\DeviceAttribute.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
-    <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
-    <Compile Include="Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
     <Compile Include="Devices\App\ISwitchDevice.cs" />
     <Compile Include="Devices\SubSink.cs" />
@@ -68,7 +61,6 @@
     <Compile Include="Sinks\App\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\App\IDigitalInputArraySink.cs" />
     <Compile Include="Devices\App\LineDevice.cs" />
-    <Compile Include="Devices\SinkPath.cs" />
     <Compile Include="Devices\App\SwitchDevice.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
     <Compile Include="Sinks\App\IDigitalOutputArraySink.cs" />

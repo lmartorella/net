@@ -57,7 +57,8 @@ namespace Lucky.Home.Devices
 
         private IDeviceInternal CreateDevice(DeviceDescriptor descriptor)
         {
-            IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(_deviceTypes[descriptor.DeviceType].Type, descriptor.Arguments);
+            var type = Type.GetType(_deviceTypes[descriptor.DeviceType].FullTypeName);
+            IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(type, descriptor.Arguments);
             device.OnInitialize(descriptor.SinkPaths);
             descriptor.Id = Guid.NewGuid();
             lock (_devices)

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
+using Lucky.Home.Sinks;
 using Lucky.Services;
 
 namespace Lucky.Home.Admin
@@ -73,15 +74,29 @@ namespace Lucky.Home.Admin
             return Task.Run(() => { });
         }
 
+        private Node BuildNode(ITcpNode tcpNode)
+        {
+            var systemSink = tcpNode.Sink<ISystemSink>();
+            return new Node()
+            {
+                Id = tcpNode.Id,
+                Status = systemSink != null ? systemSink.Status : null,
+                Address = tcpNode.Address.ToString(),
+                Sinks = tcpNode.Sinks.Select(s => s.FourCc).ToArray(),
+                SubSinkCount = tcpNode.Sinks.Select(s => s.SubCount).ToArray(),
+                IsZombie = tcpNode.IsZombie
+            };
+        }
+
         private Node[] BuildTree()
         {
-            var roots = _manager.Nodes.Where(n => !n.Address.IsSubNode).Select(n => new Node(n)).ToList();
+            var roots = _manager.Nodes.Where(n => !n.Address.IsSubNode).Select(BuildNode).ToList();
             foreach (var node in _manager.Nodes.Where(n => n.Address.IsSubNode))
             {
-                var root = roots.FirstOrDefault(r => r.TcpNode.Address.Equals(node.Address.SubNode(0)));
+                var root = roots.FirstOrDefault(r => r.Address == node.Address.SubNode(0).ToString());
                 if (root != null)
                 {
-                    root.Children = root.Children.Concat(new[] { new Node(node) }).ToArray();
+                    root.Children = root.Children.Concat(new[] { BuildNode(node) }).ToArray();
                 }
             }
             return roots.ToArray();

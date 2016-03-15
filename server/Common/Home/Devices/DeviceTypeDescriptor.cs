@@ -9,19 +9,22 @@ namespace Lucky.Home.Devices
     {
         public DeviceTypeDescriptor(Type type)
         {
-            Type = type;
-            TypeName = Type.Name;
+            FullTypeName = type.FullName;
+            TypeName = type.Name;
 
-            var constructors = Type.GetConstructors();
-            if (constructors.Count() != 1)
+            var constructors = type.GetConstructors();
+            if (constructors.Length != 1)
             {
                 throw new InvalidOperationException("Too many constructors in type " + TypeName);
             }
 
-            var args = constructors.First().GetParameters();
+            var args = constructors[0].GetParameters();
             ArgumentNames = args.Select(arg => arg.Name).ToArray();
             ArgumentTypes = args.Select(arg => arg.ParameterType.FullName).ToArray();
         }
+
+        [DataMember]
+        public string FullTypeName { get; set; }
 
         [DataMember]
         public string TypeName { get; set; }
@@ -31,7 +34,5 @@ namespace Lucky.Home.Devices
 
         [DataMember]
         public string[] ArgumentTypes { get; set; }
-
-        internal Type Type { get; private set; }
     }
 }
