@@ -9696,6 +9696,7 @@ General Instrument, Semikron, Diotec, Fagor&lt;p&gt;
 <part name="H1" library="holes" deviceset="MOUNT-HOLE" device="3.6"/>
 <part name="H2" library="holes" deviceset="MOUNT-HOLE" device="3.6"/>
 <part name="H3" library="holes" deviceset="MOUNT-HOLE" device="3.6"/>
+<part name="P+3" library="supply1" deviceset="VCC" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -9739,6 +9740,7 @@ General Instrument, Semikron, Diotec, Fagor&lt;p&gt;
 <instance part="H1" gate="G$1" x="-53.34" y="127"/>
 <instance part="H2" gate="G$1" x="-40.64" y="127"/>
 <instance part="H3" gate="G$1" x="-27.94" y="127"/>
+<instance part="P+3" gate="VCC" x="-10.16" y="27.94"/>
 </instances>
 <busses>
 </busses>
@@ -9768,6 +9770,18 @@ General Instrument, Semikron, Diotec, Fagor&lt;p&gt;
 <pinref part="P+2" gate="VCC" pin="VCC"/>
 <wire x1="10.16" y1="71.12" x2="15.24" y2="71.12" width="0.1524" layer="91"/>
 <wire x1="15.24" y1="71.12" x2="15.24" y2="78.74" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="C2" gate="G$1" pin="+"/>
+<wire x1="-10.16" y1="17.78" x2="-10.16" y2="20.32" width="0.1524" layer="91"/>
+<pinref part="U$5" gate="G$1" pin="VOUT"/>
+<wire x1="-10.16" y1="20.32" x2="-12.7" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="-5.08" y1="10.16" x2="-5.08" y2="20.32" width="0.1524" layer="91"/>
+<wire x1="-5.08" y1="20.32" x2="-10.16" y2="20.32" width="0.1524" layer="91"/>
+<junction x="-10.16" y="20.32"/>
+<pinref part="C4" gate="G$1" pin="2"/>
+<pinref part="P+3" gate="VCC" pin="VCC"/>
+<wire x1="-10.16" y1="20.32" x2="-10.16" y2="25.4" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$1" class="0">
@@ -9905,18 +9919,6 @@ General Instrument, Semikron, Diotec, Fagor&lt;p&gt;
 <wire x1="-38.1" y1="12.7" x2="-38.1" y2="15.24" width="0.1524" layer="91"/>
 <junction x="-38.1" y="15.24"/>
 <pinref part="C3" gate="G$1" pin="1"/>
-</segment>
-</net>
-<net name="N$13" class="0">
-<segment>
-<pinref part="C2" gate="G$1" pin="+"/>
-<wire x1="-10.16" y1="17.78" x2="-10.16" y2="20.32" width="0.1524" layer="91"/>
-<pinref part="U$5" gate="G$1" pin="VOUT"/>
-<wire x1="-10.16" y1="20.32" x2="-12.7" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="-5.08" y1="10.16" x2="-5.08" y2="20.32" width="0.1524" layer="91"/>
-<wire x1="-5.08" y1="20.32" x2="-10.16" y2="20.32" width="0.1524" layer="91"/>
-<junction x="-10.16" y="20.32"/>
-<pinref part="C4" gate="G$1" pin="2"/>
 </segment>
 </net>
 <net name="N$6" class="0">
