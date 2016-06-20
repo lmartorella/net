@@ -6,7 +6,6 @@
 // Low-level interface, HW dependent
 // CM1602_IF_MODE should be set to 4 or 8
 // CM1602_IF_PORT should be set to the PORT to use
-// CM1602_IF_PORT should be set to the PORT to use
 // CM1602_IF_BIT_RS should be set to the PORT bit for the RS signal
 // CM1602_IF_BIT_RW should be set to the PORT bit for the RW signal
 // CM1602_IF_BIT_EN should be set to the PORT bit for the EN signal
