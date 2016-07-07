@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -69,7 +69,7 @@
 <layer number="90" name="Modules" color="5" fill="1" visible="yes" active="yes"/>
 <layer number="91" name="Nets" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="92" name="Busses" color="1" fill="1" visible="yes" active="yes"/>
-<layer number="93" name="Pins" color="2" fill="1" visible="no" active="yes"/>
+<layer number="93" name="Pins" color="2" fill="1" visible="yes" active="yes"/>
 <layer number="94" name="Symbols" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="95" name="Names" color="7" fill="1" visible="yes" active="yes"/>
 <layer number="96" name="Values" color="7" fill="1" visible="yes" active="yes"/>
@@ -164,16 +164,22 @@
 <circle x="0" y="0" radius="5.08" width="0.127" layer="21"/>
 <circle x="0" y="0" radius="2.83980625" width="0.127" layer="21"/>
 </package>
-<package name="POLOLU-2098">
-<wire x1="-11.43" y1="-2.54" x2="-11.43" y2="10.16" width="0.127" layer="21"/>
-<wire x1="-11.43" y1="10.16" x2="-1.27" y2="10.16" width="0.127" layer="21"/>
-<wire x1="-1.27" y1="10.16" x2="-1.27" y2="-2.54" width="0.127" layer="21"/>
-<wire x1="-1.27" y1="-2.54" x2="-11.43" y2="-2.54" width="0.127" layer="21"/>
-<pad name="P$1" x="-10.16" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<pad name="P$2" x="-7.62" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<pad name="P$3" x="-5.08" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<pad name="P$4" x="-2.54" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<text x="-10.16" y="7.62" size="1.27" layer="21">COMP UP</text>
+<package name="POLOLU-10-13">
+<wire x1="-4.93" y1="-2.54" x2="-4.93" y2="10.16" width="0.127" layer="21"/>
+<wire x1="-4.93" y1="10.16" x2="4.73" y2="10.16" width="0.127" layer="21"/>
+<wire x1="4.73" y1="10.16" x2="4.73" y2="-2.54" width="0.127" layer="21"/>
+<wire x1="4.73" y1="-2.54" x2="-4.93" y2="-2.54" width="0.127" layer="21"/>
+<pad name="P$1" x="-4.16" y="-1.27" drill="0.9" shape="long" rot="R90"/>
+<pad name="P$2" x="-1.62" y="-1.27" drill="0.9" shape="long" rot="R90"/>
+<pad name="P$3" x="0.92" y="-1.27" drill="0.9" shape="long" rot="R90"/>
+<pad name="P$4" x="3.46" y="-1.27" drill="0.9" shape="long" rot="R90"/>
+<circle x="2" y="8" radius="1.802775" width="0.127" layer="21"/>
+<wire x1="-3" y1="8" x2="-3" y2="4" width="0.127" layer="21"/>
+<wire x1="-3" y1="4" x2="-1" y2="4" width="0.127" layer="21"/>
+<wire x1="-1" y1="4" x2="-1" y2="8" width="0.127" layer="21"/>
+<wire x1="-1" y1="8" x2="-3" y2="8" width="0.127" layer="21"/>
+<rectangle x1="-4" y1="2" x2="-2" y2="3" layer="21"/>
+<rectangle x1="-4" y1="1" x2="-1" y2="3" layer="21"/>
 </package>
 <package name="DIL40">
 <description>&lt;B&gt;Dual In Line&lt;/B&gt;&lt;p&gt;
@@ -388,9 +394,9 @@ Source: http://www.schrack.com/.. 5817.pdf</description>
 <package name="MAGJACK">
 <wire x1="0" y1="21.095" x2="15.14" y2="21.095" width="0.2032" layer="21"/>
 <wire x1="0" y1="5.895" x2="15.24" y2="5.895" width="0.2032" layer="21"/>
-<wire x1="0" y1="8.095" x2="0" y2="-0.105" width="0.2032" layer="51"/>
+<wire x1="0" y1="8.095" x2="0" y2="-0.105" width="0.2032" layer="21"/>
 <wire x1="0" y1="-0.105" x2="15.24" y2="-0.105" width="0.2032" layer="51"/>
-<wire x1="15.24" y1="-0.105" x2="15.24" y2="8.095" width="0.2032" layer="51"/>
+<wire x1="15.24" y1="-0.105" x2="15.24" y2="8.095" width="0.2032" layer="21"/>
 <wire x1="0" y1="21" x2="0" y2="15.5" width="0.2032" layer="21"/>
 <wire x1="15.2" y1="21.1" x2="15.2" y2="15.5" width="0.2032" layer="21"/>
 <wire x1="0" y1="6" x2="0" y2="12.7" width="0.2032" layer="21"/>
@@ -434,137 +440,137 @@ Source: http://www.schrack.com/.. 5817.pdf</description>
 </package>
 <package name="LV18F">
 <description>80-pin TQFP MCU Card</description>
-<pad name="VCC3_1" x="0" y="0" drill="1"/>
-<pad name="VCC3_2" x="2.54" y="0" drill="1"/>
-<pad name="GND_1" x="5.08" y="0" drill="1"/>
-<pad name="GND_2" x="7.62" y="0" drill="1"/>
-<pad name="GND_3" x="10.16" y="0" drill="1"/>
-<pad name="RST" x="12.7" y="0" drill="1"/>
-<pad name="VCC3_3" x="0" y="2.54" drill="1"/>
-<pad name="VCC3_4" x="2.54" y="2.54" drill="1"/>
-<pad name="GND_4" x="5.08" y="2.54" drill="1"/>
-<pad name="GND_5" x="7.62" y="2.54" drill="1"/>
-<pad name="GND_6" x="10.16" y="2.54" drill="1"/>
-<pad name="NC" x="12.7" y="2.54" drill="1"/>
-<pad name="RA1" x="15.24" y="2.54" drill="1"/>
-<pad name="RA0" x="15.24" y="0" drill="1"/>
-<pad name="RA2" x="17.78" y="0" drill="1"/>
-<pad name="RA3" x="17.78" y="2.54" drill="1"/>
-<pad name="RA5" x="20.32" y="2.54" drill="1"/>
-<pad name="RA4" x="20.32" y="0" drill="1"/>
-<pad name="RB0" x="22.86" y="0" drill="1"/>
-<pad name="RB1" x="22.86" y="2.54" drill="1"/>
-<pad name="RB2" x="25.4" y="0" drill="1"/>
-<pad name="RB3" x="25.4" y="2.54" drill="1"/>
-<pad name="RB4" x="27.94" y="0" drill="1"/>
-<pad name="RB5" x="27.94" y="2.54" drill="1"/>
-<pad name="RB6" x="30.48" y="0" drill="1"/>
-<pad name="RB7" x="30.48" y="2.54" drill="1"/>
-<pad name="RC0" x="33.02" y="0" drill="1"/>
-<pad name="RC1" x="33.02" y="2.54" drill="1"/>
-<pad name="RC3" x="35.56" y="2.54" drill="1"/>
-<pad name="RC2" x="35.56" y="0" drill="1"/>
-<pad name="RC4" x="38.1" y="0" drill="1"/>
-<pad name="RC5" x="38.1" y="2.54" drill="1"/>
-<pad name="RC7" x="40.64" y="2.54" drill="1"/>
-<pad name="RC6" x="40.64" y="0" drill="1"/>
-<pad name="RD0" x="43.18" y="0" drill="1"/>
-<pad name="RD1" x="43.18" y="2.54" drill="1"/>
-<pad name="NC_2" x="45.72" y="2.54" drill="1"/>
-<pad name="RD2" x="45.72" y="0" drill="1"/>
-<pad name="NC_3" x="48.26" y="0" drill="1"/>
-<pad name="NC_4" x="48.26" y="2.54" drill="1"/>
-<pad name="NC_6" x="50.8" y="2.54" drill="1"/>
-<pad name="NC_5" x="50.8" y="0" drill="1"/>
-<pad name="RE0" x="53.34" y="0" drill="1"/>
-<pad name="RE1" x="53.34" y="2.54" drill="1"/>
-<pad name="RE3" x="55.88" y="2.54" drill="1"/>
-<pad name="RE2" x="55.88" y="0" drill="1"/>
-<pad name="RE4" x="58.42" y="0" drill="1"/>
-<pad name="RE5" x="58.42" y="2.54" drill="1"/>
-<pad name="RE7" x="60.96" y="2.54" drill="1"/>
-<pad name="RE6" x="60.96" y="0" drill="1"/>
-<pad name="NC_7" x="63.5" y="0" drill="1"/>
-<pad name="RF1" x="63.5" y="2.54" drill="1"/>
-<pad name="RF3" x="66.04" y="2.54" drill="1"/>
-<pad name="RF2" x="66.04" y="0" drill="1"/>
-<pad name="RF4" x="68.58" y="0" drill="1"/>
-<pad name="RF5" x="68.58" y="2.54" drill="1"/>
-<pad name="RF7" x="71.12" y="2.54" drill="1"/>
-<pad name="RF6" x="71.12" y="0" drill="1"/>
-<pad name="RG0" x="73.66" y="0" drill="1"/>
-<pad name="RG1" x="73.66" y="2.54" drill="1"/>
-<pad name="RG3" x="76.2" y="2.54" drill="1"/>
-<pad name="RG2" x="76.2" y="0" drill="1"/>
-<pad name="RG4" x="78.74" y="0" drill="1"/>
-<pad name="NC_8" x="78.74" y="2.54" drill="1"/>
-<pad name="NC_10" x="81.28" y="2.54" drill="1"/>
-<pad name="NC_9" x="81.28" y="0" drill="1"/>
-<pad name="RH0" x="83.82" y="0" drill="1"/>
-<pad name="RH1" x="83.82" y="2.54" drill="1"/>
-<pad name="RH3" x="86.36" y="2.54" drill="1"/>
-<pad name="RH2" x="86.36" y="0" drill="1"/>
-<pad name="RH4" x="88.9" y="0" drill="1"/>
-<pad name="RH5" x="88.9" y="2.54" drill="1"/>
-<pad name="RH7" x="91.44" y="2.54" drill="1"/>
-<pad name="RH6" x="91.44" y="0" drill="1"/>
-<pad name="P$75" x="93.98" y="0" drill="1"/>
-<pad name="P$76" x="93.98" y="2.54" drill="1"/>
-<pad name="P$77" x="96.52" y="0" drill="1"/>
-<pad name="P$78" x="96.52" y="2.54" drill="1"/>
-<pad name="RJ5" x="99.06" y="2.54" drill="1"/>
-<pad name="RJ4" x="99.06" y="0" drill="1"/>
-<pad name="P$81" x="101.6" y="0" drill="1"/>
-<pad name="P$82" x="101.6" y="2.54" drill="1"/>
-<pad name="TPOUT-" x="104.14" y="2.54" drill="1"/>
-<pad name="TPOUT+" x="104.14" y="0" drill="1"/>
-<pad name="TPIN+" x="106.68" y="0" drill="1"/>
-<pad name="TPIN-" x="106.68" y="2.54" drill="1"/>
-<pad name="P$1" x="109.22" y="0" drill="1"/>
-<pad name="P$2" x="109.22" y="2.54" drill="1"/>
-<wire x1="-12.7" y1="-8.89" x2="-12.7" y2="6.35" width="0.127" layer="20"/>
-<wire x1="-12.7" y1="11.43" x2="-12.7" y2="34.29" width="0.127" layer="20"/>
-<wire x1="-12.7" y1="34.29" x2="121.92" y2="34.29" width="0.127" layer="20"/>
-<wire x1="-12.7" y1="-8.89" x2="121.92" y2="-8.89" width="0.127" layer="20"/>
-<wire x1="121.92" y1="-8.89" x2="121.92" y2="6.35" width="0.127" layer="20"/>
-<wire x1="121.92" y1="11.43" x2="121.92" y2="34.29" width="0.127" layer="20"/>
-<wire x1="-12.7" y1="6.35" x2="-10.16" y2="6.35" width="0.127" layer="20"/>
-<wire x1="-10.16" y1="6.35" x2="-10.16" y2="11.43" width="0.127" layer="20"/>
-<wire x1="-10.16" y1="11.43" x2="-12.7" y2="11.43" width="0.127" layer="20"/>
-<wire x1="121.92" y1="6.35" x2="119.38" y2="6.35" width="0.127" layer="20"/>
-<wire x1="119.38" y1="6.35" x2="119.38" y2="11.43" width="0.127" layer="20"/>
-<wire x1="119.38" y1="11.43" x2="121.92" y2="11.43" width="0.127" layer="20"/>
-<wire x1="41.91" y1="13.97" x2="54.61" y2="13.97" width="0.127" layer="20"/>
-<wire x1="54.61" y1="13.97" x2="54.61" y2="26.67" width="0.127" layer="20"/>
-<wire x1="54.61" y1="26.67" x2="41.91" y2="26.67" width="0.127" layer="20"/>
-<wire x1="41.91" y1="26.67" x2="41.91" y2="13.97" width="0.127" layer="20"/>
-<wire x1="33.02" y1="26.67" x2="35.56" y2="26.67" width="0.127" layer="20"/>
-<wire x1="35.56" y1="26.67" x2="35.56" y2="19.05" width="0.127" layer="20"/>
-<wire x1="35.56" y1="19.05" x2="33.02" y2="19.05" width="0.127" layer="20"/>
-<wire x1="33.02" y1="19.05" x2="33.02" y2="26.67" width="0.127" layer="20"/>
-<wire x1="115.57" y1="30.48" x2="118.11" y2="30.48" width="0.127" layer="20"/>
-<wire x1="118.11" y1="30.48" x2="118.11" y2="27.94" width="0.127" layer="20"/>
-<wire x1="118.11" y1="27.94" x2="115.57" y2="27.94" width="0.127" layer="20"/>
-<wire x1="115.57" y1="27.94" x2="115.57" y2="30.48" width="0.127" layer="20"/>
-<wire x1="-8.89" y1="30.48" x2="-8.89" y2="27.94" width="0.127" layer="20"/>
-<wire x1="-8.89" y1="27.94" x2="-6.35" y2="27.94" width="0.127" layer="20"/>
-<wire x1="-6.35" y1="27.94" x2="-6.35" y2="30.48" width="0.127" layer="20"/>
-<wire x1="-6.35" y1="30.48" x2="-8.89" y2="30.48" width="0.127" layer="20"/>
-<wire x1="-10.16" y1="2.54" x2="-6.35" y2="2.54" width="0.127" layer="20"/>
-<wire x1="-6.35" y1="2.54" x2="-6.35" y2="0" width="0.127" layer="20"/>
-<wire x1="-6.35" y1="0" x2="-10.16" y2="0" width="0.127" layer="20"/>
-<wire x1="-10.16" y1="0" x2="-10.16" y2="2.54" width="0.127" layer="20"/>
-<wire x1="115.57" y1="2.54" x2="118.11" y2="2.54" width="0.127" layer="20"/>
-<wire x1="118.11" y1="2.54" x2="118.11" y2="0" width="0.127" layer="20"/>
-<wire x1="118.11" y1="0" x2="115.57" y2="0" width="0.127" layer="20"/>
-<wire x1="115.57" y1="0" x2="115.57" y2="2.54" width="0.127" layer="20"/>
-<wire x1="58.42" y1="22.86" x2="60.96" y2="22.86" width="0.127" layer="20"/>
-<wire x1="60.96" y1="22.86" x2="60.96" y2="20.32" width="0.127" layer="20"/>
-<wire x1="60.96" y1="20.32" x2="58.42" y2="20.32" width="0.127" layer="20"/>
-<wire x1="58.42" y1="20.32" x2="58.42" y2="22.86" width="0.127" layer="20"/>
-<text x="74.93" y="17.78" size="2.54" layer="20" font="vector">80-pin TQFP
+<pad name="VCC3_1" x="0" y="0" drill="1" shape="octagon"/>
+<pad name="VCC3_2" x="2.54" y="0" drill="1" shape="octagon"/>
+<pad name="GND_1" x="5.08" y="0" drill="1" shape="octagon"/>
+<pad name="GND_2" x="7.62" y="0" drill="1" shape="octagon"/>
+<pad name="GND_3" x="10.16" y="0" drill="1" shape="octagon"/>
+<pad name="RST" x="12.7" y="0" drill="1" shape="octagon"/>
+<pad name="VCC3_3" x="0" y="2.54" drill="1" shape="octagon"/>
+<pad name="VCC3_4" x="2.54" y="2.54" drill="1" shape="octagon"/>
+<pad name="GND_4" x="5.08" y="2.54" drill="1" shape="octagon"/>
+<pad name="GND_5" x="7.62" y="2.54" drill="1" shape="octagon"/>
+<pad name="GND_6" x="10.16" y="2.54" drill="1" shape="octagon"/>
+<pad name="NC" x="12.7" y="2.54" drill="1" shape="octagon"/>
+<pad name="RA1" x="15.24" y="2.54" drill="1" shape="octagon"/>
+<pad name="RA0" x="15.24" y="0" drill="1" shape="octagon"/>
+<pad name="RA2" x="17.78" y="0" drill="1" shape="octagon"/>
+<pad name="RA3" x="17.78" y="2.54" drill="1" shape="octagon"/>
+<pad name="RA5" x="20.32" y="2.54" drill="1" shape="octagon"/>
+<pad name="RA4" x="20.32" y="0" drill="1" shape="octagon"/>
+<pad name="RB0" x="22.86" y="0" drill="1" shape="octagon"/>
+<pad name="RB1" x="22.86" y="2.54" drill="1" shape="octagon"/>
+<pad name="RB2" x="25.4" y="0" drill="1" shape="octagon"/>
+<pad name="RB3" x="25.4" y="2.54" drill="1" shape="octagon"/>
+<pad name="RB4" x="27.94" y="0" drill="1" shape="octagon"/>
+<pad name="RB5" x="27.94" y="2.54" drill="1" shape="octagon"/>
+<pad name="RB6" x="30.48" y="0" drill="1" shape="octagon"/>
+<pad name="RB7" x="30.48" y="2.54" drill="1" shape="octagon"/>
+<pad name="RC0" x="33.02" y="0" drill="1" shape="octagon"/>
+<pad name="RC1" x="33.02" y="2.54" drill="1" shape="octagon"/>
+<pad name="RC3" x="35.56" y="2.54" drill="1" shape="octagon"/>
+<pad name="RC2" x="35.56" y="0" drill="1" shape="octagon"/>
+<pad name="RC4" x="38.1" y="0" drill="1" shape="octagon"/>
+<pad name="RC5" x="38.1" y="2.54" drill="1" shape="octagon"/>
+<pad name="RC7" x="40.64" y="2.54" drill="1" shape="octagon"/>
+<pad name="RC6" x="40.64" y="0" drill="1" shape="octagon"/>
+<pad name="RD0" x="43.18" y="0" drill="1" shape="octagon"/>
+<pad name="RD1" x="43.18" y="2.54" drill="1" shape="octagon"/>
+<pad name="NC_2" x="45.72" y="2.54" drill="1" shape="octagon"/>
+<pad name="RD2" x="45.72" y="0" drill="1" shape="octagon"/>
+<pad name="NC_3" x="48.26" y="0" drill="1" shape="octagon"/>
+<pad name="NC_4" x="48.26" y="2.54" drill="1" shape="octagon"/>
+<pad name="NC_6" x="50.8" y="2.54" drill="1" shape="octagon"/>
+<pad name="NC_5" x="50.8" y="0" drill="1" shape="octagon"/>
+<pad name="RE0" x="53.34" y="0" drill="1" shape="octagon"/>
+<pad name="RE1" x="53.34" y="2.54" drill="1" shape="octagon"/>
+<pad name="RE3" x="55.88" y="2.54" drill="1" shape="octagon"/>
+<pad name="RE2" x="55.88" y="0" drill="1" shape="octagon"/>
+<pad name="RE4" x="58.42" y="0" drill="1" shape="octagon"/>
+<pad name="RE5" x="58.42" y="2.54" drill="1" shape="octagon"/>
+<pad name="RE7" x="60.96" y="2.54" drill="1" shape="octagon"/>
+<pad name="RE6" x="60.96" y="0" drill="1" shape="octagon"/>
+<pad name="NC_7" x="63.5" y="0" drill="1" shape="octagon"/>
+<pad name="RF1" x="63.5" y="2.54" drill="1" shape="octagon"/>
+<pad name="RF3" x="66.04" y="2.54" drill="1" shape="octagon"/>
+<pad name="RF2" x="66.04" y="0" drill="1" shape="octagon"/>
+<pad name="RF4" x="68.58" y="0" drill="1" shape="octagon"/>
+<pad name="RF5" x="68.58" y="2.54" drill="1" shape="octagon"/>
+<pad name="RF7" x="71.12" y="2.54" drill="1" shape="octagon"/>
+<pad name="RF6" x="71.12" y="0" drill="1" shape="octagon"/>
+<pad name="RG0" x="73.66" y="0" drill="1" shape="octagon"/>
+<pad name="RG1" x="73.66" y="2.54" drill="1" shape="octagon"/>
+<pad name="RG3" x="76.2" y="2.54" drill="1" shape="octagon"/>
+<pad name="RG2" x="76.2" y="0" drill="1" shape="octagon"/>
+<pad name="RG4" x="78.74" y="0" drill="1" shape="octagon"/>
+<pad name="NC_8" x="78.74" y="2.54" drill="1" shape="octagon"/>
+<pad name="NC_10" x="81.28" y="2.54" drill="1" shape="octagon"/>
+<pad name="NC_9" x="81.28" y="0" drill="1" shape="octagon"/>
+<pad name="RH0" x="83.82" y="0" drill="1" shape="octagon"/>
+<pad name="RH1" x="83.82" y="2.54" drill="1" shape="octagon"/>
+<pad name="RH3" x="86.36" y="2.54" drill="1" shape="octagon"/>
+<pad name="RH2" x="86.36" y="0" drill="1" shape="octagon"/>
+<pad name="RH4" x="88.9" y="0" drill="1" shape="octagon"/>
+<pad name="RH5" x="88.9" y="2.54" drill="1" shape="octagon"/>
+<pad name="RH7" x="91.44" y="2.54" drill="1" shape="octagon"/>
+<pad name="RH6" x="91.44" y="0" drill="1" shape="octagon"/>
+<pad name="P$75" x="93.98" y="0" drill="1" shape="octagon"/>
+<pad name="P$76" x="93.98" y="2.54" drill="1" shape="octagon"/>
+<pad name="P$77" x="96.52" y="0" drill="1" shape="octagon"/>
+<pad name="P$78" x="96.52" y="2.54" drill="1" shape="octagon"/>
+<pad name="RJ5" x="99.06" y="2.54" drill="1" shape="octagon"/>
+<pad name="RJ4" x="99.06" y="0" drill="1" shape="octagon"/>
+<pad name="P$81" x="101.6" y="0" drill="1" shape="octagon"/>
+<pad name="P$82" x="101.6" y="2.54" drill="1" shape="octagon"/>
+<pad name="TPOUT-" x="104.14" y="2.54" drill="1" shape="octagon"/>
+<pad name="TPOUT+" x="104.14" y="0" drill="1" shape="octagon"/>
+<pad name="TPIN+" x="106.68" y="0" drill="1" shape="octagon"/>
+<pad name="TPIN-" x="106.68" y="2.54" drill="1" shape="octagon"/>
+<pad name="P$1" x="109.22" y="0" drill="1" shape="octagon"/>
+<pad name="P$2" x="109.22" y="2.54" drill="1" shape="octagon"/>
+<wire x1="-12.7" y1="-8.89" x2="-12.7" y2="6.35" width="0.127" layer="21"/>
+<wire x1="-12.7" y1="11.43" x2="-12.7" y2="34.29" width="0.127" layer="21"/>
+<wire x1="-12.7" y1="34.29" x2="121.92" y2="34.29" width="0.127" layer="21"/>
+<wire x1="-12.7" y1="-8.89" x2="121.92" y2="-8.89" width="0.127" layer="21"/>
+<wire x1="121.92" y1="-8.89" x2="121.92" y2="6.35" width="0.127" layer="21"/>
+<wire x1="121.92" y1="11.43" x2="121.92" y2="34.29" width="0.127" layer="21"/>
+<wire x1="-12.7" y1="6.35" x2="-10.16" y2="6.35" width="0.127" layer="21"/>
+<wire x1="-10.16" y1="6.35" x2="-10.16" y2="11.43" width="0.127" layer="21"/>
+<wire x1="-10.16" y1="11.43" x2="-12.7" y2="11.43" width="0.127" layer="21"/>
+<wire x1="121.92" y1="6.35" x2="119.38" y2="6.35" width="0.127" layer="21"/>
+<wire x1="119.38" y1="6.35" x2="119.38" y2="11.43" width="0.127" layer="21"/>
+<wire x1="119.38" y1="11.43" x2="121.92" y2="11.43" width="0.127" layer="21"/>
+<wire x1="41.91" y1="13.97" x2="54.61" y2="13.97" width="0.127" layer="21"/>
+<wire x1="54.61" y1="13.97" x2="54.61" y2="26.67" width="0.127" layer="21"/>
+<wire x1="54.61" y1="26.67" x2="41.91" y2="26.67" width="0.127" layer="21"/>
+<wire x1="41.91" y1="26.67" x2="41.91" y2="13.97" width="0.127" layer="21"/>
+<wire x1="33.02" y1="26.67" x2="35.56" y2="26.67" width="0.127" layer="21"/>
+<wire x1="35.56" y1="26.67" x2="35.56" y2="19.05" width="0.127" layer="21"/>
+<wire x1="35.56" y1="19.05" x2="33.02" y2="19.05" width="0.127" layer="21"/>
+<wire x1="33.02" y1="19.05" x2="33.02" y2="26.67" width="0.127" layer="21"/>
+<wire x1="115.57" y1="30.48" x2="118.11" y2="30.48" width="0.127" layer="21"/>
+<wire x1="118.11" y1="30.48" x2="118.11" y2="27.94" width="0.127" layer="21"/>
+<wire x1="118.11" y1="27.94" x2="115.57" y2="27.94" width="0.127" layer="21"/>
+<wire x1="115.57" y1="27.94" x2="115.57" y2="30.48" width="0.127" layer="21"/>
+<wire x1="-8.89" y1="30.48" x2="-8.89" y2="27.94" width="0.127" layer="21"/>
+<wire x1="-8.89" y1="27.94" x2="-6.35" y2="27.94" width="0.127" layer="21"/>
+<wire x1="-6.35" y1="27.94" x2="-6.35" y2="30.48" width="0.127" layer="21"/>
+<wire x1="-6.35" y1="30.48" x2="-8.89" y2="30.48" width="0.127" layer="21"/>
+<wire x1="-10.16" y1="2.54" x2="-6.35" y2="2.54" width="0.127" layer="21"/>
+<wire x1="-6.35" y1="2.54" x2="-6.35" y2="0" width="0.127" layer="21"/>
+<wire x1="-6.35" y1="0" x2="-10.16" y2="0" width="0.127" layer="21"/>
+<wire x1="-10.16" y1="0" x2="-10.16" y2="2.54" width="0.127" layer="21"/>
+<wire x1="115.57" y1="2.54" x2="118.11" y2="2.54" width="0.127" layer="21"/>
+<wire x1="118.11" y1="2.54" x2="118.11" y2="0" width="0.127" layer="21"/>
+<wire x1="118.11" y1="0" x2="115.57" y2="0" width="0.127" layer="21"/>
+<wire x1="115.57" y1="0" x2="115.57" y2="2.54" width="0.127" layer="21"/>
+<wire x1="58.42" y1="22.86" x2="60.96" y2="22.86" width="0.127" layer="21"/>
+<wire x1="60.96" y1="22.86" x2="60.96" y2="20.32" width="0.127" layer="21"/>
+<wire x1="60.96" y1="20.32" x2="58.42" y2="20.32" width="0.127" layer="21"/>
+<wire x1="58.42" y1="20.32" x2="58.42" y2="22.86" width="0.127" layer="21"/>
+<text x="74.93" y="17.78" size="2.54" layer="21" font="vector">80-pin TQFP
 MCU CARD</text>
-<text x="-3.81" y="17.78" size="2.1844" layer="20" font="vector">mikroElektronika</text>
+<text x="-3.81" y="17.78" size="2.1844" layer="21" font="vector">mikroElektronika</text>
 </package>
 <package name="R0603">
 <description>&lt;b&gt;RESISTOR&lt;/b&gt;</description>
@@ -2284,6 +2290,27 @@ grid 2.54 mm, diameter 6 mm</description>
 <text x="-2.159" y="0" size="1.27" layer="51" ratio="10">3</text>
 <text x="1.143" y="0" size="1.27" layer="51" ratio="10">1</text>
 </package>
+<package name="TO92-">
+<description>&lt;b&gt;TO 92 pad in line&lt;/b&gt;</description>
+<wire x1="-2.0945" y1="-1.651" x2="2.0945" y2="-1.651" width="0.127" layer="21"/>
+<wire x1="-2.413" y1="1.1359" x2="2.413" y2="1.1359" width="0.127" layer="21" curve="-129.583"/>
+<wire x1="1.1359" y1="-0.127" x2="-1.1359" y2="-0.127" width="0.127" layer="51"/>
+<wire x1="-2.413" y1="1.1359" x2="-2.664" y2="-0.127" width="0.127" layer="51" curve="27.9376"/>
+<wire x1="-2.664" y1="-0.127" x2="-2.413" y2="-1.1359" width="0.127" layer="51" curve="22.4788"/>
+<wire x1="-1.4041" y1="-0.127" x2="-2.664" y2="-0.127" width="0.127" layer="51"/>
+<wire x1="-2.413" y1="-1.1359" x2="-2.0945" y2="-1.651" width="0.127" layer="21" curve="13.0385"/>
+<wire x1="-1.1359" y1="-0.127" x2="-1.4041" y2="-0.127" width="0.127" layer="21"/>
+<wire x1="2.413" y1="-1.1359" x2="2.664" y2="-0.127" width="0.127" layer="51" curve="22.4788"/>
+<wire x1="2.664" y1="-0.127" x2="2.413" y2="1.1359" width="0.127" layer="51" curve="27.9376"/>
+<wire x1="2.664" y1="-0.127" x2="1.4041" y2="-0.127" width="0.127" layer="51"/>
+<wire x1="1.4041" y1="-0.127" x2="1.1359" y2="-0.127" width="0.127" layer="21"/>
+<wire x1="2.0945" y1="-1.651" x2="2.4242" y2="-1.1118" width="0.127" layer="21" curve="13.6094"/>
+<pad name="3" x="-2.54" y="0" drill="0.8128" shape="long" rot="R90"/>
+<pad name="1" x="2.54" y="0" drill="0.8128" shape="long" rot="R90"/>
+<pad name="2" x="0" y="0" drill="0.8128" shape="long" rot="R90"/>
+<text x="-2.54" y="3.048" size="1.27" layer="25" ratio="10">&gt;NAME</text>
+<text x="-2.54" y="-3.302" size="1.27" layer="27" ratio="10">&gt;VALUE</text>
+</package>
 </packages>
 <symbols>
 <symbol name="PUSH-BUTN-4">
@@ -2333,10 +2360,10 @@ grid 2.54 mm, diameter 6 mm</description>
 <wire x1="0" y1="2.54" x2="0" y2="1.27" width="0.254" layer="94"/>
 </symbol>
 <symbol name="POLOLU">
-<pin name="VIN" x="-22.86" y="12.7" length="middle" direction="pwr"/>
-<pin name="SHTD" x="-22.86" y="7.62" length="middle" direction="pwr"/>
-<pin name="GND" x="-10.16" y="-5.08" length="middle" rot="R90"/>
-<pin name="VOUT" x="2.54" y="12.7" length="middle" rot="R180"/>
+<pin name="VIN" x="-22.86" y="12.7" visible="pin" length="middle" direction="pwr"/>
+<pin name="SHTD" x="-22.86" y="7.62" visible="pin" length="middle" direction="pwr"/>
+<pin name="GND" x="-10.16" y="-5.08" visible="pin" length="middle" rot="R90"/>
+<pin name="VOUT" x="2.54" y="12.7" visible="pin" length="middle" rot="R180"/>
 <wire x1="-17.78" y1="0" x2="-2.54" y2="0" width="0.254" layer="94"/>
 <wire x1="-2.54" y1="0" x2="-2.54" y2="17.78" width="0.254" layer="94"/>
 <wire x1="-2.54" y1="17.78" x2="-17.78" y2="17.78" width="0.254" layer="94"/>
@@ -2981,11 +3008,12 @@ Red pin is cathode.</description>
 </devices>
 </deviceset>
 <deviceset name="POLOLU-2098">
+<description>5V Regulator - Max in 42V</description>
 <gates>
 <gate name="G$1" symbol="POLOLU" x="10.16" y="-7.62"/>
 </gates>
 <devices>
-<device name="" package="POLOLU-2098">
+<device name="" package="POLOLU-10-13">
 <connects>
 <connect gate="G$1" pin="GND" pad="P$3"/>
 <connect gate="G$1" pin="SHTD" pad="P$1"/>
@@ -4165,13 +4193,13 @@ Standard 5-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 </device>
 </devices>
 </deviceset>
-<deviceset name="BC547*" prefix="Q">
+<deviceset name="BC546B" prefix="Q">
 <description>&lt;b&gt;NPN Transistor&lt;/b&gt;</description>
 <gates>
 <gate name="G$1" symbol="NPN" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="TO92">
+<device name="" package="TO92-">
 <connects>
 <connect gate="G$1" pin="B" pad="2"/>
 <connect gate="G$1" pin="C" pad="3"/>
@@ -4179,8 +4207,42 @@ Standard 5-pin 0.1" header. Use with straight break away headers (SKU : PRT-0011
 </connects>
 <technologies>
 <technology name=""/>
-<technology name="A"/>
-<technology name="B"/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="IRF9630">
+<gates>
+<gate name="G$1" symbol="P-MOSFET" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="TO220V">
+<connects>
+<connect gate="G$1" pin="D" pad="2"/>
+<connect gate="G$1" pin="G" pad="1"/>
+<connect gate="G$1" pin="S" pad="3"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="POLOLU-2097">
+<description>3.3V Regulator - Max in 24V</description>
+<gates>
+<gate name="G$1" symbol="POLOLU" x="10.16" y="-7.62"/>
+</gates>
+<devices>
+<device name="" package="POLOLU-10-13">
+<connects>
+<connect gate="G$1" pin="GND" pad="P$3"/>
+<connect gate="G$1" pin="SHTD" pad="P$1"/>
+<connect gate="G$1" pin="VIN" pad="P$2"/>
+<connect gate="G$1" pin="VOUT" pad="P$4"/>
+</connects>
+<technologies>
+<technology name=""/>
 </technologies>
 </device>
 </devices>
