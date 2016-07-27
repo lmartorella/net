@@ -67,7 +67,6 @@
 #define MAX_PROG_MEM		0x20000
 #define ROM_BLOCK_SIZE		64
 #define CONFIGURATION_SIZE 	8
-#endif
 
 // ******
 // SPI
@@ -138,10 +137,10 @@
 #elif HAS_SPI_RAM
 #error Cannot use SPI RAM and IO togheter
 #endif
+#endif
 
 // Reset the device with fatal error
 void fatal(const char* msg);
 
 #endif
-
 

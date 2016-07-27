@@ -1,7 +1,7 @@
 #ifndef _ROM_INCLUDE_H_
 #define _ROM_INCLUDE_H_
 
-#ifdef _CONF_TEST_ETH_CARD
+#ifdef _IS_ETH_CARD
 
 // PIC18 has memcpy
 #define rom_read(rom,ram,size) memcpy(ram,rom,size)

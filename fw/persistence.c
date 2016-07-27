@@ -2,7 +2,7 @@
 #include "hardware/eeprom.h"
 #include "persistence.h"
 
-#ifdef _CONF_TEST_ETH_CARD
+#ifdef _IS_ETH_CARD
 EEPROM_MODIFIER PersistentData g_persistentData @ 0x1F800;
 EEPROM_MODIFIER char g_persistentDataFiller[0x400 - 16] @ 0x1F810;
 #define ROM_ADDR ((const void*)&g_persistentData)
