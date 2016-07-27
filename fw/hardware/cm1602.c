@@ -121,38 +121,41 @@ static void writeData(BYTE data)
 
 void cm1602_reset(void)
 {
-    BYTE cmd;
-
     // Enable all PORTE as output (display)
-    CM1602_PORT = 0xff;
-    CM1602_IF_BIT_EN = 1;
+    // During tIOL, the I/O ports of the interface (control and data signals) should be kept at ?Low?. see ST7066U datasheet
 #if CM1602_IF_MODE == 4
     CM1602_IF_TRIS_RW = 0;
     CM1602_IF_TRIS_RS = 0;
     CM1602_IF_TRIS_EN = 0;
     #if CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_LOW
         CM1602_TRIS &= 0xf0;
+        NOP();
+        CM1602_PORT &= 0xF0;
     #else
         CM1602_TRIS &= 0x0F;
+        NOP();
+        CM1602_PORT &= 0x0F;
     #endif
+    CM1602_IF_BIT_RW = 0;
+    CM1602_IF_BIT_RS = 0;
+    CM1602_IF_BIT_EN = 0;
 #else
     CM1602_TRIS = 0;
-#endif
     NOP();
-    CM1602_PORT = 0xff;
-    CM1602_IF_BIT_EN = 1;
+    CM1602_PORT = 0x0;
+#endif
 
-    // >15ms @5v
+    // max 100ms @5v , see ST7066U datasheet
+    wait30ms();
+    wait30ms();
     wait30ms();
 
     // Push fake go-to-8bit state 3 times
 #if CM1602_IF_MODE == 4
-    cmd = (CMD_FUNCSET | CMD_FUNCSET_DL_8) >> 4;
+    BYTE cmd = (CMD_FUNCSET | CMD_FUNCSET_DL_8) >> 4;
 #else
-    cmd = CMD_FUNCSET | CMD_FUNCSET_DL_8;
+    BYTE cmd = CMD_FUNCSET | CMD_FUNCSET_DL_8;
 #endif
-    CM1602_IF_BIT_RS = 0;
-    CM1602_IF_BIT_RW = 0;
     pulsePort(cmd); 
     wait30ms();
     pulsePort(cmd);
