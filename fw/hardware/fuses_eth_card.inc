@@ -1,6 +1,8 @@
 #include "../pch.h"
 #include "../appio.h"
 
+// ==== ETH CARD based on 18f87j60
+
 // For the list of fuses, run "mcc18.exe --help-config -p=18f87j60"
 
 // Enable WDT, 1:256 prescaler
@@ -28,7 +30,7 @@
 // FOSC = HS, no pll, INTRC disabled
 #pragma config FOSC = HS, FOSC2 = ON
 
-// No debugger
+// Debugger
 #pragma config DEBUG = ON
 // No code protection
 #pragma config CP0 = OFF
@@ -75,16 +77,15 @@ void wait1s(void)
 
 void enableInterrupts()
 {
-	// Disable low/high interrupt mode
-	RCONbits.IPEN = 0;		
-	INTCONbits.GIE = 1;
-	INTCONbits.PEIE = 1;
+    // Disable low/high interrupt mode
+    RCONbits.IPEN = 0;		
+    INTCONbits.GIE = 1;
+    INTCONbits.PEIE = 1;
     INTCON2bits.TMR0IP = 0;		// TMR0 Low priority
     
 #ifdef HAS_RS485
     // Enable low priority interrupt on transmit
-    RS485_IPR.TX2IP = 0;
-    RS485_IPR.RC2IP = 0;
+    RS485_INIT_INT();
 #endif
 }
 
@@ -95,48 +96,48 @@ static persistent const char* g_exception;
 // Check RCON and STKPTR register for anormal reset cause
 void sys_storeResetReason()
 {
-	if (!RCONbits.NOT_RI)
-	{
-		// Software exception. 
-		// Obtain last reason from appio.h 
-		g_resetReason = RESET_EXC;
-        g_lastException = g_exception;
-        g_exception = NULL;
-	}
-	else if (!RCONbits.NOT_POR)
-	{
-		// Normal Power-on startup. Ok.
-		g_resetReason = RESET_POWER;
-	}
-	else if (!RCONbits.NOT_BOR)
-	{
-		// Brown-out reset. Low voltage.
-		g_resetReason = RESET_BROWNOUT;
-	}
+    if (!RCONbits.NOT_RI)
+    {
+	// Software exception. 
+	// Obtain last reason from appio.h 
+	g_resetReason = RESET_EXC;
+	g_lastException = g_exception;
+	g_exception = NULL;
+    }
+    else if (!RCONbits.NOT_POR)
+    {
+	// Normal Power-on startup. Ok.
+	g_resetReason = RESET_POWER;
+    }
+    else if (!RCONbits.NOT_BOR)
+    {
+	// Brown-out reset. Low voltage.
+	g_resetReason = RESET_BROWNOUT;
+    }
 /*
-	else if (!RCONbits.NOT_CM)
-	{
-		// Configuration mismatch reset. EEPROM fail.
-		_reason = RESET_CONFIGMISMATCH;
-	}
+    else if (!RCONbits.NOT_CM)
+    {
+	    // Configuration mismatch reset. EEPROM fail.
+	    _reason = RESET_CONFIGMISMATCH;
+    }
 */
-	else if (!RCONbits.NOT_TO)
-	{
-		// Watchdog reset. Loop detected.
-		g_resetReason = RESET_WATCHDOG;
-	}
-	else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
-	{
-		// Stack underrun/overrun reset. 
-		g_resetReason = RESET_STACKFAIL;
-	}
-	else
-	{
-		// Else it was reset manually (MCLR)
-		g_resetReason = RESET_MCLR;
-	}
-	RCON = RCON | 0x33;	// reset all flags
-	STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
+    else if (!RCONbits.NOT_TO)
+    {
+	// Watchdog reset. Loop detected.
+	g_resetReason = RESET_WATCHDOG;
+    }
+    else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
+    {
+	// Stack underrun/overrun reset. 
+	g_resetReason = RESET_STACKFAIL;
+    }
+    else
+    {
+	// Else it was reset manually (MCLR)
+	g_resetReason = RESET_MCLR;
+    }
+    RCON = RCON | 0x33;	// reset all flags
+    STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
 }
 
 // Long (callable) version of fatal

@@ -1,6 +1,8 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
+// ==== TEST ETH CARD wireframe
+
 // PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
 // PORTB: 0/7, interrupt on change. RB6/7 used by ICSP. RB0/5 used by Mp3
 // PORTC: 0/7, RC3/4 used by I2C. 1/2 and 6/7 used by EXTRAM I2C. Used by IO modules. 
@@ -110,6 +112,9 @@
     BAUDCON2bits.BRG16 = 0;\
     SPBRGH2 = 0;\
     SPBRG2 = 80
+#define RS485_INIT_INT() \
+    RS485_IPR.TX2IP = 0; \
+    RS485_IPR.RC2IP = 0
     
 // *****
 // Tick timer source

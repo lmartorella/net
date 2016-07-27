@@ -1,7 +1,7 @@
 #include "../pch.h"
 #include "../appio.h"
 
-#ifdef _CONF_MCU_ETH_CARD
+#ifdef _CONF_TEST_ETH_CARD
 // Source: http://www.microchip.com/forums/m339126.aspx
 
 // full 24-bit pointer support for flash zones
