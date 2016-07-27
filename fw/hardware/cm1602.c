@@ -126,7 +126,18 @@ void cm1602_reset(void)
     // Enable all PORTE as output (display)
     CM1602_PORT = 0xff;
     CM1602_IF_BIT_EN = 1;
+#if CM1602_IF_MODE == 4
+    CM1602_IF_TRIS_RW = 0;
+    CM1602_IF_TRIS_RS = 0;
+    CM1602_IF_TRIS_EN = 0;
+    #if CM1602_IF_NIBBLE == CM1602_IF_NIBBLE_LOW
+        CM1602_TRIS &= 0xf0;
+    #else
+        CM1602_TRIS &= 0x0F;
+    #endif
+#else
     CM1602_TRIS = 0;
+#endif
     NOP();
     CM1602_PORT = 0xff;
     CM1602_IF_BIT_EN = 1;
