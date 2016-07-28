@@ -18,17 +18,17 @@ static bit readHandler()
 {
     // Only single packet messages are supported
     WORD length, p = 0;
-    BYTE buf[16];
+    BYTE buf[CM1602_COL_COUNT];
     prot_control_readW(&length);
-    if (length > 15)
+    if (length >= CM1602_COL_COUNT)
     {
-        p = length - 15;
-        length = 15;
+        p = length - (CM1602_COL_COUNT - 1);
+        length = CM1602_COL_COUNT - 1;
     }
     prot_control_read(buf, length);
     while (p > 0)
     {
-        prot_control_read(buf + 15, 1);
+        prot_control_read(buf + (CM1602_COL_COUNT - 1), 1);
         p--;
     }
     buf[length] = '\0';
@@ -40,9 +40,9 @@ static bit readHandler()
 static bit writeHandler()
 {
     // Num of lines
-   prot_control_writeW(1);
+   prot_control_writeW(CM1602_LINE_COUNT - 1);
     // Num of columns
-   prot_control_writeW(15);
+   prot_control_writeW(CM1602_COL_COUNT - 1);
 
    // Done
    return FALSE;

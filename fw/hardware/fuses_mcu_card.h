@@ -31,6 +31,7 @@
 #define CM1602_IF_BIT_RS 	PORTHbits.RH3
 #define CM1602_IF_BIT_EN 	PORTHbits.RH0
 #define CM1602_LINE_COUNT 	2
+#define CM1602_COL_COUNT 	20
 #define CM1602_FONT_HEIGHT 	7
 
 // ******* 

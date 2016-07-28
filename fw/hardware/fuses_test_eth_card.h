@@ -33,6 +33,7 @@
 #define CM1602_IF_BIT_RS 	PORTEbits.RE0
 #define CM1602_IF_BIT_EN 	PORTEbits.RE3
 #define CM1602_LINE_COUNT 	2
+#define CM1602_COL_COUNT 	16
 #define CM1602_FONT_HEIGHT 	7
 
 // ******* 
