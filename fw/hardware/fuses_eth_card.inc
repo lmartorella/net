@@ -96,6 +96,9 @@ static persistent const char* g_exception;
 // Check RCON and STKPTR register for anormal reset cause
 void sys_storeResetReason()
 {
+    // Disable all A/D channels
+    ADCON1 |= 0xF;
+    
     if (!RCONbits.NOT_RI)
     {
 	// Software exception. 
