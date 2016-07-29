@@ -5,13 +5,13 @@
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
 
-static bit sysSink_read();
-static bit sysSink_write();
+static bit sysSink_receive();
+static bit sysSink_transmit();
 
 static const Sink s_sysSink = {
     "SYS ",
-    &sysSink_read,
-    &sysSink_write
+    &sysSink_receive,
+    &sysSink_transmit
 };
 
 const Sink* AllSinks[] = { 
@@ -55,7 +55,7 @@ const TWOCC ResetCode = "RS";
 const TWOCC ExceptionText = "EX";
 const TWOCC EndOfMetadataText = "EN";
 
-static bit sysSink_read()
+static bit sysSink_receive()
 {
     // Reset reset reason
     g_resetReason = RESET_NONE;
@@ -63,7 +63,7 @@ static bit sysSink_read()
     return FALSE;
 }
 
-static bit sysSink_write()
+static bit sysSink_transmit()
 {
     WORD l = g_resetReason;
     // Write reset reason

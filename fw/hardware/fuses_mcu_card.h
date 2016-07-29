@@ -62,9 +62,14 @@
 #define HAS_IP
 
 // ******
-// IO
+// IO: power line on/off
 // ******
-#undef HAS_IO
+#define HAS_DIGIO
+#define DIGIO_TRIS_IN_BIT TRISGbits.RG4
+#define DIGIO_PORT_IN_BIT PORTGbits.RG4
+#define DIGIO_TRIS_OUT_BIT TRISGbits.RG4
+#define DIGIO_PORT_OUT_BIT PORTGbits.RG4
+
 
 // ******
 // RS485: use USART1 on 18F87J60 (PORTG)
