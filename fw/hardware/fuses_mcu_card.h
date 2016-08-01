@@ -117,7 +117,7 @@
 #ifdef HAS_IO
 #ifdef HAS_SPI
 #error Cannot use SPI and IO togheter
-#elif HAS_SPI_RAM
+#elif defined(HAS_SPI_RAM)
 #error Cannot use SPI RAM and IO togheter
 #endif
 #endif

@@ -1,6 +1,8 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
+// PIC16F628
+
 #define SYSTEM_CLOCK 4000000ul
 #define _XTAL_FREQ SYSTEM_CLOCK
 #define PRIO_TYPE
@@ -13,7 +15,7 @@
 #define HAS_IO
 
 // ******
-// RS485: use USART2 on 18F87J60 (PORTG)
+// RS485: use USART1 on 16F628 (PORTB)
 // ******
 #define HAS_RS485
 #define RS485_RCSTA RCSTAbits

@@ -6,7 +6,7 @@
 EEPROM_MODIFIER PersistentData g_persistentData @ 0x1F800;
 EEPROM_MODIFIER char g_persistentDataFiller[0x400 - 16] @ 0x1F810;
 #define ROM_ADDR ((const void*)&g_persistentData)
-#elif _CONF_MINI_BEAN
+#elif defined(_IS_PIC16F628_CARD)
 #define ROM_ADDR 0
 EEPROM_MODIFIER PersistentData g_persistentData;
 #endif

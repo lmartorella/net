@@ -116,7 +116,7 @@ void rom_write(const void* destination, const void* source, WORD length)
 	rowWrite(); 
 }
 
-#elif _CONF_MINI_BEAN
+#elif defined(_IS_PIC16F628_CARD)
 
 void rom_read(int sourceAddress, BYTE* destination, WORD length)
 {

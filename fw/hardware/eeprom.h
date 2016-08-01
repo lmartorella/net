@@ -12,7 +12,7 @@ void rom_write(const void* destination, const void* source, WORD length);
 
 #define EEPROM_MODIFIER const
 
-#elif _CONF_MINI_BEAN
+#elif defined(_IS_PIC16F628_CARD)
 
 void rom_read(int sourceAddress, BYTE* destination, WORD length);
 void rom_write(int destinationAddr, const BYTE* source, WORD length);
