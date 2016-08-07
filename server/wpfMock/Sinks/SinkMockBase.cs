@@ -16,6 +16,16 @@ namespace Lucky.HomeMock.Sinks
         public abstract void Read(BinaryReader reader);
         public abstract void Write(BinaryWriter writer);
 
+        protected void WriteTwocc(BinaryWriter writer, string code)
+        {
+            var bytes = Encoding.ASCII.GetBytes(code);
+            if (bytes.Length != 2)
+            {
+                throw new ArgumentException("code");
+            }
+            writer.Write(bytes, 0, 2);
+        }
+
         protected void WriteFourcc(BinaryWriter writer, string code)
         {
             var bytes = Encoding.ASCII.GetBytes(code);

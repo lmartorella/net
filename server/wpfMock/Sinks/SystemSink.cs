@@ -76,19 +76,21 @@ namespace Lucky.HomeMock.Sinks
 
         public override void Read(BinaryReader reader)
         {
-            throw new NotImplementedException();
+            // Reset EXC reason
+            ResetReason = ResetReason.None;
+            ExcMsg = null;
         }
 
         public override void Write(BinaryWriter writer)
         {
-            WriteFourcc(writer, "RS");
+            WriteTwocc(writer, "RS");
             writer.Write((ushort)ResetReason);
             if (!string.IsNullOrEmpty(ExcMsg))
             {
-                WriteFourcc(writer, "EX");
+                WriteTwocc(writer, "EX");
                 WriteString(writer, ExcMsg);
             }
-            WriteFourcc(writer, "EN");
+            WriteTwocc(writer, "EN");
         }
     }
 }

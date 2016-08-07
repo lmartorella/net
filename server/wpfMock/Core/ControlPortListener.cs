@@ -92,11 +92,19 @@ namespace Lucky.HomeMock.Core
 
             private string ReadCommand()
             {
-                byte[] buffer = new byte[2];
-                if (_reader.Read(buffer, 0, 2) < 2)
+                int l = 2;
+                var buffer = new byte[l];
+
+                int idx = 0;
+                do
                 {
-                    return null;
-                }
+                    int c = _reader.Read(buffer, idx, l - idx);
+                    if (c == 0)
+                    {
+                        return null;
+                    }
+                    idx += c;
+                } while (idx < l);
                 return Encoding.ASCII.GetString(buffer);
             }
 
