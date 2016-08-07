@@ -1,8 +1,7 @@
 ﻿using System.Linq;
 using Lucky.Home.Sinks;
-using Lucky.Home.Sinks.App;
 
-namespace Lucky.Home.Devices.App
+namespace Lucky.Home.Devices
 {
     [Device(new [] {typeof(IDisplaySink)})]
     internal class LineDevice : DeviceBase

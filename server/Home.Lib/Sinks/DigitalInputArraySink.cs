@@ -6,7 +6,7 @@ using Lucky.Home.Serialization;
 // ReSharper disable UnusedMember.Global
 #pragma warning disable 649
 
-namespace Lucky.Home.Sinks.App
+namespace Lucky.Home.Sinks
 {
     /// <summary>
     /// Passive/poll based switch array

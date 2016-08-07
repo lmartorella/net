@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Home.Sinks.App
+namespace Lucky.Home.Sinks
 {
     /// <summary>
     /// Passive/poll based digital input array

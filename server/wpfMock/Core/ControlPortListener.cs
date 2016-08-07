@@ -92,19 +92,11 @@ namespace Lucky.HomeMock.Core
 
             private string ReadCommand()
             {
-                int l = 2;
-                var buffer = new byte[l];
-
-                int idx = 0;
-                do
+                var buffer = ReadBytesWait(_reader, 2);
+                if (buffer == null)
                 {
-                    int c = _reader.Read(buffer, idx, l - idx);
-                    if (c == 0)
-                    {
-                        return null;
-                    }
-                    idx += c;
-                } while (idx < l);
+                    return null;
+                }
                 return Encoding.ASCII.GetString(buffer);
             }
 
@@ -199,6 +191,22 @@ namespace Lucky.HomeMock.Core
                     _logger.Exception(exc);
                 }
             }
+        }
+
+        private static byte[] ReadBytesWait(BinaryReader reader, int l)
+        {
+            var buffer = new byte[l];
+            int idx = 0;
+            do
+            {
+                int c = reader.Read(buffer, idx, l - idx);
+                if (c == 0)
+                {
+                    return null;
+                }
+                idx += c;
+            } while (idx < l);
+            return buffer;
         }
 
         private void HandleServiceSocketAccepted(TcpClient tcpClient)

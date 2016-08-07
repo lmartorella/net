@@ -1,6 +1,6 @@
 ﻿// ReSharper disable once UnusedMember.Global
 
-namespace Lucky.Home.Sinks.App
+namespace Lucky.Home.Sinks
 {
     [SinkId("TEMP")]
     class TemperatureSink : SinkBase

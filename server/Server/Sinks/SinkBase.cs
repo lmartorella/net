@@ -8,7 +8,7 @@ namespace Lucky.Home.Sinks
     /// <summary>
     /// Base class for sinks
     /// </summary>
-    internal class SinkBase : IDisposable, ISink
+    public class SinkBase : IDisposable, ISinkInternal
     {
         private int _index;
         protected ILogger Logger;
@@ -19,7 +19,7 @@ namespace Lucky.Home.Sinks
             SubCount = 0;
         }
 
-        public void Init(ITcpNode node, int index)
+        internal void Init(ITcpNode node, int index)
         {
             Node = node;
             _index = index;
@@ -43,7 +43,16 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        public ITcpNode Node { get; private set; }
+        ITcpNode ISinkInternal.Node
+        {
+            get
+            {
+                return Node;
+
+            }
+        }
+
+        internal ITcpNode Node { get; private set; }
 
         public string FourCc
         {

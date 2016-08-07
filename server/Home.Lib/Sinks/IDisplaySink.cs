@@ -1,4 +1,4 @@
-﻿namespace Lucky.Home.Sinks.App
+﻿namespace Lucky.Home.Sinks
 {
     internal interface IDisplaySink : ISink
     {

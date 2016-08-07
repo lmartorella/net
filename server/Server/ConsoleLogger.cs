@@ -6,7 +6,7 @@ namespace Lucky.Home
     /// <summary>
     /// Only console supported at the moment
     /// </summary>
-    internal class LoggerFactory : ServiceBase, ILoggerFactory
+    public class LoggerFactory : ServiceBase, ILoggerFactory
     {        
         private class ConsoleLogger : ILogger
         {

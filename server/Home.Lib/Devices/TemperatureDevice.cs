@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using Lucky.Home.Sinks.App;
 using Lucky.Services;
+using Lucky.Home.Sinks;
 
 // ReSharper disable UnusedMember.Global
 
-namespace Lucky.Home.Devices.App
+namespace Lucky.Home.Devices
 {
     [Device(new[] { typeof(TemperatureSink) })]
     class TemperatureDevice : DeviceBase

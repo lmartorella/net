@@ -10,8 +10,13 @@ using Lucky.Services;
 
 namespace Lucky.Home.Sinks
 {
+    public interface ISinkManager : IService
+    {
+        void RegisterAssembly(Assembly assembly);
+    }
+
     // ReSharper disable once ClassNeverInstantiated.Global
-    class SinkManager : ServiceBase
+    class SinkManager : ServiceBase, ISinkManager
     {
         private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
         private readonly ObservableCollection<ISink> _sinks = new ObservableCollection<ISink>();

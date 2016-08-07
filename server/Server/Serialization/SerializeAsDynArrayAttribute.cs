@@ -6,7 +6,7 @@ namespace Lucky.Home.Serialization
     /// Array with UINT16 lenght at head
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    class SerializeAsDynArrayAttribute : Attribute
+    public class SerializeAsDynArrayAttribute : Attribute
     {
     }
 }

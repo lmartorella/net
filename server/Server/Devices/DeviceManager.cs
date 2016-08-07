@@ -7,7 +7,12 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>
+    public interface IDeviceManager : IService
+    {
+        void RegisterAssembly(Assembly assembly);
+    }
+
+    class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManager
     {
         /// <summary>
         /// From type name to device type
@@ -30,7 +35,7 @@ namespace Lucky.Home.Devices
             }
         }
 
-        public DeviceManager RegisterAssembly(Assembly assembly)
+        public void RegisterAssembly(Assembly assembly)
         {
             foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type)))
             {
@@ -38,7 +43,6 @@ namespace Lucky.Home.Devices
                 var descriptor = new DeviceTypeDescriptor(deviceType);
                 _deviceTypes.Add(descriptor.TypeName, descriptor);
             }
-            return this;
         }
 
         private void LoadState(DeviceDescriptor[] descriptors)

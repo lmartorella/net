@@ -1,8 +1,6 @@
-using Lucky.Home.Sinks;
-
-namespace Lucky.Home.Devices
+namespace Lucky.Home.Sinks
 {
-    internal class SubSink
+    public class SubSink
     {
         public ISink Sink { get; private set; }
         public int SubIndex { get; private set; }
@@ -29,7 +27,7 @@ namespace Lucky.Home.Devices
         }
     }
 
-    internal class SubSink<T> where T : ISink
+    public class SubSink<T> where T : ISink
     {
         public T Sink { get; private set; }
         public int SubIndex { get; private set; }

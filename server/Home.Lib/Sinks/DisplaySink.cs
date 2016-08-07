@@ -5,7 +5,7 @@ using Lucky.Home.Serialization;
 #pragma warning disable 649
 // ReSharper disable once UnusedMember.Global
 
-namespace Lucky.Home.Sinks.App
+namespace Lucky.Home.Sinks
 {
     /// <summary>
     /// Simple line display protocol

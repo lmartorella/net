@@ -1,6 +1,6 @@
 using System;
 
-namespace Lucky.Home.Devices.App
+namespace Lucky.Home.Devices
 {
     public interface ISwitchDevice : IDevice
     {

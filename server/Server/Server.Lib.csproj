@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
     <AssemblyName>Home.Server</AssemblyName>
@@ -34,6 +34,9 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -45,33 +48,23 @@
     <Compile Include="Admin\AdminInterface.cs" />
     <Compile Include="Admin\AdminListener.cs" />
     <Compile Include="Application\AppService.cs" />
-    <Compile Include="Devices\App\TemperatureDevice.cs" />
     <Compile Include="Devices\DeviceAttribute.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
-    <Compile Include="Devices\App\ISwitchDevice.cs" />
-    <Compile Include="Devices\SubSink.cs" />
+    <Compile Include="Sinks\SubSink.cs" />
     <Compile Include="Protocol\IConnectionReader.cs" />
     <Compile Include="Protocol\IConnectionWriter.cs" />
     <Compile Include="Protocol\TcpClientManager.cs" />
     <Compile Include="Protocol\TcpConnectionFactory.cs" />
     <Compile Include="Serialization\Twocc.cs" />
-    <Compile Include="Sinks\App\TemperatureSink.cs" />
-    <Compile Include="Sinks\App\DigitalOutputArraySink.cs" />
-    <Compile Include="Sinks\App\IDigitalInputArraySink.cs" />
-    <Compile Include="Devices\App\LineDevice.cs" />
-    <Compile Include="Devices\App\SwitchDevice.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
-    <Compile Include="Sinks\App\IDigitalOutputArraySink.cs" />
-    <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Application\AppBase.cs" />
     <Compile Include="Protocol\INodeManager.cs" />
     <Compile Include="Protocol\NodeManager.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
     <Compile Include="Protocol\PingMessageType.cs" />
-    <Compile Include="Sinks\SinkIdAttribute.cs" />
     <Compile Include="Protocol\TcpConnection.cs" />
     <Compile Include="Protocol\IServer.cs" />
     <Compile Include="Protocol\UdpControlPortListener.cs" />
@@ -83,16 +76,15 @@
     <Compile Include="Serialization\SerializeAsFixedStringAttribute.cs" />
     <Compile Include="Serialization\SerializeAsDynArrayAttribute.cs" />
     <Compile Include="Protocol\Server.cs" />
+    <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Sinks\SinkBase.cs" />
+    <Compile Include="Sinks\SinkIdAttribute.cs" />
     <Compile Include="Sinks\SinkManager.cs" />
     <Compile Include="Protocol\TcpNodeAddress.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sinks\App\DisplaySink.cs" />
     <Compile Include="Serialization\Fourcc.cs" />
     <Compile Include="Sinks\ISystemSink.cs" />
-    <Compile Include="Sinks\App\IDisplaySink.cs" />
-    <Compile Include="Sinks\App\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
   </ItemGroup>
   <ItemGroup>

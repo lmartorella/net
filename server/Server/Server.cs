@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using Lucky.Home.Admin;
 using Lucky.Home.Application;
 using Lucky.Home.Devices;
@@ -8,13 +6,11 @@ using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 
-[assembly: InternalsVisibleTo("SpeechTests")]
-
 namespace Lucky.Home
 {
-    static class Program
+    public static class ServerEntryPoint
     {
-        static void Main()
+        public static void Load(Action registerHandler)
         {
             Manager.Register<LoggerFactory, ILoggerFactory>();
             Manager.GetService<IPersistenceService>().InitAppRoot("Server");
@@ -23,14 +19,12 @@ namespace Lucky.Home
             Manager.Register<NodeManager, INodeManager>();
             Manager.Register<SinkManager>();
             Manager.Register<AppService>();
+            Manager.Register<SinkManager, ISinkManager>();
+            Manager.Register<DeviceManager, IDeviceManager>();
 
-            // Register known sinks
-            Manager.Register<SinkManager>();
-            Manager.GetService<SinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
+            registerHandler();
 
-            // Register devices
-            Manager.Register<DeviceManager>();
-            Manager.GetService<DeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly()).Load();
+            Manager.GetService<DeviceManager>().Load();
 
             // Start server
             Manager.GetService<IServer>();

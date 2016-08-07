@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Lucky.Home.Sinks.App;
+using Lucky.Home.Sinks;
 
 // ReSharper disable once UnusedMember.Global
 
-namespace Lucky.Home.Devices.App
+namespace Lucky.Home.Devices
 {
     /// <summary>
     /// Switch device. All outputs are set to the XOR of all inputs, like

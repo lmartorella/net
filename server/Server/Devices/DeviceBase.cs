@@ -9,7 +9,7 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    internal abstract class DeviceBase : IDeviceInternal
+    public abstract class DeviceBase : IDeviceInternal
     {
         private readonly Type[] _requiredSinkTypes;
         private readonly ObservableCollection<SubSink> _sinks = new ObservableCollection<SubSink>();

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio Express 14 for Windows Desktop
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "..\Server\Server.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
 EndProject
@@ -9,6 +9,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "..\Common\Common.csproj", "{B13F0047-1CEE-4463-BAF6-A943E225D875}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admin.UI", "..\Admin\Admin.UI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Server", "..\Home.Lib\Home.Server.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4C20249-D189-40A9-A7C1-18F15025319A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4C20249-D189-40A9-A7C1-18F15025319A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4C20249-D189-40A9-A7C1-18F15025319A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4C20249-D189-40A9-A7C1-18F15025319A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

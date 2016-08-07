@@ -3,11 +3,15 @@ using Lucky.Home.Protocol;
 
 namespace Lucky.Home.Sinks
 {
-    internal interface ISink
+    public interface ISink
     {
         SinkPath Path { get; }
-        ITcpNode Node { get; }
         string FourCc { get; }
         int SubCount { get; }
+    }
+
+    internal interface ISinkInternal : ISink
+    {
+        ITcpNode Node { get; }
     }
 }
