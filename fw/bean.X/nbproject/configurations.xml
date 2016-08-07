@@ -23,6 +23,7 @@
         <itemPath>../hardware/fuses_pic16f628.inc</itemPath>
         <itemPath>../hardware/fuses_test_mini_bean.h</itemPath>
         <itemPath>../hardware/fuses_solar_bean.h</itemPath>
+        <itemPath>../hardware/max232.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -86,8 +87,7 @@
         <itemPath>../hardware/dht11.c</itemPath>
         <itemPath>../hardware/digio.c</itemPath>
         <itemPath>../hardware/hw.c</itemPath>
-        <itemPath>../hardware/rs232_sw.c</itemPath>
-        <itemPath>../hardware/rs232.h</itemPath>
+        <itemPath>../hardware/max232_sw.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>

@@ -1,5 +1,4 @@
 #include "../pch.h"
-#include "hw.h"
 
 #ifdef _IS_ETH_CARD
 #include "fuses_eth_card.inc"

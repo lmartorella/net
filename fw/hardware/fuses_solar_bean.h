@@ -10,7 +10,16 @@
 #undef HAS_SPI
 #undef HAS_SPI_RAM
 #undef HAS_IP
-#define HAS_IO
+#undef HAS_IO
+#undef HAS_LED
+#undef HAS_DHT11
+#undef HAS_DIGIO
+
+#define HAS_MAX232_SOFTWARE
+#define RS232_RX_TRIS TRISBbits.TRISB1
+#define RS232_TX_TRIS TRISBbits.TRISB0
+#define RS232_RX_PORT PORTBbits.B1
+#define RS232_TX_PORT PORTBbits.RB0
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)
@@ -49,31 +58,12 @@
 #define TICK_INTCON_IE INTCONbits.T0IE
 #define TICK_CLOCK_BASE (SYSTEM_CLOCK / 4)
 #define TICK_PRESCALER 256
-
 #define TICK_TYPE WORD
-
-#define HAS_LED
-#define LED_PORTBIT PORTBbits.RB0
-#define LED_TRISBIT TRISBbits.TRISB0
 
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;
 #define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }
 
-
-#define HAS_DHT11
-#define DHT11_PORT_PULLUPS OPTION_REGbits.nRBPU
-#define DHT11_PORT PORTBbits.RB5
-#define DHT11_PORT_TRIS TRISBbits.TRISB5
-#define US_TIMER TMR1L
-    // Prescaler 1:1, = 1MHz timer (us), started
-#define US_TIMER_INIT() { T1CON = 1; }
-
-#define HAS_DIGIO
-#define DIGIO_TRIS_IN_BIT TRISAbits.TRISA1
-#define DIGIO_PORT_IN_BIT PORTAbits.RA1
-#define DIGIO_TRIS_OUT_BIT TRISAbits.TRISA0
-#define DIGIO_PORT_OUT_BIT PORTAbits.RA0
 
 #endif
 

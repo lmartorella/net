@@ -4,6 +4,7 @@
 #include "hardware/spi.h"
 #include "hardware/vs1011e.h"
 #include "hardware/tick.h"
+#include "hardware/max232.h"
 #include "ip_client.h"
 #include "appio.h"
 #include "audioSink.h"
@@ -54,6 +55,10 @@ void main()
 
 #ifdef HAS_DIGIO
     digio_init();
+#endif
+
+#if defined(HAS_MAX232) || defined(HAS_MAX232_SOFTWARE)
+    max232_init();
 #endif
 
     enableInterrupts();

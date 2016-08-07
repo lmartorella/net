@@ -42,9 +42,14 @@ void wait1s(void)
 
 void enableInterrupts()
 {
-	// Disable low/high interrupt mode
-	INTCONbits.GIE = 1;
-	INTCONbits.PEIE = 1;
+    // Disable low/high interrupt mode
+    INTCONbits.GIE = 1;
+    INTCONbits.PEIE = 1;
+}
+
+void disableInterrupts()
+{
+    INTCONbits.GIE = 0;
 }
 
 // Get a copy version of STATUS

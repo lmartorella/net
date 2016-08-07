@@ -21,6 +21,7 @@
 #error Missing configuration
 #endif
 
+void disableInterrupts();
 void enableInterrupts();
 
 #endif	/* HW_H */
