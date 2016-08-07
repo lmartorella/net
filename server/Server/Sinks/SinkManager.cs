@@ -13,6 +13,7 @@ namespace Lucky.Home.Sinks
     public interface ISinkManager : IService
     {
         void RegisterAssembly(Assembly assembly);
+        void RegisterType(Type type);
     }
 
     // ReSharper disable once ClassNeverInstantiated.Global
@@ -31,9 +32,14 @@ namespace Lucky.Home.Sinks
         {
             foreach (var type in assembly.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
             {
-                // Exception if already registered..
-                _sinkTypes.Add(GetSinkFourCc(type), type);
+                RegisterType(type);
             }
+        }
+
+        public void RegisterType(Type type)
+        {
+            // Exception if already registered..
+            _sinkTypes.Add(GetSinkFourCc(type), type);
         }
 
         public IEnumerable<T> SinksOfType<T>() where T : ISink

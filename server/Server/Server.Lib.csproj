@@ -81,7 +81,7 @@
     <Compile Include="Sinks\SinkIdAttribute.cs" />
     <Compile Include="Sinks\SinkManager.cs" />
     <Compile Include="Protocol\TcpNodeAddress.cs" />
-    <Compile Include="Server.cs" />
+    <Compile Include="ServerEntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\Fourcc.cs" />
     <Compile Include="Sinks\ISystemSink.cs" />

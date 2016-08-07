@@ -21,6 +21,7 @@ namespace Lucky.Home
             Manager.Register<AppService>();
             Manager.Register<SinkManager, ISinkManager>();
             Manager.Register<DeviceManager, IDeviceManager>();
+            Manager.GetService<ISinkManager>().RegisterType(typeof(SystemSink));
 
             registerHandler();
 
