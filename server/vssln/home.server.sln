@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Express 14 for Windows Desktop
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "..\Server\Server.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.Lib", "..\Server\Server.Lib.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mock.UI", "..\wpfMock\Mock.UI.csproj", "{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}"
 EndProject
