@@ -41,6 +41,7 @@
     <Compile Include="Home\Admin\MessageSerializerFactory.cs" />
     <Compile Include="Home\Admin\Node.cs" />
     <Compile Include="Home\Constants.cs" />
+    <Compile Include="Home\Devices\DeviceAttribute.cs" />
     <Compile Include="Home\Devices\DeviceDescriptor.cs" />
     <Compile Include="Home\Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="Home\Devices\SinkPath.cs" />

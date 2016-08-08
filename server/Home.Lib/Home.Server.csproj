@@ -7,7 +7,7 @@
     <ProjectGuid>{F4C20249-D189-40A9-A7C1-18F15025319A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Lucky.Home.Lib</RootNamespace>
+    <RootNamespace>Lucky.Home</RootNamespace>
     <AssemblyName>Home.Server.App</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -38,13 +38,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Devices\LineDevice.cs" />
+    <Compile Include="Devices\DisplayDevice.cs" />
+    <Compile Include="Devices\EchoLineTesterDevice.cs" />
     <Compile Include="Devices\SwitchDevice.cs" />
     <Compile Include="Devices\TemperatureDevice.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
+    <Compile Include="Sinks\DuplexLineSink.cs" />
     <Compile Include="Sinks\TemperatureSink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

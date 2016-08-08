@@ -17,12 +17,12 @@ namespace Lucky.Home.Devices
 
         protected DeviceBase()
         {
-            var attr = (DeviceAttribute)GetType().GetCustomAttribute(typeof(DeviceAttribute));
-            if (attr == null)
+            var attr = (RequiresAttribute[])GetType().GetCustomAttributes(typeof(RequiresAttribute));
+            if (attr == null || attr.Length == 0)
             {
-                throw new ArgumentNullException("Missing mandatory Device attribute on type " + GetType().FullName);
+                throw new ArgumentNullException("Missing mandatory Requires/RequiresArray attribute on type " + GetType().FullName);
             }
-            _requiredSinkTypes = attr.RequiredSinkTypes;
+            _requiredSinkTypes = attr.Select(a => a.Type).ToArray();
 
             _sinks.CollectionChanged += (sender, args) =>
             {

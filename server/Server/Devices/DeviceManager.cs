@@ -7,11 +7,6 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    public interface IDeviceManager : IService
-    {
-        void RegisterAssembly(Assembly assembly);
-    }
-
     class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManager
     {
         /// <summary>
@@ -37,11 +32,11 @@ namespace Lucky.Home.Devices
 
         public void RegisterAssembly(Assembly assembly)
         {
-            foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type)))
+            foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type) && type.GetCustomAttribute<DeviceAttribute>() != null))
             {
-                // Exception if already registered..
                 var descriptor = new DeviceTypeDescriptor(deviceType);
-                _deviceTypes.Add(descriptor.TypeName, descriptor);
+                // Exception if already registered..
+                _deviceTypes.Add(descriptor.Name, descriptor);
             }
         }
 
@@ -61,7 +56,7 @@ namespace Lucky.Home.Devices
 
         private IDeviceInternal CreateDevice(DeviceDescriptor descriptor)
         {
-            var type = Type.GetType(_deviceTypes[descriptor.DeviceType].FullTypeName);
+            var type = Type.GetType(_deviceTypes[descriptor.DeviceTypeName].FullTypeName);
             IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(type, descriptor.Arguments);
             device.OnInitialize(descriptor.SinkPaths);
             descriptor.Id = Guid.NewGuid();

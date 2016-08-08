@@ -10,7 +10,7 @@ namespace Lucky.Home.Devices
         public Guid Id;
 
         [DataMember]
-        public string DeviceType;
+        public string DeviceTypeName;
 
         [DataMember]
         public object[] Arguments;

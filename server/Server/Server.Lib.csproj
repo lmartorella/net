@@ -48,10 +48,10 @@
     <Compile Include="Admin\AdminInterface.cs" />
     <Compile Include="Admin\AdminListener.cs" />
     <Compile Include="Application\AppService.cs" />
-    <Compile Include="Devices\DeviceAttribute.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
+    <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Sinks\SubSink.cs" />
     <Compile Include="Protocol\IConnectionReader.cs" />
     <Compile Include="Protocol\IConnectionWriter.cs" />

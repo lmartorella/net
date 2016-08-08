@@ -191,7 +191,7 @@ namespace Lucky.Home
                 var argumentTypes = wnd.DeviceType.ArgumentTypes.Select(Type.GetType).ToArray();
                 object[] arguments = ParseArguments(wnd.Argument, argumentTypes);
                 var sinkPaths = sinks.Select(n => n.SinkPath).ToArray();
-                string err = await TcpConnection.CreateDevice(sinkPaths, wnd.DeviceType.TypeName, arguments);
+                string err = await TcpConnection.CreateDevice(sinkPaths, wnd.DeviceType.Name, arguments);
                 if (err != null)
                 {
                     MessageBox.Show(err, "Error creating the device");

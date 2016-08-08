@@ -127,12 +127,12 @@ namespace Lucky.Home
             await _adminInterface.DeleteDevice(uiDevice.Id);
         }
 
-        public async Task<string> CreateDevice(SinkPath[] sinks, string deviceType, object[] arguments)
+        public async Task<string> CreateDevice(SinkPath[] sinks, string deviceTypeName, object[] arguments)
         {
             var descriptor = new DeviceDescriptor
             {
                 SinkPaths = sinks,
-                DeviceType = deviceType,
+                DeviceTypeName = deviceTypeName,
                 Arguments = arguments
             };
             return await _adminInterface.CreateDevice(descriptor);

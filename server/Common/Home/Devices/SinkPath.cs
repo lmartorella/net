@@ -13,7 +13,7 @@ namespace Lucky.Home.Devices
         public string SinkId { get; set; }
 
         /// <summary>
-        /// Optional, sub-index inside the sink
+        /// Optional, sub-index inside the sink, negative if invalid
         /// </summary>
         [DataMember]
         public int SubIndex { get; set; }

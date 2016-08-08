@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace Lucky.Home.Devices
@@ -10,12 +11,12 @@ namespace Lucky.Home.Devices
         public DeviceTypeDescriptor(Type type)
         {
             FullTypeName = type.FullName;
-            TypeName = type.Name;
+            Name = type.GetCustomAttribute<DeviceAttribute>().Name;
 
             var constructors = type.GetConstructors();
             if (constructors.Length != 1)
             {
-                throw new InvalidOperationException("Too many constructors in type " + TypeName);
+                throw new InvalidOperationException("Too many constructors in device type " + Name);
             }
 
             var args = constructors[0].GetParameters();
@@ -27,7 +28,7 @@ namespace Lucky.Home.Devices
         public string FullTypeName { get; set; }
 
         [DataMember]
-        public string TypeName { get; set; }
+        public string Name { get; set; }
 
         [DataMember]
         public string[] ArgumentNames { get; set; }

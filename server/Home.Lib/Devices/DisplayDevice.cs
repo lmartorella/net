@@ -3,8 +3,9 @@ using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Devices
 {
-    [Device(new [] {typeof(DisplaySink)})]
-    internal class LineDevice : DeviceBase
+    [Device("Display")]
+    [RequiresArray(typeof(DisplaySink))]
+    public class DisplayDevice : DeviceBase
     {
         public void Write(string str)
         {

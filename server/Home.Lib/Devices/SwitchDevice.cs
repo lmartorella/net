@@ -12,8 +12,10 @@ namespace Lucky.Home.Devices
     /// classic electric wall switches.
     /// Needs at least one input (Digital Input Array) and one output (Digital Out Array)
     /// </summary>
-    [Device(new[] { typeof(DigitalInputArraySink), typeof(DigitalOutputArraySink) })]
-    internal class SwitchDevice : DeviceBase
+    [Device("Xor Switch")]
+    [RequiresArray(typeof(DigitalInputArraySink))]
+    [RequiresArray(typeof(DigitalOutputArraySink))]
+    public class SwitchDevice : DeviceBase
     {
         private readonly TimeSpan _period;
 

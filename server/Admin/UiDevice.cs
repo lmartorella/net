@@ -9,7 +9,7 @@ namespace Lucky.Home
     {
         internal UiDevice(DeviceDescriptor desc)
         {
-            DeviceType = desc.DeviceType;
+            DeviceType = desc.DeviceTypeName;
             Arguments = desc.Arguments;
             Id = desc.Id;
             SinksDescription = string.Format("Sinks: {0}", string.Join(", ", desc.SinkPaths.Select(s => s.ToString())));

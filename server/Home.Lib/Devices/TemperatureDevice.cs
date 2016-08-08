@@ -8,8 +8,9 @@ using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Devices
 {
-    [Device(new[] { typeof(TemperatureSink) })]
-    class TemperatureDevice : DeviceBase
+    [Device("Temperature")]
+    [Requires(typeof(TemperatureSink))]
+    public class TemperatureDevice : DeviceBase
     {
         private Timer _timer;
         private ILogger Logger { get; set; }

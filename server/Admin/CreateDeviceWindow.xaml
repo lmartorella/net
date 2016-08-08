@@ -18,7 +18,7 @@
             <ComboBox Margin="4" Grid.Row="3" ItemsSource="{Binding DeviceTypes}" SelectedItem="{Binding DeviceType}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="devices1:DeviceTypeDescriptor">
-                        <TextBlock Text="{Binding TypeName}"></TextBlock>
+                        <TextBlock Text="{Binding Name}"></TextBlock>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
