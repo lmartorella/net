@@ -38,7 +38,6 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Devices\ISwitchDevice.cs" />
     <Compile Include="Devices\LineDevice.cs" />
     <Compile Include="Devices\SwitchDevice.cs" />
     <Compile Include="Devices\TemperatureDevice.cs" />
@@ -46,9 +45,6 @@
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
-    <Compile Include="Sinks\IDigitalInputArraySink.cs" />
-    <Compile Include="Sinks\IDigitalOutputArraySink.cs" />
-    <Compile Include="Sinks\IDisplaySink.cs" />
     <Compile Include="Sinks\TemperatureSink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

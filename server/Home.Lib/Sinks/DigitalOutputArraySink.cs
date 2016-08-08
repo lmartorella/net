@@ -11,7 +11,7 @@ namespace Lucky.Home.Sinks
     /// Passive output array
     /// </summary>
     [SinkId("DOAR")]
-    internal class DigitalOutputArraySink : SinkBase, IDigitalOutputArraySink
+    internal class DigitalOutputArraySink : SinkBase
     {
         private bool[] _status;
 

@@ -12,7 +12,7 @@ namespace Lucky.Home.Sinks
     /// Passive/poll based switch array
     /// </summary>
     [SinkId("DIAR")]
-    internal class DigitalInputArraySink : SinkBase, IDigitalInputArraySink
+    internal class DigitalInputArraySink : SinkBase
     {
         private TimeSpan _pollPeriod;
         private Timer _timer;

@@ -12,13 +12,13 @@ namespace Lucky.Home.Devices
     /// classic electric wall switches.
     /// Needs at least one input (Digital Input Array) and one output (Digital Out Array)
     /// </summary>
-    [Device(new[] { typeof(IDigitalInputArraySink), typeof(IDigitalOutputArraySink) })]
-    internal class SwitchDevice : DeviceBase, ISwitchDevice
+    [Device(new[] { typeof(DigitalInputArraySink), typeof(DigitalOutputArraySink) })]
+    internal class SwitchDevice : DeviceBase
     {
         private readonly TimeSpan _period;
 
-        private readonly List<SubSink<IDigitalInputArraySink>> _inputs = new List<SubSink<IDigitalInputArraySink>>();
-        private readonly List<SubSink<IDigitalOutputArraySink>> _outputs = new List<SubSink<IDigitalOutputArraySink>>();
+        private readonly List<SubSink<DigitalInputArraySink>> _inputs = new List<SubSink<DigitalInputArraySink>>();
+        private readonly List<SubSink<DigitalOutputArraySink>> _outputs = new List<SubSink<DigitalOutputArraySink>>();
 
         private bool _lastStatus;
 
@@ -34,7 +34,7 @@ namespace Lucky.Home.Devices
             bool updated = false;
             if (removed != null)
             {
-                var removedInput = removed.Sink as IDigitalInputArraySink;
+                var removedInput = removed.Sink as DigitalInputArraySink;
                 if (removedInput != null)
                 {
                     removedInput.StatusChanged -= HandleStatusChanged;
@@ -49,7 +49,7 @@ namespace Lucky.Home.Devices
 
             if (added != null)
             {
-                var addedInput = added.Sink as IDigitalInputArraySink;
+                var addedInput = added.Sink as DigitalInputArraySink;
                 if (addedInput != null)
                 {
                     addedInput.StatusChanged += HandleStatusChanged;
