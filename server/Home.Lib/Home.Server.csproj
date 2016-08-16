@@ -38,8 +38,15 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Application\HomeApp.cs" />
+    <Compile Include="Db\FsDb.cs" />
+    <Compile Include="Db\ITimeSeries.cs" />
     <Compile Include="Devices\DisplayDevice.cs" />
     <Compile Include="Devices\EchoLineTesterDevice.cs" />
+    <Compile Include="Devices\ISolarPanelDevice.cs" />
+    <Compile Include="Power\Counter.cs" />
+    <Compile Include="Power\ISolarPanel.cs" />
+    <Compile Include="Devices\SamilInverterDevice.cs" />
     <Compile Include="Devices\SwitchDevice.cs" />
     <Compile Include="Devices\TemperatureDevice.cs" />
     <Compile Include="Program.cs" />
@@ -63,6 +70,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

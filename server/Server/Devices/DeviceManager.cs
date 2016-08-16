@@ -15,6 +15,12 @@ namespace Lucky.Home.Devices
         private readonly Dictionary<string, DeviceTypeDescriptor> _deviceTypes = new Dictionary<string, DeviceTypeDescriptor>();
         private readonly Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>>();
         private List<Assembly> _assemblies = new List<Assembly>();
+        public object DevicesLock { get; private set; }
+
+        public DeviceManager()
+        {
+            DevicesLock = new object();
+        }
 
         [DataContract]
         internal class Persistence
@@ -33,6 +39,7 @@ namespace Lucky.Home.Devices
 
         public void RegisterAssembly(Assembly assembly)
         {
+            var l = _deviceTypes.Count;
             _assemblies.Add(assembly);
             foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type) && type.GetCustomAttribute<DeviceAttribute>() != null))
             {
@@ -40,6 +47,7 @@ namespace Lucky.Home.Devices
                 // Exception if already registered..
                 _deviceTypes.Add(descriptor.Name, descriptor);
             }
+            Logger.Log("DeviceType Reg", "Asm", assembly.GetName().Name, "Count", _deviceTypes.Count - l);
         }
 
         private void LoadState(DeviceDescriptor[] descriptors)
@@ -72,7 +80,9 @@ namespace Lucky.Home.Devices
             lock (_devices)
             {
                 _devices.Add(descriptor.Id, Tuple.Create((IDevice)device, descriptor));
+                DevicesChanged?.Invoke(this, EventArgs.Empty);
             }
+            Logger.Log("DeviceCreate", "Type", descriptor.DeviceTypeName);
             return device;
         }
 
@@ -99,6 +109,16 @@ namespace Lucky.Home.Devices
             }
         }
 
+        public IEnumerable<IDevice> Devices
+        {
+            get
+            {
+                return _devices.Values.Select(v => v.Item1);
+            }
+        }
+
+        public event EventHandler DevicesChanged;
+
         public void Load()
         {
             LoadState(State.Descriptors);
@@ -111,8 +131,10 @@ namespace Lucky.Home.Devices
                 Tuple<IDevice, DeviceDescriptor> tuple;
                 if (_devices.TryGetValue(id, out tuple))
                 {
+                    Logger.Log("Device Deleted", "Type", tuple.Item2.DeviceTypeName);
                     tuple.Item1.Dispose();
                     _devices.Remove(id);
+                    DevicesChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
             SaveState();

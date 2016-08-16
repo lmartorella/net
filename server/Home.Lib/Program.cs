@@ -2,6 +2,7 @@
 using Lucky.Home.Devices;
 using Lucky.Home.Sinks;
 using System.Reflection;
+using Lucky.Home.Application;
 
 namespace Lucky.Home.Lib
 {
@@ -16,6 +17,8 @@ namespace Lucky.Home.Lib
                 // Register devices
                 Manager.GetService<IDeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
             });
+
+            Manager.GetService<HomeApp>().Start();
         }
     }
 }

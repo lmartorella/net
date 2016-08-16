@@ -47,7 +47,7 @@
   <ItemGroup>
     <Compile Include="Admin\AdminInterface.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="Application\AppService.cs" />
+    <Compile Include="AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
@@ -60,7 +60,6 @@
     <Compile Include="Serialization\Twocc.cs" />
     <Compile Include="Serialization\DynamicString.cs" />
     <Compile Include="Devices\IDevice.cs" />
-    <Compile Include="Application\AppBase.cs" />
     <Compile Include="Protocol\INodeManager.cs" />
     <Compile Include="Protocol\NodeManager.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
