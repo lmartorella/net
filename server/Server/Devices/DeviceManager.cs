@@ -14,6 +14,7 @@ namespace Lucky.Home.Devices
         /// </summary>
         private readonly Dictionary<string, DeviceTypeDescriptor> _deviceTypes = new Dictionary<string, DeviceTypeDescriptor>();
         private readonly Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>>();
+        private List<Assembly> _assemblies = new List<Assembly>();
 
         [DataContract]
         internal class Persistence
@@ -32,6 +33,7 @@ namespace Lucky.Home.Devices
 
         public void RegisterAssembly(Assembly assembly)
         {
+            _assemblies.Add(assembly);
             foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type) && type.GetCustomAttribute<DeviceAttribute>() != null))
             {
                 var descriptor = new DeviceTypeDescriptor(deviceType);
@@ -56,7 +58,14 @@ namespace Lucky.Home.Devices
 
         private IDeviceInternal CreateDevice(DeviceDescriptor descriptor)
         {
-            var type = Type.GetType(_deviceTypes[descriptor.DeviceTypeName].FullTypeName);
+            // Find type
+            var typeName = _deviceTypes[descriptor.DeviceTypeName].FullTypeName;
+            var type = _assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
+            if (type == null)
+            {
+                throw new InvalidOperationException("Devcice type not found: " + typeName);
+            }
+
             IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(type, descriptor.Arguments);
             device.OnInitialize(descriptor.SinkPaths);
             descriptor.Id = Guid.NewGuid();
