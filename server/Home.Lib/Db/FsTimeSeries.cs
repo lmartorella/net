@@ -23,7 +23,7 @@ namespace Lucky.Home.Db
             _currentPeriod = new PeriodData<T>();
         }
 
-        public T ImmediateData
+        public T LastData
         {
             get
             {
@@ -31,11 +31,11 @@ namespace Lucky.Home.Db
             }
         }
 
-        public Aggregation<T> CurrentPeriodData
+        public Aggregation<T> CurrentPeriodAverage
         {
             get
             {
-                return _currentPeriod.Aggregation;
+                return _currentPeriod.Average;
             }
         }
 

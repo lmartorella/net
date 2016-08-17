@@ -7,21 +7,31 @@ namespace Lucky.Home.Db
         /// <summary>
         /// Immediate value/average value
         /// </summary>
-        T AverageValue { get; }
+        public T AverageValue;
 
         /// <summary>
         /// Peak value
         /// </summary>
-        T PeakValue { get; }
+        public T MaxValue;
 
         /// <summary>
         /// Peak time
         /// </summary>
-        DateTime PeakTime { get; }
+        public DateTime MaxTime;
+
+        /// <summary>
+        /// Peak value
+        /// </summary>
+        public T MinValue;
+
+        /// <summary>
+        /// Peak time
+        /// </summary>
+        public DateTime MinTime;
 
         /// <summary>
         /// Sample period
         /// </summary>
-        Tuple<DateTime, DateTime> Period;
+        public Tuple<DateTime, DateTime> Period;
     }
 }
