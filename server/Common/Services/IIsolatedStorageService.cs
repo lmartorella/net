@@ -1,6 +1,6 @@
 ﻿namespace Lucky.Services
 {
-    public interface IPersistenceService : IService
+    public interface IIsolatedStorageService : IService
     {
         void InitAppRoot(string appRoot);
         T GetState<T>(string serviceName) where T : class, new();

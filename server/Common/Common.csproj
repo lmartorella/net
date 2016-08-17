@@ -48,10 +48,11 @@
     <Compile Include="Home\NodeStatus.cs" />
     <Compile Include="Services\ILogger.cs" />
     <Compile Include="Services\ILoggerFactory.cs" />
-    <Compile Include="Services\IPersistenceService.cs" />
+    <Compile Include="Services\IIsolatedStorageService.cs" />
     <Compile Include="Services\IService.cs" />
-    <Compile Include="Services\JsonIsolatedStoragePersistenceService.cs" />
+    <Compile Include="Services\JsonIsolatedStorageService.cs" />
     <Compile Include="Services\Manager.cs" />
+    <Compile Include="Services\PersistenceService.cs" />
     <Compile Include="Services\ServiceBase.cs" />
     <Compile Include="Services\ServiceBaseWithData.cs" />
     <Compile Include="Home\ResetReason.cs" />

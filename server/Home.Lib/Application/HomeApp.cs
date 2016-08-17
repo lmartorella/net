@@ -4,6 +4,7 @@ using Lucky.Home.Devices;
 using System.Linq;
 using Lucky.Home.Db;
 using System.Threading;
+using Lucky.Home.Power;
 
 namespace Lucky.Home.Application
 {
@@ -31,9 +32,10 @@ namespace Lucky.Home.Application
             // Process all device created
             foreach (var device in devices.OfType<ISolarPanelDevice>())
             {
-                var db = new FsTimeSeries(string.Format("db/{0}", device.Name));
+                var db = new FsTimeSeries<PowerData>(string.Format("db/{0}", device.Name));
+                db.Rotate(ToPowerCvsName(DateTime.Now));
                 device.Database = db;
-                _dayRotation += (o,e) => db.Rotate();
+                _dayRotation += (o,e) => db.Rotate(ToPowerCvsName(DateTime.Now));
             }
 
             // Rotate solar db at midnight 
@@ -45,6 +47,11 @@ namespace Lucky.Home.Application
                     _dayRotation?.Invoke(this, EventArgs.Empty);
                 }
             }, null, 0, 60 * 1000);
+        }
+
+        private static string ToPowerCvsName(DateTime now)
+        {
+            return now.ToString("yyyy-MM-dd.csv");
         }
     }
 }

@@ -4,10 +4,24 @@ namespace Lucky.Home.Db
 {
     interface ITimeSeries<T>
     {
-        Sample<T> ImmediateData { get; }
-        Sample<T> CurrentDayData { get; }
-        Sample<T> LastDayData { get; }
-        Sample<T> LastWeekData { get; }
-        Sample<T> LastMonthData { get; }
+        /// <summary>
+        /// Current values
+        /// </summary>
+        T ImmediateData { get; }
+
+        /// <summary>
+        /// Current period, from the last rotation
+        /// </summary>
+        Aggregation<T> CurrentPeriodData { get; }
+
+        /// <summary>
+        /// Previous period, before the previous rotation
+        /// </summary>
+        Aggregation<T> LastPeriodData { get; }
+
+        /// <summary>
+        /// From a custom period
+        /// </summary>
+        Aggregation<T> FromCustomPeriod(DateTime start, DateTime end);
     }
 }

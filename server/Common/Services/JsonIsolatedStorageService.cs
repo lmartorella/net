@@ -5,18 +5,13 @@ using System.Runtime.Serialization.Json;
 namespace Lucky.Services
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    internal class JsonIsolatedStoragePersistenceService : ServiceBase, IPersistenceService
+    internal class JsonIsolatedStorageService : ServiceBase, IIsolatedStorageService
     {
         private string _isolatedStorageFolder;
 
         public void InitAppRoot(string appRoot)
         {
-            _isolatedStorageFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _isolatedStorageFolder = Path.Combine(_isolatedStorageFolder, "Home\\" + appRoot);
-            if (!Directory.Exists(_isolatedStorageFolder))
-            {
-                Directory.CreateDirectory(_isolatedStorageFolder);
-            }
+            _isolatedStorageFolder = Manager.GetService<PersistenceService>().GetAppFolderPath(appRoot);
         }
 
         public T GetState<T>(string serviceName) where T : class, new()
