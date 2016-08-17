@@ -3,6 +3,7 @@ using Lucky.Services;
 using Lucky.Home.Devices;
 using System.Linq;
 using Lucky.Home.Db;
+using System.Threading;
 
 namespace Lucky.Home.Application
 {
@@ -11,6 +12,10 @@ namespace Lucky.Home.Application
     /// </summary>
     class HomeApp : ServiceBase
     {
+        private int _lastDay;
+        private Timer _timerMinute;
+        private event EventHandler _dayRotation;
+
         /// <summary>
         /// Fetch all devices. To be called when the list of the devices changes
         /// </summary>
@@ -26,8 +31,20 @@ namespace Lucky.Home.Application
             // Process all device created
             foreach (var device in devices.OfType<ISolarPanelDevice>())
             {
-                device.Database = new FsDb("db/solar.csv");
+                var db = new FsTimeSeries(string.Format("db/{0}", device.Name));
+                device.Database = db;
+                _dayRotation += (o,e) => db.Rotate();
             }
+
+            // Rotate solar db at midnight 
+            _lastDay = DateTime.Now.Day;
+            _timerMinute = new Timer(s => {
+                if (DateTime.Now.Day != _lastDay)
+                {
+                    _lastDay = DateTime.Now.Day;
+                    _dayRotation?.Invoke(this, EventArgs.Empty);
+                }
+            }, null, 0, 60 * 1000);
         }
     }
 }
