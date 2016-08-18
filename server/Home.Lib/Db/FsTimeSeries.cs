@@ -1,26 +1,35 @@
 ﻿using Lucky.Services;
 using System;
+using System.IO;
 
 namespace Lucky.Home.Db
 {
-    class FsTimeSeries<T> : ITimeSeries<T>
+    class FsTimeSeries<T> : ITimeSeries<T> where T : ISupportAverage<T>, ISupportCsv
     {
         private string _folder;
-        private string _fileName;
+        private FileInfo _fileName;
 
-        private PeriodData<T> _currentPeriod = new PeriodData<T>();
-        private PeriodData<T> _lastPeriod = new PeriodData<T>();
+        private PeriodData<T> _currentPeriod;
+        private PeriodData<T> _lastPeriod;
+        private string _timeStampFormat;
 
-        public FsTimeSeries(string folderPath)
+        public FsTimeSeries(string folderPath, string timeStampFormat)
         {
+            _timeStampFormat = timeStampFormat;
             _folder = Manager.GetService<PersistenceService>().GetAppFolderPath("Db/" + folderPath);
         }
 
-        internal void Rotate(string fileName)
+        internal void Rotate(string fileName, DateTime start)
         {
-            _fileName = fileName;
-            _lastPeriod = _currentPeriod;
-            _currentPeriod = new PeriodData<T>();
+            lock (_fileName)
+            {
+                _fileName = new FileInfo(Path.Combine(_folder, fileName));
+                _lastPeriod = _currentPeriod;
+                _currentPeriod = new PeriodData<T>(start);
+
+                // Write CSV header
+                WriteLine(writer => writer.WriteLine("TimeStamp," + default(T).CsvHeader));
+            }
         }
 
         public T LastData
@@ -31,11 +40,11 @@ namespace Lucky.Home.Db
             }
         }
 
-        public Aggregation<T> CurrentPeriodAverage
+        public Aggregation<T> CurrentPeriodData
         {
             get
             {
-                return _currentPeriod.Average;
+                return _currentPeriod.GetAggregation(DateTime.Now);
             }
         }
 
@@ -43,13 +52,35 @@ namespace Lucky.Home.Db
         {
             get
             {
-                return _lastPeriod.Aggregation;
+                return _lastPeriod.GetAggregation(_currentPeriod.Begin);
             }
         }
 
         public Aggregation<T> FromCustomPeriod(DateTime start, DateTime end)
         {
             throw new NotImplementedException();
+        }
+
+        private void WriteLine(Action<StreamWriter> handler)
+        {
+            using (var stream = _fileName.Open(FileMode.Append, FileAccess.Write, FileShare.Read))
+            {
+                using (var writer = new StreamWriter(stream))
+                {
+                    handler(writer);
+                }
+            }
+        }
+
+        public void AddNewSample(T sample, DateTime ts)
+        {
+            lock (_fileName)
+            {
+                _currentPeriod.Add(sample, ts);
+
+                // In addition write on the CSV file
+                WriteLine(writer => writer.WriteLine(ts.ToString(_timeStampFormat) + "," + sample.ToCsv()));
+            }
         }
     }
 }

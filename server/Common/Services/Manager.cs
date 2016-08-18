@@ -12,7 +12,7 @@ namespace Lucky.Services
 
         static Manager()
         {
-            Register<JsonIsolatedStoragePersistenceService, IPersistenceService>();
+            Register<JsonIsolatedStorageService, IIsolatedStorageService>();
         }
 
         public static T GetService<T>() where T : IService

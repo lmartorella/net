@@ -13,7 +13,7 @@ namespace Lucky.Home
         public static void Load(Action registerHandler)
         {
             Manager.Register<LoggerFactory, ILoggerFactory>();
-            Manager.GetService<IPersistenceService>().InitAppRoot("Server");
+            Manager.GetService<IIsolatedStorageService>().InitAppRoot("Server");
 
             Manager.Register<Server, IServer>();
             Manager.Register<NodeManager, INodeManager>();

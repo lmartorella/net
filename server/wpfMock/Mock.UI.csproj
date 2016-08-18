@@ -57,6 +57,7 @@
     <Compile Include="GuiLoggerFactory.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
+    <Compile Include="Sinks\DuplexLineMock.cs" />
     <Compile Include="Sinks\FlasherSink.cs" />
     <Compile Include="Core\ControlPortListener.cs" />
     <Compile Include="Sinks\SinkMockBase.cs" />

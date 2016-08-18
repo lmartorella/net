@@ -5,9 +5,14 @@ namespace Lucky.Home.Db
     interface ITimeSeries<T>
     {
         /// <summary>
+        /// Register new sample
+        /// </summary>
+        void AddNewSample(T sample, DateTime ts);
+
+        /// <summary>
         /// Current values
         /// </summary>
-        T ImmediateData { get; }
+        T LastData { get; }
 
         /// <summary>
         /// Current period, from the last rotation

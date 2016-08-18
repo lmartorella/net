@@ -19,6 +19,7 @@ namespace Lucky.HomeMock
         private readonly SystemSink _systemSink;
         private readonly DigitalInputArraySink _digitalInputsSink;
         private readonly DigitalOutputArraySink _digitalOutputsSink;
+        private DuplexLineMock _solarSink;
 
         public MainWindow()
         {
@@ -44,9 +45,11 @@ namespace Lucky.HomeMock
             _digitalInputsSink = new DigitalInputArraySink(this);
             _digitalOutputsSink = new DigitalOutputArraySink(this);
 
+            _solarSink = new DuplexLineMock();
+
             var controlPort = Manager.GetService<ControlPortListener>();
             controlPort.StartServer();
-            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink });
+            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);

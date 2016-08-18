@@ -13,14 +13,14 @@ namespace Lucky.Services
             {
                 if (_state == null)
                 {
-                    _state = Manager.GetService<IPersistenceService>().GetState<T>(LogName);
+                    _state = Manager.GetService<IIsolatedStorageService>().GetState<T>(LogName);
                 }
                 return _state;
             }
             set
             {
                 _state = value;
-                Manager.GetService<IPersistenceService>().SetState(LogName, value);
+                Manager.GetService<IIsolatedStorageService>().SetState(LogName, value);
             }
         }
     }

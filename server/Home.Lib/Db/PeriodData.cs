@@ -20,45 +20,56 @@ namespace Lucky.Home.Db
         private T _maxV;
         private DateTime _minT;
         private DateTime _maxT;
-        private bool _hasMax;
-        private bool _hasMin;
 
         public PeriodData(DateTime begin)
         {
             _begin = _lastTs = begin;
-            Add(default(T), begin);
+            Add(default(T), begin, true);
         }
 
-        private void Add(T sample, DateTime ts)
+        public void Add(T sample, DateTime ts)
         {
-            _data.Add(Tuple.Create(ts, sample));
-            var weight = (ts - _lastTs).TotalSeconds;
-            Sum = Sum.Add(sample.Mul(weight));
+            Add(sample, ts);
+        }
 
-            LastSample = sample;
-            _lastTs = ts;
+        private void Add(T sample, DateTime ts, bool init)
+        {
+            lock (_data)
+            {
+                _data.Add(Tuple.Create(ts, sample));
+                var weight = (ts - _lastTs).TotalSeconds;
+                Sum = Sum.Add(sample.Mul(weight));
 
-            if (!_hasMin || sample.CompareTo(_minV) < 0)
-            {
-                _minV = sample;
-                _minT = ts;
-                _hasMin = true;
-            }
-            if (!_hasMax || sample.CompareTo(_maxV) > 0)
-            {
-                _maxV = sample;
-                _maxT = ts;
-                _hasMax = true;
+                LastSample = sample;
+                _lastTs = ts;
+
+                if (init || sample.CompareTo(_minV) < 0)
+                {
+                    _minV = sample;
+                    _minT = ts;
+                }
+                if (init || sample.CompareTo(_maxV) > 0)
+                {
+                    _maxV = sample;
+                    _maxT = ts;
+                }
             }
         }
 
         public T LastSample { get; private set; }
 
-        public Aggregation<T> Average
+        public DateTime Begin
         {
             get
             {
-                var ts = DateTime.Now;
+                return _begin;
+            }
+        }
+
+        public Aggregation<T> GetAggregation(DateTime ts)
+        {
+            lock (_data)
+            {
                 var totalW = (ts - _begin).TotalSeconds;
                 var avg = Sum.Div(totalW);
                 return new Aggregation<T>
