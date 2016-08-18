@@ -11,7 +11,7 @@ namespace Lucky.Home.Application
     /// <summary>
     /// The home application
     /// </summary>
-    class HomeApp : ServiceBase
+    class HomeApp : AppService
     {
         private Timer _timerMinute;
         private event Action _dayRotation;
@@ -21,7 +21,7 @@ namespace Lucky.Home.Application
         /// <summary>
         /// Fetch all devices. To be called when the list of the devices changes
         /// </summary>
-        internal void Start()
+        public override void Run()
         {
             var deviceMan = Manager.GetService<IDeviceManager>();
             IDevice[] devices;
@@ -33,7 +33,7 @@ namespace Lucky.Home.Application
             // Process all device created
             foreach (var device in devices.OfType<ISolarPanelDevice>())
             {
-                var db = new FsTimeSeries<PowerData>(string.Format("db/{0}", device.Name), "HH:mm:ss");
+                var db = new FsTimeSeries<PowerData>(device.Name, "HH:mm:ss");
                 db.Rotate(ToPowerCvsName(DateTime.Now), DateTime.Now);
                 device.Database = db;
                 _dayRotation += () => db.Rotate(ToPowerCvsName(DateTime.Now), DateTime.Now);
@@ -56,11 +56,13 @@ namespace Lucky.Home.Application
                     _dayRotation?.Invoke();
                 }
             }, null, 0, 30 * 1000);
+
+            base.Run();
         }
 
         private static string ToPowerCvsName(DateTime now)
         {
-            return now.ToString("yyyy-MM-dd-HH-mm.csv");
+            return now.ToString("yyyy-MM-dd-HH-mm") + ".csv";
         }
     }
 }

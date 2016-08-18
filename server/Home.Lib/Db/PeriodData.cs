@@ -10,10 +10,10 @@ namespace Lucky.Home.Db
         T Div(double d);
     }
 
-    class PeriodData<T> where T : ISupportAverage<T>
+    class PeriodData<T> where T : ISupportAverage<T>, new()
     {
         private List<Tuple<DateTime, T>> _data = new List<Tuple<DateTime, T>>();
-        private T Sum = default(T);
+        private T Sum = new T();
         private DateTime _begin;
         private DateTime _lastTs;
         private T _minV;
@@ -24,12 +24,12 @@ namespace Lucky.Home.Db
         public PeriodData(DateTime begin)
         {
             _begin = _lastTs = begin;
-            Add(default(T), begin, true);
+            Add(new T(), begin, true);
         }
 
         public void Add(T sample, DateTime ts)
         {
-            Add(sample, ts);
+            Add(sample, ts, false);
         }
 
         private void Add(T sample, DateTime ts, bool init)

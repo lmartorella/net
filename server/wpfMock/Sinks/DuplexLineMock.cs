@@ -15,7 +15,12 @@ namespace Lucky.HomeMock.Sinks
 
         public override void Read(BinaryReader reader)
         {
-            throw new NotImplementedException();
+            var msg = reader.ReadByte();
+            if (msg != 2) // RECEIVE
+            {
+                throw new NotImplementedException();
+            }
+            // Ok, receive will follow
         }
 
         public override void Write(BinaryWriter writer)
@@ -25,7 +30,11 @@ namespace Lucky.HomeMock.Sinks
             double current = power / 100;
             double voltage = _rnd.NextDouble() * 5 + 220;
             double[] data = new[] { power, current, voltage };
-            writer.Write(Encoding.ASCII.GetBytes(string.Join(",", data.Select(d => d.ToString()))));
+            var buffer = Encoding.ASCII.GetBytes(string.Join(",", data.Select(d => d.ToString())));
+
+            // Send buffer len
+            writer.Write((short)buffer.Length);
+            writer.Write(buffer);
         }
     }
 }

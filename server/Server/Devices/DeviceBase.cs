@@ -45,11 +45,11 @@ namespace Lucky.Home.Devices
             };
         }
 
-        protected SubSink[] Sinks
+        protected ISink[] Sinks
         {
             get
             {
-                return _sinks.ToArray();
+                return _sinks.Select(s => s.Sink).ToArray();
             }
         }
 
@@ -123,7 +123,7 @@ namespace Lucky.Home.Devices
 
         private void OnSinkChanged()
         {
-            IsFullOnline = _requiredSinkTypes.All(t => Sinks.Any(s => t.IsInstanceOfType(s.Sink)));
+            IsFullOnline = _requiredSinkTypes.All(t => Sinks.Any(s => t.IsInstanceOfType(s)));
         }
 
         public bool IsFullOnline

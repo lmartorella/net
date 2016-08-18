@@ -33,9 +33,6 @@ namespace Lucky.Home
 
             // Start Admin connection
             Manager.GetService<AdminListener>();
-
-            // Start app
-            Manager.GetService<AppService>().Run();
         }
     }
 }

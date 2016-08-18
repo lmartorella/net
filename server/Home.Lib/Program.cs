@@ -18,7 +18,7 @@ namespace Lucky.Home.Lib
                 Manager.GetService<IDeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
             });
 
-            Manager.GetService<HomeApp>().Start();
+            Manager.GetService<HomeApp>().Run();
         }
     }
 }

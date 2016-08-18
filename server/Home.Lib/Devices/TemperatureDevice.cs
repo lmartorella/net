@@ -23,7 +23,7 @@ namespace Lucky.Home.Devices
             {
                 if (IsFullOnline)
                 {
-                    byte[] reading = ((TemperatureSink) Sinks[0].Sink).Read();
+                    byte[] reading = ((TemperatureSink)Sinks[0]).Read();
                     if (reading == null || reading.Length != 6)
                     {
                         Logger.Error("ProtocolError", "Len", reading != null ? reading.Length : -1);

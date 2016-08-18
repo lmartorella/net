@@ -71,7 +71,7 @@ namespace Lucky.Home.Serialization
                 fieldType = fieldType.GetEnumUnderlyingType();
             }
 
-            else if (fieldType == typeof(byte))
+            if (fieldType == typeof(byte))
             {
                 return new ByteSerializer();
             }

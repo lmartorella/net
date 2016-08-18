@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Lucky.Home.Db
 {
-    class FsTimeSeries<T> : ITimeSeries<T> where T : ISupportAverage<T>, ISupportCsv
+    class FsTimeSeries<T> : ITimeSeries<T> where T : ISupportAverage<T>, ISupportCsv, new()
     {
         private string _folder;
         private FileInfo _fileName;
@@ -12,11 +12,18 @@ namespace Lucky.Home.Db
         private PeriodData<T> _currentPeriod;
         private PeriodData<T> _lastPeriod;
         private string _timeStampFormat;
+        private string _header;
+        private ILogger _logger;
 
         public FsTimeSeries(string folderPath, string timeStampFormat)
         {
+            _logger = Manager.GetService<ILoggerFactory>().Create("Db/" + folderPath);
             _timeStampFormat = timeStampFormat;
             _folder = Manager.GetService<PersistenceService>().GetAppFolderPath("Db/" + folderPath);
+            _fileName = new FileInfo("nul");
+            _header = new T().CsvHeader;
+
+            _logger.Log("Started");
         }
 
         internal void Rotate(string fileName, DateTime start)
@@ -28,7 +35,8 @@ namespace Lucky.Home.Db
                 _currentPeriod = new PeriodData<T>(start);
 
                 // Write CSV header
-                WriteLine(writer => writer.WriteLine("TimeStamp," + default(T).CsvHeader));
+                WriteLine(writer => writer.WriteLine("TimeStamp," + _header));
+                _logger.Log("Rotated");
             }
         }
 

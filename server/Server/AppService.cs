@@ -5,9 +5,9 @@ using Lucky.Services;
 namespace Lucky.Home.Application
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    class AppService : ServiceBase
+    public class AppService : ServiceBase
     {
-        public void Run()
+        public virtual void Run()
         {
             WaitBreak();
         }
