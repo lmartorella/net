@@ -16,7 +16,7 @@ namespace Lucky.Home.Application
         private Timer _timerMinute;
         private event Action _dayRotation;
         private DateTime _nextPeriodStart;
-        private static readonly TimeSpan PeriodLenght = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan PeriodLenght = TimeSpan.FromDays(1);
 
         /// <summary>
         /// Fetch all devices. To be called when the list of the devices changes
