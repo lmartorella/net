@@ -55,7 +55,7 @@
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
-    <Compile Include="Sinks\DuplexLineSink.cs" />
+    <Compile Include="Sinks\HalfDuplexLineSink.cs" />
     <Compile Include="Sinks\TemperatureSink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
