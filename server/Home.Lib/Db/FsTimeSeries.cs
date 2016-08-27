@@ -4,7 +4,12 @@ using System.IO;
 
 namespace Lucky.Home.Db
 {
-    class FsTimeSeries<T> : ITimeSeries<T> where T : ISupportAverage<T>, ISupportCsv, new()
+    interface IFsTimeSeries
+    {
+        void Rotate(string fileName, DateTime start);
+    }
+
+    class FsTimeSeries<T> : IFsTimeSeries, ITimeSeries<T> where T : ISupportAverage<T>, ISupportCsv, new()
     {
         private string _folder;
         private FileInfo _fileName;
@@ -26,7 +31,7 @@ namespace Lucky.Home.Db
             _logger.Log("Started");
         }
 
-        internal void Rotate(string fileName, DateTime start)
+        public void Rotate(string fileName, DateTime start)
         {
             lock (_fileName)
             {
