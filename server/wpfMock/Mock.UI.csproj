@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.HomeMock</RootNamespace>
     <AssemblyName>Home.WpfMock</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -57,7 +57,7 @@
     <Compile Include="GuiLoggerFactory.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
-    <Compile Include="Sinks\DuplexLineMock.cs" />
+    <Compile Include="Sinks\SamilPanelMock.cs" />
     <Compile Include="Sinks\FlasherSink.cs" />
     <Compile Include="Core\ControlPortListener.cs" />
     <Compile Include="Sinks\SinkMockBase.cs" />

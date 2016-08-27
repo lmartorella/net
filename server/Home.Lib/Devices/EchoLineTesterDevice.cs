@@ -3,7 +3,7 @@
 namespace Lucky.Home.Devices
 {
     [Device("Serial Echo")]
-    [Requires(typeof(DuplexLineSink))]
+    [Requires(typeof(HalfDuplexLineSink))]
     public class EchoLineTesterDevice : DeviceBase
     {
 

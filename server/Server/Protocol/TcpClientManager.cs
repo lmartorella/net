@@ -35,8 +35,10 @@ namespace Lucky.Home.Protocol
                 _tcpClient.NoDelay = true;
 
                 _stream = _tcpClient.GetStream();
+#if DEBUG
                 // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
                 _stream.ReadTimeout = 5000;
+#endif
 
                 _reader = new BinaryReader(_stream);
                 _writer = new BinaryWriter(_stream);

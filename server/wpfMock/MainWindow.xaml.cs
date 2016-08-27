@@ -19,7 +19,7 @@ namespace Lucky.HomeMock
         private readonly SystemSink _systemSink;
         private readonly DigitalInputArraySink _digitalInputsSink;
         private readonly DigitalOutputArraySink _digitalOutputsSink;
-        private DuplexLineMock _solarSink;
+        private SamilPanelMock _solarSink;
 
         public MainWindow()
         {
@@ -45,7 +45,7 @@ namespace Lucky.HomeMock
             _digitalInputsSink = new DigitalInputArraySink(this);
             _digitalOutputsSink = new DigitalOutputArraySink(this);
 
-            _solarSink = new DuplexLineMock();
+            _solarSink = new SamilPanelMock();
 
             var controlPort = Manager.GetService<ControlPortListener>();
             controlPort.StartServer();
