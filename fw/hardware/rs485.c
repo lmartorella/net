@@ -24,7 +24,7 @@ static enum {
     STATUS_RECEIVE_FERR,
 } s_status;
 
-// Circular buffer of 64 bytes
+// Circular buffer of 32 (0x20) bytes
 #define BUFFER_SIZE 32
 
 #define ADJUST_PTR(x) while (x >= (s_buffer + BUFFER_SIZE)) x-= BUFFER_SIZE

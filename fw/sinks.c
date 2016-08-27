@@ -2,6 +2,7 @@
 #include "protocol.h"
 #include "appio.h"
 #include "displaySink.h"
+#include "halfduplex.h"
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
 
@@ -26,7 +27,11 @@ const Sink* AllSinks[] = {
 #endif
     
 #ifdef HAS_DHT11
-    &g_tempSink 
+    &g_tempSink,
+#endif
+
+#ifdef HAS_MAX232_SOFTWARE
+    &g_halfDuplexSink 
 #endif
 };
 

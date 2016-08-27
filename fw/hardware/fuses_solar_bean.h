@@ -18,8 +18,23 @@
 #define HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB1
 #define RS232_TX_TRIS TRISBbits.TRISB0
-#define RS232_RX_PORT PORTBbits.B1
+#define RS232_RX_PORT PORTBbits.RB1
 #define RS232_TX_PORT PORTBbits.RB0
+// Timer for SW RS232: TMR1
+// Timer on, internal timer, 1:256 prescalar
+// (!T0CS | !PSA , PS2:PS0)
+#define RS232_TCON T1CON
+#define RS232_TCON_ON 0x01
+#define RS232_TCON_OFF 0x00
+#define RS232_TCON_HREG TMR1H
+#define RS232_TCON_LREG TMR1L
+#define RS232_TCON_IF PIR1bits.TMR1IF
+#define RS232_TCON_HVALUE 0xff
+#define RS232_TCON_LVALUE (0xff - ((SYSTEM_CLOCK/4)/9600))  // 104
+#define RS232_TCON_HVALUE_HALF 0xff
+#define RS232_TCON_LVALUE_HALF (0xff - ((SYSTEM_CLOCK/4)/9600/2))  // 52
+#define RS232_TCON_HVALUE_TIMEOUT (0xff - ((SYSTEM_CLOCK/4)/20/256))  // 0.05s, high
+#define RS232_TCON_LVALUE_TIMEOUT 0
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)

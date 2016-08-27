@@ -13,6 +13,9 @@ void bus_init();
 // Poll general bus activities
 void bus_poll();
 
+void bus_suspend();
+void bus_resume();
+
 typedef enum { 
     // Message to beat a bean
     BUS_MSG_TYPE_HEARTBEAT = 1,

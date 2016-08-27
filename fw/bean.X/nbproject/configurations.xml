@@ -67,6 +67,7 @@
       <itemPath>../protocol.h</itemPath>
       <itemPath>../ip_client.h</itemPath>
       <itemPath>../bus.h</itemPath>
+      <itemPath>../halfduplex.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -113,6 +114,7 @@
       <itemPath>../bus_server.c</itemPath>
       <itemPath>../bus_client.c</itemPath>
       <itemPath>../lib8.c</itemPath>
+      <itemPath>../halfduplex.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -1003,7 +1005,7 @@
         </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>false</parseOnProdLoad>
+          <parseOnProdLoad>true</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>

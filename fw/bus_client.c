@@ -78,6 +78,16 @@ static void bus_sendAck(BYTE ackCode) {
     s_state = STATE_WAIT_TX;
 }
 
+void bus_suspend() 
+{
+
+}
+
+void bus_resume() 
+{
+    bus_reinit();
+}
+
 // Called often
 void bus_poll()
 {
