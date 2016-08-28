@@ -8,6 +8,7 @@ RESET_REASON g_resetReason;
 
 #ifdef HAS_CM1602
 static const char* g_resetReasonMsgs[] = { 
+                "N/A",
 				"POR",
 				"BOR",
 				"CFG",
@@ -20,8 +21,6 @@ static const char* g_resetReasonMsgs[] = {
 void appio_init()
 {
 #ifdef HAS_CM1602
-    static const char* msg1 = "Hi world! ";
-
     // reset display
     cm1602_reset();
     cm1602_clear();
@@ -29,7 +28,7 @@ void appio_init()
     cm1602_enable(ENABLE_DISPLAY | ENABLE_CURSOR | ENABLE_CURSORBLINK);
 
     cm1602_setDdramAddr(0);
-    cm1602_writeStr(msg1);
+    cm1602_writeStr("Boot: ");
     cm1602_writeStr(g_resetReasonMsgs[g_resetReason]);
     if (g_resetReason == RESET_EXC)
     {

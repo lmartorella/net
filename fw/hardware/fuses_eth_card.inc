@@ -32,6 +32,7 @@
 
 // Debugger
 #pragma config DEBUG = ON
+    
 // No code protection
 #pragma config CP0 = OFF
 
@@ -87,6 +88,11 @@ void enableInterrupts()
     // Enable low priority interrupt on transmit
     RS485_INIT_INT();
 #endif
+}
+    
+void disableInterrupts()
+{
+    INTCONbits.GIE = 0;
 }
 
 // The pointer is pointing to ROM space that will not be reset
@@ -148,5 +154,5 @@ void fatal(const char* str)
 {
     g_exception = str;
     wait30ms();
-    RESET();
+    RESET(); // generates RCON.RI
 }
