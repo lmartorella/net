@@ -66,8 +66,8 @@ void rs485_init()
     RS485_TRIS_TX = 0;
     
     // Enable control ports
-    RS485_PORT_EN = EN_RECEIVE;
     RS485_TRIS_EN = 0;
+    RS485_PORT_EN = EN_RECEIVE;
       
     rs485_skipData = FALSE;
     s_writePtr = s_readPtr = s_buffer;

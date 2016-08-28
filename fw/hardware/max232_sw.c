@@ -12,40 +12,44 @@ void max232_init() {
     RS232_RX_TRIS = 1;
     RS232_TX_TRIS = 0;
     
-    RS232_TX_PORT = 0; // unasserted
+    RS232_TX_PORT = 1; // unasserted
     
     RS232_TCON = RS232_TCON_OFF;
+    RS232_TCON_REG = RS232_TCON_VALUE; 
 }
 
-#define RESETTIMER() { RS232_TCON_HREG = RS232_TCON_HVALUE; RS232_TCON_LREG = RS232_TCON_LVALUE; RS232_TCON_IF = 0; }
-#define WAITBIT() { while(!RS232_TCON_IF) CLRWDT(); RESETTIMER(); }
+#define RESETTIMER() { RS232_TCON_IF = 0; }
+#define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RESETTIMER() }
 
 // Write sync, disable interrupts
 int max232_sendReceive(int size) {
     
-    bus_suspend();
+    //bus_suspend();
     disableInterrupts();
 
-    RESETTIMER();
+    RESETTIMER()
     RS232_TCON = RS232_TCON_ON;
 
     BYTE j, b, i;
+    int timeoutCount;
     
     BYTE* ptr = max232_buffer1;
+    WAITBIT()
     for (i = 0; i < size; i++) {
-        b = *ptr;
+        // Write a idle bit
+        WAITBIT()
         // Write a START bit
-        WAITBIT();
-        RS232_TX_PORT = 1;
+        RS232_TX_PORT = 0;
+        b = *ptr;
         for (j = 0; j < 8; j++) {
             // Cycle bits
-            WAITBIT();
-            RS232_TX_PORT = (b & 0x80);
-            b <<= 1;
+            WAITBIT()
+            RS232_TX_PORT = b & 0x1;
+            b >>= 1;
         }
         // Write a STOP bit
-        WAITBIT();
-        RS232_TX_PORT = 0;
+        WAITBIT()
+        RS232_TX_PORT = 1;
         
         if (i == MAX232_BUFSIZE1) {
             ptr = max232_buffer2;
@@ -53,36 +57,36 @@ int max232_sendReceive(int size) {
         else {
             ptr++;
         }
+        WAITBIT()
     }
-
     // Now receive
     ptr = max232_buffer1;
     i = 0;
 
 loop:
     // Wait for start bit
-    RS232_TCON_HREG = RS232_TCON_HVALUE_TIMEOUT; 
-    RS232_TCON_LREG = RS232_TCON_LVALUE_TIMEOUT; 
-    RS232_TCON_IF = 0;
-    while (!RS232_RX_PORT) {
+    timeoutCount = 480;    // 480 bits = 0.5s
+    while (RS232_RX_PORT) {
         if (RS232_TCON_IF) {
-            goto end;
+            RS232_TCON_IF = 0;
+            if (!timeoutCount--) goto end;
         }
     }
 
     // Read bits
     // Sample in the middle
-    RS232_TCON_HREG = RS232_TCON_HVALUE_HALF; 
-    RS232_TCON_LREG = RS232_TCON_LVALUE_HALF; 
+    RS232_TCON_REG = RS232_TCON_VALUE_HALF; 
     RS232_TCON_IF = 0;
-    WAITBIT();
+    WAITBIT()
+    RS232_TCON_REG = RS232_TCON_VALUE; 
+    
     b = 0;
     for (j = 0; j < 8; j++) {
-        WAITBIT();
+        WAITBIT()
         if (RS232_RX_PORT) {
-            b = b | 1;
+            b = b | 0x80;
         }
-        b <<= 1;
+        b >>= 1;
     }
     *ptr = b;
     i++;
@@ -92,13 +96,13 @@ loop:
     else {
         ptr++;
     }
-    WAITBIT(); // Wait for stop bit
+    WAITBIT() // Wait for stop bit
     goto loop;    
-
+    
 end:
     RS232_TCON = RS232_TCON_OFF;
     enableInterrupts();
-    bus_resume();
+    //bus_resume();
     
     return i;
 }

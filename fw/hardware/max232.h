@@ -6,8 +6,8 @@
 // Connection 9600,N,8,1
 void max232_init();
 
-#define MAX232_BUFSIZE1 0x30
-#define MAX232_BUFSIZE2 0x30
+#define MAX232_BUFSIZE1 0x20
+#define MAX232_BUFSIZE2 0x20
 extern BYTE max232_buffer1[MAX232_BUFSIZE1];
 extern BYTE max232_buffer2[MAX232_BUFSIZE2];
 // Disable interrupts. Send txSize byte from the buffer and then receive in the buffer, and returns the size

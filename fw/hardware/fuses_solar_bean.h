@@ -16,25 +16,19 @@
 #undef HAS_DIGIO
 
 #define HAS_MAX232_SOFTWARE
-#define RS232_RX_TRIS TRISBbits.TRISB1
-#define RS232_TX_TRIS TRISBbits.TRISB0
-#define RS232_RX_PORT PORTBbits.RB1
-#define RS232_TX_PORT PORTBbits.RB0
-// Timer for SW RS232: TMR1
-// Timer on, internal timer, 1:256 prescalar
-// (!T0CS | !PSA , PS2:PS0)
-#define RS232_TCON T1CON
-#define RS232_TCON_ON 0x01
+#define RS232_RX_TRIS TRISBbits.TRISB3
+#define RS232_TX_TRIS TRISBbits.TRISB4
+#define RS232_RX_PORT PORTBbits.RB3
+#define RS232_TX_PORT PORTBbits.RB4
+// Timer for SW RS232: TMR2
+// Timer on, 1:1 prescaler and postscaler
+#define RS232_TCON T2CON
+#define RS232_TCON_ON 0x04
 #define RS232_TCON_OFF 0x00
-#define RS232_TCON_HREG TMR1H
-#define RS232_TCON_LREG TMR1L
-#define RS232_TCON_IF PIR1bits.TMR1IF
-#define RS232_TCON_HVALUE 0xff
-#define RS232_TCON_LVALUE (0xff - ((SYSTEM_CLOCK/4)/9600))  // 104
-#define RS232_TCON_HVALUE_HALF 0xff
-#define RS232_TCON_LVALUE_HALF (0xff - ((SYSTEM_CLOCK/4)/9600/2))  // 52
-#define RS232_TCON_HVALUE_TIMEOUT (0xff - ((SYSTEM_CLOCK/4)/20/256))  // 0.05s, high
-#define RS232_TCON_LVALUE_TIMEOUT 0
+#define RS232_TCON_REG PR2
+#define RS232_TCON_IF PIR1bits.TMR2IF
+#define RS232_TCON_VALUE ((SYSTEM_CLOCK/4)/9600)   // 104
+#define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4)/9600/2)  // 52
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)
@@ -51,8 +45,8 @@
 #define RS485_PIE_RCIE PIE1bits.RCIE
 #define RS485_TRIS_TX TRISBbits.TRISB2
 #define RS485_TRIS_RX TRISBbits.TRISB1
-#define RS485_TRIS_EN TRISBbits.TRISB3
-#define RS485_PORT_EN PORTBbits.RB3
+#define RS485_TRIS_EN TRISBbits.TRISB0
+#define RS485_PORT_EN PORTBbits.RB0
 #define RS485_BAUD 19200
 #define RS485_INIT_BAUD() \
     TXSTAbits.BRGH = 1;\
