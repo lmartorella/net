@@ -16,20 +16,22 @@ const Sink g_displaySink = { { "LINE" },
 
 static bit readHandler()
 {
-    // Only single packet messages are supported
-    WORD length, p = 0;
+    // TODO: Only single packet messages are supported
+    WORD length, toSkip = 0;
     BYTE buf[CM1602_COL_COUNT];
     prot_control_readW(&length);
     if (length >= CM1602_COL_COUNT)
     {
-        p = length - (CM1602_COL_COUNT - 1);
+        toSkip = length - (CM1602_COL_COUNT - 1);
         length = CM1602_COL_COUNT - 1;
     }
+    // Read char to display
     prot_control_read(buf, length);
-    while (p > 0)
+    // Skip the others
+    while (toSkip > 0)
     {
         prot_control_read(buf + (CM1602_COL_COUNT - 1), 1);
-        p--;
+        toSkip--;
     }
     buf[length] = '\0';
     // Write it

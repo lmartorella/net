@@ -44,7 +44,7 @@
     <Compile Include="Db\ISupportCsv.cs" />
     <Compile Include="Db\ITimeSeries.cs" />
     <Compile Include="Db\PeriodData.cs" />
-    <Compile Include="Devices\DisplayDevice.cs" />
+    <Compile Include="Devices\ClockDevice.cs" />
     <Compile Include="Devices\EchoLineTesterDevice.cs" />
     <Compile Include="Devices\ISolarPanelDevice.cs" />
     <Compile Include="Power\PowerData.cs" />

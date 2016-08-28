@@ -66,8 +66,15 @@ namespace Lucky.Home.Devices
 
         private IDeviceInternal CreateDevice(DeviceDescriptor descriptor)
         {
+            DeviceTypeDescriptor desc;
+            if (!_deviceTypes.TryGetValue(descriptor.DeviceTypeName, out desc))
+            {
+                // Type not found
+                return null;
+            }
+
             // Find type
-            var typeName = _deviceTypes[descriptor.DeviceTypeName].FullTypeName;
+            var typeName = desc.FullTypeName;
             var type = _assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
             if (type == null)
             {
