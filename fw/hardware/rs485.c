@@ -97,6 +97,16 @@ BYTE rs485_readAvail()
     }
 }
 
+BYTE rs485_writeAvail()
+{
+    if (s_status == STATUS_TRANSMIT) {
+        return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % BUFFER_SIZE);
+    }
+    else {
+        return 0;
+    }
+}
+
 static void writeByte()
 {   
     // Feed more data, read at read pointer and then increase

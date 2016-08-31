@@ -25,29 +25,28 @@ void halfduplex_init()
 bit halfduplex_readHandler()
 {
     if (!s_isRxBuffer) {
+        // IN HEADER READ
         // Wait for size first
         if (prot_control_readAvail() < 2) {
             // Go on
-            return TRUE;
+            return 1;
         }
         // Have size
         prot_control_readW(&s_size);
         if (s_size == 0) {
-            // Disable bus. Start read.
-            s_size = max232_sendReceive(s_size);
-            // Resume everything
-            halfduplex_init();
-            return FALSE;
+            goto goread;
         }
         else {
             // Wait for data
             s_isRxBuffer = 1;
             s_count = 0;
             s_ptr = max232_buffer1;
-            return TRUE;
+            // Go again
+            return 1;
         }
     }
     else {
+        // IN BUFFER READ
         while (prot_control_readAvail()) {
             prot_control_read(s_ptr, 1);
             s_count++;
@@ -61,53 +60,62 @@ bit halfduplex_readHandler()
         }
         // Ask for more data?
         if (s_count < s_size) {
-            return TRUE;
+            return 1;
         }
         else { 
-            // Disable bus. Start read.
-            s_size = max232_sendReceive(s_size);
-            // Resume everything
-            halfduplex_init();
-            return FALSE;
+            goto goread;
         }
     }
+    
+goread:
+    // Disable bus. Start read.
+    s_size = max232_sendReceive(s_size);
+    // Resume everything
+    halfduplex_init();
+    // Enough
+    return 0;
 }
 
 bit halfduplex_writeHandler()
 {
     if (!s_isTxBuffer) {
+        // IN HEADER WRITE
         prot_control_writeW(s_size);
         s_count = 0;
         s_ptr = max232_buffer1;
         s_isTxBuffer = 1;
         if (s_size == 0) {
+            // Buffer ok
             halfduplex_init();
-            return FALSE;
+            return 0;
         }
         else {
             s_isTxBuffer = 1;
-            return TRUE;
+            // Go on
+            return 1;
         }
     }
     else {
         // Write max 0x10 bytes at a time
-        if ((s_size - s_count) > 0x10) {
-            prot_control_write(s_ptr, 0x10);
-            s_count += 0x10;
-            // WARN!! TODO: 0x10 and 0x30 (MAX232_BUFSIZE1) are multiple, so the check below works
+        while (prot_control_writeAvail()) {
+            prot_control_write(s_ptr, 1);
+            s_count += 1;
             if (s_count == MAX232_BUFSIZE1) {
                 s_ptr = max232_buffer2;
             }
             else {
-                s_ptr += 0x10;
+                s_ptr++;
             }
-            return TRUE;
         }
-        else {
+        // Ask for more data?
+        if (s_count < s_size) {
+            // Again
+            return 1;
+        }
+        else { 
             // End.
-            prot_control_write(s_ptr, (s_size - s_count));
             halfduplex_init();
-            return FALSE;
+            return 0;
         }
     }
 }

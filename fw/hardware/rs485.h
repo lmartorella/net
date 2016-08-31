@@ -28,6 +28,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size);
 // Read data, if available.
 bit rs485_read(BYTE* data, BYTE size);
 BYTE rs485_readAvail();
+BYTE rs485_writeAvail();
 // Get the last bit9 received
 extern bit rs485_lastRc9;
 // Get/set the skip flag. If set, rc9 = 0 bytes are skipped by receiver
