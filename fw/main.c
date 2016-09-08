@@ -21,9 +21,26 @@ void interrupt PRIO_TYPE low_isr(void)
 #endif
 }
 
+static const char* g_resetReasonMsgs[] = { 
+                "N/A",
+				"POR",
+				"BOR",
+				"CFG",
+				"WDT",
+				"STK",
+				"MCL",
+				"EXC"  };
+
 void main()
-{  
+{
+    // Analyze RESET reason
+    sys_storeResetReason();
+
     max232_init();
+    memcpy(max232_buffer1, g_resetReasonMsgs[g_resetReason], 4);
+    max232_buffer1[3] = ' ';
+    max232_sendReceive(4);
+
     max232_buffer1[0] = 'S';
     max232_buffer1[1] = 't';
     max232_buffer1[2] = 'i';
@@ -40,11 +57,7 @@ void main()
     int l = 13;
     while (1) {
         l = max232_sendReceive(l);
-    }
-    
-    
-    // Analyze RESET reason
-    sys_storeResetReason();
+    }   
 
     // Init Ticks on timer0 (low prio) module
     timers_init();
