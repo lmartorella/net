@@ -22,17 +22,13 @@ void max232_init() {
 #define RESETTIMER(t) { RS232_TCON_REG = t; TMR2 = 0; RESETIF() }
 #define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RESETIF() }
 
-// Write sync, disable interrupts
-int max232_sendReceive(int size) {
-    
-    //bus_suspend();
+void max232_send(int size) {
     disableInterrupts();
 
     RESETTIMER(RS232_TCON_VALUE)
     RS232_TCON = RS232_TCON_ON;
 
     BYTE j, b, i;
-    int timeoutCount;
     
     BYTE* ptr = max232_buffer1;
     WAITBIT()
@@ -60,9 +56,20 @@ int max232_sendReceive(int size) {
         }
         WAITBIT()
     }
+    
+    enableInterrupts();
+}
+
+// Write sync, disable interrupts
+int max232_sendReceive(int size) {
+
+    disableInterrupts();
+
+    max232_send(size);
     // Now receive
-    ptr = max232_buffer1;
-    i = 0;
+    BYTE* ptr = max232_buffer1;
+    BYTE j, b, i = 0;
+    int timeoutCount;
 
 loop:
     // Wait for start bit
@@ -106,9 +113,7 @@ loop:
     goto loop;    
     
 end:
-    RS232_TCON = RS232_TCON_OFF;
     enableInterrupts();
-    //bus_resume();
     
     return i;
 }

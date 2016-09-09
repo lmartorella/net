@@ -44,11 +44,17 @@ void prot_init()
 
 static void CLOS_command()
 {
+#ifdef DEBUGMODE
+    printch('l');
+#endif
     prot_control_close();
 }
 
 static void SELE_command()
 {
+#ifdef DEBUGMODE
+    printch('s');
+#endif
     // Select subnode. 
     WORD w;
     if (!prot_control_readW(&w)) {
@@ -70,6 +76,9 @@ static void SELE_command()
 // 0 bytes to receive
 static void CHIL_command()
 {
+#ifdef DEBUGMODE
+    printch('c');
+#endif
     // Fetch my GUID
     union {
         PersistentData persistence;
@@ -100,6 +109,9 @@ static void CHIL_command()
 // 0 bytes to receive
 static void SINK_command()
 {
+#ifdef DEBUGMODE
+    printch('k');
+#endif
     prot_control_writeW(AllSinksSize);
     for (int i = 0; i < AllSinksSize; i++) {
         // Put device ID
@@ -111,6 +123,9 @@ static void SINK_command()
 // 16 bytes to receive
 static void GUID_command()
 {
+#ifdef DEBUGMODE
+    printch('g');
+#endif
     GUID guid;
     if (!prot_control_read(&guid, sizeof(GUID))) {
         fatal("GU.u");
@@ -126,6 +141,9 @@ static void GUID_command()
 // 2 bytes to receive
 static void READ_command()
 {
+#ifdef DEBUGMODE
+    printch('r');
+#endif
     WORD sinkId;
     if (!prot_control_readW(&sinkId))
     {
@@ -137,6 +155,9 @@ static void READ_command()
 // 2 bytes to receive
 static void WRIT_command()
 {
+#ifdef DEBUGMODE
+    printch('w');
+#endif
     WORD sinkId;
     if (!prot_control_readW(&sinkId))
     {

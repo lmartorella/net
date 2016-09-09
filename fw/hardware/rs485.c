@@ -285,6 +285,9 @@ static void rs485_startRead()
     // Enable UART receiver
     RS485_PIE_RCIE = 1;
     RS485_RCSTA.CREN = 1;
+
+    // Clear FERR
+    BYTE data = RS485_RCREG;
 }
 
 RS485_STATE rs485_getState() {

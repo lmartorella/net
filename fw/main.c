@@ -21,43 +21,14 @@ void interrupt PRIO_TYPE low_isr(void)
 #endif
 }
 
-static const char* g_resetReasonMsgs[] = { 
-                "N/A",
-				"POR",
-				"BOR",
-				"CFG",
-				"WDT",
-				"STK",
-				"MCL",
-				"EXC"  };
-
 void main()
 {
     // Analyze RESET reason
     sys_storeResetReason();
 
+#if defined(HAS_MAX232_SOFTWARE)
     max232_init();
-    memcpy(max232_buffer1, g_resetReasonMsgs[g_resetReason], 4);
-    max232_buffer1[3] = ' ';
-    max232_sendReceive(4);
-
-    max232_buffer1[0] = 'S';
-    max232_buffer1[1] = 't';
-    max232_buffer1[2] = 'i';
-    max232_buffer1[3] = 'l';
-    max232_buffer1[4] = 'l';
-    max232_buffer1[5] = ' ';
-    max232_buffer1[6] = 'a';
-    max232_buffer1[7] = 'l';
-    max232_buffer1[8] = 'i';
-    max232_buffer1[9] = 'v';
-    max232_buffer1[10] = 'e';
-    max232_buffer1[11] = '.';
-    max232_buffer1[12] = ' ';
-    int l = 13;
-    while (1) {
-        l = max232_sendReceive(l);
-    }   
+#endif
 
     // Init Ticks on timer0 (low prio) module
     timers_init();
@@ -89,11 +60,7 @@ void main()
 #ifdef HAS_DIGIO
     digio_init();
 #endif
-
-#if defined(HAS_MAX232) || defined(HAS_MAX232_SOFTWARE)
-    max232_init();
-#endif
-
+    
 #ifdef BUSPOWER_PORT
     // Enable bus power to slaves
     BUSPOWER_TRIS = 0;

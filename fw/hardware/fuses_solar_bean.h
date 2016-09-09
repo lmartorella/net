@@ -11,9 +11,10 @@
 #undef HAS_SPI_RAM
 #undef HAS_IP
 #undef HAS_IO
-#undef HAS_LED
 #undef HAS_DHT11
 #undef HAS_DIGIO
+
+#define DEBUGMODE
 
 #define HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB3
@@ -27,8 +28,8 @@
 #define RS232_TCON_OFF 0x00
 #define RS232_TCON_REG PR2
 #define RS232_TCON_IF PIR1bits.TMR2IF
-#define RS232_TCON_VALUE ((SYSTEM_CLOCK/4) / 9600)   // 104
-#define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4) / 9600 / 2 - 4)  // 52
+#define RS232_TCON_VALUE ((SYSTEM_CLOCK/4) / 19200)   // 104
+#define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4) / 19200 / 2 - 4)  // 52
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)
@@ -68,6 +69,11 @@
 #define TICK_CLOCK_BASE (SYSTEM_CLOCK / 4)
 #define TICK_PRESCALER 256
 #define TICK_TYPE WORD
+
+#define HAS_LED
+#define LED_PORTBIT PORTBbits.RB5
+#define LED_TRISBIT TRISBbits.TRISB5
+
 
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;

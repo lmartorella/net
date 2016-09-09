@@ -2,11 +2,16 @@
 #include "appio.h"
 #include "hardware/cm1602.h"
 #include "hardware/leds.h"
+#include "hardware/max232.h"
 
 const char* g_lastException;
 RESET_REASON g_resetReason;
 
-#ifdef HAS_CM1602
+#if defined(HAS_MAX232_SOFTWARE) && defined(DEBUGMODE)
+#define HAS_DEBUG_LINE
+#endif
+
+#if defined(HAS_CM1602) || defined(HAS_DEBUG_LINE)
 static const char* g_resetReasonMsgs[] = { 
                 "N/A",
 				"POR",
@@ -16,6 +21,13 @@ static const char* g_resetReasonMsgs[] = {
 				"STK",
 				"RST",
 				"EXC:"  };
+#endif
+
+#ifdef HAS_DEBUG_LINE
+static void _stdout(const char* str) {
+    strcpy(max232_buffer1, str);
+    max232_send(strlen(str));
+}
 #endif
 
 void appio_init()
@@ -37,6 +49,13 @@ void appio_init()
     }
 
     wait1s();
+#elif defined(HAS_DEBUG_LINE)
+    _stdout("Boot: ");
+    _stdout(g_resetReasonMsgs[g_resetReason]);
+    if (g_resetReason == RESET_EXC)
+    {
+        _stdout(g_lastException);
+    }
 #endif
 
 #ifdef HAS_LED
@@ -85,6 +104,8 @@ void println(const char* str)
 {
 #ifdef HAS_CM1602
 	_print(str, 0x40);	
+#elif defined(HAS_DEBUG_LINE)
+    _stdout(str);
 #endif
 }
 
@@ -92,6 +113,8 @@ void printlnUp(const char* str)
 {
 #ifdef HAS_CM1602
 	_print(str, 0x00);	
+#elif defined(HAS_DEBUG_LINE)
+    _stdout(str);
 #endif
 }
 
@@ -99,5 +122,8 @@ void printch(char ch)
 {
 #ifdef HAS_CM1602
     cm1602_write(ch);
+#elif defined(HAS_DEBUG_LINE)
+    max232_buffer1[0] = ch;
+    max232_send(1);
 #endif
 }

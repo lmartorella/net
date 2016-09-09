@@ -246,7 +246,7 @@ namespace Lucky.Home.Serialization
             public object Deserialize(BinaryReader reader)
             {
                 byte[] ids = reader.ReadBytes(Size);
-                return new Guid(ids);
+                return ids.Length == Size ? (object)new Guid(ids) : null;
             }
         }
 
@@ -298,7 +298,12 @@ namespace Lucky.Home.Serialization
                 if (size <= 0)
                 {
                     // Read size
-                    size = BitConverter.ToUInt16(reader.ReadBytes(2), 0);
+                    var b = reader.ReadBytes(2);
+                    if (b.Length < 2)
+                    {
+                        return null;
+                    }
+                    size = BitConverter.ToUInt16(b, 0);
                 }
                 Array array = Array.CreateInstance(_elementType, size);
                 for (int i = 0; i < size; i++)

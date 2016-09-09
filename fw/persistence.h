@@ -21,6 +21,13 @@ typedef struct
     
 } PersistentData;
 
+#ifdef HAS_BUS_CLIENT
+#define DEFAULT_PERS_DATA { { 0, 0, 0, 0, 0 }, UNASSIGNED_SUB_ADDRESS }
+#else
+#define DEFAULT_PERS_DATA { { 0, 0, 0, 0, 0 } }
+#endif
+
+
 // This can be accessed by the running application in read-only mode
 extern EEPROM_MODIFIER PersistentData g_persistentData;
 

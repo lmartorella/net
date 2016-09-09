@@ -61,16 +61,16 @@ namespace Lucky.Home.Protocol
 
             // Check for zombied children and try to de-zombie it
             var lastKnownChildren = (ITcpNode[])_lastKnownChildren.Clone();
-            if (lastKnownChildren.Any(n => n.IsZombie))
+            if (lastKnownChildren.Any(n => n == null || n.IsZombie))
             {
                 // Re-fire the children request and de-zombie
                 var subNodes = GetChildrenIndexes();
                 // If same children, simply de-zombie
-                var sameChildren = lastKnownChildren.Select(n => n.Address.Index).SequenceEqual(subNodes);
+                var sameChildren = lastKnownChildren.Select(n => n != null ? n.Address.Index : -1).SequenceEqual(subNodes);
                 if (sameChildren)
                 {
                     // Directly de-zombie all children
-                    foreach (var node in lastKnownChildren.Where(c => c.IsZombie))
+                    foreach (var node in lastKnownChildren.Where(c => c == null || c.IsZombie))
                     {
                         // Re-fetch reset status
                         await node.Relogin(node.Address);
@@ -109,7 +109,8 @@ namespace Lucky.Home.Protocol
         private class GetChildrenMessageResponse
         {
             public Guid Guid;
-            [SerializeAsDynArray()]
+
+            [SerializeAsDynArray]
             public byte[] Mask;
         }
 

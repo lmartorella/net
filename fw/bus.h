@@ -13,9 +13,6 @@ void bus_init();
 // Poll general bus activities
 void bus_poll();
 
-void bus_suspend();
-void bus_resume();
-
 typedef enum { 
     // Message to beat a bean
     BUS_MSG_TYPE_HEARTBEAT = 1,
@@ -33,6 +30,8 @@ typedef enum {
     // Bean: notify unknown (response to BUS_MSG_TYPE_READY_FOR_HELLO)
     BUS_ACK_TYPE_HELLO = 0x21
 } BUS_ACK_TYPE;
+
+#define UNASSIGNED_SUB_ADDRESS 0xff
 
 #ifdef HAS_BUS_SERVER
 
