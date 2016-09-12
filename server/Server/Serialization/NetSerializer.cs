@@ -246,7 +246,7 @@ namespace Lucky.Home.Serialization
             public object Deserialize(BinaryReader reader)
             {
                 byte[] ids = reader.ReadBytes(Size);
-                return ids.Length == Size ? (object)new Guid(ids) : null;
+                return ids.Length == Size ? (object)new Guid(ids) : new Guid("ffffffff-ffff-ffff-ffff-ffffffff0000");
             }
         }
 

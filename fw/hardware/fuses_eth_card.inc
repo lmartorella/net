@@ -90,11 +90,6 @@ void enableInterrupts()
 #endif
 }
     
-void disableInterrupts()
-{
-    INTCONbits.GIE = 0;
-}
-
 // The pointer is pointing to ROM space that will not be reset
 // otherwise after the RESET the variable content can be lost.
 static persistent const char* g_exception;

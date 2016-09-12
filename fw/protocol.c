@@ -200,10 +200,7 @@ const struct {
 	Manage POLLs (read buffers)
 */
 void prot_poll()
-{
-    // General poll
-    bus_poll();
-   
+{  
 #ifdef HAS_IP
     // Do ETH stuff
     StackTask();
@@ -232,6 +229,10 @@ void prot_poll()
             // TCP is still polled by bus
             return;
         case BUS_STATE_SOCKET_TIMEOUT:
+            // drop the TCP connection        
+            prot_control_abort();
+            break;
+        case BUS_STATE_SOCKET_FERR:
             // drop the TCP connection        
             prot_control_abort();
             break;

@@ -36,7 +36,9 @@ const Sink* AllSinks[] = {
 };
 
 int AllSinksSize =
-#if defined(HAS_DIGIO) && defined(HAS_CM1602) && defined(HAS_DHT11)
+#if defined(HAS_MAX232_SOFTWARE)
+    2
+#elif defined(HAS_DIGIO) && defined(HAS_CM1602) && defined(HAS_DHT11)
     5
 #elif (defined(HAS_DIGIO) && defined(HAS_CM1602)) || (defined(HAS_DIGIO) && defined(HAS_DHT11))
     4

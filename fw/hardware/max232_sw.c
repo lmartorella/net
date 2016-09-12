@@ -23,7 +23,7 @@ void max232_init() {
 #define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RESETIF() }
 
 void max232_send(int size) {
-    disableInterrupts();
+    INTCONbits.GIE = 0;
 
     RESETTIMER(RS232_TCON_VALUE)
     RS232_TCON = RS232_TCON_ON;
@@ -57,13 +57,13 @@ void max232_send(int size) {
         WAITBIT()
     }
     
-    enableInterrupts();
+    INTCONbits.GIE = 1;
 }
 
 // Write sync, disable interrupts
 int max232_sendReceive(int size) {
 
-    disableInterrupts();
+    INTCONbits.GIE = 0;
 
     max232_send(size);
     // Now receive
@@ -113,8 +113,7 @@ loop:
     goto loop;    
     
 end:
-    enableInterrupts();
-    
+    INTCONbits.GIE = 1;
     return i;
 }
         

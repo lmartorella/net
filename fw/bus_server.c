@@ -25,10 +25,12 @@ bit bus_dirtyChildren;
 static int s_socketConnected;
 #define SOCKET_NOT_CONNECTED -1
 #define SOCKET_ERR_TIMEOUT -2
+#define SOCKET_ERR_FERR -3
 
 #define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 1.5) // 1500ms 
 #define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
-#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * ACK_MSG_SIZE * 2) // 33ms (19200,9,1 4+8bytes = ~6.25ms + 2ms + 1ms)
+// ack time is due to engage+disengage time (of the slave) + ack_size
+#define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * ACK_MSG_SIZE * 4) // 9.1ms (19200,9,1 4*3bytes = )
 
 static enum {
     // To call next child
@@ -40,6 +42,7 @@ static enum {
 } s_busState;
 
 static bit s_waitTxFlush;
+static bit s_waitTxQuickEnd;
 
 static void bus_socketCreate();
 static void bus_socketPoll();
@@ -64,8 +67,9 @@ void bus_init()
     // Starts from zero
     s_scanIndex = BROADCAST_ADDRESS;
     s_socketConnected = SOCKET_NOT_CONNECTED;
-    s_waitTxFlush = FALSE;
-    bus_dirtyChildren = FALSE;
+    s_waitTxFlush = 0;
+    s_waitTxQuickEnd = 0;
+    bus_dirtyChildren = 0;
     
     // Do full scan
     s_lastScanTime = TickGet();
@@ -90,9 +94,9 @@ static void bus_scanNext()
     buffer[2] = s_scanIndex;
     buffer[3] = msgType;
     rs485_write(TRUE, buffer, 4);
-    s_waitTxFlush = TRUE;
-    
+
     // Wait for tx end and then for ack
+    s_waitTxFlush = 1;
     s_busState = BUS_PRIV_STATE_WAIT_ACK;
 }
 
@@ -118,9 +122,9 @@ static void bus_registerNewNode() {
     buffer[2] = s_scanIndex;
     buffer[3] = BUS_MSG_TYPE_ADDRESS_ASSIGN;
     rs485_write(TRUE, buffer, 4);
-    s_waitTxFlush = TRUE;
 
     // Go ahead. Expect a valid response like the heartbeat
+    s_waitTxFlush = 1;
     s_busState = BUS_PRIV_STATE_WAIT_ACK;
 }
 
@@ -148,26 +152,31 @@ static void bus_checkAck()
 }
 
 void bus_poll()
-{
-    if (rs485_getState() == RS485_FRAME_ERR) {
-        // Error. Reset to idle
-        bus_disconnectSocket(SOCKET_NOT_CONNECTED);
-        // Reinit the bus
-        rs485_init();
-    }
-    
+{   
     if (s_waitTxFlush) {
         // Finished TX?
-        if (rs485_getState() == RS485_LINE_TX) {
+        if (rs485_getState() == RS485_LINE_TX_DATA || rs485_getState() == RS485_LINE_TX_DISENGAGE) {
             // Skip state management
             return;
         } else {
             // Start timeout and go ahead
             s_lastTime = TickGet();
-            s_waitTxFlush = FALSE;
+            s_waitTxFlush = 0;
         }
     }
-    
+    else if (s_waitTxQuickEnd) {
+        // Finished TX?
+        if (rs485_getState() == RS485_LINE_TX_DATA) {
+            // Skip state management
+            return;
+        } else {
+            // Start timeout and go ahead
+            s_lastTime = TickGet();
+            s_waitTxQuickEnd = 0;
+        }
+    }
+ 
+    BYTE s = rs485_readAvail();
     switch (s_busState) {
         case BUS_PRIV_STATE_IDLE:
             // Should open a socket?
@@ -183,7 +192,7 @@ void bus_poll()
             break;
         case BUS_PRIV_STATE_WAIT_ACK:
             // Wait timeout for response
-            if (rs485_readAvail() >= ACK_MSG_SIZE) {
+            if (s >= ACK_MSG_SIZE) {
                 // Check what is received
                 bus_checkAck();
             } else {
@@ -221,7 +230,7 @@ void bus_disconnectSocket(int val)
         // Send break char
         BYTE breakChar = 0xff;
         rs485_write(TRUE, &breakChar, 1);
-        s_waitTxFlush = TRUE;
+        s_waitTxFlush = 1;
         
         s_busState = BUS_PRIV_STATE_IDLE;
     }
@@ -234,6 +243,8 @@ BUS_STATE bus_getState()
         return BUS_STATE_SOCKET_CONNECTED;
     if (s_socketConnected == SOCKET_ERR_TIMEOUT) 
         return BUS_STATE_SOCKET_TIMEOUT;
+    if (s_socketConnected == SOCKET_ERR_FERR) 
+        return BUS_STATE_SOCKET_FERR;
     return BUS_STATE_NONE;
 }
 
@@ -244,8 +255,10 @@ static void bus_socketCreate()
     buffer[2] = s_socketConnected;
     buffer[3] = BUS_MSG_TYPE_CONNECT;
     rs485_write(TRUE, buffer, 4);
-    s_waitTxFlush = TRUE;
 
+    // Don't wait the TX channel to be free, but immediately enqueue socket data, to avoid engage/disengage time and glitches
+    // However wait for TX9 to be reusable, so wait for TX to be finished
+    s_waitTxQuickEnd = 1;
     // Next state (after TX finishes) is IN COMMAND
     s_busState = BUS_PRIV_STATE_SOCKET_CONNECTED;
 }
@@ -266,6 +279,15 @@ static void bus_socketPoll()
         s_lastTime = TickGet();
     }
     else {
+        // Rx mode
+        // Ensure to clear the FERR before entering in this state!
+        //if (rs485_getState() == RS485_LINE_RX_FRAME_ERR) {
+        //    // Close socket, ferr during rx
+        //    // Drop the TCP connection and reset the channel
+        //    rs485_clearFerr();
+        //    bus_disconnectSocket(SOCKET_ERR_FERR);
+        //}
+
         // Data received?
         WORD tx = rs485_readAvail(); 
         if (tx > 0) {

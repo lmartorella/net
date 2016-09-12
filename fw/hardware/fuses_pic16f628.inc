@@ -47,11 +47,6 @@ void enableInterrupts()
     INTCONbits.PEIE = 1;
 }
 
-void disableInterrupts()
-{
-    INTCONbits.GIE = 0;
-}
-
 // Get a copy version of STATUS
 extern unsigned char __resetbits;
 #define nTObit 0x10

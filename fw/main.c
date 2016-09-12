@@ -77,6 +77,7 @@ void main()
         
     // I'm alive
     while (1) {   
+        bus_poll();
         prot_poll();
         rs485_poll();
             

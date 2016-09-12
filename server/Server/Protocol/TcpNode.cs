@@ -291,13 +291,18 @@ namespace Lucky.Home.Protocol
         internal Guid? TryFetchGuid()
         {
             // Init a METADATA fetch connection
-            Guid guid = Guid.Empty;
+            Guid? guid = null;
 
             if (!OpenNodeSession((connection, addr) =>
             {
                 // Ask for subnodes
                 connection.Write(new GetChildrenMessage());
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
+                if (childNodes == null)
+                {
+                    // Channel already destroyed
+                    return false;
+                }
                 guid = childNodes.Guid;
                 return true;
             }))

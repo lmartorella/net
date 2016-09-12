@@ -17,7 +17,8 @@ static enum {
     STATE_HEADER_3 = 3,         // msgtype
             
     STATE_SOCKET_OPEN = 10,
-    STATE_WAIT_TX
+    STATE_WAIT_TX,
+    STATE_WAIT_DISENGAGE
             
 } s_state;
 
@@ -25,7 +26,19 @@ static BYTE s_header[3] = { 0x55, 0xAA, 0 };
 static bit s_availForAddressAssign;
 static BYTE s_tempAddressForAssignment;
 
-static void bus_reinit()
+/**
+ * Wait for the channel to be free again and skip the glitch after a TX/RX switch (server DISENGAGE_CHANNEL_TIMEOUT time)
+ */
+static void bus_reinit_after_disengage()
+{
+    rs485_waitDisengageTime();
+    s_state = STATE_WAIT_DISENGAGE;
+}
+
+/**
+ * Quickly return in listen state, without waiting for the disengage time
+ */
+static void bus_reinit_quick()
 {
     s_state = STATE_HEADER_0;
     // Skip bit9 = 0
@@ -55,7 +68,7 @@ void bus_init()
 
     s_header[2] = data.address;
 
-    bus_reinit();
+    bus_reinit_quick();
 }
 
 static void bus_storeAddress()
@@ -80,31 +93,43 @@ static void bus_sendAck(BYTE ackCode) {
 // Called often
 void bus_poll()
 {
-    if (rs485_getState() == RS485_FRAME_ERR) {
-#ifdef DEBUGMODE
-         printch('F');
-#endif
-         rs485_init();
-         return;
-    }
+    RS485_STATE rs485state = rs485_getState();
     
     if (s_state >= STATE_SOCKET_OPEN) {
         switch (s_state) {
             case STATE_SOCKET_OPEN: 
                 if (rs485_lastRc9) {
                     // Received a break char, go idle
-                    bus_reinit();
+                    bus_reinit_after_disengage();
                 }
+                else if (rs485state == RS485_LINE_RX_FRAME_ERR) {
+                    // FERR during socket open causes socket to be broken
+#ifdef DEBUGMODE
+                    printch('F');
+#endif
+                    rs485state = rs485_clearFerr();
+                    // Go idle
+                    // NO! socket is bidirectional, and glitches when TX/RX switch happens!
+                    // bus_reinit_after_disengage();
+                }
+
                 // Else do nothing
                 break;
-            case STATE_WAIT_TX: 
-                if (rs485_getState() != RS485_LINE_TX) {
-                    bus_reinit();
+            case STATE_WAIT_TX:
+            case STATE_WAIT_DISENGAGE:
+                // When in read mode again, progress
+                if (rs485state != RS485_LINE_TX_DATA && rs485state != RS485_LINE_TX_DISENGAGE) {
+                    bus_reinit_quick();
                 }
                 break;
         }
     }
     else {
+        if (rs485state == RS485_LINE_RX_FRAME_ERR) {
+            // Silently ignore ferr
+            rs485_clearFerr();
+        }
+        
         // Header decode
         BYTE buf;
         if (rs485_readAvail() > 0) {            
@@ -125,8 +150,8 @@ void bus_poll()
                     s_state++;
                 }
                 else {
-                    // Restart from 0x55
-                    bus_reinit();
+                    // Not my address, or protocol error. Restart from 0x55 but don't try to skip glitches
+                    bus_reinit_after_disengage();
                 }
             }
             else {
@@ -184,7 +209,7 @@ void bus_poll()
 #endif
                         // Unknown command. Reset
                         // Restart from 0x55
-                        bus_reinit();
+                        bus_reinit_after_disengage();
                         break;
                 }
                 
@@ -192,7 +217,7 @@ void bus_poll()
             printch('-');
 #endif
                 // If not managed, reinit bus for the next message
-                bus_reinit();
+                bus_reinit_after_disengage();
             }
         }
     }
@@ -204,6 +229,10 @@ void prot_control_close()
     if (s_state == STATE_SOCKET_OPEN) {
         // Respond OK with bit9=1, that closes the bus
         rs485_write(TRUE, "\x1E", 1);
+
+#ifdef DEBUGMODE
+        printch('|');
+#endif
         
         // And then wait for TX end before going idle
         s_state = STATE_WAIT_TX;

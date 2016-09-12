@@ -38,16 +38,19 @@ static BYTE* s_readPtr;
 // Status of address bit in the serie
 bit rs485_lastRc9;
 bit rs485_skipData;
+static bit s_ferr;
 
 static TICK_TYPE s_lastTick;
 
 // time to wait before engaging the channel (after other station finished to transmit)
 #define ENGAGE_CHANNEL_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 1)  
 // additional time to wait after channel engaged to start transmit
-#define START_TRANSMIT_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 2)
+// Consider that the glitch produced engaging the channel can be observed as a FRAMEERR by other stations
+// So use a long time here to avoid FERR to consume valid data
+#define START_TRANSMIT_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 3)
 // time to wait before releasing the channel = 2 bytes,
 // but let's wait an additional byte since USART is free when still transmitting the last byte.
-#define DISENGAGE_CHANNEL_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * 3)  // 3 bytes
+#define DISENGAGE_CHANNEL_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * (2 + 1))
 
 static void rs485_startRead();
 
@@ -141,28 +144,23 @@ void rs485_interrupt()
             if (RS485_RCSTA.OERR) {
                 fatal("U.OER");
             }
-            if (RS485_RCSTA.FERR) {
-                s_status = STATUS_RECEIVE_FERR;
-                goto error;
-            }
+            s_ferr = RS485_RCSTA.FERR;
 
-            // read data to reset IF
+            // read data to reset IF and FERR
             BOOL lastrc9 = RS485_RCSTA.RX9D;
             BYTE data = RS485_RCREG;
             
+            if (s_ferr) {
+                s_status = STATUS_RECEIVE_FERR;
+                // Don't disengage read, only set the flag, in order to not lose next bytes
+            }
             // Only read data (0) if enabled
-            if (lastrc9 || !rs485_skipData) {
+            else if (lastrc9 || !rs485_skipData) {
                 rs485_lastRc9 = lastrc9;
                 *(s_writePtr++) = data;
                 ADJUST_PTR(s_writePtr);
             }
         } while (RS485_PIR_RCIF);
-        return;
-
-        // Error, disable reading and interrupt
-error:
-        RS485_RCSTA.CREN = 0;
-        RS485_PIE_RCIE = 0;
     }
 }
 
@@ -285,19 +283,39 @@ static void rs485_startRead()
     // Enable UART receiver
     RS485_PIE_RCIE = 1;
     RS485_RCSTA.CREN = 1;
-
-    // Clear FERR
-    BYTE data = RS485_RCREG;
 }
 
 RS485_STATE rs485_getState() {
     switch (s_status) {
         case STATUS_RECEIVE_FERR:
-            return RS485_FRAME_ERR;
+            return RS485_LINE_RX_FRAME_ERR;
         case STATUS_RECEIVE:
             return RS485_LINE_RX;
+        case STATUS_WAIT_FOR_TRANSMIT_END:
+            return RS485_LINE_TX_DISENGAGE;
+        //case STATUS_TRANSMIT:
+        //case STATUS_WAIT_FOR_ENGAGE:
+        //case STATUS_WAIT_FOR_START_TRANSMIT:
         default:
-            return RS485_LINE_TX;
+            return RS485_LINE_TX_DATA;
+    }
+}
+
+RS485_STATE rs485_clearFerr() {
+    if (s_status == STATUS_RECEIVE_FERR) {
+        s_status = STATUS_RECEIVE;
+    }
+    return s_status;
+}
+
+void rs485_waitDisengageTime() {
+    if (s_status == STATUS_RECEIVE) { 
+        // Disable rx receiver
+        RS485_PIE_RCIE = 0;
+        RS485_RCSTA.CREN = 0;
+        
+        s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+        s_lastTick = TickGet();
     }
 }
 
