@@ -10,7 +10,7 @@ namespace Lucky.Home.Devices
     public class EchoLineTesterDevice : DeviceBase
     {
         private Timer _timer;
-        private string _lastMessage = "";
+        private string _lastMessage = "XYZ";
 
         public EchoLineTesterDevice()
         {
@@ -20,7 +20,7 @@ namespace Lucky.Home.Devices
                 {
                     Check();
                 }
-            }, null, 0, 1000);
+            }, null, 0, 2000);
         }
 
         private async void Check()
