@@ -6,8 +6,6 @@
 typedef enum {
     // Receiving, all OK
     RS485_LINE_RX,
-    // Receiving, FERR detected
-    RS485_LINE_RX_FRAME_ERR,
     // Transmitting, data
     RS485_LINE_TX_DATA,
     // Transmitting, in engage or disengage line period
@@ -40,7 +38,6 @@ extern bit rs485_lastRc9;
 extern bit rs485_skipData;
 
 RS485_STATE rs485_getState();
-RS485_STATE rs485_clearFerr();
 
 // Don't change the line status, but simulate a TX time for disengage
 void rs485_waitDisengageTime();

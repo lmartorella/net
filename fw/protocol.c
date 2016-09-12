@@ -270,8 +270,6 @@ void prot_poll()
         // This can even peek only one command.
         // Until not closed by server, or CLOS command sent, the channel can stay open.
 
-        // TODO: Limitation: both the command and its data should be in the read buffer
-        // at the same time
         TWOCC msg;
         prot_control_read(&msg, sizeof(TWOCC));
         for (BYTE i = 0; i < COMMAND_COUNT; i++) {

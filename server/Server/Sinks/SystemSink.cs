@@ -41,7 +41,7 @@ namespace Lucky.Home.Sinks
             {
                 while (true)
                 {
-                    var code = reader.Read<Twocc>().Code;
+                    var code = reader.Read<Twocc>()?.Code;
                     switch (code)
                     {
                         case null:

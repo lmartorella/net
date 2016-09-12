@@ -15,19 +15,19 @@ namespace Lucky.Home.Devices
         {
             _timer = new Timer(o =>
             {
-                var str = DateTime.Now.ToString("HH:mm:ss");
-                Write(str);
+                if (IsFullOnline)
+                {
+                    var str = DateTime.Now.ToString("HH:mm:ss");
+                    Write(str);
+                }
             }, null, 0, 500);
         }
 
         private void Write(string str)
         {
-            if (IsFullOnline)
+            foreach (var sink in Sinks.OfType<DisplaySink>())
             {
-                foreach (var sink in Sinks.OfType<DisplaySink>())
-                {
-                    sink.Write(str);
-                }
+                sink.Write(str);
             }
         }
     }

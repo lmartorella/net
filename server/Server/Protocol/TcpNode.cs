@@ -38,6 +38,9 @@ namespace Lucky.Home.Protocol
         private readonly List<SinkBase> _sinks = new List<SinkBase>();
 
         private ITcpNode[] _lastKnownChildren = new ITcpNode[0];
+        private DateTime? _firstFailTime;
+
+        private static readonly TimeSpan ZOMBIE_TIMEOUT = TimeSpan.FromSeconds(10);
 
         internal TcpNode(Guid guid, TcpNodeAddress address)
         {
@@ -269,8 +272,23 @@ namespace Lucky.Home.Protocol
             var ret = OpenNodeSession(Logger, address, handler);
             if (!ret)
             {
-                // Mark the node as a zombie
-                IsZombie = true;
+                if (_firstFailTime.HasValue)
+                {
+                    // Mark the node as a zombie after some time
+                    if ((DateTime.Now - _firstFailTime) > ZOMBIE_TIMEOUT)
+                    {
+                        IsZombie = true;
+                    }
+                }
+                else
+                {
+                    _firstFailTime = DateTime.Now;
+                }
+            }
+            else
+            {
+                // Reset zombie time
+                _firstFailTime = null;
             }
             return ret;
         }
@@ -329,6 +347,11 @@ namespace Lucky.Home.Protocol
                 // Ask for subnodes
                 connection.Write(new GetChildrenMessage());
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
+                if (childNodes == null)
+                {
+                    return false;
+                }
+
                 if (childNodes.Guid != Id)
                 {
                     // ERROR

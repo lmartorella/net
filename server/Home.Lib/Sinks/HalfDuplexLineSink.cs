@@ -33,18 +33,10 @@ namespace Lucky.Home.Sinks
             await Task.Delay(TimeSpan.FromSeconds(0.2));
 
             byte[] data = null;
-            try
+            Read(reader =>
             {
-                Read(reader =>
-                {
-                    data = reader.Read<Response>().RxData;
-                });
-            }
-            catch
-            {
-                return null;
-            }
-
+                data = reader.Read<Response>()?.RxData;
+            });
             return data;
         }
     }

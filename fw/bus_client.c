@@ -102,17 +102,6 @@ void bus_poll()
                     // Received a break char, go idle
                     bus_reinit_after_disengage();
                 }
-                else if (rs485state == RS485_LINE_RX_FRAME_ERR) {
-                    // FERR during socket open causes socket to be broken
-#ifdef DEBUGMODE
-                    printch('F');
-#endif
-                    rs485state = rs485_clearFerr();
-                    // Go idle
-                    // NO! socket is bidirectional, and glitches when TX/RX switch happens!
-                    // bus_reinit_after_disengage();
-                }
-
                 // Else do nothing
                 break;
             case STATE_WAIT_TX:
@@ -125,11 +114,6 @@ void bus_poll()
         }
     }
     else {
-        if (rs485state == RS485_LINE_RX_FRAME_ERR) {
-            // Silently ignore ferr
-            rs485_clearFerr();
-        }
-        
         // Header decode
         BYTE buf;
         if (rs485_readAvail() > 0) {            

@@ -4,6 +4,7 @@
 #include "hardware/tick.h"
 #include "bus.h"
 #include "protocol.h"
+#include "appio.h"
 
 #ifdef HAS_BUS_SERVER
 
@@ -110,6 +111,9 @@ static void bus_registerNewNode() {
             // Ops, no space
             s_busState = BUS_PRIV_STATE_IDLE;
             s_scanIndex = 0;
+            
+            println("Children full");
+            
             return;
         }
     };

@@ -19,9 +19,7 @@ static enum {
     // Channel engaged, trasmitting
     STATUS_TRANSMIT,
     // Channel engaged, wait 1m ticks before freeing channel
-    STATUS_WAIT_FOR_TRANSMIT_END,
-    // ERROR in receive, frame error
-    STATUS_RECEIVE_FERR,
+    STATUS_WAIT_FOR_TRANSMIT_END
 } s_status;
 
 // Circular buffer of 32 (0x20) bytes
@@ -39,6 +37,7 @@ static BYTE* s_readPtr;
 bit rs485_lastRc9;
 bit rs485_skipData;
 static bit s_ferr;
+static bit s_lastrc9;
 
 static TICK_TYPE s_lastTick;
 
@@ -147,16 +146,13 @@ void rs485_interrupt()
             s_ferr = RS485_RCSTA.FERR;
 
             // read data to reset IF and FERR
-            BOOL lastrc9 = RS485_RCSTA.RX9D;
+            s_lastrc9 = RS485_RCSTA.RX9D;
             BYTE data = RS485_RCREG;
             
-            if (s_ferr) {
-                s_status = STATUS_RECEIVE_FERR;
-                // Don't disengage read, only set the flag, in order to not lose next bytes
-            }
+            // if s_ferr don't disengage read, only set the flag, in order to not lose next bytes
             // Only read data (0) if enabled
-            else if (lastrc9 || !rs485_skipData) {
-                rs485_lastRc9 = lastrc9;
+            if (!s_ferr && (s_lastrc9 || !rs485_skipData)) {
+                rs485_lastRc9 = s_lastrc9;
                 *(s_writePtr++) = data;
                 ADJUST_PTR(s_writePtr);
             }
@@ -205,7 +201,6 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     // Reset reader, if in progress
     switch (s_status) {
         case STATUS_RECEIVE:
-        case STATUS_RECEIVE_FERR:
             // Truncate reading
             RS485_RCSTA.CREN = 0;
             RS485_PIE_RCIE = 0;
@@ -287,8 +282,6 @@ static void rs485_startRead()
 
 RS485_STATE rs485_getState() {
     switch (s_status) {
-        case STATUS_RECEIVE_FERR:
-            return RS485_LINE_RX_FRAME_ERR;
         case STATUS_RECEIVE:
             return RS485_LINE_RX;
         case STATUS_WAIT_FOR_TRANSMIT_END:
@@ -299,13 +292,6 @@ RS485_STATE rs485_getState() {
         default:
             return RS485_LINE_TX_DATA;
     }
-}
-
-RS485_STATE rs485_clearFerr() {
-    if (s_status == STATUS_RECEIVE_FERR) {
-        s_status = STATUS_RECEIVE;
-    }
-    return s_status;
 }
 
 void rs485_waitDisengageTime() {
