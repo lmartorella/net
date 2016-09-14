@@ -82,6 +82,12 @@ namespace Lucky.Home.Protocol
                 {
                     return NetSerializer<T>.Read(_reader);
                 }
+                catch (IOException)
+                {
+                    // Destroy the channel
+                    _owner.Abort(_endPoint);
+                    return default(T);
+                }
                 catch (Exception exc)
                 {
                     Logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));

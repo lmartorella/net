@@ -8,6 +8,7 @@
 #include "ip_client.h"
 #include "appio.h"
 #include "audioSink.h"
+#include "halfduplex.h"
 #include "hardware/rs485.h"
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
@@ -26,7 +27,7 @@ void main()
     // Analyze RESET reason
     sys_storeResetReason();
 
-#if defined(HAS_MAX232_SOFTWARE)
+#ifdef HAS_MAX232_SOFTWARE
     max232_init();
 #endif
 
@@ -83,6 +84,12 @@ void main()
             
 #if HAS_VS1011
         audio_pollMp3Player();
+#endif
+        
+#ifdef HAS_MAX232_SOFTWARE
+        if (bus_isIdle()) {
+            halfduplex_poll();
+        }
 #endif
         CLRWDT();
     }

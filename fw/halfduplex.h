@@ -4,9 +4,8 @@
 #include "protocol.h"
 
 void halfduplex_init();
-bit halfduplex_readHandler();
-bit halfduplex_writeHandler();
 extern const Sink g_halfDuplexSink;
+void halfduplex_poll();
 
 #endif	/* XC_HFD_TEMPLATE_H */
 

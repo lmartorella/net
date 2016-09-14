@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
 using Lucky.Services;
+using System.Runtime.CompilerServices;
 
 #pragma warning disable 414
 #pragma warning disable 649
@@ -221,7 +222,7 @@ namespace Lucky.Home.Protocol
             _lastKnownChildren = await Task.WhenAll(addresses.Select(async address => await nodeManager.RegisterUnknownNode(address)));
         }
 
-        private static bool OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler)
+        private static bool OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler, [CallerMemberName] string context = null)
         {
             var tcpConnectionFactory = Manager.GetService<TcpConnectionFactory>();
 
@@ -239,7 +240,10 @@ namespace Lucky.Home.Protocol
                         var ack = connection.Read<CloseMessageResponse>();
                         if (ack == null || ack.Ack != 0x1e)
                         {
-                            throw new InvalidOperationException("Missing CLOS response");
+                            // Forbicly close the channel
+                            tcpConnectionFactory.Abort(address.IPEndPoint);
+                            logger.Log("Missing CLOS response, in " + context);
+                            return false;
                         }
                     }
                     return ret;
@@ -255,7 +259,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private bool OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler)
+        private bool OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler, [CallerMemberName] string context = null)
         {
             if (IsZombie)
             {
@@ -269,7 +273,7 @@ namespace Lucky.Home.Protocol
                 address = Address.Clone();
             }
 
-            var ret = OpenNodeSession(Logger, address, handler);
+            var ret = OpenNodeSession(Logger, address, handler, context);
             if (!ret)
             {
                 if (_firstFailTime.HasValue)
