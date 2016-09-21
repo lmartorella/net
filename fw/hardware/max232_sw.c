@@ -18,9 +18,8 @@ void max232_init() {
     RS232_TCON_REG = RS232_TCON_VALUE; 
 }
 
-#define RESETIF() { RS232_TCON_IF = 0; }
-#define RESETTIMER(t) { RS232_TCON_REG = t; TMR2 = 0; RESETIF() }
-#define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RESETIF() }
+#define RESETTIMER(t) { RS232_TCON_REG = t; RS232_TCON_ACC = 0; RS232_TCON_IF = 0; }
+#define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RS232_TCON_IF = 0; }
 
 void max232_send(int size) {
     INTCONbits.GIE = 0;
@@ -77,7 +76,7 @@ loop:
     while (RS232_RX_PORT) {
         CLRWDT();
         if (RS232_TCON_IF) {
-            RESETIF()
+            RS232_TCON_IF = 0;
             if ((timeoutCount--) == 0) {
                 goto end;
             }
@@ -108,7 +107,7 @@ loop:
     }
 
     // Wait for the stop bit
-    while (!RS232_RX_PORT) CLRWDT();
+    WAITBIT();
     // Now in STOP state
     goto loop;    
     

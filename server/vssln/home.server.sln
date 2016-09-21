@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 14 for Windows Desktop
+# Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server.Lib", "..\Server\Server.Lib.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
@@ -11,6 +11,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Admin.UI", "..\Admin\Admin.UI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Server", "..\Home.Lib\Home.Server.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialEcho", "..\tests\SerialEcho\SerialEcho.csproj", "{9A458FD6-AB22-4794-9654-2E029D99E373}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{F4C20249-D189-40A9-A7C1-18F15025319A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4C20249-D189-40A9-A7C1-18F15025319A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4C20249-D189-40A9-A7C1-18F15025319A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A458FD6-AB22-4794-9654-2E029D99E373}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A458FD6-AB22-4794-9654-2E029D99E373}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A458FD6-AB22-4794-9654-2E029D99E373}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A458FD6-AB22-4794-9654-2E029D99E373}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

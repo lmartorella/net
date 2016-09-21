@@ -1,4 +1,5 @@
 ﻿using Lucky.Home.Sinks;
+using System;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -10,7 +11,7 @@ namespace Lucky.Home.Devices
     public class EchoLineTesterDevice : DeviceBase
     {
         private Timer _timer;
-        private string _lastMessage = "XYZ";
+        private string _lastMessage = "abcdefghijklmnop ";
 
         public EchoLineTesterDevice()
         {
@@ -28,8 +29,8 @@ namespace Lucky.Home.Devices
             var ret = await Sinks.OfType<HalfDuplexLineSink>().First().SendReceive(Encoding.ASCII.GetBytes(_lastMessage));
             if (ret != null)
             {
-                _lastMessage = Encoding.ASCII.GetString(ret);
-                _lastMessage = _lastMessage.ToUpper();
+                Console.WriteLine(Encoding.ASCII.GetString(ret));
+                //_lastMessage = _lastMessage.ToUpper();
             }
         }
     }

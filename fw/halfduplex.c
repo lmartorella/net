@@ -40,10 +40,21 @@ void halfduplex_init()
 void halfduplex_poll()
 {
     if (s_state == ST_READY_TO_COMM) {
+        
+#ifdef DEBUGMODE
+        printch('#');
+        printch('0' + s_count);
+#endif
+        
         // Disable bus. Start read. Blocker.
         s_count = max232_sendReceive(s_count);
         // Resume everything
         s_state = ST_IDLE;
+
+#ifdef DEBUGMODE
+        printch('&');
+        printch('0' + s_count);
+#endif
     }
 }
 
