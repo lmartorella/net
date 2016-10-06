@@ -22,6 +22,9 @@ void max232_init() {
 #define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RS232_TCON_IF = 0; }
 
 void max232_send(int size) {
+    if (size > MAX232_BUFSIZE1 + MAX232_BUFSIZE2) {
+        fatal("UAs.ov");
+    }
     INTCONbits.GIE = 0;
 
     RESETTIMER(RS232_TCON_VALUE)
@@ -67,53 +70,53 @@ int max232_sendReceive(int size) {
     max232_send(size);
     // Now receive
     BYTE* ptr = max232_buffer1;
-    BYTE j, b, i = 0;
-    int timeoutCount;
+    BYTE i = 0;
 
-loop:
-    // Wait for start bit
-    timeoutCount = 480;    // 480 bits = 0.05s
-    while (RS232_RX_PORT) {
-        CLRWDT();
-        if (RS232_TCON_IF) {
-            RS232_TCON_IF = 0;
-            if ((timeoutCount--) == 0) {
-                goto end;
+    while (1) {
+        // Wait for start bit
+        int timeoutCount = 480;    // 480 bits = 0.05s
+        while (RS232_RX_PORT) {
+            CLRWDT();
+            if (RS232_TCON_IF) {
+                RS232_TCON_IF = 0;
+                if ((timeoutCount--) == 0) {
+                    INTCONbits.GIE = 1;
+                    return i;
+                }
             }
         }
-    }
 
-    // Read bits
-    // Sample in the middle
-    RESETTIMER(RS232_TCON_VALUE_HALF)
-    WAITBIT()
-    RESETTIMER(RS232_TCON_VALUE)
-   
-    b = 0;
-    for (j = 0; j < 8; j++) {
+        // Read bits
+        // Sample in the middle
+        RESETTIMER(RS232_TCON_VALUE_HALF)
         WAITBIT()
-        b >>= 1;
-        if (RS232_RX_PORT) {
-            b = b | 0x80;
-        }
-    }
-    *ptr = b;
-    i++;
-    if (i == MAX232_BUFSIZE1) {
-        ptr = max232_buffer2;
-    }
-    else {
-        ptr++;
-    }
+        RESETTIMER(RS232_TCON_VALUE)
 
-    // Wait for the stop bit
-    WAITBIT();
-    // Now in STOP state
-    goto loop;    
-    
-end:
-    INTCONbits.GIE = 1;
-    return i;
+        BYTE b = 0;
+        for (BYTE j = 0; j < 8; j++) {
+            WAITBIT()
+            b >>= 1;
+            if (RS232_RX_PORT) {
+                b = b | 0x80;
+            }
+        }
+        *ptr = b;
+        i++;
+        if (i == MAX232_BUFSIZE1) {
+            ptr = max232_buffer2;
+        }
+        else if (i == MAX232_BUFSIZE1) {
+            // Buffer overflow
+            fatal("UAr.ov");
+        }
+        else {
+            ptr++;
+        }
+
+        // Wait for the stop bit
+        WAITBIT();
+        // Now in STOP state
+    }   
 }
         
 #endif

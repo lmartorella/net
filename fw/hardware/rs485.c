@@ -22,12 +22,9 @@ static enum {
     STATUS_WAIT_FOR_TRANSMIT_END
 } s_status;
 
-// Circular buffer of 32 (0x20) bytes
-#define BUFFER_SIZE 32
+#define ADJUST_PTR(x) while (x >= (s_buffer + RS485_BUF_SIZE)) x-= RS485_BUF_SIZE
 
-#define ADJUST_PTR(x) while (x >= (s_buffer + BUFFER_SIZE)) x-= BUFFER_SIZE
-
-static BYTE s_buffer[BUFFER_SIZE];
+static BYTE s_buffer[RS485_BUF_SIZE];
 // Pointer of the writing head
 static BYTE* s_writePtr;
 // Pointer of the reading head (if = write ptr, no bytes avail)
@@ -81,18 +78,18 @@ void rs485_init()
 
 static BYTE _rs485_readAvail()
 {
-    return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % BUFFER_SIZE);
+    return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % RS485_BUF_SIZE);
 }
 
 static BYTE _rs485_writeAvail()
 {
-    return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % BUFFER_SIZE);
+    return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % RS485_BUF_SIZE);
 }
 
 BYTE rs485_readAvail()
 {
     if (s_status == STATUS_RECEIVE) {
-        return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % BUFFER_SIZE);
+        return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % RS485_BUF_SIZE);
     }
     else {
         return 0;
@@ -102,7 +99,7 @@ BYTE rs485_readAvail()
 BYTE rs485_writeAvail()
 {
     if (s_status == STATUS_TRANSMIT) {
-        return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % BUFFER_SIZE);
+        return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % RS485_BUF_SIZE);
     }
     else {
         return 0;

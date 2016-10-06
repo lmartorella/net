@@ -76,6 +76,7 @@
 // RS485: use USART1 on 18F87J60 (PORTG)
 // ******
 #define HAS_RS485
+#define RS485_BUF_SIZE 64
 #define RS485_RCSTA RCSTA1bits
 #define RS485_TXSTA TXSTA1bits
 #define RS485_TXREG TXREG1
