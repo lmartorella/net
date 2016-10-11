@@ -3,12 +3,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using Lucky.Home.Admin;
 using Lucky.Home.Devices;
-using Lucky.IO;
 
 // ReSharper disable RedundantArgumentDefaultValue
 
@@ -18,7 +16,7 @@ namespace Lucky.Home
     {
         private readonly TcpClient _client;
         private bool _connected;
-        private readonly AdminInterface _adminInterface;
+        private readonly AdminClient _adminInterface;
 
         public Connection(Action connectedHandler)
         {
@@ -26,7 +24,7 @@ namespace Lucky.Home
             Devices = new ObservableCollection<UiDevice>();
 
             Connected = false;
-            _adminInterface = new AdminInterface(this);
+            _adminInterface = new AdminClient(() => _client.GetStream(), () => Connected = false);
             _client = new TcpClient();
             Connect(connectedHandler);
         }
@@ -136,88 +134,6 @@ namespace Lucky.Home
                 Arguments = arguments
             };
             return await _adminInterface.CreateDevice(descriptor);
-        }
-
-        private class AdminInterface : IAdminInterface
-        {
-            private readonly Connection _connection;
-            private MessageChannel _channel;
-
-            public AdminInterface(Connection connection)
-            {
-                _connection = connection;
-            }
-
-            private async Task<object> Request([CallerMemberName] string methodName = null, params object[] arguments)
-            {
-                MessageRequest request = new MessageRequest { Method = methodName, Arguments = arguments };
-                try
-                {
-                    using (_channel = new MessageChannel(_connection._client.GetStream()))
-                    {
-                        await Send(request);
-                        return (await Receive()).Value;
-                    }
-                }
-                catch (Exception)
-                {
-                    _connection.Connected = false;
-                    return null;
-                }
-            }
-
-            private async Task Send(MessageRequest message)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    MessageRequest.DataContractSerializer.WriteObject(ms, message);
-                    ms.Flush();
-                    await _channel.WriteMessage(ms.ToArray());
-                }
-            }
-
-            private async Task<MessageResponse> Receive()
-            {
-                var buffer = await _channel.ReadMessage();
-                if (buffer == null)
-                {
-                    return null;
-                }
-                using (var ms = new MemoryStream(buffer))
-                {
-                    return (MessageResponse)MessageResponse.DataContractSerializer.ReadObject(ms);
-                }
-            }
-
-            public async Task<Node[]> GetTopology()
-            {
-                return (Node[]) await Request();
-            }
-
-            public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
-            {
-                return (DeviceTypeDescriptor[])await Request();
-            }
-
-            public async Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId)
-            {
-                return (bool) await Request("RenameNode", nodeAddress, oldId, newId);
-            }
-
-            public async Task<string> CreateDevice(DeviceDescriptor descriptor)
-            {
-                return (string)await Request("CreateDevice", descriptor);
-            }
-
-            public async Task<DeviceDescriptor[]> GetDevices()
-            {
-                return (DeviceDescriptor[])await Request();
-            }
-
-            public async Task DeleteDevice(Guid id)
-            {
-                await Request("DeleteDevice", id);
-            }
         }
 
         public event EventHandler NodeSelectionChanged;

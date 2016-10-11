@@ -14,7 +14,7 @@ namespace Lucky.Home.Admin
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;
-        private readonly AdminInterface _adminInterface = new AdminInterface();
+        private readonly AdminServer _adminInterface = new AdminServer();
 
         public AdminListener()
         {

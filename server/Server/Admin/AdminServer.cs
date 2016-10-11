@@ -8,11 +8,11 @@ using Lucky.Services;
 
 namespace Lucky.Home.Admin
 {
-    class AdminInterface : IAdminInterface
+    class AdminServer : IAdminInterface
     {
         private readonly INodeManager _manager;
 
-        public AdminInterface()
+        public AdminServer()
         {
             _manager = Manager.GetService<NodeManager>();
         }

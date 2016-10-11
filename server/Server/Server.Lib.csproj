@@ -45,7 +45,8 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin\AdminInterface.cs" />
+    <Compile Include="Admin\AdminClient.cs" />
+    <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
     <Compile Include="AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
