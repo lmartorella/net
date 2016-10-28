@@ -14,29 +14,43 @@ const Sink g_displaySink = { { "LINE" },
                              &writeHandler
 };
 
+static BYTE s_buf[CM1602_COL_COUNT];
+static WORD s_length;
+static BYTE s_pos;
+static enum {
+    STATE_NONE,
+    STATE_LEN_READY,
+} s_state = STATE_NONE;
+
 static bit readHandler()
 {
-    // TODO: Only single packet messages are supported
-    WORD length, toSkip = 0;
-    BYTE buf[CM1602_COL_COUNT];
-    prot_control_readW(&length);
-    if (length >= CM1602_COL_COUNT)
-    {
-        toSkip = length - (CM1602_COL_COUNT - 1);
-        length = CM1602_COL_COUNT - 1;
+    if (s_state == STATE_NONE) {
+        if (prot_control_readAvail() < 2) {
+            // Continue write
+            return 1;
+        }
+        prot_control_readW(&s_length);
+        s_pos = 0;
+        s_state = STATE_LEN_READY;
     }
-    // Read char to display
-    prot_control_read(buf, length);
-    // Skip the others
-    while (toSkip > 0)
-    {
-        prot_control_read(buf + (CM1602_COL_COUNT - 1), 1);
-        toSkip--;
+    
+    while (s_length > 0) {
+        if (prot_control_readAvail() == 0) {
+            // Continue
+            return 1;
+        }      
+        
+        // Else read
+        prot_control_read(s_buf + s_pos, 1);
+        s_pos++;
+        s_length--;
     }
-    buf[length] = '\0';
-    // Write it
-    printlnUp(buf);
-    return FALSE;
+
+    // Done
+    s_state = STATE_NONE;
+    s_buf[s_pos] = 0;
+    printlnUp(s_buf);
+    return 0;
 }
 
 static bit writeHandler()
