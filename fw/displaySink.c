@@ -42,9 +42,12 @@ static bit readHandler()
 static bit writeHandler()
 {
     // Num of lines
-   prot_control_writeW(CM1602_LINE_COUNT - 1);
+    WORD l = CM1602_LINE_COUNT - 1;
+    prot_control_writeW(l);
+
     // Num of columns
-   prot_control_writeW(CM1602_COL_COUNT - 1);
+    l = CM1602_COL_COUNT - 1;
+    prot_control_writeW(l);
 
    // Done
    return FALSE;

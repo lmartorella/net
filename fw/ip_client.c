@@ -7,10 +7,13 @@
 #include "ip_client.h"
 #include "persistence.h"
 
-#ifdef HAS_IP
+#if defined(_IS_ETH_CARD) || defined(HAS_IP)
 #include "Compiler.h"
 #include "TCPIPStack/TCPIP.h"
+APP_CONFIG AppConfig;
+#endif
 
+#ifdef HAS_IP
 #define SERVER_CONTROL_UDP_PORT 17007
 #define CLIENT_TCP_PORT 20000
 
@@ -19,8 +22,6 @@ static UDP_SOCKET s_heloSocket;
 // TCP lister control socket
 static TCP_SOCKET s_controlSocket;
 static bit s_started = FALSE;
-
-APP_CONFIG AppConfig;
 
 /*
 	HOME request

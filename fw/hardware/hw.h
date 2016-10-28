@@ -17,6 +17,10 @@
 #include "fuses_solar_bean.h"
 #define _IS_PIC16F628_CARD
 
+#elif defined(_CONF_TEST_ETH_CARD_SLAVE)
+#include "fuses_test_eth_card_slave.h"
+#define _IS_ETH_CARD
+
 #else
 #error Missing configuration
 #endif
