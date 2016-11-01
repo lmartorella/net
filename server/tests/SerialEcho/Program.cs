@@ -8,10 +8,10 @@ namespace SerialEcho
     {
         static void Main(string[] args)
         {
-            var port = new SerialPort("COM1", 9600, Parity.None, 8, StopBits.One);
+            var port = new SerialPort(args[0], 9600, Parity.None, 8, StopBits.One);
             port.ReceivedBytesThreshold = 1;
             port.Encoding = Encoding.ASCII;
-            port.NewLine = " ";
+            port.NewLine = "$";
             port.Open();
 
             do

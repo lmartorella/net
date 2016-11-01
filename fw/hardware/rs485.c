@@ -76,20 +76,13 @@ void rs485_init()
     rs485_startRead();
 }
 
-static BYTE _rs485_readAvail()
-{
-    return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % RS485_BUF_SIZE);
-}
-
-static BYTE _rs485_writeAvail()
-{
-    return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % RS485_BUF_SIZE);
-}
+#define _rs485_readAvail() ((BYTE)(((BYTE)(s_writePtr - s_readPtr)) % RS485_BUF_SIZE))
+#define _rs485_writeAvail() ((BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % RS485_BUF_SIZE))
 
 BYTE rs485_readAvail()
 {
     if (s_status == STATUS_RECEIVE) {
-        return (BYTE)(((BYTE)(s_writePtr - s_readPtr)) % RS485_BUF_SIZE);
+        return _rs485_readAvail();
     }
     else {
         return 0;
@@ -98,11 +91,12 @@ BYTE rs485_readAvail()
 
 BYTE rs485_writeAvail()
 {
-    if (s_status == STATUS_TRANSMIT) {
-        return (BYTE)(((BYTE)(s_readPtr - s_writePtr - 1)) % RS485_BUF_SIZE);
+    if (s_status != STATUS_RECEIVE) {
+        return _rs485_writeAvail();
     }
     else {
-        return 0;
+        // Can switch to TX and have full buffer
+        return RS485_BUF_SIZE - 1;
     }
 }
 
@@ -196,19 +190,17 @@ void rs485_poll()
 void rs485_write(BOOL address, const BYTE* data, BYTE size)
 { 
     // Reset reader, if in progress
-    switch (s_status) {
-        case STATUS_RECEIVE:
-            // Truncate reading
-            RS485_RCSTA.CREN = 0;
-            RS485_PIE_RCIE = 0;
-            s_readPtr = s_writePtr = s_buffer;
+    if (s_status == STATUS_RECEIVE) {
+        // Truncate reading
+        RS485_RCSTA.CREN = 0;
+        RS485_PIE_RCIE = 0;
+        s_readPtr = s_writePtr = s_buffer;
 
-            // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
-            RS485_TXSTA.TXEN = 1;
+        // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
+        RS485_TXSTA.TXEN = 1;
 
-            s_status = STATUS_WAIT_FOR_ENGAGE;
-            s_lastTick = TickGet();
-            break;
+        s_status = STATUS_WAIT_FOR_ENGAGE;
+        s_lastTick = TickGet();
     }
 
     BOOL ie = RS485_PIE_TXIE;

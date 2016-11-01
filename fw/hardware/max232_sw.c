@@ -1,8 +1,12 @@
 #include "../pch.h"
 #include "max232.h"
 #include "../bus.h"
+#include "leds.h"
 
 #ifdef HAS_MAX232_SOFTWARE
+
+// Debug when RS232 RX line is sampled
+#define TIMING_DEBUG
 
 BYTE max232_buffer1[MAX232_BUFSIZE1];
 BYTE max232_buffer2[MAX232_BUFSIZE2];
@@ -96,9 +100,16 @@ int max232_sendReceive(int size) {
         for (BYTE j = 0; j < 8; j++) {
             WAITBIT()
             b >>= 1;
+
             if (RS232_RX_PORT) {
                 b = b | 0x80;
             }
+            
+#ifdef TIMING_DEBUG
+            led_on();
+            __delay_us(10); // 10% of the wave
+            led_off();
+#endif
         }
         *ptr = b;
         i++;

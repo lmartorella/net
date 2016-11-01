@@ -270,17 +270,25 @@ static void bus_socketCreate()
 static void bus_socketPoll() 
 {
     // Bus line is slow, though
-    BYTE buffer[8];
+    BYTE buffer[RS485_BUF_SIZE / 2];
             
     // Data from IP?
     WORD rx = prot_control_readAvail();
     if (rx > 0) {
         // Read data and push it into the line
-        rx = rx > sizeof(buffer) ? sizeof(buffer) : rx;
-        prot_control_read(buffer, rx);
-        
-        rs485_write(FALSE, buffer, rx);
-        s_lastTime = TickGet();
+        if (rx > sizeof(buffer)) {
+            rx = sizeof(buffer);
+        }
+        BYTE av = rs485_writeAvail();
+        if (rx > av) {
+            rx = av;
+        }
+        // Transfer rx bytes
+        if (rx > 0) {
+            prot_control_read(buffer, rx);
+            rs485_write(FALSE, buffer, rx);
+            s_lastTime = TickGet();
+        }
     }
     else {
         // Rx mode
