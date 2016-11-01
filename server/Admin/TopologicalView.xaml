@@ -10,6 +10,7 @@
                 <ContextMenu>
                     <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />
                     <MenuItem Command="{Binding CreateDeviceCommand}" Header="Create device..." />
+                    <MenuItem Command="{Binding ResetCommand}" Header="Reset" />
                 </ContextMenu>
             </TreeView.ContextMenu>
             <TreeView.Resources>

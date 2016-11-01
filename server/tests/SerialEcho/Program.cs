@@ -13,12 +13,15 @@ namespace SerialEcho
             port.Encoding = Encoding.ASCII;
             port.NewLine = "$";
             port.Open();
+            port.WriteTimeout = SerialPort.InfiniteTimeout;
 
             do
             {
-                var str = port.ReadLine();
-                port.WriteLine(str.ToUpper());
-                Console.WriteLine("Received: " + str);
+                var rx = port.ReadLine();
+                var tx = rx.ToUpper();
+                port.WriteLine(tx);
+                Console.WriteLine("RX  <- {0} ({1}+1 chars)", rx, rx.Length);
+                Console.WriteLine(" TX <- " + tx);
             } while (true);
         }
     }

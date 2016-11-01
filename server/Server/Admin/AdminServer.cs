@@ -49,6 +49,15 @@ namespace Lucky.Home.Admin
             }
         }
 
+        public async Task ResetNode(string nodeAddress)
+        {
+            ITcpNode node = _manager.FindNode(TcpNodeAddress.Parse(nodeAddress));
+            if (node != null)
+            {
+                await node.Sink<SystemSink>().Reset();
+            }
+        }
+
         public Task<string> CreateDevice(DeviceDescriptor descriptor)
         {
             string err = null;

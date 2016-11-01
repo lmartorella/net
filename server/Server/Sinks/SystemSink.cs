@@ -34,6 +34,12 @@ namespace Lucky.Home.Sinks
             }
         }
 
+        private enum SysCommand : byte
+        {
+            Reset = 1,
+            ClearResetReason
+        }
+
         private NodeStatus GetBootStatus()
         {
             NodeStatus status = new NodeStatus();
@@ -69,9 +75,17 @@ namespace Lucky.Home.Sinks
 
             Write(writer =>
             {
-                // Write none. Reset the reset reason to NONE
+                writer.Write(SysCommand.ClearResetReason);
             });
             return status;
+        }
+
+        public async Task Reset()
+        {
+            Write(writer =>
+            {
+                writer.Write(SysCommand.Reset);
+            });
         }
     }
 }

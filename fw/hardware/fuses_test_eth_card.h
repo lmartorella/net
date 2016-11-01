@@ -14,6 +14,8 @@
 #define SYSTEM_CLOCK 25000000ull
 #define PRIO_TYPE low_priority
 
+#undef DEBUGMODE
+
 // ******* 
 // DISPLAY
 // Uses PORTE, 0, 2-7
@@ -85,7 +87,8 @@
 // ******
 // IP: uses PORTA0,1 (leds)
 // ******
-#define HAS_IP
+#undef HAS_IP
+// This causes the card to become a bus slave
 
 // ******
 // IO: uses PORTC and PORTF full

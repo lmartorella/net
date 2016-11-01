@@ -136,6 +136,11 @@ namespace Lucky.Home
             return await _adminInterface.CreateDevice(descriptor);
         }
 
+        public async Task ResetNode(Node node)
+        {
+            await _adminInterface.ResetNode(node.Address);
+        }
+
         public event EventHandler NodeSelectionChanged;
     }
 }

@@ -30,7 +30,7 @@
 #define RS232_TCON_IF PIR1bits.TMR2IF
 #define RS232_TCON_ACC TMR2
 #define RS232_TCON_VALUE ((SYSTEM_CLOCK/4) / 9600)   // 104
-#define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4) / 9600 / 2)  // 52
+#define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4) / 9600 / 2 - 38)  // 52-38. 38 Here is the result of checking with oscilloscope the exact poll point
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)

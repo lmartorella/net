@@ -500,7 +500,7 @@ namespace Lucky.Home.Protocol
             return success;
         }
 
-        public bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler)
+        public bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler, [CallerMemberName] string context = "")
         {
             return OpenNodeSession((connection, address) =>
             {
@@ -510,7 +510,7 @@ namespace Lucky.Home.Protocol
                 // Returns when done, and the protocol should leave the channel clean
                 writeHandler(connection);
                 return true;
-            });
+            }, "WriteToSink:" + context);
         }
 
         public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)

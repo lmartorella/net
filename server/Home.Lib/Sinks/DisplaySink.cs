@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Lucky.Home.Serialization;
+using System.Threading.Tasks;
 
 #pragma warning disable 414
 #pragma warning disable 649
@@ -19,11 +20,23 @@ namespace Lucky.Home.Sinks
         protected override void OnInitialize()
         {
             base.OnInitialize();
+            Init();
+        }
+
+        private void Init()
+        { 
             Read(reader =>
             {
                 var metadata = reader.Read<ReadCapMessageResponse>();
-                LineCount = metadata.LineCount;
-                CharCount = metadata.CharCount;
+                if (metadata != null)
+                {
+                    LineCount = metadata.LineCount;
+                    CharCount = metadata.CharCount;
+                }
+                else
+                {
+                    Task.Delay(1000).ContinueWith(o => { Init(); });
+                }
             });
         }
 

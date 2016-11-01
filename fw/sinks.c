@@ -62,10 +62,29 @@ const TWOCC ResetCode = "RS";
 const TWOCC ExceptionText = "EX";
 const TWOCC EndOfMetadataText = "EN";
 
+enum SYSSINK_CMD {
+    SYSSINK_CMD_RESET = 1,
+    SYSSINK_CMD_CLRRST = 2,
+};
+
 static bit sysSink_receive()
 {
-    // Reset reset reason
-    g_resetReason = RESET_NONE;
+    if (prot_control_readAvail() < 1) {
+        // Wait cmd
+        return 1;
+    }
+    BYTE cmd;
+    prot_control_read(&cmd, 1);
+    switch (cmd) {
+        case SYSSINK_CMD_RESET:
+            // Reset device
+            RESET();
+            break;
+        case SYSSINK_CMD_CLRRST:
+            // Reset reset reason
+            g_resetReason = RESET_NONE;
+            break;
+    }
     // No more data
     return FALSE;
 }

@@ -11,7 +11,8 @@ namespace Lucky.Home.Devices
     public class EchoLineTesterDevice : DeviceBase
     {
         private Timer _timer;
-        private string _lastMessage = "abcdefghijklmnopqrstuvwxyz0123456789-=-=abcdef012345,.,.@@@$"; // 60 chars
+        //private string _lastMessage = "abcdefghijklmnopqrstuvwxyz0123456789-=-=abcdef012345,.,.@@@$"; // 60 chars
+        private string _lastMessage = "abcdefghijkZ$"; 
 
         public EchoLineTesterDevice()
         {
@@ -29,7 +30,7 @@ namespace Lucky.Home.Devices
             var ret = await Sinks.OfType<HalfDuplexLineSink>().First().SendReceive(Encoding.ASCII.GetBytes(_lastMessage));
             if (ret != null)
             {
-                Console.WriteLine(Encoding.ASCII.GetString(ret));
+                Console.WriteLine("ECHO: RX  <- {0} ({1} bytes)", Encoding.ASCII.GetString(ret), ret.Length);
                 //_lastMessage = _lastMessage.ToUpper();
             }
         }

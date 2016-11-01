@@ -53,9 +53,26 @@ static bit isChildKnown(signed char i)
     return (s_childKnown[i / 8] & (1 << (i % 8))) != 0;
 }
 
+static BYTE countChildren()
+{
+    BYTE count = 0;
+    for (BYTE i = 0; i < sizeof(s_childKnown); i++) {
+        BYTE d = s_childKnown[i];
+        while(d) {
+            count += (d & 1);
+            d >>= 1;
+        }
+    }
+    return count;
+}
+
 static void setChildKnown(signed char i)
 {
     s_childKnown[i / 8] |= (1 << (i % 8));
+    
+    char msg[16];
+    sprintf(msg, "%u nodes", countChildren());
+    println(msg);
 }
 
 void bus_init()

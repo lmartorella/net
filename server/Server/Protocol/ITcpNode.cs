@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Lucky.Home.Sinks;
+using System.Runtime.CompilerServices;
 
 namespace Lucky.Home.Protocol
 {
@@ -34,7 +35,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Open sink communication for write
         /// </summary>
-        bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler);
+        bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler, [CallerMemberName] string context = "");
 
         /// <summary>
         /// Open sink communication for read

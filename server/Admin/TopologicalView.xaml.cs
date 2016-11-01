@@ -35,6 +35,15 @@ namespace Lucky.Home
             set { SetValue(RenameCommandProperty, value); }
         }
 
+        public static readonly DependencyProperty ResetCommandProperty = DependencyProperty.Register(
+            "ResetCommand", typeof(UiCommand), typeof(TopologicalView), new PropertyMetadata(default(ICommand)));
+
+        public UiCommand ResetCommand
+        {
+            get { return (UiCommand)GetValue(ResetCommandProperty); }
+            set { SetValue(ResetCommandProperty, value); }
+        }
+
         public static readonly DependencyProperty CreateDeviceCommandProperty = DependencyProperty.Register(
             "CreateDeviceCommand", typeof (UiCommand), typeof (TopologicalView), new PropertyMetadata(default(UiCommand)));
 
@@ -58,6 +67,14 @@ namespace Lucky.Home
                     RenameCommand.RaiseCanExecuteChanged();
                 }
             }, () => SelectedUiNode != null && !SelectedUiNode.InRename);
+
+            ResetCommand = new UiCommand(async () =>
+            {
+                if (SelectedUiNode != null)
+                {
+                    await TcpConnection.ResetNode(SelectedUiNode.Node);
+                }
+            }, () => SelectedUiNode != null);
 
             CreateDeviceCommand = new UiCommand(() =>
             {

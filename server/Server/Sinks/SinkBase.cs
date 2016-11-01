@@ -2,6 +2,7 @@
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Services;
+using System.Runtime.CompilerServices;
 
 namespace Lucky.Home.Sinks
 {
@@ -74,11 +75,11 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        protected bool Write(Action<IConnectionWriter> writeHandler)
+        protected bool Write(Action<IConnectionWriter> writeHandler, [CallerMemberName] string context = "")
         {
             if (Node != null)
             {
-                return Node.WriteToSink(_index, writeHandler);
+                return Node.WriteToSink(_index, writeHandler, context);
             }
             else
             {

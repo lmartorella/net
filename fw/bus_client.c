@@ -63,12 +63,12 @@ void bus_init()
         // Reset address
         data.address = UNASSIGNED_SUB_ADDRESS;       
         boot_updateUserData(&data);
-        led_on();
         s_availForAddressAssign = TRUE;
     } 
-    else if (data.address == UNASSIGNED_SUB_ADDRESS) {
+
+    if (data.address == UNASSIGNED_SUB_ADDRESS) {
+        // Signal unattended client, but doesn't auto-assign to avoid line clash at multiple boot
         led_on();
-        s_availForAddressAssign = TRUE;
     }
 
     s_header[2] = data.address;
