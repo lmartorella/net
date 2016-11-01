@@ -40,6 +40,10 @@ void prot_init()
     
     s_commandToRun = -1;
     s_inWriteSink = s_inReadSink = -1;
+
+#ifdef DEBUGMODE
+    println('K');
+#endif
 }
 
 static void CLOS_command()

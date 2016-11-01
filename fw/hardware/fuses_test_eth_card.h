@@ -14,7 +14,7 @@
 #define SYSTEM_CLOCK 25000000ull
 #define PRIO_TYPE low_priority
 
-#undef DEBUGMODE
+#define DEBUGMODE
 
 // ******* 
 // DISPLAY
@@ -113,7 +113,7 @@
 #define RS485_TRIS_RX TRISGbits.RG2
 #define RS485_TRIS_EN TRISGbits.RG0
 #define RS485_PORT_EN PORTGbits.RG0
-#define RS485_BAUD 19200
+#define RS485_BAUD 9600
 #define RS485_INIT_BAUD() \
     TXSTA2bits.BRGH = 1;\
     BAUDCON2bits.BRG16 = 0;\

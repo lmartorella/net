@@ -12,7 +12,7 @@ namespace Lucky.Home.Devices
     {
         private Timer _timer;
         //private string _lastMessage = "abcdefghijklmnopqrstuvwxyz0123456789-=-=abcdef012345,.,.@@@$"; // 60 chars
-        private string _lastMessage = "abcdefghijkZ$"; 
+        private string _lastMessage = "abc123$"; 
 
         public EchoLineTesterDevice()
         {

@@ -50,7 +50,7 @@
 #define RS485_TRIS_RX TRISBbits.TRISB1
 #define RS485_TRIS_EN TRISBbits.TRISB0
 #define RS485_PORT_EN PORTBbits.RB0
-#define RS485_BAUD 19200
+#define RS485_BAUD 9600
 #define RS485_INIT_BAUD() \
     TXSTAbits.BRGH = 1;\
     SPBRG = 12
