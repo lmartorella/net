@@ -43,11 +43,13 @@ void halfduplex_poll()
         
 #ifdef DEBUGMODE
         printch('#');
-        printch('0' + s_count);
-#endif
-        
+        printch('0' + (s_count / 10));
+        printch('0' + (s_count % 10));
+        // Echo back same data
+#else
         // Disable bus. Start read. Blocker.
         s_count = max232_sendReceive(s_count);
+#endif
         // Resume everything
         s_state = ST_IDLE;
 
@@ -97,6 +99,9 @@ static bit halfduplex_readHandler()
     else {
         // Else data OK
         s_state = ST_READY_TO_COMM;
+#ifdef DEBUGMODE
+        printch('@');
+#endif
         // Stop data
         return 0;
     }

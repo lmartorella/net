@@ -236,13 +236,14 @@ namespace Lucky.Home.Protocol
                     var ret = handler(connection, address);
                     if (ret)
                     {
+                        DateTime dt = DateTime.Now;
                         connection.Write(new CloseMessage());
                         var ack = connection.Read<CloseMessageResponse>();
                         if (ack == null || ack.Ack != 0x1e)
                         {
                             // Forbicly close the channel
                             tcpConnectionFactory.Abort(address.IPEndPoint);
-                            logger.Log("Missing CLOS response, in " + context);
+                            logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
                             return false;
                         }
                     }

@@ -32,7 +32,9 @@ namespace Lucky.Home.Protocol
                 _owner = owner;
                 _tcpClient = new TcpClient();
                 _tcpClient.Connect(endPoint);
-                _tcpClient.NoDelay = true;
+                //_tcpClient.NoDelay = true;  // Setting this to true will send single chars in Serializer loops...
+                _tcpClient.SendTimeout = 1;
+                _tcpClient.ReceiveTimeout = 1;
 
                 _stream = _tcpClient.GetStream();
 #if DEBUG
@@ -44,12 +46,17 @@ namespace Lucky.Home.Protocol
                 _writer = new BinaryWriter(_stream);
             }
 
+            private void Flush()
+            {
+                _writer.Flush();
+                _stream.Flush();
+            }
+
             public void Close()
             {
                 if (_tcpClient != null)
                 {
-                    _writer.Flush();
-                    _stream.Flush();
+                    Flush();
                     _reader.Close();
                     _tcpClient = null;
                 }
@@ -60,7 +67,7 @@ namespace Lucky.Home.Protocol
                 try
                 {
                     NetSerializer<T>.Write(data, _writer);
-                    _writer.Flush();
+                    Flush();
                 }
                 catch (Exception exc)
                 {
@@ -73,7 +80,7 @@ namespace Lucky.Home.Protocol
             public void WriteBytes(byte[] data)
             {
                 _writer.Write(data, 0, data.Length);
-                _writer.Flush();
+                Flush();
             }
 
             public T Read<T>()
