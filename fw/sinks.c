@@ -78,7 +78,7 @@ static bit sysSink_receive()
     switch (cmd) {
         case SYSSINK_CMD_RESET:
             // Reset device
-            RESET();
+            fatal("RST");
             break;
         case SYSSINK_CMD_CLRRST:
             // Reset reset reason

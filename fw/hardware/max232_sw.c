@@ -25,6 +25,22 @@ void max232_init() {
 #define RESETTIMER(t) { RS232_TCON_REG = t; RS232_TCON_ACC = 0; RS232_TCON_IF = 0; }
 #define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RS232_TCON_IF = 0; }
 
+static void send(BYTE b) {
+    // Write a idle bit
+    WAITBIT()
+    // Write a START bit
+    RS232_TX_PORT = 0;
+    for (BYTE j = 0; j < 8; j++) {
+        // Cycle bits
+        WAITBIT()
+        RS232_TX_PORT = b & 0x1;
+        b >>= 1;
+    }
+    // Write a STOP bit
+    WAITBIT()
+    RS232_TX_PORT = 1;
+}
+
 void max232_send(int size) {
     if (size > MAX232_BUFSIZE1 + MAX232_BUFSIZE2) {
         fatal("UAs.ov");
@@ -33,28 +49,12 @@ void max232_send(int size) {
 
     RESETTIMER(RS232_TCON_VALUE)
     RS232_TCON = RS232_TCON_ON;
-
-    BYTE j, b, i;
+    WAITBIT()
     
     BYTE* ptr = max232_buffer1;
-    WAITBIT()
-    for (i = 0; i < size; i++) {
-        // Write a idle bit
-        WAITBIT()
-        // Write a START bit
-        RS232_TX_PORT = 0;
-        b = *ptr;
-        for (j = 0; j < 8; j++) {
-            // Cycle bits
-            WAITBIT()
-            RS232_TX_PORT = b & 0x1;
-            b >>= 1;
-        }
-        // Write a STOP bit
-        WAITBIT()
-        RS232_TX_PORT = 1;
-        
-        if (i == MAX232_BUFSIZE1) {
+    for (BYTE i = 0; i < size; i++) {
+        send(*ptr);
+        if (i == MAX232_BUFSIZE1 - 1) {
             ptr = max232_buffer2;
         }
         else {

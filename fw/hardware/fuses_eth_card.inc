@@ -107,16 +107,19 @@ void sys_storeResetReason()
 	g_resetReason = RESET_EXC;
 	g_lastException = *(const char**)(&g_exception[0]);
 	g_exception[0] = g_exception[1] = g_exception[2] = 0;
+	RCONbits.NOT_RI = 1;
     }
     else if (!RCONbits.NOT_POR)
     {
 	// Normal Power-on startup. Ok.
 	g_resetReason = RESET_POWER;
+	RCONbits.NOT_POR = 1;
     }
     else if (!RCONbits.NOT_BOR)
     {
 	// Brown-out reset. Low voltage.
 	g_resetReason = RESET_BROWNOUT;
+	RCONbits.NOT_BOR = 1;
     }
 /*
     else if (!RCONbits.NOT_CM)
@@ -129,19 +132,21 @@ void sys_storeResetReason()
     {
 	// Watchdog reset. Loop detected.
 	g_resetReason = RESET_WATCHDOG;
+	RCONbits.NOT_TO = 1;
     }
     else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
     {
 	// Stack underrun/overrun reset. 
 	g_resetReason = RESET_STACKFAIL;
+	STKPTRbits.STKFUL = 0;
+	STKPTRbits.STKUNF = 0;
     }
     else
     {
 	// Else it was reset manually (MCLR)
 	g_resetReason = RESET_MCLR;
     }
-    RCON = RCON | 0x33;	// reset all flags
-    STKPTRbits.STKFUL = STKPTRbits.STKUNF = 0;
+    CLRWDT();
 }
 
 // Long (callable) version of fatal

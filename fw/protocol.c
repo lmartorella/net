@@ -42,7 +42,7 @@ void prot_init()
     s_inWriteSink = s_inReadSink = -1;
 
 #ifdef DEBUGMODE
-    println('K');
+    println("K");
 #endif
 }
 
