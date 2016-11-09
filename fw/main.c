@@ -9,6 +9,7 @@
 #include "appio.h"
 #include "audioSink.h"
 #include "halfduplex.h"
+#include "dcf77.h"
 #include "hardware/rs485.h"
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
@@ -61,6 +62,10 @@ void main()
 #ifdef HAS_DIGIO
     digio_init();
 #endif
+
+#ifdef HAS_DCF77
+    dcf77_init();
+#endif
     
 #ifdef BUSPOWER_PORT
     // Enable bus power to slaves
@@ -84,6 +89,10 @@ void main()
             
 #if HAS_VS1011
         audio_pollMp3Player();
+#endif
+
+#ifdef HAS_DCF77
+        dcf77_poll();
 #endif
         
 #ifdef HAS_MAX232_SOFTWARE

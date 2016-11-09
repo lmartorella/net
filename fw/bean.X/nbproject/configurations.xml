@@ -68,6 +68,7 @@
       <itemPath>../ip_client.h</itemPath>
       <itemPath>../bus.h</itemPath>
       <itemPath>../halfduplex.h</itemPath>
+      <itemPath>../dcf77.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -115,6 +116,7 @@
       <itemPath>../bus_client.c</itemPath>
       <itemPath>../lib8.c</itemPath>
       <itemPath>../halfduplex.c</itemPath>
+      <itemPath>../dcf77.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

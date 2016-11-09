@@ -1,6 +1,9 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
+// Reset the device with fatal error
+void fatal(const char* msg);
+
 // ==== TEST ETH CARD wireframe
 
 // PORTA: 0/5, Digital and analog. RA0/RA1 used by ethernet leds
@@ -147,8 +150,11 @@
 #endif
 #endif
 
-// Reset the device with fatal error
-void fatal(const char* msg);
+#define HAS_DCF77
+#define DCF77_IN_TRIS TRISDbits.RD1
+#define DCF77_EN_TRIS TRISDbits.RD0
+#define DCF77_IN_PORT PORTDbits.RD1
+#define DCF77_EN_PORT PORTDbits.RD0
 
 #endif
 
