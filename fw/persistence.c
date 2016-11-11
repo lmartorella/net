@@ -4,7 +4,7 @@
 
 #ifdef _IS_ETH_CARD
 EEPROM_MODIFIER PersistentData g_persistentData @ 0x1F800;
-EEPROM_MODIFIER char g_persistentDataFiller[0x400 - 16] @ 0x1F810;
+EEPROM_MODIFIER char g_persistentDataFiller[0x400 - 0x12] @ 0x1F812;
 #define ROM_ADDR ((const void*)&g_persistentData)
 #elif defined(_IS_PIC16F628_CARD)
 #define ROM_ADDR 0

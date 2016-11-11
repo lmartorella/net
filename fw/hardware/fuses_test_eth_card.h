@@ -152,9 +152,15 @@ void fatal(const char* msg);
 
 #define HAS_DCF77
 #define DCF77_IN_TRIS TRISDbits.RD1
-#define DCF77_EN_TRIS TRISDbits.RD0
 #define DCF77_IN_PORT PORTDbits.RD1
+#define DCF77_EN_TRIS TRISDbits.RD0
 #define DCF77_EN_PORT PORTDbits.RD0
+#define DCF77_PWR_TRIS TRISDbits.RD2
+#define DCF77_PWR_PORT PORTDbits.RD2
+
+#define HAS_LED
+#define LED_PORTBIT PORTHbits.RH0
+#define LED_TRISBIT TRISHbits.RH0
 
 #endif
 
