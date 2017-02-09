@@ -61,6 +61,9 @@ bit sink_nullFunc()
 const TWOCC ResetCode = "RS";
 const TWOCC ExceptionText = "EX";
 const TWOCC EndOfMetadataText = "EN";
+#ifdef HAS_BUS_SERVER
+const TWOCC BusMasterStats = "BM";
+#endif
 
 enum SYSSINK_CMD {
     SYSSINK_CMD_RESET = 1,
@@ -105,6 +108,12 @@ static bit sysSink_transmit()
         prot_control_writeW(l);
         prot_control_write(exc, l);
     }
+
+    #ifdef HAS_BUS_SERVER
+    prot_control_write(&BusMasterStats, sizeof(TWOCC));
+    prot_control_write(&g_busStats, sizeof(BUS_MASTER_STATS));
+    memset(&g_busStats, 0, sizeof(BUS_MASTER_STATS));
+    #endif
 
     prot_control_write(&EndOfMetadataText, sizeof(TWOCC));
     // Finish

@@ -40,6 +40,11 @@ namespace Lucky.Home.Sinks
             ClearResetReason
         }
 
+        private class BusMasterStats
+        {
+            public byte SocketTimeoutCount;
+        }
+
         private NodeStatus GetBootStatus()
         {
             NodeStatus status = new NodeStatus();
@@ -60,6 +65,13 @@ namespace Lucky.Home.Sinks
                             status.ExceptionMessage = reader.Read<DynamicString>().Str;
                             break;
                         case "EN":
+                            return;
+                        case "BM":
+                            var s = reader.Read<BusMasterStats>();
+                            if (s.SocketTimeoutCount > 0)
+                            {
+                                Logger.Warning("Master Stats", "SocketTimeouts#", s.SocketTimeoutCount);
+                            }
                             return;
                         default:
                             throw new InvalidOperationException("Unknown system");

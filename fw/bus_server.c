@@ -42,6 +42,8 @@ static enum {
     BUS_PRIV_STATE_SOCKET_CONNECTED
 } s_busState;
 
+BUS_MASTER_STATS g_busStats;
+
 static bit s_waitTxFlush;
 static bit s_waitTxQuickEnd;
 
@@ -91,6 +93,8 @@ void bus_init()
     
     // Do full scan
     s_lastScanTime = TickGet();
+
+    memset(&g_busStats, 0, sizeof(BUS_MASTER_STATS));
 }
 
 // Ask for the next known child
@@ -230,6 +234,7 @@ void bus_poll()
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
                 bus_disconnectSocket(SOCKET_ERR_TIMEOUT);
+                g_busStats.socketTimeouts++;
             }
             else {
                 bus_socketPoll();

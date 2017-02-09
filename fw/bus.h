@@ -43,6 +43,11 @@ typedef enum {
     BUS_STATE_SOCKET_FERR,
 } BUS_STATE;
 
+typedef struct {
+    // Count of socket timeouts
+    char socketTimeouts;
+} BUS_MASTER_STATS;
+extern BUS_MASTER_STATS g_busStats;
 
 // Select a child, and start a private communication bridging the IP protocol socket.
 void bus_connectSocket(int nodeIdx);
