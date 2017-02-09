@@ -1,18 +1,17 @@
+#ifdef HAS_DCF77 
 #include "pch.h"
-#include "appio.h"
-#include "hardware/tick.h"
-#include "hardware/leds.h"
-
-#ifdef HAS_DCF77
 
 static bit s_lastState;
 static TICK_TYPE s_lastTick;
 static TICK_TYPE s_lastValidBit;
 
+#define DCF77_IN_PORT PORTAbits.RA1
+#define LED PORTAbits.RA0
+
 // 8 bytes = 64 bits
 #define BUFFER_MASK_SIZE 8
 static BYTE s_message[BUFFER_MASK_SIZE];
-static int s_pos;
+static char s_pos;
 
 // From DA6180B datasheet
 #define ZERO_MIN (TICK_TYPE)(TICKS_PER_SECOND * 0.04)
@@ -33,27 +32,9 @@ static enum {
     BIT_TYPE_ONE = '1'
 } s_lastMark;
 
-static void printStat() {
-    // Print it
-    char buf[16];
-    sprintf(buf, "DCF: %d %c", s_pos, s_lastMark);
-    println(buf);   
-}
-
-static void printHex() {
-    char buf[17];
-    char* p = buf;
-    for (char i = 0; i < 8; i++) {
-        sprintf(p, "%02X", s_message[i]);
-        p += 2;
-    }
-    buf[16] = 0;
-    printlnUp(buf);
-}
-
 static void reset() {
     s_pos = 0;
-    memset(s_message, 0, 8);
+    //memset(s_message, 0, 8);
 }
 
 static void addBit() {
@@ -65,26 +46,13 @@ static void addBit() {
     }
     s_pos++;
     s_pos = s_pos % 64;
-    led_on();
 }
 
 void dcf77_init() {
-    DCF77_IN_TRIS = 1; // input
-    DCF77_EN_TRIS = DCF77_PWR_TRIS = 0; // out
-
-    DCF77_EN_PORT = 0; // enable
-    DCF77_PWR_PORT = 0;
-    // Wait at least 50ms to charge caps (see da6180B datasheet)
-    wait1s();
-    // SLOW startup
-    DCF77_PWR_PORT = 1;   
-    
     s_lastState = 0;    // At reset the receiver line is zero
     s_lastMark = BIT_TYPE_INVALID;
     s_lastValidBit = TickGet();
     reset();
-
-    printStat();
 }
 
 void dcf77_poll() {
@@ -119,7 +87,7 @@ void dcf77_poll() {
             // 1 second? Accumulate bit into the string
             if (len > SPACE2_MIN && len < SPACE2_MAX) {
                 // First bit after space
-                printHex();
+                //printHex();
                 reset();
             }
             else if (len < SPACE_MIN || len > SPACE_MAX) {
@@ -127,14 +95,15 @@ void dcf77_poll() {
             } // else 1 second? Accumulate bit into the string
 
             addBit();
+            LED = 1;
             s_lastValidBit = now;
         }
         
-        printStat();
+        //printStat();
     }    
     
-    if (led_isOn() && now - s_lastValidBit > FLASH_TIME) {
-        led_off();
+    if (LED && now - s_lastValidBit > FLASH_TIME) {
+        LED = 0;
     }
 }
 
