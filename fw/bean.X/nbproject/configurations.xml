@@ -123,6 +123,7 @@
                    projectFiles="false">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>../readme.txt</itemPath>
   </logicalFolder>
   <sourceRootList>
     <Elem>..</Elem>

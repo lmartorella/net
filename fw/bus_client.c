@@ -105,6 +105,9 @@ void bus_poll()
             case STATE_SOCKET_OPEN: 
                 if (rs485_lastRc9) {
                     // Received a break char, go idle
+#ifdef DEBUGMODE
+            printch('@');
+#endif
                     bus_reinit_after_disengage();
                 }
                 // Else do nothing

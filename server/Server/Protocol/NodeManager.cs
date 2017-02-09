@@ -85,6 +85,7 @@ namespace Lucky.Home.Protocol
             if (!guid.HasValue)
             {
                 // Error in fetching
+                Logger.Warning("Error/timeout in RegisterUnknownNode of " + address);
                 return null;
             }
             else

@@ -150,7 +150,7 @@ void fatal(const char* msg);
 #endif
 #endif
 
-#define HAS_DCF77
+#undef HAS_DCF77
 #define DCF77_IN_TRIS TRISDbits.RD1
 #define DCF77_IN_PORT PORTDbits.RD1
 #define DCF77_EN_TRIS TRISDbits.RD0
