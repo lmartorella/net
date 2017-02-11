@@ -13,7 +13,19 @@ namespace Lucky.Home
 
         public override string ToString()
         {
-            return "Reason: " + ResetReason + ", Exc: " + ExceptionMessage;
+            if (ResetReason == ResetReason.None)
+            {
+                return "OK";
+            }
+            else
+            {
+                var ret = "Reason: " + ResetReason;
+                if (ExceptionMessage != null)
+                {
+                    ret += ", Exc: " + ExceptionMessage;
+                }
+                return ret;
+            }
         }
     }
 }

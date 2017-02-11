@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using Lucky.Home.Serialization;
 using Lucky.Services;
+using Lucky.Net;
 
 namespace Lucky.Home.Protocol
 {
@@ -21,8 +22,7 @@ namespace Lucky.Home.Protocol
         {
             private readonly IPEndPoint _endPoint;
             private readonly TcpClientManager _owner;
-            private TcpClient _tcpClient;
-            private readonly Stream _stream;
+            private Stream _stream;
             private readonly BinaryReader _reader;
             private readonly BinaryWriter _writer;
 
@@ -30,17 +30,7 @@ namespace Lucky.Home.Protocol
             {
                 _endPoint = endPoint;
                 _owner = owner;
-                _tcpClient = new TcpClient();
-                _tcpClient.Connect(endPoint);
-                //_tcpClient.NoDelay = true;  // Setting this to true will send single chars in Serializer loops...
-                _tcpClient.SendTimeout = 1;
-                _tcpClient.ReceiveTimeout = 1;
-
-                _stream = _tcpClient.GetStream();
-#if DEBUG
-                // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
-                _stream.ReadTimeout = 5000;
-#endif
+                _stream = Manager.GetService<TcpService>().CreateTcpClientStream(endPoint);
 
                 _reader = new BinaryReader(_stream);
                 _writer = new BinaryWriter(_stream);
@@ -54,11 +44,11 @@ namespace Lucky.Home.Protocol
 
             public void Close()
             {
-                if (_tcpClient != null)
+                if (_stream != null)
                 {
                     Flush();
                     _reader.Close();
-                    _tcpClient = null;
+                    _stream = null;
                 }
             }
 

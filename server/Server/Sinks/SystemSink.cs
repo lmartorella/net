@@ -23,7 +23,7 @@ namespace Lucky.Home.Sinks
             await FetchStatus();
         }
 
-        private async Task FetchStatus()
+        public async Task FetchStatus()
         { 
             Status = GetBootStatus();
             if (Status == null)
@@ -40,6 +40,12 @@ namespace Lucky.Home.Sinks
             ClearResetReason
         }
 
+        private const string ResetCode = "RS";
+        private const string ExceptionText = "EX";
+        private const string EndOfMetadataText = "EN";
+        private const string BusMasterStatitstics = "BM";
+
+
         private class BusMasterStats
         {
             public byte SocketTimeoutCount;
@@ -48,6 +54,7 @@ namespace Lucky.Home.Sinks
         private NodeStatus GetBootStatus()
         {
             NodeStatus status = new NodeStatus();
+            BusMasterStats stats = null;
             Read(reader =>
             {
                 while (true)
@@ -55,23 +62,19 @@ namespace Lucky.Home.Sinks
                     var code = reader.Read<Twocc>()?.Code;
                     switch (code)
                     {
-                        case null:
+                        case null: // EOF
                             status = null;
                             return;
-                        case "RS":
+                        case ResetCode:
                             status.ResetReason = (ResetReason) reader.Read<ushort>();
                             break;
-                        case "EX":
+                        case ExceptionText:
                             status.ExceptionMessage = reader.Read<DynamicString>().Str;
                             break;
-                        case "EN":
-                            return;
-                        case "BM":
-                            var s = reader.Read<BusMasterStats>();
-                            if (s.SocketTimeoutCount > 0)
-                            {
-                                Logger.Warning("Master Stats", "SocketTimeouts#", s.SocketTimeoutCount);
-                            }
+                        case BusMasterStatitstics:
+                            stats = reader.Read<BusMasterStats>();
+                            break;
+                        case EndOfMetadataText:
                             return;
                         default:
                             throw new InvalidOperationException("Unknown system");
@@ -80,18 +83,29 @@ namespace Lucky.Home.Sinks
             });
             if (status == null)
             {
+                // EOF?
                 return null;
             }
 
             Logger.Log("Getting boot status: " + status);
-
-            Write(writer =>
+            if (stats?.SocketTimeoutCount > 0)
             {
-                writer.Write(SysCommand.ClearResetReason);
-            });
+                Logger.Warning("Master Stats", "SocketTimeouts#", stats.SocketTimeoutCount);
+            }
+
+            if (status.ResetReason != ResetReason.None)
+            {
+                Write(writer =>
+                {
+                    writer.Write(SysCommand.ClearResetReason);
+                });
+            }
             return status;
         }
 
+        /// <summary>
+        /// Reset the device
+        /// </summary>
         public async Task Reset()
         {
             Write(writer =>

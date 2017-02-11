@@ -7,10 +7,18 @@ namespace Lucky.Home.Protocol
     internal class TcpNodeAddress : IEquatable<TcpNodeAddress>
     {
         /// <summary>
-        /// The remote end-point address
+        /// The remote end-point IP address of the node or its master (in case of non-eth subnode)
         /// </summary>
         public readonly IPAddress Address;
+
+        /// <summary>
+        /// The remote end-point IP port of the node or its master (in case of non-eth subnode)
+        /// </summary>
         public readonly ushort ControlPort;
+
+        /// <summary>
+        /// The remote end-point IP port
+        /// </summary>
         public readonly int Index;
 
         public TcpNodeAddress(IPAddress address, ushort controlPort, int index)

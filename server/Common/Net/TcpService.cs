@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Lucky.Services;
+using System.IO;
 
 namespace Lucky.Net
 {
@@ -52,6 +53,22 @@ namespace Lucky.Net
             };
             listener.BeginAcceptTcpClient(handler, null);
             return listener;
+        }
+
+        public Stream CreateTcpClientStream(IPEndPoint endPoint)
+        {
+            var tcpClient = new TcpClient();
+            tcpClient.Connect(endPoint);
+            //_tcpClient.NoDelay = true;  // Setting this to true will send single chars in Serializer loops...
+            tcpClient.SendTimeout = 1;
+            tcpClient.ReceiveTimeout = 1;
+
+            var stream = tcpClient.GetStream();
+#if DEBUG
+            // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
+            stream.ReadTimeout = 5000;
+#endif
+            return stream;
         }
     }
 }

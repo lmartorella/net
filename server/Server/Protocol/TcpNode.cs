@@ -86,6 +86,13 @@ namespace Lucky.Home.Protocol
                     await FetchMetadata();
                 }
             }
+
+            // Ask system sink if ETH node DEBUG DEBUG
+            if (!address.IsSubNode)
+            {
+                // Ask system status
+                await Sink<SystemSink>().FetchStatus();
+            }
         }
 
         /// <summary>

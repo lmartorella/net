@@ -234,7 +234,6 @@ void bus_poll()
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
                 bus_disconnectSocket(SOCKET_ERR_TIMEOUT);
-                g_busStats.socketTimeouts++;
             }
             else {
                 bus_socketPoll();
@@ -259,6 +258,8 @@ void bus_disconnectSocket(int val)
         s_waitTxFlush = 1;
         
         s_busState = BUS_PRIV_STATE_IDLE;
+        
+        g_busStats.socketTimeouts++;
     }
     s_socketConnected = val;
 }
