@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Services;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,29 +22,33 @@ namespace Lucky.Home.Serialization
     class NetSerializer<T> : INetSerializer
     {
         private static readonly INetSerializer s_directSerializer;
+        private static readonly ILogger s_logger;
 
         static NetSerializer()
         {
             s_directSerializer = BuildFieldItem(null, typeof(T));
+            s_logger = Manager.GetService<LoggerFactory>().Create("NetSerializer");
         }
 
-        private static INetSerializer BuildFieldItem(ICustomAttributeProvider fieldInfo, Type fieldType)
+        private static INetSerializer BuildFieldItem(FieldInfo fieldInfo, Type fieldType, string subFieldName = "")
         {
+            var fieldName = subFieldName + (fieldInfo?.Name ?? "");
+
             if (fieldType.IsArray)
             {
                 var elType = fieldType.GetElementType();
-                var elSerializer = BuildFieldItem(fieldInfo, elType);
+                var elSerializer = BuildFieldItem(fieldInfo, elType, "(el)");
 
                 if (fieldInfo == null || fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Length < 1)
                 {
                     throw new NotSupportedException("Array type not annoted: " + fieldInfo);
                 }
-                return new ArraySerializer(elSerializer, elType, false);
+                return new ArraySerializer(elSerializer, elType, false, "(arr)" + fieldName);
             }
             
             if (fieldType == typeof(string))
             {
-                INetSerializer elSerializer = new AsciiCharSerializer();
+                INetSerializer elSerializer = new AsciiCharSerializer(fieldName);
 
                 SerializeAsFixedStringAttribute fixedAttr = null;
                 SerializeAsDynArrayAttribute dyndAttr = null;
@@ -54,11 +59,11 @@ namespace Lucky.Home.Serialization
                 }
                 if (fixedAttr != null)
                 {
-                    return new FixedStringFieldItem(elSerializer, typeof(char), fixedAttr.Size);
+                    return new FixedStringFieldItem(elSerializer, typeof(char), fixedAttr.Size, fieldName);
                 }
                 else if (dyndAttr != null)
                 {
-                    return new DynStringFieldItem(elSerializer, typeof(char));
+                    return new DynStringFieldItem(elSerializer, typeof(char), fieldName);
                 }
                 else
                 {
@@ -73,31 +78,31 @@ namespace Lucky.Home.Serialization
 
             if (fieldType == typeof(byte))
             {
-                return new ByteSerializer();
+                return new ByteSerializer(fieldName);
             }
             else if (fieldType == typeof(ushort))
             {
-                return new BitConverterItem<ushort>(2, BitConverter.GetBytes, a => BitConverter.ToUInt16(a, 0));
+                return new BitConverterItem<ushort>(2, BitConverter.GetBytes, a => BitConverter.ToUInt16(a, 0), fieldName);
             }
             else if (fieldType == typeof(short))
             {
-                return new BitConverterItem<short>(2, BitConverter.GetBytes, a => BitConverter.ToInt16(a, 0));
+                return new BitConverterItem<short>(2, BitConverter.GetBytes, a => BitConverter.ToInt16(a, 0), fieldName);
             }
             else if (fieldType == typeof(uint))
             {
-                return new BitConverterItem<uint>(4, BitConverter.GetBytes, a => BitConverter.ToUInt32(a, 0));
+                return new BitConverterItem<uint>(4, BitConverter.GetBytes, a => BitConverter.ToUInt32(a, 0), fieldName);
             }
             else if (fieldType == typeof(int))
             {
-                return new BitConverterItem<int>(4, BitConverter.GetBytes, a => BitConverter.ToInt32(a, 0));
+                return new BitConverterItem<int>(4, BitConverter.GetBytes, a => BitConverter.ToInt32(a, 0), fieldName);
             }
             else if (fieldType == typeof(Guid))
             {
-                return new GuidFieldItem();
+                return new GuidFieldItem(fieldName);
             }
             else if (fieldType == typeof(IPAddress))
             {
-                return new IpAddressFieldItem();
+                return new IpAddressFieldItem(fieldName);
             }
             else if (fieldType.IsClass)
             {
@@ -137,7 +142,14 @@ namespace Lucky.Home.Serialization
                 {
                     FieldInfo fi = tuple.Item1;
                     INetSerializer ser = tuple.Item2;
-                    fi.SetValue(retValue, ser.Deserialize(reader));
+                    try
+                    {
+                        fi.SetValue(retValue, ser.Deserialize(reader));
+                    }
+                    catch (BufferUnderrunException exc)
+                    {
+                        throw new BufferUnderrunException(exc, typeof(T));
+                    }
                 }
                 return retValue;
             }
@@ -147,11 +159,14 @@ namespace Lucky.Home.Serialization
         {
             private readonly Func<TD, byte[]> _ser;
             private readonly Func<byte[], TD> _deser;
+            private readonly string _fieldName;
+
             private int Size { get; set; }
 
-            public BitConverterItem(int size, Func<TD, byte[]> ser, Func<byte[], TD> deser)
+            public BitConverterItem(int size, Func<TD, byte[]> ser, Func<byte[], TD> deser, string fieldName)
             {
                 Size = size;
+                _fieldName = fieldName;
                 _ser = ser;
                 _deser = deser;
             }
@@ -163,41 +178,72 @@ namespace Lucky.Home.Serialization
 
             public object Deserialize(BinaryReader reader)
             {
-                byte[] b = reader.ReadBytes(Size);
+                byte[] b;
+                try
+                {
+                    b = reader.ReadBytes(Size);
+                }
+                catch (Exception)
+                {
+                    b = new byte[0];
+                }
+
+                if (b.Length < Size)
+                {
+                    throw new BufferUnderrunException(Size, b, _fieldName);
+                }
                 return _deser(b);
             }
         }
 
-        private class AsciiCharSerializer : INetSerializer
+        private class AsciiCharSerializer : ByteSerializer
         {
-            public void Serialize(object source, BinaryWriter writer)
+            public AsciiCharSerializer(string fieldName)
+                :base(fieldName)
+            { }
+
+            public override void Serialize(object source, BinaryWriter writer)
             {
-                writer.Write(Encoding.ASCII.GetBytes(new[] { (char)source }, 0, 1));
+                base.Serialize(Encoding.ASCII.GetBytes(new[] { (char)source }, 0, 1)[0], writer);
             }
 
-            public object Deserialize(BinaryReader reader)
+            public override object Deserialize(BinaryReader reader)
             {
-                return Encoding.ASCII.GetChars(new[] { reader.ReadByte() }, 0, 1)[0];
+                return Encoding.ASCII.GetChars(new[] { (byte)base.Deserialize(reader) }, 0, 1)[0];
             }
         }
 
         private class ByteSerializer : INetSerializer
         {
-            public void Serialize(object source, BinaryWriter writer)
+            private readonly string _fieldName;
+
+            public ByteSerializer(string fieldName)
+            {
+                _fieldName = fieldName;
+            }
+
+            public virtual void Serialize(object source, BinaryWriter writer)
             {
                 writer.Write((byte)source);
             }
 
-            public object Deserialize(BinaryReader reader)
+            public virtual object Deserialize(BinaryReader reader)
             {
-                return reader.ReadByte();
+                try
+                {
+                    return reader.ReadByte();
+                }
+                catch (Exception)
+                {
+                    throw new BufferUnderrunException(1, null, _fieldName);
+                }
             }
         }
 
         private class FixedStringFieldItem : ArraySerializer
         {
-            public FixedStringFieldItem(INetSerializer elementSerializer, Type elType, int size)
-                :base(elementSerializer, elType, true)
+            public FixedStringFieldItem(INetSerializer elementSerializer, Type elType, int size, string fieldName)
+                :base(elementSerializer, elType, true, fieldName)
             {
                 if (size <= 0)
                 {
@@ -209,14 +255,20 @@ namespace Lucky.Home.Serialization
 
         private class DynStringFieldItem : ArraySerializer
         {
-            public DynStringFieldItem(INetSerializer elementSerializer, Type elType)
-                : base(elementSerializer, elType, true)
+            public DynStringFieldItem(INetSerializer elementSerializer, Type elType, string fieldName)
+                : base(elementSerializer, elType, true, fieldName)
             { }
         }
 
         private class IpAddressFieldItem : INetSerializer
         {
             private const int Size = 4;
+            private readonly string _fieldName;
+
+            public IpAddressFieldItem(string fieldName)
+            {
+                _fieldName = fieldName;
+            }
 
             public void Serialize(object source, BinaryWriter writer)
             {
@@ -227,7 +279,19 @@ namespace Lucky.Home.Serialization
 
             public object Deserialize(BinaryReader reader)
             {
-                byte[] ids = reader.ReadBytes(Size);
+                byte[] ids;
+                try
+                {
+                    ids = reader.ReadBytes(Size);
+                }
+                catch
+                {
+                    ids = new byte[0];
+                }
+                if (ids.Length < Size)
+                {
+                    throw new BufferUnderrunException(Size, ids, _fieldName);
+                }
                 return new IPAddress(ids);
             }
         }
@@ -235,6 +299,12 @@ namespace Lucky.Home.Serialization
         private class GuidFieldItem : INetSerializer
         {
             private const int Size = 16;
+            private readonly string _fieldName;
+
+            public GuidFieldItem(string fieldName)
+            {
+                _fieldName = fieldName;
+            }
 
             public void Serialize(object source, BinaryWriter writer)
             {
@@ -245,8 +315,20 @@ namespace Lucky.Home.Serialization
 
             public object Deserialize(BinaryReader reader)
             {
-                byte[] ids = reader.ReadBytes(Size);
-                return ids.Length == Size ? (object)new Guid(ids) : new Guid("ffffffff-ffff-ffff-ffff-ffffffff0000");
+                byte[] ids;
+                try
+                {
+                    ids = reader.ReadBytes(Size);
+                }
+                catch
+                {
+                    ids = new byte[0];
+                }
+                if (ids.Length < Size)
+                {
+                    throw new BufferUnderrunException(Size, ids, _fieldName);
+                }
+                return new Guid(ids);
             }
         }
 
@@ -256,12 +338,14 @@ namespace Lucky.Home.Serialization
             private readonly Type _elementType;
             protected int ForcedSize { get; set; }
             private readonly bool _isString;
+            private readonly string _fieldName;
 
-            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString)
+            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString, string fieldName)
             {
                 _elementSerializer = elementSerializer;
                 _elementType = elType;
                 _isString = isString;
+                _fieldName = fieldName;
                 ForcedSize = 0;
             }
 
@@ -301,7 +385,7 @@ namespace Lucky.Home.Serialization
                     var b = reader.ReadBytes(2);
                     if (b.Length < 2)
                     {
-                        return null;
+                        throw new BufferUnderrunException(2, b, "(sizeof)" + (_fieldName ?? ""));
                     }
                     size = BitConverter.ToUInt16(b, 0);
                 }
@@ -324,7 +408,15 @@ namespace Lucky.Home.Serialization
 
         public static T Read(BinaryReader reader)
         {
-            return (T)s_directSerializer.Deserialize(reader);
+            try
+            {
+                return (T)s_directSerializer.Deserialize(reader);
+            }
+            catch (BufferUnderrunException exc)
+            {
+                s_logger.Error(exc.Message);
+                return default(T);
+            }
         }
 
         object INetSerializer.Deserialize(BinaryReader reader)

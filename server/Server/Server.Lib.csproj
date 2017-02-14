@@ -53,6 +53,7 @@
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IDeviceInternal.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
+    <Compile Include="Serialization\BufferUnderrunException.cs" />
     <Compile Include="Sinks\SubSink.cs" />
     <Compile Include="Protocol\IConnectionReader.cs" />
     <Compile Include="Protocol\IConnectionWriter.cs" />
