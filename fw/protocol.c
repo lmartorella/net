@@ -220,7 +220,7 @@ void prot_poll()
     
     if (!prot_control_isConnected()) {
 #ifdef HAS_BUS_SERVER
-        bus_disconnectSocket(-1);
+        bus_disconnectSocket(SOCKET_ERR_NO_IP);
 #endif
         return;
     }

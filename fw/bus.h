@@ -61,6 +61,10 @@ extern bit bus_dirtyChildren;
 int bus_getChildrenMaskSize();
 const BYTE* bus_getChildrenMask();
 
+#define SOCKET_NOT_CONNECTED -1
+#define SOCKET_ERR_TIMEOUT -2
+#define SOCKET_ERR_FERR -3
+#define SOCKET_ERR_NO_IP -4
 
 #endif
 #endif	/* BUS_H */

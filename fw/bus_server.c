@@ -24,9 +24,6 @@ bit bus_dirtyChildren;
 
 // Socket connected to child. If -1 idle. If -2 socket timeout
 static int s_socketConnected;
-#define SOCKET_NOT_CONNECTED -1
-#define SOCKET_ERR_TIMEOUT -2
-#define SOCKET_ERR_FERR -3
 
 #define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 1.5) // 1500ms 
 #define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
@@ -253,8 +250,7 @@ void bus_disconnectSocket(int val)
 {
     if (s_socketConnected >= 0) {
         // Send break char
-        BYTE breakChar = 0xff;
-        rs485_write(TRUE, &breakChar, 1);
+        rs485_write(TRUE, &val, 1);
         s_waitTxFlush = 1;
         
         s_busState = BUS_PRIV_STATE_IDLE;
