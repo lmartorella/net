@@ -90,18 +90,18 @@
 #define RS485_TRIS_RX TRISCbits.RC7
 #define RS485_TRIS_EN TRISCbits.RC4
 #define RS485_PORT_EN PORTCbits.RC4
-#define RS485_BAUD 9600
-#define RS485_INIT_BAUD() \
-    TXSTA1bits.BRGH = 1;\
-    BAUDCON1bits.BRG16 = 0;\
-    SPBRGH1 = 0;\
-    SPBRG1 = 162
-    // For 19200:
-// #define RS485_INIT_BAUD() \
-//     TXSTA1bits.BRGH = 1;\
-//     BAUDCON1bits.BRG16 = 0;\
-//     SPBRGH1 = 0;\
-//     SPBRG1 = 80
+#define RS485_BAUD 19200
+    // For 9600:
+//#define RS485_INIT_BAUD() \
+//    TXSTA1bits.BRGH = 1;\
+//    BAUDCON1bits.BRG16 = 0;\
+//    SPBRGH1 = 0;\
+//    SPBRG1 = 162
+ #define RS485_INIT_BAUD() \
+     TXSTA1bits.BRGH = 1;\
+     BAUDCON1bits.BRG16 = 0;\
+     SPBRGH1 = 0;\
+     SPBRG1 = 80
 #define RS485_INIT_INT() \
     RS485_IPR.TX1IP = 0; \
     RS485_IPR.RC1IP = 0

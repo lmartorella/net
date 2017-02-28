@@ -50,14 +50,14 @@
 #define RS485_TRIS_RX TRISBbits.TRISB1
 #define RS485_TRIS_EN TRISBbits.TRISB0
 #define RS485_PORT_EN PORTBbits.RB0
-#define RS485_BAUD 9600
+#define RS485_BAUD 19200
+    // For 9600:
+//#define RS485_INIT_BAUD() \
+//    TXSTAbits.BRGH = 1;\
+//    SPBRG = 25
 #define RS485_INIT_BAUD() \
-    TXSTAbits.BRGH = 1;\
-    SPBRG = 25
-    // For 19200:
-// #define RS485_INIT_BAUD() \
-//     TXSTAbits.BRGH = 1;\
-//     SPBRG = 12
+     TXSTAbits.BRGH = 1;\
+     SPBRG = 12
 
 // *****
 // Tick timer source. Uses TMR0 (8-bit prescales to 1:256), that resolve from 0.25ms to 16.7secs

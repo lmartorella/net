@@ -116,18 +116,18 @@ void fatal(const char* msg);
 #define RS485_TRIS_RX TRISGbits.RG2
 #define RS485_TRIS_EN TRISGbits.RG0
 #define RS485_PORT_EN PORTGbits.RG0
-#define RS485_BAUD 9600
+#define RS485_BAUD 19200
+    // For 9600:
+//#define RS485_INIT_BAUD() \
+//    TXSTA2bits.BRGH = 1;\
+//    BAUDCON2bits.BRG16 = 0;\
+//    SPBRGH2 = 0;\
+//    SPBRG2 = 162
 #define RS485_INIT_BAUD() \
-    TXSTA2bits.BRGH = 1;\
-    BAUDCON2bits.BRG16 = 0;\
-    SPBRGH2 = 0;\
-    SPBRG2 = 162
-    // For 19200:
-// #define RS485_INIT_BAUD() \
-//     TXSTA2bits.BRGH = 1;\
-//     BAUDCON2bits.BRG16 = 0;\
-//     SPBRGH2 = 0;\
-//     SPBRG2 = 80
+     TXSTA2bits.BRGH = 1;\
+     BAUDCON2bits.BRG16 = 0;\
+     SPBRGH2 = 0;\
+     SPBRG2 = 80
 #define RS485_INIT_INT() \
     RS485_IPR.TX2IP = 0; \
     RS485_IPR.RC2IP = 0
