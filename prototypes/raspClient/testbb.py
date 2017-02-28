@@ -4,17 +4,17 @@ from datetime import datetime
 import sys
 
 # 20 is DE, #21 is /RE
-DE = 20
-nRE = 21
-RXD = 18
+#DE = 20
+#nRE = 21
+RXD = 2
 
 # disengage RS485 line
 GPIO.setwarnings(True)
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(DE, GPIO.OUT)
-GPIO.setup(nRE, GPIO.OUT)
-GPIO.output(DE, 0)
-GPIO.output(nRE, 0)
+#GPIO.setup(DE, GPIO.OUT)
+#GPIO.setup(nRE, GPIO.OUT)
+#GPIO.output(DE, 0)
+#GPIO.output(nRE, 0)
 
 
 # Ctrl+C handler
