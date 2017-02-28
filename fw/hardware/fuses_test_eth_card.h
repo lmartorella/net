@@ -121,7 +121,13 @@ void fatal(const char* msg);
     TXSTA2bits.BRGH = 1;\
     BAUDCON2bits.BRG16 = 0;\
     SPBRGH2 = 0;\
-    SPBRG2 = 80
+    SPBRG2 = 162
+    // For 19200:
+// #define RS485_INIT_BAUD() \
+//     TXSTA2bits.BRGH = 1;\
+//     BAUDCON2bits.BRG16 = 0;\
+//     SPBRGH2 = 0;\
+//     SPBRG2 = 80
 #define RS485_INIT_INT() \
     RS485_IPR.TX2IP = 0; \
     RS485_IPR.RC2IP = 0

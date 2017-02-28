@@ -34,7 +34,11 @@
 #define RS485_BAUD 9600
 #define RS485_INIT_BAUD() \
     TXSTAbits.BRGH = 1;\
-    SPBRG = 12
+    SPBRG = 25
+    // For 19200:
+// #define RS485_INIT_BAUD() \
+//     TXSTAbits.BRGH = 1;\
+//     SPBRG = 12
 
 // *****
 // Tick timer source. Uses TMR0 (8-bit prescales to 1:256), that resolve from 0.25ms to 16.7secs
