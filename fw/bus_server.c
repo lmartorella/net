@@ -22,7 +22,7 @@ static TICK_TYPE s_lastScanTime;
 static TICK_TYPE s_lastTime;
 bit bus_dirtyChildren;
 
-// Socket connected to child. If -1 idle. If -2 socket timeout
+// Socket connected to child, or SOCKET_STATE
 static int s_socketConnected;
 
 #define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 1.5) // 1500ms 
@@ -326,18 +326,31 @@ static void bus_socketPoll()
             // Read data and push it into IP
             tx = tx > sizeof(buffer) ? sizeof(buffer) : tx;
             rs485_read(buffer, tx);
-            
-            prot_control_write(buffer, tx);
-          
-            // Socket gracefully closed?
+                      
             if (rs485_lastRc9) {
-                // Now the channel is idle again
-                s_busState = BUS_PRIV_STATE_IDLE;
-                s_socketConnected = SOCKET_NOT_CONNECTED;
+                // Read control char
+                switch (buffer[tx - 1]) {
+                    case RS485_OVER_CHAR:
+                        // Socket 'over'? Go back to transmit state, the client
+                        // is about to disengage the line
+                        rs485_remaster();
+                        break;
+                    //case RS485_CLOSE_CHAR:
+                    default:
+                        // Socket closed. Now the channel is idle again
+                        s_busState = BUS_PRIV_STATE_IDLE;
+                        s_socketConnected = SOCKET_NOT_CONNECTED;
+                        break;
+                }
+
+                // Don't transmit the last control char
+                tx--;
             }
             else {
                 s_lastTime = TickGet();
             }
+
+            prot_control_write(buffer, tx);
         }
     }
 }

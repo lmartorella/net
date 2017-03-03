@@ -51,6 +51,8 @@ static void CLOS_command()
 #ifdef DEBUGMODE
     printch('l');
 #endif
+    // CLOSE the socket
+    prot_control_write("\x1E", 1);
     prot_control_close();
 }
 
@@ -107,7 +109,8 @@ static void CHIL_command()
     prot_control_writeW(buffer.count);
 #endif
     
-    prot_control_flush();      
+    // end of transmission, over to Master
+    prot_control_over();
 }
 
 // 0 bytes to receive
@@ -121,7 +124,9 @@ static void SINK_command()
         // Put device ID
         prot_control_write(&AllSinks[i]->fourCc, sizeof(FOURCC));
     }
-    prot_control_flush();
+    
+    // end of transmission, over to Master
+    prot_control_over();
 }
 
 // 16 bytes to receive
@@ -220,7 +225,7 @@ void prot_poll()
     
     if (!prot_control_isConnected()) {
 #ifdef HAS_BUS_SERVER
-        bus_disconnectSocket(SOCKET_ERR_NO_IP);
+        bus_disconnectSocket(SOCKET_ERR_CLOSED_BY_PARENT);
 #endif
         return;
     }
@@ -255,7 +260,9 @@ void prot_poll()
         if (!AllSinks[s_inWriteSink]->writeHandler()){
             s_inWriteSink = -1;
         }
-        prot_control_flush();
+        
+        // end of transmission, over to Master
+        prot_control_over();
         return;
     }
 

@@ -27,9 +27,18 @@ void rs485_interrupt();
 void rs485_poll();
 
 // Enqueue bytes to send. Use 9-bit address. Buffer is copied (max. 32 bytes)
+// Warning: the address bit is used immediately and not enqueued to the buffer
 void rs485_write(BOOL address, const BYTE* data, BYTE size);
+// Send a special OVER token to the bus when the transmission ends (if there are 
+// data in TX queue)
+extern bit rs485_over;
+// When rs485_over is set, close will determine with char to send
+extern bit rs485_close;
+
 // Read data, if available.
 bit rs485_read(BYTE* data, BYTE size);
+
+
 BYTE rs485_readAvail();
 BYTE rs485_writeAvail();
 // Get the last bit9 received
@@ -50,6 +59,13 @@ void rs485_waitDisengageTime();
 // 2 ticks per byte, but let's do 3 (round up) for PIC16 @4MHz
 // 14 ticks per byte (round up) on PIC18 @25MHz
 #define TICKS_PER_BYTE (TICK_TYPE)((TICKS_PER_SECOND + BYTES_PER_SECONDS) / BYTES_PER_SECONDS)
+
+// ASCII EndOfTransmissionBlock
+// Used to switch over to other party
+#define RS485_OVER_CHAR 0x17
+// ASCII EndOfTransmission
+// Used to close the socket communication
+#define RS485_CLOSE_CHAR 0x04
 
 #endif
 

@@ -39,8 +39,6 @@ static void pollControlPort();
 
 void prot_control_close()
 {
-    // Send OK but don't close the IP socket
-    prot_control_write("\x1E", 1);
 }
 
 // Close the control port listener
@@ -80,7 +78,8 @@ void prot_control_write(const void* data, WORD size)
     TCPPutArray(s_controlSocket, (const BYTE*)data, size);
 }
 
-void prot_control_flush()
+// Flush and OVER to other party. TCP is full duplex, so OK to only flush
+void prot_control_over()
 {
     TCPFlush(s_controlSocket);
 }

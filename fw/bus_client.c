@@ -26,6 +26,14 @@ static BYTE s_header[3] = { 0x55, 0xAA, 0 };
 static bit s_availForAddressAssign;
 static BYTE s_tempAddressForAssignment;
 
+#ifdef DEBUGMODE
+#define set_rs485_over() rs485_over=1;printch('>');
+#define set_rs485_close() rs485_over=1;rs485_close=1;printch('|');
+#else
+#define set_rs485_over() rs485_over=1;
+#define set_rs485_close() rs485_over=1;rs485_close=1;
+#endif
+
 /**
  * Wait for the channel to be free again and skip the glitch after a TX/RX switch (server DISENGAGE_CHANNEL_TIMEOUT time)
  */
@@ -218,17 +226,9 @@ void bus_poll()
 // Close the socket
 void prot_control_close()
 {
-    if (s_state == STATE_SOCKET_OPEN) {
-        // Respond OK with bit9=1, that closes the bus
-        rs485_write(TRUE, "\x1E", 1);
-
-#ifdef DEBUGMODE
-        printch('|');
-#endif
-        
-        // And then wait for TX end before going idle
-        s_state = STATE_WAIT_TX;
-    }
+    set_rs485_close();
+    // And then wait for TX end before going idle
+    s_state = STATE_WAIT_TX;
 }
 
 // Socket connected?

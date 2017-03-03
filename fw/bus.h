@@ -61,10 +61,18 @@ extern bit bus_dirtyChildren;
 int bus_getChildrenMaskSize();
 const BYTE* bus_getChildrenMask();
 
-#define SOCKET_NOT_CONNECTED -1
-#define SOCKET_ERR_TIMEOUT -2
-#define SOCKET_ERR_FERR -3
-#define SOCKET_ERR_NO_IP -4
+// Low-level socket state. The byte can be used on the wire as break char
+enum SOCKET_STATE
+{
+    // Normal state when not connected
+    SOCKET_NOT_CONNECTED = -2,
+    // Socket data timeout (no data in BUS_SOCKET_TIMEOUT)
+    SOCKET_ERR_TIMEOUT = -3,
+    // When a frame error on the wire
+    SOCKET_ERR_FERR = -4,
+    // When the server (IP) closes the socket
+    SOCKET_ERR_CLOSED_BY_PARENT = -5
+}
 
 #endif
 #endif	/* BUS_H */

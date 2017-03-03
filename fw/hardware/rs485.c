@@ -33,6 +33,9 @@ static BYTE* s_readPtr;
 // Status of address bit in the serie
 bit rs485_lastRc9;
 bit rs485_skipData;
+// Over bit, to send a OVER byte to channel when transmission ends
+bit rs485_over;
+bit rs485_close;
 static bit s_ferr;
 static bit s_lastrc9;
 
@@ -68,7 +71,9 @@ void rs485_init()
     RS485_TRIS_EN = 0;
     RS485_PORT_EN = EN_RECEIVE;
       
-    rs485_skipData = FALSE;
+    rs485_skipData = 0;
+    rs485_over = 0;
+    rs485_close = 0;
     s_writePtr = s_readPtr = s_buffer;
     s_lastTick = TickGet();
     
@@ -116,6 +121,12 @@ void rs485_interrupt()
                 // Feed more data, read at read pointer and then increase
                 writeByte();
             }
+            else if (rs485_over) {
+                rs485_over = 0;
+                // Send OVER byte
+                RS485_TXSTA.TX9D = 1;
+                RS485_TXREG = rs485_close ? RS485_CLOSE_CHAR : RS485_OVER_CHAR;
+            } 
             else {
                 // NO MORE data to transmit
                 // TX2IF cannot be cleared, shut IE 
@@ -189,6 +200,8 @@ void rs485_poll()
 
 void rs485_write(BOOL address, const BYTE* data, BYTE size)
 { 
+    rs485_over = rs485_close = 0;
+
     // Reset reader, if in progress
     if (s_status == STATUS_RECEIVE) {
         // Truncate reading

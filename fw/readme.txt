@@ -17,6 +17,7 @@ K: init
 =: socket connect
 !: unknown command (error)
 -: not manager, bus reinit
-|: socket close
+>: bus socket over sent (client)
+|: bus socket close sent (client)
 @: break received
 
