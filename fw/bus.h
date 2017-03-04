@@ -62,8 +62,7 @@ int bus_getChildrenMaskSize();
 const BYTE* bus_getChildrenMask();
 
 // Low-level socket state. The byte can be used on the wire as break char
-enum SOCKET_STATE
-{
+typedef enum {
     // Normal state when not connected
     SOCKET_NOT_CONNECTED = -2,
     // Socket data timeout (no data in BUS_SOCKET_TIMEOUT)
@@ -72,7 +71,7 @@ enum SOCKET_STATE
     SOCKET_ERR_FERR = -4,
     // When the server (IP) closes the socket
     SOCKET_ERR_CLOSED_BY_PARENT = -5
-}
+} SOCKET_STATE;
 
 #endif
 #endif	/* BUS_H */

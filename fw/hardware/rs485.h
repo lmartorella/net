@@ -34,6 +34,8 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size);
 extern bit rs485_over;
 // When rs485_over is set, close will determine with char to send
 extern bit rs485_close;
+// When set after a write operation, remain in TX state when data finishes until next write operation
+extern bit rs485_master;
 
 // Read data, if available.
 bit rs485_read(BYTE* data, BYTE size);

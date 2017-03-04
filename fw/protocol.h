@@ -4,6 +4,14 @@
 #include "bus.h"
 #include "hardware/rs485.h"
 
+#ifdef DEBUGMODE
+#define set_rs485_over() rs485_over=1;printch('>');
+#define set_rs485_close() rs485_over=1;rs485_close=1;printch('|');
+#else
+#define set_rs485_over() rs485_over=1;
+#define set_rs485_close() rs485_over=1;rs485_close=1;
+#endif
+
 #ifdef HAS_BUS_CLIENT
 // Directly with define in order to minimize stack usage
 #define prot_control_readW(w) rs485_read((BYTE*)w, 2) 

@@ -26,14 +26,6 @@ static BYTE s_header[3] = { 0x55, 0xAA, 0 };
 static bit s_availForAddressAssign;
 static BYTE s_tempAddressForAssignment;
 
-#ifdef DEBUGMODE
-#define set_rs485_over() rs485_over=1;printch('>');
-#define set_rs485_close() rs485_over=1;rs485_close=1;printch('|');
-#else
-#define set_rs485_over() rs485_over=1;
-#define set_rs485_close() rs485_over=1;rs485_close=1;
-#endif
-
 /**
  * Wait for the channel to be free again and skip the glitch after a TX/RX switch (server DISENGAGE_CHANNEL_TIMEOUT time)
  */

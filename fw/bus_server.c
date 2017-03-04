@@ -250,7 +250,7 @@ void bus_disconnectSocket(int val)
 {
     if (s_socketConnected >= 0) {
         // Send break char
-        rs485_write(TRUE, &val, 1);
+        rs485_write(TRUE, (BYTE*)(&val), 1);
         s_waitTxFlush = 1;
         
         s_busState = BUS_PRIV_STATE_IDLE;
@@ -290,6 +290,7 @@ static void bus_socketPoll()
 {
     // Bus line is slow, though
     BYTE buffer[RS485_BUF_SIZE / 2];
+    BOOL over = 0;
             
     // Data from IP?
     WORD rx = prot_control_readAvail();
@@ -333,7 +334,8 @@ static void bus_socketPoll()
                     case RS485_OVER_CHAR:
                         // Socket 'over'? Go back to transmit state, the client
                         // is about to disengage the line
-                        rs485_remaster();
+                        rs485_write(0, NULL, 0);
+                        rs485_master = 1;
                         break;
                     //case RS485_CLOSE_CHAR:
                     default:
@@ -345,12 +347,17 @@ static void bus_socketPoll()
 
                 // Don't transmit the last control char
                 tx--;
+                over = 1;
             }
             else {
                 s_lastTime = TickGet();
             }
 
             prot_control_write(buffer, tx);
+            if (over) {
+                // Flush
+                prot_control_over();
+            }
         }
     }
 }

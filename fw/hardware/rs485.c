@@ -33,9 +33,14 @@ static BYTE* s_readPtr;
 // Status of address bit in the serie
 bit rs485_lastRc9;
 bit rs485_skipData;
-// Over bit, to send a OVER byte to channel when transmission ends
+// Send a special OVER token to the bus when the transmission ends (if there are 
+// data in TX queue)
 bit rs485_over;
+// When rs485_over is set, close will determine with char to send
 bit rs485_close;
+// When set after a write operation, remain in TX state when data finishes until next write operation
+bit rs485_master;
+
 static bit s_ferr;
 static bit s_lastrc9;
 
@@ -110,6 +115,8 @@ static void writeByte()
     // Feed more data, read at read pointer and then increase
     RS485_TXREG = *(s_readPtr++);
     ADJUST_PTR(s_readPtr);
+    // Enable interrupts now
+    RS485_PIE_TXIE = 1;
 }
 
 void rs485_interrupt()
@@ -120,6 +127,11 @@ void rs485_interrupt()
             if (_rs485_readAvail() > 0) {
                 // Feed more data, read at read pointer and then increase
                 writeByte();
+            }
+            else if (rs485_master) {
+                // Disable interrupt but remain in write mode
+                RS485_PIE_TXIE = 0;
+                break;
             }
             else if (rs485_over) {
                 rs485_over = 0;
@@ -182,10 +194,13 @@ void rs485_poll()
             if (elapsed >= START_TRANSMIT_TIMEOUT) {
                 // Transmit
                 s_status = STATUS_TRANSMIT;
-                // Feed first byte
-                writeByte();
-                // Enable interrupts now
-                RS485_PIE_TXIE = 1;
+                if (_rs485_readAvail() > 0) {
+                    // Feed first byte
+                    writeByte();
+                } else {
+                    // Enable interrupts now to eventually change state
+                    RS485_PIE_TXIE = 1;
+                }
             }
             break;
         case STATUS_WAIT_FOR_TRANSMIT_END:
@@ -200,7 +215,7 @@ void rs485_poll()
 
 void rs485_write(BOOL address, const BYTE* data, BYTE size)
 { 
-    rs485_over = rs485_close = 0;
+    rs485_over = rs485_close = rs485_master = 0;
 
     // Reset reader, if in progress
     if (s_status == STATUS_RECEIVE) {
@@ -216,8 +231,6 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
         s_lastTick = TickGet();
     }
 
-    BOOL ie = RS485_PIE_TXIE;
-    
     // Disable interrupts
     RS485_PIE_TXIE = 0;
 
@@ -236,15 +249,16 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     // 9-bit address
     RS485_TXSTA.TX9D = address;
 
-    // Re-enable if it was
-    RS485_PIE_TXIE = ie;
-
     // Schedule trasmitting, if not yet ready
     switch (s_status) {
         case STATUS_WAIT_FOR_TRANSMIT_END:
             // Re-convert it to tx
             s_status = STATUS_WAIT_FOR_START_TRANSMIT;
             s_lastTick = TickGet();
+            break;
+        case STATUS_TRANSMIT:
+            // Was in transmit state: reenable TX feed interrupt
+            RS485_PIE_TXIE = 1;
             break;
             
         //case STATUS_TRANSMIT:

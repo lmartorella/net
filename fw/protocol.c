@@ -232,8 +232,7 @@ void prot_poll()
 
 #ifdef HAS_BUS_SERVER
     // Socket connected?
-    BUS_STATE busState = bus_getState(); 
-    switch (busState) {
+    switch (bus_getState()) {
         case BUS_STATE_SOCKET_CONNECTED:
             // TCP is still polled by bus
             return;
