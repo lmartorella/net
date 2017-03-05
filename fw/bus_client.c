@@ -53,35 +53,33 @@ bit bus_isIdle()
 void bus_init()
 {
     // Prepare address
-    PersistentData data;
-    boot_getUserData(&data);
+    boot_getUserData();
 
     s_availForAddressAssign = FALSE;
 
     // Address should be reset?
     if (g_resetReason == RESET_MCLR) {
         // Reset address
-        data.address = UNASSIGNED_SUB_ADDRESS;       
-        boot_updateUserData(&data);
+        g_userData.address = UNASSIGNED_SUB_ADDRESS;       
+        boot_updateUserData();
         s_availForAddressAssign = TRUE;
     } 
 
-    if (data.address == UNASSIGNED_SUB_ADDRESS) {
+    if (g_userData.address == UNASSIGNED_SUB_ADDRESS) {
         // Signal unattended client, but doesn't auto-assign to avoid line clash at multiple boot
         led_on();
     }
 
-    s_header[2] = data.address;
+    s_header[2] = g_userData.address;
 
     bus_reinit_quick();
 }
 
 static void bus_storeAddress()
 {
-    PersistentData data;
-    boot_getUserData(&data);
-    data.address = s_header[2] = s_tempAddressForAssignment;
-    boot_updateUserData(&data);
+    boot_getUserData();
+    g_userData.address = s_header[2] = s_tempAddressForAssignment;
+    boot_updateUserData();
     
     s_availForAddressAssign = FALSE;
     led_off();

@@ -118,7 +118,7 @@ void rom_write(const void* destination, const void* source, WORD length)
 
 #elif defined(_IS_PIC16F628_CARD)
 
-void rom_read(int sourceAddress, BYTE* destination, WORD length)
+void rom_read(BYTE sourceAddress, BYTE* destination, BYTE length)
 {
     for (; length > 0; length--) { 
         // Wait for previous WR to finish
@@ -130,24 +130,35 @@ void rom_read(int sourceAddress, BYTE* destination, WORD length)
     }
 }
 
-void rom_write(int destinationAddr, const BYTE* source, WORD length)
-{
-    CLRWDT();
-    INTCONbits.GIE = 0;
-    EECON1bits.WREN = 1;
+// Data still to write
+static BYTE s_length;
+static BYTE s_destinationAddr;
+static const BYTE* s_source;
 
-    for (; length > 0; length--) { 
-        // Wait for previous WR to finish
-        while (EECON1bits.WR) CLRWDT();
-        EEADR = destinationAddr++;
-        EEDATA = *(source++);
+// Since writing is slow, cannot lose protocol data. Hence polling
+void rom_poll() 
+{
+    // Data to write and previous write operation finished?
+    if (s_length > 0 && !EECON1bits.WR) {
+        INTCONbits.GIE = 0;
+        EECON1bits.WREN = 1;
+
+        EEADR = s_destinationAddr++;
+        EEDATA = *(s_source++);
         EECON2 = 0x55;
         EECON2 = 0xAA;
         EECON1bits.WR = 1;
-    }
 
-    EECON1bits.WREN = 0;
-    INTCONbits.GIE = 1;
+        INTCONbits.GIE = 1;
+        EECON1bits.WREN = 0;
+    }
+}
+
+void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length)
+{
+    s_length = length;
+    s_destinationAddr = destinationAddr;
+    s_source = source;
 }
 
 #endif

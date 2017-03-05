@@ -9,15 +9,18 @@
 // Erase the entire row (destination should be multiple of ROW_SIZE = 1Kb)
 // and then copy the source bytes to the start of row, length should be at max 1Kb
 void rom_write(const void* destination, const void* source, WORD length);
+#define rom_poll()
 
 #define EEPROM_MODIFIER const
 
 #elif defined(_IS_PIC16F628_CARD)
 
-void rom_read(int sourceAddress, BYTE* destination, WORD length);
-void rom_write(int destinationAddr, const BYTE* source, WORD length);
+void rom_read(BYTE sourceAddress, BYTE* destination, BYTE length);
+void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length);
 
 #define EEPROM_MODIFIER eeprom
+
+void rom_poll();
 
 #endif
 #endif

@@ -96,27 +96,24 @@ static void CHIL_command()
     printch('c');
 #endif
     // Fetch my GUID
-    union {
-        PersistentData persistence;
-        WORD count;
-    } buffer;
+    WORD count;
     
-    boot_getUserData(&buffer.persistence);
+    boot_getUserData();
 
     // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
-    prot_control_write(&buffer.persistence.deviceId, sizeof(GUID));
+    prot_control_write(&g_userData.deviceId, sizeof(GUID));
     
 #ifdef HAS_BUS_SERVER
     // Propagate the request to all children to fetch their GUIDs
-    buffer.count = bus_getChildrenMaskSize();
-    prot_control_writeW(buffer.count);
-    prot_control_write(bus_getChildrenMask(), buffer.count);
+    count = bus_getChildrenMaskSize();
+    prot_control_writeW(count);
+    prot_control_write(bus_getChildrenMask(), count);
 
     bus_dirtyChildren = FALSE;
 #else    
     // No children
-    buffer.count = 0;
-    prot_control_writeW(buffer.count);
+    count = 0;
+    prot_control_writeW(count);
 #endif
     
     // end of transmission, over to Master
@@ -145,16 +142,12 @@ static void GUID_command()
 #ifdef DEBUGMODE
     printch('g');
 #endif
-    GUID guid;
-    if (!prot_control_read(&guid, sizeof(GUID))) {
+    boot_getUserData();
+    if (!prot_control_read(&g_userData.deviceId, sizeof(GUID))) {
         fatal("GU.u");
     }
-
-    PersistentData persistence;
-    boot_getUserData(&persistence);
-    persistence.deviceId = guid;
     // Have new GUID! Program it.
-    boot_updateUserData(&persistence);   
+    boot_updateUserData();   
 }
 
 // 2 bytes to receive

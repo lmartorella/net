@@ -13,6 +13,7 @@
 #include "hardware/rs485.h"
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
+#include "hardware/eeprom.h"
 
 void interrupt PRIO_TYPE low_isr(void)
 {
@@ -73,19 +74,20 @@ void main()
     BUSPOWER_PORT = 1;
 #endif
     
-    enableInterrupts();
-
 #ifdef HAS_RS485
     rs485_init();
 #endif
 
     prot_init();
-        
+
+    enableInterrupts();
+
     // I'm alive
     while (1) {   
         bus_poll();
         prot_poll();
         rs485_poll();
+        rom_poll();
             
 #if HAS_VS1011
         audio_pollMp3Player();

@@ -28,12 +28,11 @@ typedef struct
 #endif
 
 
-// This can be accessed by the running application in read-only mode
-extern EEPROM_MODIFIER PersistentData g_persistentData;
+extern PersistentData g_userData;
 
-// Update my copy of persistence
-void boot_getUserData(PersistentData* newData);
+// Update copy of persistence
+void boot_getUserData();
 // Program the new content of the UserData
-void boot_updateUserData(PersistentData* newData);
+void boot_updateUserData();
 
 #endif
