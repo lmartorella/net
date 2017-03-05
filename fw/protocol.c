@@ -15,7 +15,17 @@ static TICK_TYPE s_slowTimer;
 
 static signed char s_inReadSink;
 static signed char s_inWriteSink;
-static int s_commandToRun;
+// SORTED IN ORDER OF NEEDED BYTES!
+static enum { 
+    CMD_CLOS, // need 0
+    CMD_SINK, // need 0
+    CMD_CHIL, // need 0
+    CMD_READ, // need 2
+    CMD_WRIT, // need 2
+    CMD_SELE, // need 2
+    CMD_GUID,  // need 16
+    CMD_NONE
+} s_commandToRun;
 
 #ifdef HAS_BUS_SERVER
 bit prot_registered;
@@ -38,7 +48,7 @@ void prot_init()
     prot_registered = FALSE;
 #endif
     
-    s_commandToRun = -1;
+    s_commandToRun = CMD_NONE;
     s_inWriteSink = s_inReadSink = -1;
 
 #ifdef DEBUGMODE
@@ -175,35 +185,9 @@ static void WRIT_command()
     s_inReadSink = sinkId;
 }
 
-const struct {
-    TWOCC cmd;
-    void (*fptr)();
-    char readSize;
-} s_table[] = {
-    { 
-        "RD", READ_command, 2
-    },
-    { 
-        "WR", WRIT_command, 2
-    },
-    { 
-        "CL", CLOS_command, 0
-    },
-    { 
-        "SL", SELE_command, 2
-    },
-    { 
-        "SK", SINK_command, 0
-    },
-    { 
-        "CH", CHIL_command, 0
-    },
-    { 
-        "GU", GUID_command, 16
-    }
-};
-#define COMMAND_COUNT 7
-
+static bit memcmp2(char c1, char c2, char d1, char d2) {
+    return d1 == c1 && d2 == c2;
+}
 
 /*
 	Manage POLLs (read buffers)
@@ -266,31 +250,69 @@ void prot_poll()
     }
 
     BYTE s = prot_control_readAvail();
-    if (s_commandToRun >= 0) {
-        if (s >= s_table[s_commandToRun].readSize) {
-            s_table[s_commandToRun].fptr();
-            s_commandToRun = -1;
+    if (s_commandToRun != CMD_NONE) {
+        BYTE needed = 2;
+        if (s_commandToRun <= CMD_CHIL) {
+            needed = 0;
+        } else if (s_commandToRun == CMD_GUID) {
+            needed = 16;
         }
-        return;
+        if (s >= needed) {
+            switch (s_commandToRun) {
+                case CMD_READ:
+                    READ_command();
+                    break;
+                case CMD_WRIT:
+                    WRIT_command();
+                    break;
+                case CMD_CLOS:
+                    CLOS_command();
+                    break;
+                case CMD_SELE:
+                    SELE_command();
+                    break;
+                case CMD_SINK:
+                    SINK_command();
+                    break;
+                case CMD_CHIL:
+                    CHIL_command();
+                    break;
+                case CMD_GUID:
+                    GUID_command();
+                    break;
+            }
+            s_commandToRun = CMD_NONE;
+        }
     }
+    else {
+        // So decode message then
+        if (s >= sizeof(TWOCC)) // Minimum msg size
+        {
+            // This can even peek only one command.
+            // Until not closed by server, or CLOS command sent, the channel can stay open.
 
-    // So decode message then
-    if (s >= sizeof(TWOCC)) // Minimum msg size
-    {
-        // This can even peek only one command.
-        // Until not closed by server, or CLOS command sent, the channel can stay open.
+            TWOCC msg;
+            prot_control_read(&msg, sizeof(TWOCC));
 
-        TWOCC msg;
-        prot_control_read(&msg, sizeof(TWOCC));
-        for (BYTE i = 0; i < COMMAND_COUNT; i++) {
-            if (!memcmp(msg.str, s_table[i].cmd.str, sizeof(TWOCC))) {
-                s_commandToRun = i;
-                return;
+            if (memcmp2('R', 'D', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_READ;
+            } else if (memcmp2('W', 'R', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_WRIT;
+            } else if (memcmp2('C', 'L', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_CLOS;
+            } else if (memcmp2('S', 'L', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_SELE;
+            } else if (memcmp2('S', 'K', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_SINK;
+            } else if (memcmp2('C', 'H', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_CHIL;
+            } else if (memcmp2('G', 'U', msg.chars.c1, msg.chars.c2)) { 
+                s_commandToRun = CMD_GUID;
+            } else {
+                // Unknown command
+                fatal("CM.u");
             }
         }
-        
-        // Unknown command
-        fatal("CM.u");
+        // Otherwise wait for data
     }
-    // Otherwise wait for data
 }

@@ -133,8 +133,6 @@ void rom_read(int sourceAddress, BYTE* destination, WORD length)
 void rom_write(int destinationAddr, const BYTE* source, WORD length)
 {
     CLRWDT();
-    // Save GIE
-    BOOL gie = INTCONbits.GIE;
     INTCONbits.GIE = 0;
     EECON1bits.WREN = 1;
 
@@ -149,7 +147,7 @@ void rom_write(int destinationAddr, const BYTE* source, WORD length)
     }
 
     EECON1bits.WREN = 0;
-    INTCONbits.GIE = gie;
+    INTCONbits.GIE = 1;
 }
 
 #endif
