@@ -42,7 +42,7 @@ void prot_init()
     s_inWriteSink = s_inReadSink = -1;
 
 #ifdef DEBUGMODE
-    println("K");
+    printch('K');
 #endif
 }
 
@@ -265,7 +265,7 @@ void prot_poll()
         return;
     }
 
-    WORD s = prot_control_readAvail();
+    BYTE s = prot_control_readAvail();
     if (s_commandToRun >= 0) {
         if (s >= s_table[s_commandToRun].readSize) {
             s_table[s_commandToRun].fptr();

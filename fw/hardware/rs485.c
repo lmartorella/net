@@ -278,7 +278,7 @@ static void rs485_startRead()
         return;
     }
     
-    // Disable writing
+    // Disable writing (and reset OERR)
     RS485_TXSTA.TXEN = 0;
     RS485_RCSTA.CREN = 0;
     RS485_PIE_TXIE = 0;

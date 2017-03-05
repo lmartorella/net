@@ -69,6 +69,12 @@ void rs485_waitDisengageTime();
 // Used to close the socket communication
 #define RS485_CLOSE_CHAR 0x04
 
+#ifdef DEBUGMODE
+#define set_rs485_over() rs485_over=1;printch('>');
+#else
+#define set_rs485_over() rs485_over=1;
+#endif
+
 #endif
 
 #endif	/* USART_H */

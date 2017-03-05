@@ -14,7 +14,7 @@
 #undef HAS_DHT11
 #undef HAS_DIGIO
 
-#undef DEBUGMODE
+#define DEBUGMODE
 
 #define HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB3

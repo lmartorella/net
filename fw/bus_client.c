@@ -106,7 +106,7 @@ void bus_poll()
                 if (rs485_lastRc9) {
                     // Received a break char, go idle
 #ifdef DEBUGMODE
-            printch('@');
+                    printch('@');
 #endif
                     bus_reinit_after_disengage();
                 }
@@ -151,7 +151,7 @@ void bus_poll()
                 switch (buf) { 
                     case BUS_MSG_TYPE_ADDRESS_ASSIGN:
 #ifdef DEBUGMODE
-            printch('^');
+                        printch('^');
 #endif
                         if (s_availForAddressAssign) {
                             // Store the new address in memory
@@ -163,7 +163,7 @@ void bus_poll()
                        
                     case BUS_MSG_TYPE_HEARTBEAT:
 #ifdef DEBUGMODE
-            printch('"');
+                        printch('"');
 #endif
                         // Only respond to heartbeat if has address
                         if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
@@ -174,7 +174,7 @@ void bus_poll()
                         
                     case BUS_MSG_TYPE_READY_FOR_HELLO:
 #ifdef DEBUGMODE
-            printch('?');
+                        printch('?');
 #endif
                         // Only respond to hello if ready to program
                         if (s_availForAddressAssign) {
@@ -185,7 +185,7 @@ void bus_poll()
                        
                     case BUS_MSG_TYPE_CONNECT:
 #ifdef DEBUGMODE
-            printch('=');
+                        printch('=');
 #endif
                         if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
                             // Start reading data with rc9 not set
@@ -197,7 +197,7 @@ void bus_poll()
                         break;
                     default:
 #ifdef DEBUGMODE
-            printch('!');
+                        printch('!');
 #endif
                         // Unknown command. Reset
                         // Restart from 0x55
@@ -206,7 +206,7 @@ void bus_poll()
                 }
                 
 #ifdef DEBUGMODE
-            printch('-');
+                printch('-');
 #endif
                 // If not managed, reinit bus for the next message
                 bus_reinit_after_disengage();
@@ -218,9 +218,11 @@ void bus_poll()
 // Close the socket
 void prot_control_close()
 {
-    set_rs485_close();
+    // set_rs485_close
+    rs485_over=1;
+    rs485_close=1;
     // And then wait for TX end before going idle
-    s_state = STATE_WAIT_TX;
+    s_state = STATE_WAIT_TX;   
 }
 
 // Socket connected?

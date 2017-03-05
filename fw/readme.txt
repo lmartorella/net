@@ -18,6 +18,5 @@ K: init
 !: unknown command (error)
 -: not manager, bus reinit
 >: bus socket over sent (client)
-|: bus socket close sent (client)
 @: break received
 
