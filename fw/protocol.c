@@ -98,10 +98,8 @@ static void CHIL_command()
     // Fetch my GUID
     WORD count;
     
-    boot_getUserData();
-
     // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
-    prot_control_write(&g_userData.deviceId, sizeof(GUID));
+    prot_control_write(&pers_data.deviceId, sizeof(GUID));
     
 #ifdef HAS_BUS_SERVER
     // Propagate the request to all children to fetch their GUIDs
@@ -142,12 +140,11 @@ static void GUID_command()
 #ifdef DEBUGMODE
     printch('g');
 #endif
-    boot_getUserData();
-    if (!prot_control_read(&g_userData.deviceId, sizeof(GUID))) {
+    if (!prot_control_read(&pers_data.deviceId, sizeof(GUID))) {
         fatal("GU.u");
     }
     // Have new GUID! Program it.
-    boot_updateUserData();   
+    pers_save();   
 }
 
 // 2 bytes to receive

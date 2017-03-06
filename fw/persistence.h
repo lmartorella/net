@@ -27,12 +27,15 @@ typedef struct
 #define DEFAULT_PERS_DATA { { 0, 0, 0, 0, 0 } }
 #endif
 
-
-extern PersistentData g_userData;
+// The cached copy of the EEPROM data, read at startup/init
+// and then saved explicitly
+extern PersistentData pers_data;
 
 // Update copy of persistence
-void boot_getUserData();
+void pers_init();
+// Poll WR 
+#define pers_poll rom_poll
 // Program the new content of the UserData
-void boot_updateUserData();
+void pers_save();
 
 #endif

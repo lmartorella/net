@@ -158,8 +158,6 @@ void ip_prot_slowTimer()
 
 static void sendHelo()
 {
-    boot_getUserData();
-
 	// Still no HOME? Ping HELO
 	if (UDPIsPutReady(s_heloSocket) < sizeof(HOME_REQUEST))
 	{
@@ -168,7 +166,7 @@ static void sendHelo()
 
 	UDPPutString("HOME");
 	UDPPutString(prot_registered ? (bus_dirtyChildren ? "NWND" : "HTBT") : "HEL3");
-	UDPPutArray((BYTE*)(&g_userData.deviceId), sizeof(GUID));
+	UDPPutArray((BYTE*)(&pers_data.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
 	UDPFlush();   
 }

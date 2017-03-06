@@ -148,6 +148,7 @@ void rom_poll()
         EECON2 = 0x55;
         EECON2 = 0xAA;
         EECON1bits.WR = 1;
+        s_length--;
 
         INTCONbits.GIE = 1;
         EECON1bits.WREN = 0;

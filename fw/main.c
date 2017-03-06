@@ -10,10 +10,10 @@
 #include "audioSink.h"
 #include "halfduplex.h"
 #include "dcf77.h"
+#include "persistence.h"
 #include "hardware/rs485.h"
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
-#include "hardware/eeprom.h"
 
 void interrupt PRIO_TYPE low_isr(void)
 {
@@ -37,6 +37,8 @@ void main()
     timers_init();
     appio_init();
 
+    pers_init();
+    
 #ifdef HAS_SPI
     println("Spi");
     
@@ -87,7 +89,7 @@ void main()
         bus_poll();
         prot_poll();
         rs485_poll();
-        rom_poll();
+        pers_poll();
             
 #if HAS_VS1011
         audio_pollMp3Player();
