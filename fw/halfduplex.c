@@ -3,6 +3,7 @@
 #include "appio.h"
 #include "protocol.h"
 #include "hardware/max232.h"
+#include "hardware/rs485.h"
 
 #ifdef HAS_MAX232_SOFTWARE
 
@@ -48,7 +49,11 @@ void halfduplex_poll()
         // Echo back same data
 #else
         // Disable bus. Start read. Blocker.
+        INTCONbits.GIE = 0;
         s_count = max232_sendReceive(s_count);
+        // Before resetting interrupts, reset RS485 state (it could have gone underrun)
+        rs485_init();
+        INTCONbits.GIE = 1;
 #endif
         // Resume everything
         s_state = ST_IDLE;

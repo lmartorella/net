@@ -69,8 +69,6 @@ void max232_send(int size) {
 // Write sync, disable interrupts
 int max232_sendReceive(int size) {
 
-    INTCONbits.GIE = 0;
-
     max232_send(size);
     // Now receive
     BYTE* ptr = max232_buffer1;
@@ -84,7 +82,6 @@ int max232_sendReceive(int size) {
             if (RS232_TCON_IF) {
                 RS232_TCON_IF = 0;
                 if ((timeoutCount--) == 0) {
-                    INTCONbits.GIE = 1;
                     return i;
                 }
             }
