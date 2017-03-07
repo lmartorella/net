@@ -15,13 +15,15 @@ namespace SerialEcho
             port.Open();
             port.WriteTimeout = SerialPort.InfiniteTimeout;
 
+            int i = 0;
             do
             {
                 var rx = port.ReadLine();
                 var tx = rx.ToUpper();
                 port.WriteLine(tx);
-                Console.WriteLine("RX  <- {0} ({1}+1 chars)", rx, rx.Length);
-                Console.WriteLine(" TX <- " + tx);
+                Console.WriteLine("{2} RX  <- {0} ({1}+1 chars)", rx, rx.Length, i);
+                Console.WriteLine("{0}  TX <- " + tx, i);
+                i++;
             } while (true);
         }
     }

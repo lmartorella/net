@@ -76,9 +76,9 @@ namespace Lucky.Home.Admin
             return (bool)await Request("RenameNode", nodeAddress, oldId, newId);
         }
 
-        public async Task ResetNode(string nodeAddress)
+        public async Task ResetNode(Guid id, string nodeAddress)
         {
-            await Request("ResetNode", nodeAddress);
+            await Request("ResetNode", id, nodeAddress);
         }
 
         public async Task<string> CreateDevice(DeviceDescriptor descriptor)

@@ -17,8 +17,7 @@ static enum {
     STATE_HEADER_3 = 3,         // msgtype
             
     STATE_SOCKET_OPEN = 10,
-    STATE_WAIT_TX,
-    STATE_WAIT_DISENGAGE
+    STATE_WAIT_TX
             
 } s_state;
 
@@ -32,7 +31,7 @@ static BYTE s_tempAddressForAssignment;
 static void bus_reinit_after_disengage()
 {
     rs485_waitDisengageTime();
-    s_state = STATE_WAIT_DISENGAGE;
+    s_state = STATE_WAIT_TX;
 }
 
 /**
@@ -94,119 +93,115 @@ static void bus_sendAck(BYTE ackCode) {
 void bus_poll()
 {
     RS485_STATE rs485state = rs485_getState();
+    BYTE buf;
     
-    if (s_state >= STATE_SOCKET_OPEN) {
-        switch (s_state) {
-            case STATE_SOCKET_OPEN: 
-                if (rs485_lastRc9) {
-                    // Received a break char, go idle
+    switch (s_state) {
+        case STATE_SOCKET_OPEN: 
+            if (rs485_lastRc9) {
+                // Received a break char, go idle
 #ifdef DEBUGMODE
-                    printch('@');
+                printch('@');
 #endif
-                    bus_reinit_after_disengage();
-                }
-                // Else do nothing
-                break;
-            case STATE_WAIT_TX:
-            case STATE_WAIT_DISENGAGE:
-                // When in read mode again, progress
-                if (rs485state != RS485_LINE_TX_DATA && rs485state != RS485_LINE_TX_DISENGAGE) {
-                    bus_reinit_quick();
-                }
-                break;
-        }
-    }
-    else {
-        // Header decode
-        BYTE buf;
-        if (rs485_readAvail() > 0) {            
-                       
-            // RC9 will be 1
-            rs485_read(&buf, 1);
-            // Waiting for header?
-            if (s_state < STATE_HEADER_3) {
-                // Keep an eye to address if in assign state
-                if (s_state == STATE_HEADER_ADRESS && s_availForAddressAssign) {
-                    // Store the byte, in case of s_skipNextAddressCheck
-                    s_tempAddressForAssignment = buf;
-                    // Go ahead
-                    s_state++;
-                }
-                else if (buf == s_header[s_state]) {
-                    // Header matches. Go next.
-                    s_state++;
-                }
-                else {
-                    // Not my address, or protocol error. Restart from 0x55 but don't try to skip glitches
-                    bus_reinit_after_disengage();
-                }
-            }
-            else {
-                // Header correct. Now read the command and respond
-                switch (buf) { 
-                    case BUS_MSG_TYPE_ADDRESS_ASSIGN:
-#ifdef DEBUGMODE
-                        printch('^');
-#endif
-                        if (s_availForAddressAssign) {
-                            // Store the new address in memory
-                            bus_storeAddress();
-                            bus_sendAck(BUS_ACK_TYPE_HEARTBEAT);
-                            return;
-                        }
-                        break;
-                       
-                    case BUS_MSG_TYPE_HEARTBEAT:
-#ifdef DEBUGMODE
-                        printch('"');
-#endif
-                        // Only respond to heartbeat if has address
-                        if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
-                            bus_sendAck(BUS_ACK_TYPE_HEARTBEAT);
-                            return;
-                        }
-                        break;
-                        
-                    case BUS_MSG_TYPE_READY_FOR_HELLO:
-#ifdef DEBUGMODE
-                        printch('?');
-#endif
-                        // Only respond to hello if ready to program
-                        if (s_availForAddressAssign) {
-                            bus_sendAck(BUS_ACK_TYPE_HELLO);
-                            return;
-                        }
-                        break;
-                       
-                    case BUS_MSG_TYPE_CONNECT:
-#ifdef DEBUGMODE
-                        printch('=');
-#endif
-                        if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
-                            // Start reading data with rc9 not set
-                            rs485_skipData = rs485_lastRc9 = FALSE;
-                            // Socket, direct connect
-                            s_state = STATE_SOCKET_OPEN;
-                            return;
-                        }
-                        break;
-                    default:
-#ifdef DEBUGMODE
-                        printch('!');
-#endif
-                        // Unknown command. Reset
-                        // Restart from 0x55
-                        bus_reinit_after_disengage();
-                        break;
-                }
-                
-#ifdef DEBUGMODE
-                printch('-');
-#endif
-                // If not managed, reinit bus for the next message
                 bus_reinit_after_disengage();
             }
-        }
+            // Else do nothing
+            break;
+        case STATE_WAIT_TX:
+            // When in read mode again, progress
+            if (rs485state != RS485_LINE_TX_DATA && rs485state != RS485_LINE_TX_DISENGAGE) {
+                bus_reinit_quick();
+            }
+            break;
+        default:
+            // Header decode
+            if (rs485_readAvail() > 0) {            
+
+                // RC9 will be 1
+                rs485_read(&buf, 1);
+                // Waiting for header?
+                if (s_state < STATE_HEADER_3) {
+                    // Keep an eye to address if in assign state
+                    if (s_state == STATE_HEADER_ADRESS && s_availForAddressAssign) {
+                        // Store the byte, in case of s_skipNextAddressCheck
+                        s_tempAddressForAssignment = buf;
+                        // Go ahead
+                        s_state++;
+                    }
+                    else if (buf == s_header[s_state]) {
+                        // Header matches. Go next.
+                        s_state++;
+                    }
+                    else {
+                        // Not my address, or protocol error. Restart from 0x55 but don't try to skip glitches
+                        bus_reinit_after_disengage();
+                    }
+                }
+                else {
+                    // Header correct. Now read the command and respond
+                    switch (buf) { 
+                        case BUS_MSG_TYPE_ADDRESS_ASSIGN:
+#ifdef DEBUGMODE
+                            printch('^');
+#endif
+                            if (s_availForAddressAssign) {
+                                // Store the new address in memory
+                                bus_storeAddress();
+                                bus_sendAck(BUS_ACK_TYPE_HEARTBEAT);
+                                return;
+                            }
+                            break;
+
+                        case BUS_MSG_TYPE_HEARTBEAT:
+#ifdef DEBUGMODE
+                            printch('"');
+#endif
+                            // Only respond to heartbeat if has address
+                            if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
+                                bus_sendAck(BUS_ACK_TYPE_HEARTBEAT);
+                                return;
+                            }
+                            break;
+
+                        case BUS_MSG_TYPE_READY_FOR_HELLO:
+#ifdef DEBUGMODE
+                            printch('?');
+#endif
+                            // Only respond to hello if ready to program
+                            if (s_availForAddressAssign) {
+                                bus_sendAck(BUS_ACK_TYPE_HELLO);
+                                return;
+                            }
+                            break;
+
+                        case BUS_MSG_TYPE_CONNECT:
+#ifdef DEBUGMODE
+                            printch('=');
+#endif
+                            if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
+                                // Start reading data with rc9 not set
+                                rs485_skipData = rs485_lastRc9 = FALSE;
+                                // Socket, direct connect
+                                s_state = STATE_SOCKET_OPEN;
+                                return;
+                            }
+                            break;
+                        default:
+#ifdef DEBUGMODE
+                            printch('!');
+#endif
+                            // Unknown command. Reset
+                            // Restart from 0x55
+                            bus_reinit_after_disengage();
+                            break;
+                    }
+                
+#ifdef DEBUGMODE
+                    printch('-');
+#endif
+                    // If not managed, reinit bus for the next message
+                    bus_reinit_after_disengage();
+                }
+            }
     }
 }
 
@@ -214,8 +209,8 @@ void bus_poll()
 void prot_control_close()
 {
     // set_rs485_close
-    rs485_over=1;
-    rs485_close=1;
+    rs485_over = 1;
+    rs485_close = 1;
     // And then wait for TX end before going idle
     s_state = STATE_WAIT_TX;   
 }

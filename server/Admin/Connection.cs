@@ -138,7 +138,7 @@ namespace Lucky.Home
 
         public async Task ResetNode(Node node)
         {
-            await _adminInterface.ResetNode(node.Address);
+            await _adminInterface.ResetNode(node.Id, node.Address);
         }
 
         public event EventHandler NodeSelectionChanged;

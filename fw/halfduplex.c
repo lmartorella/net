@@ -39,7 +39,7 @@ void halfduplex_init()
 
 void halfduplex_poll()
 {
-    if (s_state == ST_READY_TO_COMM) {
+    if (s_state == ST_READY_TO_COMM && bus_isIdle()) {
         
 #ifdef DEBUGMODE
         printch('#');

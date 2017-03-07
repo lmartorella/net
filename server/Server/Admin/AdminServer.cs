@@ -49,9 +49,18 @@ namespace Lucky.Home.Admin
             }
         }
 
-        public async Task ResetNode(string nodeAddress)
+        public async Task ResetNode(Guid id, string nodeAddress)
         {
-            ITcpNode node = _manager.FindNode(TcpNodeAddress.Parse(nodeAddress));
+            ITcpNode node;
+            if (id != Guid.Empty)
+            {
+                node = _manager.FindNode(id);
+            }
+            else
+            {
+                node = _manager.FindNode(TcpNodeAddress.Parse(nodeAddress));
+            }
+
             if (node != null)
             {
                 await node.Sink<SystemSink>().Reset();

@@ -12,5 +12,6 @@ namespace Lucky.Home.Admin
         Task<string> CreateDevice(DeviceDescriptor descriptor);
         Task<DeviceDescriptor[]> GetDevices();
         Task DeleteDevice(Guid id);
+        Task ResetNode(Guid id, string nodeAddress);
     }
 }
