@@ -62,12 +62,17 @@ void rs485_waitDisengageTime();
 // 14 ticks per byte (round up) on PIC18 @25MHz
 #define TICKS_PER_BYTE (TICK_TYPE)((TICKS_PER_SECOND + BYTES_PER_SECONDS) / BYTES_PER_SECONDS)
 
-// ASCII EndOfTransmissionBlock
-// Used to switch over to other party
-#define RS485_OVER_CHAR 0x17
-// ASCII EndOfTransmission
-// Used to close the socket communication
-#define RS485_CLOSE_CHAR 0x04
+typedef enum {
+    // ASCII EndOfTransmission
+    // Used to close the socket communication
+    RS485_CCHAR_CLOSE = 0x04,
+    // ASCII SynchronousIdle
+    // Used to tell that the socket should stay opened
+    RS485_CCHAR_IDLE = 0x16,
+    // ASCII EndOfTransmissionBlock
+    // Used to switch over to other party
+    RS485_CCHAR_OVER = 0x17,
+} RS485_CONTROL_CHAR;
 
 #ifdef DEBUGMODE
 #define set_rs485_over() rs485_over=1;printch('>');

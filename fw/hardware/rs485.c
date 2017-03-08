@@ -137,7 +137,7 @@ void rs485_interrupt()
                 rs485_over = 0;
                 // Send OVER byte
                 RS485_TXSTA.TX9D = 1;
-                RS485_TXREG = rs485_close ? RS485_CLOSE_CHAR : RS485_OVER_CHAR;
+                RS485_TXREG = rs485_close ? RS485_CCHAR_CLOSE : RS485_CCHAR_OVER;
             } 
             else {
                 // NO MORE data to transmit

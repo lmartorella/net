@@ -331,29 +331,36 @@ static void bus_socketPoll()
             if (rs485_lastRc9) {
                 // Read control char
                 switch (buffer[tx - 1]) {
-                    case RS485_OVER_CHAR:
+                    case RS485_CCHAR_OVER:
                         // Socket 'over'? Go back to transmit state, the client
                         // is about to disengage the line
                         rs485_write(0, NULL, 0);
                         rs485_master = 1;
+                        over = 1;
+                        break;
+                    case RS485_CCHAR_IDLE:
+                        // Ok, skip the char and keep timer going
+                        s_lastTime = TickGet();
                         break;
                     //case RS485_CLOSE_CHAR:
                     default:
                         // Socket closed. Now the channel is idle again
                         s_busState = BUS_PRIV_STATE_IDLE;
                         s_socketConnected = SOCKET_NOT_CONNECTED;
+                        over = 1;
                         break;
                 }
 
                 // Don't transmit the last control char
                 tx--;
-                over = 1;
             }
             else {
                 s_lastTime = TickGet();
             }
 
-            prot_control_write(buffer, tx);
+            if (tx > 0) {
+                prot_control_write(buffer, tx);
+            }
             if (over) {
                 // Flush
                 prot_control_over();

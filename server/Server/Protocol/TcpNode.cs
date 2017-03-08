@@ -69,22 +69,26 @@ namespace Lucky.Home.Protocol
             {
                 // Re-fire the children request and de-zombie
                 var subNodes = GetChildrenIndexes();
-                // If same children, simply de-zombie
-                var sameChildren = lastKnownChildren.Select(n => n != null ? n.Address.Index : -1).SequenceEqual(subNodes);
-                if (sameChildren)
+                if (subNodes != null)
                 {
-                    // Directly de-zombie all children
-                    foreach (var node in lastKnownChildren.Where(c => c == null || c.IsZombie))
+                    // If same children, simply de-zombie
+                    var sameChildren = lastKnownChildren.Select(n => n != null ? n.Address.Index : -1).SequenceEqual(subNodes);
+                    if (sameChildren)
                     {
-                        // Re-fetch reset status
-                        await node.Relogin(node.Address);
+                        // Directly de-zombie all children
+                        foreach (var node in lastKnownChildren.Where(c => c == null || c.IsZombie))
+                        {
+                            // Re-fetch reset status
+                            await node.Relogin(node.Address);
+                        }
+                    }
+                    else
+                    {
+                        // Else refetch metadata, something changed
+                        await FetchMetadata();
                     }
                 }
-                else
-                {
-                    // Else refetch metadata, something changed
-                    await FetchMetadata();
-                }
+                // Else error in fetching children...
             }
 
             // Ask system sink if ETH node DEBUG DEBUG
@@ -312,8 +316,15 @@ namespace Lucky.Home.Protocol
             {
                 connection.Write(new GetChildrenMessage());
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
-                ret = ToIntEnumerable(childNodes.Mask).Select(i => i + 1).ToArray();
-                return true;
+                if (childNodes != null)
+                {
+                    ret = ToIntEnumerable(childNodes.Mask).Select(i => i + 1).ToArray();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             });
             return ret;
         }

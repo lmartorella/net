@@ -11,8 +11,8 @@ namespace Lucky.Home.Devices
     public class EchoLineTesterDevice : DeviceBase
     {
         private Timer _timer;
-        private string _lastMessage = "0123456789abcdef0123456789abcdef 123456789abcdef0123456789abcdef$"; // = 65 chars
-        //private string _lastMessage = "abc123$"; 
+        //private string _lastMessage = "0123456789abcdef0123456789abcdef 123456789abcdef0123456789abcdef$"; // = 65 chars
+        private string _lastMessage = "abc123$"; 
 
         public EchoLineTesterDevice()
         {

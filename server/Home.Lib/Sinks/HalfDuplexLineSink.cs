@@ -28,10 +28,6 @@ namespace Lucky.Home.Sinks
             {
                 writer.Write(new Message { TxData = txData });
             });
-
-            // Wait 0.4 sec (192 * 2 words)
-            await Task.Delay(TimeSpan.FromSeconds(0.2));
-
             byte[] data = null;
             Read(reader =>
             {

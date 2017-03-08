@@ -27,42 +27,17 @@ static enum {
     ST_RECEIVE_DATA,
 
     // Transmit data
-    ST_TRANSMIT_DATA,
-            
-    ST_READY_TO_COMM,
-
+    ST_TRANSMIT_DATA
 } s_state;
 
 void halfduplex_init()
 {
     s_state = ST_IDLE;
+    s_count = 0;
 }
 
 void halfduplex_poll()
 {
-    if (s_state == ST_READY_TO_COMM && bus_isIdle()) {
-        
-#ifdef DEBUGMODE
-        printch('#');
-        printch('0' + (s_count / 10));
-        printch('0' + (s_count % 10));
-        // Echo back same data
-#else
-        // Disable bus. Start read. Blocker.
-        INTCONbits.GIE = 0;
-        s_count = max232_sendReceive(s_count);
-        // Before resetting interrupts, reset RS485 state (it could have gone underrun)
-        rs485_init();
-        INTCONbits.GIE = 1;
-#endif
-        // Resume everything
-        s_state = ST_IDLE;
-
-#ifdef DEBUGMODE
-        printch('&');
-        printch('0' + s_count);
-#endif
-    }
 }
 
 static bit halfduplex_readHandler()
@@ -103,7 +78,7 @@ static bit halfduplex_readHandler()
     }
     else {
         // Else data OK
-        s_state = ST_READY_TO_COMM;
+        s_state = ST_IDLE;
 #ifdef DEBUGMODE
         printch('@');
 #endif
@@ -115,6 +90,22 @@ static bit halfduplex_readHandler()
 static bit halfduplex_writeHandler()
 {
     if (s_state != ST_TRANSMIT_DATA) {
+#ifdef DEBUGMODE
+        printch('#');
+        printch('0' + (s_count / 10));
+        printch('0' + (s_count % 10));
+        // Echo back same data
+#else
+        // Disable bus. Start read. Blocker.
+        INTCONbits.GIE = 0;
+        s_count = max232_sendReceive(s_count);
+        INTCONbits.GIE = 1;
+#endif
+
+#ifdef DEBUGMODE
+        printch('&');
+        printch('0' + s_count);
+#endif
         // IN HEADER WRITE
         prot_control_writeW(s_count);
         s_ptr = max232_buffer1;
@@ -142,6 +133,7 @@ static bit halfduplex_writeHandler()
     else { 
         // End of transmit task -> reset sink state
         s_state = ST_IDLE;
+        s_count = 0;
         return 0;
     }
 }
