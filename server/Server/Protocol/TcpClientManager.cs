@@ -36,6 +36,8 @@ namespace Lucky.Home.Protocol
                 _writer = new BinaryWriter(_stream);
             }
 
+            public bool IsDisposed { get; private set; }
+
             private void Flush()
             {
                 _writer.Flush();
@@ -49,6 +51,7 @@ namespace Lucky.Home.Protocol
                     Flush();
                     _reader.Close();
                     _stream = null;
+                    IsDisposed = true;
                 }
             }
 

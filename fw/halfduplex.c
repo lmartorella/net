@@ -90,6 +90,11 @@ static bit halfduplex_readHandler()
 static bit halfduplex_writeHandler()
 {
     if (s_state != ST_TRANSMIT_DATA) {
+        if (prot_control_writeAvail() < 2) {
+            // Wait for buffer to be free first
+            return 1;
+        }
+        
 #ifdef DEBUGMODE
         printch('#');
         printch('0' + (s_count / 10));
@@ -98,7 +103,7 @@ static bit halfduplex_writeHandler()
 #else
         // Disable bus. Start read. Blocker.
         INTCONbits.GIE = 0;
-        s_count = max232_sendReceive(s_count);
+        //s_count = max232_sendReceive(s_count);
         INTCONbits.GIE = 1;
 #endif
 

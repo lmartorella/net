@@ -20,7 +20,7 @@ bit prot_control_read(void* data, WORD size);
 void prot_control_writeW(WORD w);
 void prot_control_write(const void* data, WORD size);
 void prot_control_over();
-void prot_control_idle() { }
+#define prot_control_idle()
 WORD prot_control_readAvail();
 WORD prot_control_writeAvail();
 extern bit prot_registered;

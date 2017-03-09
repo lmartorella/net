@@ -231,6 +231,7 @@ void bus_poll()
                 // Timeout. Dead bean?
                 // Drop the TCP connection and reset the channel
                 bus_disconnectSocket(SOCKET_ERR_TIMEOUT);
+                prot_control_abort();
             }
             else {
                 bus_socketPoll();
@@ -290,7 +291,7 @@ static void bus_socketPoll()
 {
     // Bus line is slow, though
     BYTE buffer[RS485_BUF_SIZE / 2];
-    BOOL over = 0;
+    BOOL over = 0, close = 0;
             
     // Data from IP?
     WORD rx = prot_control_readAvail();
@@ -327,6 +328,7 @@ static void bus_socketPoll()
             // Read data and push it into IP
             tx = tx > sizeof(buffer) ? sizeof(buffer) : tx;
             rs485_read(buffer, tx);
+            s_lastTime = TickGet();
                       
             if (rs485_lastRc9) {
                 // Read control char
@@ -340,22 +342,19 @@ static void bus_socketPoll()
                         break;
                     case RS485_CCHAR_IDLE:
                         // Ok, skip the char and keep timer going
-                        s_lastTime = TickGet();
                         break;
                     //case RS485_CLOSE_CHAR:
                     default:
                         // Socket closed. Now the channel is idle again
                         s_busState = BUS_PRIV_STATE_IDLE;
                         s_socketConnected = SOCKET_NOT_CONNECTED;
+                        close = 1;
                         over = 1;
                         break;
                 }
 
                 // Don't transmit the last control char
                 tx--;
-            }
-            else {
-                s_lastTime = TickGet();
             }
 
             if (tx > 0) {
@@ -364,6 +363,10 @@ static void bus_socketPoll()
             if (over) {
                 // Flush
                 prot_control_over();
+            }
+            if (close) {
+                // and close?
+                prot_control_abort();
             }
         }
     }

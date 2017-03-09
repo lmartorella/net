@@ -4,13 +4,15 @@ using System.Net;
 namespace Lucky.Home.Protocol
 {
     /// <summary>
-    /// Can last more than a TcpClientManager.Client instance
+    /// Can last less than a TcpClientManager.Client instance.
     /// </summary>
     internal class TcpConnection : IDisposable, IConnectionReader, IConnectionWriter
     {
         private TcpConnectionFactory.ClientMutex _mutex;
         private readonly IPEndPoint _endPoint;
         private readonly TcpClientManager _clientManager;
+        private TcpClientManager.Client _client;
+        private bool _disposed;
 
         public TcpConnection(IPEndPoint endPoint, TcpConnectionFactory.ClientMutex mutex, TcpClientManager clientManager)
         {
@@ -30,27 +32,46 @@ namespace Lucky.Home.Protocol
             {
                 _mutex.Release();
                 _mutex = null;
+                _client = null;
+                _disposed = true;
+            }
+        }
+
+        private TcpClientManager.Client Client
+        {
+            get
+            {
+                if (_disposed)
+                {
+                    return null;
+                }
+                if (_client == null)
+                {
+                    _client = _clientManager.GetClient(_endPoint);
+                }
+                return _client.IsDisposed ? null : _client;
             }
         }
 
         public void Write<T>(T data)
         {
-            _clientManager.GetClient(_endPoint).Write(data);
+            Client?.Write(data);
         }
 
         public T Read<T>()
         {
-            return _clientManager.GetClient(_endPoint).Read<T>();
+            var client = Client;
+            return client != null ? client.Read<T>() : default(T);
         }
 
         public byte[] ReadBytes(int byteCount)
         {
-            return _clientManager.GetClient(_endPoint).ReadBytes(byteCount);
+            return Client?.ReadBytes(byteCount);
         }
 
         public void WriteBytes(byte[] bytes)
         {
-            _clientManager.GetClient(_endPoint).WriteBytes(bytes);
+            Client?.WriteBytes(bytes);
         }
     }
 }
