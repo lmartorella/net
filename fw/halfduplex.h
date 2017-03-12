@@ -5,7 +5,6 @@
 
 void halfduplex_init();
 extern const Sink g_halfDuplexSink;
-void halfduplex_poll();
 
 #endif	/* XC_HFD_TEMPLATE_H */
 

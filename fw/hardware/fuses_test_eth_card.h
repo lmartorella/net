@@ -168,5 +168,7 @@ void fatal(const char* msg);
 #define LED_PORTBIT PORTHbits.RH0
 #define LED_TRISBIT TRISHbits.RH0
 
+#define HAS_FAKE_RS232
+
 #endif
 

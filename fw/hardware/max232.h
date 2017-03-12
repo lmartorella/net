@@ -1,7 +1,7 @@
 #ifndef XC_RS232_H
 #define	XC_RS232_H
 
-#if defined(HAS_MAX232_SOFTWARE)
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
 
 // Connection 9600,N,8,1
 void max232_init();

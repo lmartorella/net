@@ -22,7 +22,7 @@ const Sink* AllSinks[] = {
     &g_inSink,
 #endif
     
-#ifdef HAS_CM1602
+#if defined(HAS_CM1602) && !(defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232))
     &g_displaySink, 
 #endif
     
@@ -30,13 +30,13 @@ const Sink* AllSinks[] = {
     &g_tempSink,
 #endif
 
-#ifdef HAS_MAX232_SOFTWARE
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
     &g_halfDuplexSink 
 #endif
 };
 
 int AllSinksSize =
-#if defined(HAS_MAX232_SOFTWARE)
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
     2
 #elif defined(HAS_DIGIO) && defined(HAS_CM1602) && defined(HAS_DHT11)
     5

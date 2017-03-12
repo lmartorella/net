@@ -114,13 +114,15 @@ void sys_storeResetReason()
 	// Normal Power-on startup. Ok.
 	g_resetReason = RESET_POWER;
 	RCONbits.NOT_POR = 1;
-    }
+	RCONbits.NOT_BOR = 1;
+    }    
     else if (!RCONbits.NOT_BOR)
     {
 	// Brown-out reset. Low voltage.
 	g_resetReason = RESET_BROWNOUT;
+	RCONbits.NOT_POR = 1;
 	RCONbits.NOT_BOR = 1;
-    }
+    }    
 /*
     else if (!RCONbits.NOT_CM)
     {

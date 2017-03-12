@@ -5,7 +5,7 @@
 #include "hardware/max232.h"
 #include "hardware/rs485.h"
 
-#ifdef HAS_MAX232_SOFTWARE
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
 
 static bit halfduplex_readHandler();
 static bit halfduplex_writeHandler();
@@ -34,10 +34,6 @@ void halfduplex_init()
 {
     s_state = ST_IDLE;
     s_count = 0;
-}
-
-void halfduplex_poll()
-{
 }
 
 static bit halfduplex_readHandler()
@@ -102,9 +98,7 @@ static bit halfduplex_writeHandler()
         // Echo back same data
 #else
         // Disable bus. Start read. Blocker.
-        INTCONbits.GIE = 0;
         //s_count = max232_sendReceive(s_count);
-        INTCONbits.GIE = 1;
 #endif
 
 #ifdef DEBUGMODE

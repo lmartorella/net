@@ -16,7 +16,7 @@ K: init
 ?: ready for hello
 =: socket connect
 !: unknown command (error)
--: not manager, bus reinit
+-: not managed (not targeted when unitialied but not MCLR), bus reinit
 >: bus socket over sent (client)
 @: break received
 

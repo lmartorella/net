@@ -99,11 +99,6 @@ void main()
         dcf77_poll();
 #endif
         
-#ifdef HAS_MAX232_SOFTWARE
-        if (bus_isIdle()) {
-            halfduplex_poll();
-        }
-#endif
         CLRWDT();
     }
 }

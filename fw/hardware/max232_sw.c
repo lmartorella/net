@@ -3,7 +3,7 @@
 #include "../bus.h"
 #include "leds.h"
 
-#ifdef HAS_MAX232_SOFTWARE
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
 
 // Debug when RS232 RX line is sampled
 #undef TIMING_DEBUG
@@ -12,6 +12,7 @@ BYTE max232_buffer1[MAX232_BUFSIZE1];
 BYTE max232_buffer2[MAX232_BUFSIZE2];
 
 void max232_init() {
+#ifdef HAS_MAX232_SOFTWARE
     // Init I and O bits
     RS232_RX_TRIS = 1;
     RS232_TX_TRIS = 0;
@@ -20,8 +21,10 @@ void max232_init() {
     
     RS232_TCON = RS232_TCON_OFF;
     RS232_TCON_REG = RS232_TCON_VALUE; 
+#endif
 }
 
+#ifdef HAS_MAX232_SOFTWARE
 #define RESETTIMER(t) { RS232_TCON_REG = t; RS232_TCON_ACC = 0; RS232_TCON_IF = 0; }
 #define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RS232_TCON_IF = 0; }
 
@@ -40,12 +43,15 @@ static void send(BYTE b) {
     WAITBIT()
     RS232_TX_PORT = 1;
 }
+#endif
 
 void max232_send(int size) {
     if (size > MAX232_BUFSIZE1 + MAX232_BUFSIZE2) {
         fatal("UAs.ov");
     }
+
     INTCONbits.GIE = 0;
+#ifdef HAS_MAX232_SOFTWARE
 
     RESETTIMER(RS232_TCON_VALUE)
     RS232_TCON = RS232_TCON_ON;
@@ -62,6 +68,7 @@ void max232_send(int size) {
         }
         WAITBIT()
     }
+#endif
     
     INTCONbits.GIE = 1;
 }
@@ -70,6 +77,8 @@ void max232_send(int size) {
 int max232_sendReceive(int size) {
 
     max232_send(size);
+
+#ifdef HAS_MAX232_SOFTWARE
     // Now receive
     BYTE* ptr = max232_buffer1;
     BYTE i = 0;
@@ -125,6 +134,7 @@ int max232_sendReceive(int size) {
         WAITBIT();
         // Now in STOP state
     }   
+#endif
 }
         
 #endif
