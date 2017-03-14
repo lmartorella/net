@@ -9,6 +9,8 @@
 #define EN_TRANSMIT 1
 #define EN_RECEIVE 0
 
+#define ETH_DEBUG_LINES
+
 static enum {
     // No transmit, receive mode
     STATUS_RECEIVE,
@@ -18,6 +20,8 @@ static enum {
     STATUS_WAIT_FOR_START_TRANSMIT,
     // Channel engaged, trasmitting
     STATUS_TRANSMIT,
+    // Channel engaged, wait 1m ticks before freeing channel
+    STATUS_LAST_TRANSMIT,
     // Channel engaged, wait 1m ticks before freeing channel
     STATUS_WAIT_FOR_TRANSMIT_END
 } s_status;
@@ -75,7 +79,11 @@ void rs485_init()
     // Enable control ports
     RS485_TRIS_EN = 0;
     RS485_PORT_EN = EN_RECEIVE;
-      
+    
+#ifdef ETH_DEBUG_LINES
+    TRISDbits.RD0 = 0;
+#endif
+    
     rs485_skipData = 0;
     rs485_over = 0;
     rs485_close = 0;
@@ -144,8 +152,10 @@ void rs485_interrupt()
                 // TX2IF cannot be cleared, shut IE 
                 RS485_PIE_TXIE = 0;
                 // goto first phase of tx end
-                s_status = STATUS_WAIT_FOR_TRANSMIT_END;
-                s_lastTick = TickGet();
+                s_status = STATUS_LAST_TRANSMIT;
+#ifdef ETH_DEBUG_LINES
+                PORTDbits.RD0 = 1;
+#endif
                 break;
             }
         } while (RS485_PIR_TXIF);
@@ -205,8 +215,15 @@ void rs485_poll()
                 }
             }
             break;
+        case STATUS_LAST_TRANSMIT:
+            s_lastTick = TickGet();
+            s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+            break;
         case STATUS_WAIT_FOR_TRANSMIT_END:
             if (elapsed >= DISENGAGE_CHANNEL_TIMEOUT) {
+#ifdef ETH_DEBUG_LINES
+                PORTDbits.RD0 = 0;
+#endif
                 // Detach TX line
                 s_status = STATUS_RECEIVE;
                 rs485_startRead();
