@@ -55,7 +55,12 @@ void bus_init()
     s_availForAddressAssign = FALSE;
 
     // Address should be reset?
-    if (g_resetReason == RESET_MCLR) {
+    if (g_resetReason == RESET_MCLR
+#ifdef _IS_ETH_CARD
+            // Bug of HW?
+            || g_resetReason == RESET_POWER
+#endif
+    ) {
         // Reset address
         pers_data.address = UNASSIGNED_SUB_ADDRESS;       
         pers_save();

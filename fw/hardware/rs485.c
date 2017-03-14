@@ -179,7 +179,9 @@ void rs485_interrupt()
  */
 void rs485_poll()
 {
-    TICK_TYPE elapsed = TickGet() - s_lastTick;
+    // ** Getting now in a separate var to resolve a compiler bug for PIC18
+    TICK_TYPE now = TickGet();
+    TICK_TYPE elapsed = now - s_lastTick;
     switch (s_status){
         case STATUS_WAIT_FOR_ENGAGE:
             if (elapsed >= ENGAGE_CHANNEL_TIMEOUT) {
@@ -187,7 +189,7 @@ void rs485_poll()
                 s_status = STATUS_WAIT_FOR_START_TRANSMIT;
                 // Enable RS485 driver
                 RS485_PORT_EN = EN_TRANSMIT;
-                s_lastTick = TickGet();
+                s_lastTick = now;
             }
             break;
         case STATUS_WAIT_FOR_START_TRANSMIT:
