@@ -177,7 +177,7 @@ void bus_poll()
 {   
     if (s_waitTxFlush) {
         // Finished TX?
-        if (rs485_getState() == RS485_LINE_TX_DATA || rs485_getState() == RS485_LINE_TX_DISENGAGE) {
+        if (rs485_state != RS485_LINE_RX) {
             // Skip state management
             return;
         } else {
@@ -188,7 +188,7 @@ void bus_poll()
     }
     else if (s_waitTxQuickEnd) {
         // Finished TX?
-        if (rs485_getState() == RS485_LINE_TX_DATA) {
+        if (rs485_state >= RS485_LINE_TX) {
             // Skip state management
             return;
         } else {
@@ -312,15 +312,6 @@ static void bus_socketPoll()
         }
     }
     else {
-        // Rx mode
-        // Ensure to clear the FERR before entering in this state!
-        //if (rs485_getState() == RS485_LINE_RX_FRAME_ERR) {
-        //    // Close socket, ferr during rx
-        //    // Drop the TCP connection and reset the channel
-        //    rs485_clearFerr();
-        //    bus_disconnectSocket(SOCKET_ERR_FERR);
-        //}
-
         // Data received?
         WORD tx = rs485_readAvail(); 
         if (tx > 0) {

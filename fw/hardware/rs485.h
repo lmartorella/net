@@ -5,11 +5,15 @@
 
 typedef enum {
     // Receiving, all OK
-    RS485_LINE_RX,
+    RS485_LINE_RX = 1,
+    // End of transmitting, in disengage line period
+    RS485_LINE_TX_DISENGAGE = 2,
     // Transmitting, data
-    RS485_LINE_TX_DATA,
-    // Transmitting, in engage or disengage line period
-    RS485_LINE_TX_DISENGAGE,
+    RS485_LINE_TX = 3,
+    // Wait before engaging the line
+    RS485_LINE_WAIT_FOR_ENGAGE = 4,
+    // After engaged, wait before transmitting
+    RS485_LINE_WAIT_FOR_START_TRANSMIT = 5,
 } RS485_STATE;
 
 /**
@@ -48,7 +52,7 @@ extern bit rs485_lastRc9;
 // Get/set the skip flag. If set, rc9 = 0 bytes are skipped by receiver
 extern bit rs485_skipData;
 
-RS485_STATE rs485_getState();
+extern RS485_STATE rs485_state;
 
 // Don't change the line status, but simulate a TX time for disengage
 void rs485_waitDisengageTime();

@@ -97,7 +97,6 @@ static void bus_sendAck(BYTE ackCode) {
 // Called often
 void bus_poll()
 {
-    RS485_STATE rs485state = rs485_getState();
     BYTE buf;
     
     switch (s_state) {
@@ -113,7 +112,7 @@ void bus_poll()
             break;
         case STATE_WAIT_TX:
             // When in read mode again, progress
-            if (rs485state != RS485_LINE_TX_DATA && rs485state != RS485_LINE_TX_DISENGAGE) {
+            if (rs485_state == RS485_LINE_RX) {
                 bus_reinit_quick();
             }
             break;

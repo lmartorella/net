@@ -11,20 +11,7 @@
 
 #define ETH_DEBUG_LINES
 
-static enum {
-    // No transmit, receive mode
-    STATUS_RECEIVE,
-    // Wait tick before transmit, channel still disengaged
-    STATUS_WAIT_FOR_ENGAGE,
-    // Wait tick before transmit, channel now engaged
-    STATUS_WAIT_FOR_START_TRANSMIT,
-    // Channel engaged, trasmitting
-    STATUS_TRANSMIT,
-    // Channel engaged, wait 1m ticks before freeing channel
-    STATUS_LAST_TRANSMIT,
-    // Channel engaged, wait 1m ticks before freeing channel
-    STATUS_WAIT_FOR_TRANSMIT_END
-} s_status;
+RS485_STATE rs485_state;
 
 #define ADJUST_PTR(x) while (x >= (s_buffer + RS485_BUF_SIZE)) x-= RS485_BUF_SIZE
 
@@ -48,6 +35,7 @@ bit rs485_master;
 static bit s_ferr;
 static bit s_lastrc9;
 static bit s_oerr;
+static bit s_lastTx;
 
 static TICK_TYPE s_lastTick;
 
@@ -89,10 +77,11 @@ void rs485_init()
     rs485_over = 0;
     rs485_close = 0;
     s_oerr  = 0;
+    s_lastTx = 0;
     s_writePtr = s_readPtr = s_buffer;
     s_lastTick = TickGet();
     
-    s_status = STATUS_RECEIVE;
+    rs485_state = RS485_LINE_RX;
     rs485_startRead();
 }
 
@@ -101,7 +90,7 @@ void rs485_init()
 
 BYTE rs485_readAvail()
 {
-    if (s_status == STATUS_RECEIVE) {
+    if (rs485_state == RS485_LINE_RX) {
         return _rs485_readAvail();
     }
     else {
@@ -111,7 +100,7 @@ BYTE rs485_readAvail()
 
 BYTE rs485_writeAvail()
 {
-    if (s_status != STATUS_RECEIVE) {
+    if (rs485_state != RS485_LINE_RX) {
         return _rs485_writeAvail();
     }
     else {
@@ -152,7 +141,7 @@ void rs485_interrupt()
                 // TX2IF cannot be cleared, shut IE 
                 RS485_PIE_TXIE = 0;
                 // goto first phase of tx end
-                s_status = STATUS_LAST_TRANSMIT;
+                s_lastTx = 1;
 #ifdef ETH_DEBUG_LINES
                 PORTDbits.RD0 = 1;
 #endif
@@ -195,20 +184,28 @@ void rs485_poll()
     }
     
     TICK_TYPE elapsed = TickGet() - s_lastTick;
-    switch (s_status){
-        case STATUS_WAIT_FOR_ENGAGE:
+    switch (rs485_state){
+        case RS485_LINE_TX:
+            if (s_lastTx) {
+                s_lastTick = TickGet();
+                rs485_state = RS485_LINE_TX_DISENGAGE;
+                s_lastTx = 0;
+            }
+            break;
+        case RS485_LINE_WAIT_FOR_ENGAGE:
             if (elapsed >= ENGAGE_CHANNEL_TIMEOUT) {
                 // Engage
-                s_status = STATUS_WAIT_FOR_START_TRANSMIT;
+                rs485_state = RS485_LINE_WAIT_FOR_START_TRANSMIT;
                 // Enable RS485 driver
                 RS485_PORT_EN = EN_TRANSMIT;
                 s_lastTick = TickGet();
             }
             break;
-        case STATUS_WAIT_FOR_START_TRANSMIT:
+        case RS485_LINE_WAIT_FOR_START_TRANSMIT:
             if (elapsed >= START_TRANSMIT_TIMEOUT) {
                 // Transmit
-                s_status = STATUS_TRANSMIT;
+                rs485_state = RS485_LINE_TX;
+                s_lastTx = 0;
                 if (_rs485_readAvail() > 0) {
                     // Feed first byte
                     writeByte();
@@ -218,17 +215,13 @@ void rs485_poll()
                 }
             }
             break;
-        case STATUS_LAST_TRANSMIT:
-            s_lastTick = TickGet();
-            s_status = STATUS_WAIT_FOR_TRANSMIT_END;
-            break;
-        case STATUS_WAIT_FOR_TRANSMIT_END:
+        case RS485_LINE_TX_DISENGAGE:
             if (elapsed >= DISENGAGE_CHANNEL_TIMEOUT) {
 #ifdef ETH_DEBUG_LINES
                 PORTDbits.RD0 = 0;
 #endif
                 // Detach TX line
-                s_status = STATUS_RECEIVE;
+                rs485_state = RS485_LINE_RX;
                 rs485_startRead();
             }
             break;
@@ -240,7 +233,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     rs485_over = rs485_close = rs485_master = 0;
 
     // Reset reader, if in progress
-    if (s_status == STATUS_RECEIVE) {
+    if (rs485_state == RS485_LINE_RX) {
         // Truncate reading
         RS485_RCSTA.CREN = 0;
         RS485_PIE_RCIE = 0;
@@ -249,7 +242,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
         // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
         RS485_TXSTA.TXEN = 1;
 
-        s_status = STATUS_WAIT_FOR_ENGAGE;
+        rs485_state = RS485_LINE_WAIT_FOR_ENGAGE;
         s_lastTick = TickGet();
     }
 
@@ -272,20 +265,20 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     RS485_TXSTA.TX9D = address;
 
     // Schedule trasmitting, if not yet ready
-    switch (s_status) {
-        case STATUS_WAIT_FOR_TRANSMIT_END:
+    switch (rs485_state) {
+        case RS485_LINE_TX_DISENGAGE:
             // Re-convert it to tx
-            s_status = STATUS_WAIT_FOR_START_TRANSMIT;
+            rs485_state = RS485_LINE_WAIT_FOR_START_TRANSMIT;
             s_lastTick = TickGet();
             break;
-        case STATUS_TRANSMIT:
+        case RS485_LINE_TX:
             // Was in transmit state: reenable TX feed interrupt
             RS485_PIE_TXIE = 1;
             break;
             
-        //case STATUS_TRANSMIT:
-        //case STATUS_WAIT_FOR_START_TRANSMIT:
-        //case STATUS_WAIT_FOR_ENGAGE:
+        //case RS485_LINE_TX:
+        //case RS485_LINE_WAIT_FOR_START_TRANSMIT:
+        //case RS485_LINE_WAIT_FOR_ENGAGE:
             // Already tx, ok
         //    break;
     }
@@ -293,9 +286,9 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
 
 static void rs485_startRead()
 {
-    if (s_status != STATUS_RECEIVE) {
+    if (rs485_state != RS485_LINE_RX) {
         // Break all
-        s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+        rs485_state = RS485_LINE_TX_DISENGAGE;
         s_lastTick = TickGet();
         return;
     }
@@ -308,7 +301,7 @@ static void rs485_startRead()
 
     // Disable RS485 driver
     RS485_PORT_EN = EN_RECEIVE;
-    s_status = STATUS_RECEIVE;
+    rs485_state = RS485_LINE_RX;
 
     // Reset circular buffer
     s_readPtr = s_writePtr = s_buffer;
@@ -318,34 +311,20 @@ static void rs485_startRead()
     RS485_RCSTA.CREN = 1;
 }
 
-RS485_STATE rs485_getState() {
-    switch (s_status) {
-        case STATUS_RECEIVE:
-            return RS485_LINE_RX;
-        case STATUS_WAIT_FOR_TRANSMIT_END:
-            return RS485_LINE_TX_DISENGAGE;
-        //case STATUS_TRANSMIT:
-        //case STATUS_WAIT_FOR_ENGAGE:
-        //case STATUS_WAIT_FOR_START_TRANSMIT:
-        default:
-            return RS485_LINE_TX_DATA;
-    }
-}
-
 void rs485_waitDisengageTime() {
-    if (s_status == STATUS_RECEIVE) { 
+    if (rs485_state == RS485_LINE_RX) { 
         // Disable rx receiver
         RS485_PIE_RCIE = 0;
         RS485_RCSTA.CREN = 0;
         
-        s_status = STATUS_WAIT_FOR_TRANSMIT_END;
+        rs485_state = RS485_LINE_TX_DISENGAGE;
         s_lastTick = TickGet();
     }
 }
 
 bit rs485_read(BYTE* data, BYTE size)
 {
-    if (s_status != STATUS_RECEIVE) { 
+    if (rs485_state != RS485_LINE_RX) { 
         rs485_startRead();
         return FALSE;
     }
