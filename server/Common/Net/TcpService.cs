@@ -55,20 +55,14 @@ namespace Lucky.Net
             return listener;
         }
 
-        public Stream CreateTcpClientStream(IPEndPoint endPoint)
+        public TcpClient CreateTcpClient(IPEndPoint endPoint)
         {
             var tcpClient = new TcpClient();
             tcpClient.Connect(endPoint);
             //_tcpClient.NoDelay = true;  // Setting this to true will send single chars in Serializer loops...
             tcpClient.SendTimeout = 1;
             tcpClient.ReceiveTimeout = 1;
-
-            var stream = tcpClient.GetStream();
-#if DEBUG
-            // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
-            stream.ReadTimeout = 5000;
-#endif
-            return stream;
+            return tcpClient;
         }
     }
 }

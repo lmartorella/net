@@ -47,6 +47,7 @@ bit rs485_master;
 
 static bit s_ferr;
 static bit s_lastrc9;
+static bit s_oerr;
 
 static TICK_TYPE s_lastTick;
 
@@ -87,6 +88,7 @@ void rs485_init()
     rs485_skipData = 0;
     rs485_over = 0;
     rs485_close = 0;
+    s_oerr  = 0;
     s_writePtr = s_readPtr = s_buffer;
     s_lastTick = TickGet();
     
@@ -118,14 +120,12 @@ BYTE rs485_writeAvail()
     }
 }
 
-static void writeByte()
-{   
-    // Feed more data, read at read pointer and then increase
-    RS485_TXREG = *(s_readPtr++);
-    ADJUST_PTR(s_readPtr);
-    // Enable interrupts now
+// Feed more data, read at read pointer and then increase
+// and re-enable interrupts now
+#define writeByte() \
+    RS485_TXREG = *(s_readPtr++); \
+    ADJUST_PTR(s_readPtr); \
     RS485_PIE_TXIE = 1;
-}
 
 void rs485_interrupt()
 {
@@ -165,7 +165,8 @@ void rs485_interrupt()
         do {
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
-                fatal("U.OER");
+                s_oerr = 1;
+                return;
             }
             s_ferr = RS485_RCSTA.FERR;
 
@@ -189,9 +190,11 @@ void rs485_interrupt()
  */
 void rs485_poll()
 {
-    // ** Getting now in a separate var to resolve a compiler bug for PIC18
-    TICK_TYPE now = TickGet();
-    TICK_TYPE elapsed = now - s_lastTick;
+    if (s_oerr) {
+        fatal("U.OER");
+    }
+    
+    TICK_TYPE elapsed = TickGet() - s_lastTick;
     switch (s_status){
         case STATUS_WAIT_FOR_ENGAGE:
             if (elapsed >= ENGAGE_CHANNEL_TIMEOUT) {
@@ -199,7 +202,7 @@ void rs485_poll()
                 s_status = STATUS_WAIT_FOR_START_TRANSMIT;
                 // Enable RS485 driver
                 RS485_PORT_EN = EN_TRANSMIT;
-                s_lastTick = now;
+                s_lastTick = TickGet();
             }
             break;
         case STATUS_WAIT_FOR_START_TRANSMIT:

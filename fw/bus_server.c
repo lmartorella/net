@@ -343,11 +343,18 @@ static void bus_socketPoll()
                     case RS485_CCHAR_IDLE:
                         // Ok, skip the char and keep timer going
                         break;
-                    //case RS485_CLOSE_CHAR:
-                    default:
+                    case RS485_CCHAR_CLOSE:
                         // Socket closed. Now the channel is idle again
                         s_busState = BUS_PRIV_STATE_IDLE;
                         s_socketConnected = SOCKET_NOT_CONNECTED;
+                        // Don't close the socket, graceful close from the slave, close byte sent
+                        over = 1;
+                        break;
+                    default:
+                        // Socket abruptly closed. Now the channel is idle again
+                        s_busState = BUS_PRIV_STATE_IDLE;
+                        s_socketConnected = SOCKET_NOT_CONNECTED;
+                        // Close TCP as well
                         close = 1;
                         over = 1;
                         break;

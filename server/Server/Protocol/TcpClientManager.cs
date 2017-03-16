@@ -25,18 +25,31 @@ namespace Lucky.Home.Protocol
             private Stream _stream;
             private readonly BinaryReader _reader;
             private readonly BinaryWriter _writer;
+            private readonly TcpClient _tcpClient;
+            private bool _disposed;
 
             public Client(IPEndPoint endPoint, TcpClientManager owner)
             {
                 _endPoint = endPoint;
                 _owner = owner;
-                _stream = Manager.GetService<TcpService>().CreateTcpClientStream(endPoint);
+                _tcpClient = Manager.GetService<TcpService>().CreateTcpClient(endPoint);
+                _stream = _tcpClient.GetStream();
+#if DEBUG
+                // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
+                _stream.ReadTimeout = 5000;
+#endif
 
                 _reader = new BinaryReader(_stream);
                 _writer = new BinaryWriter(_stream);
             }
 
-            public bool IsDisposed { get; private set; }
+            public bool IsDisposed
+            {
+                get
+                {
+                    return _disposed || !_tcpClient.Connected;
+                }
+            }
 
             private void Flush()
             {
@@ -51,7 +64,7 @@ namespace Lucky.Home.Protocol
                     Flush();
                     _reader.Close();
                     _stream = null;
-                    IsDisposed = true;
+                    _disposed = true;
                 }
             }
 
