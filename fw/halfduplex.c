@@ -98,7 +98,7 @@ static bit halfduplex_writeHandler()
         // Echo back same data
 #else
         // Disable bus. Start read. Blocker.
-        //s_count = max232_sendReceive(s_count);
+        s_count = max232_sendReceive(s_count);
 #endif
 
 #ifdef DEBUGMODE

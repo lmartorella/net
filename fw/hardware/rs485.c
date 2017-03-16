@@ -9,7 +9,7 @@
 #define EN_TRANSMIT 1
 #define EN_RECEIVE 0
 
-#define ETH_DEBUG_LINES
+#undef ETH_DEBUG_LINES
 
 RS485_STATE rs485_state;
 
