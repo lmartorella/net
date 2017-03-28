@@ -34,10 +34,10 @@ namespace Lucky.Home.Application
             foreach (var device in devices.OfType<ISolarPanelDevice>())
             {
                 IFsTimeSeries db;
-                if (device is SamilInverterDevice)
+                if (device is SamilInverterLoggerDevice)
                 {
                     var dbd = new FsTimeSeries<SamilPowerData>(device.Name, "HH:mm:ss");
-                    ((SamilInverterDevice)device).Database = dbd;
+                    ((SamilInverterLoggerDevice)device).Database = dbd;
                     db = dbd;
                 }
                 else

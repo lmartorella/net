@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Input;
 
-namespace Lucky.Home
+namespace Lucky.HomeMock
 {
     public class UiCommand : ICommand
     {

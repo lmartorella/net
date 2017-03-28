@@ -20,6 +20,7 @@ namespace Lucky.HomeMock
         private readonly DigitalInputArraySink _digitalInputsSink;
         private readonly DigitalOutputArraySink _digitalOutputsSink;
         private SamilPanelMock _solarSink;
+        private CommandMockSink _commandSink;
 
         public MainWindow()
         {
@@ -46,10 +47,11 @@ namespace Lucky.HomeMock
             _digitalOutputsSink = new DigitalOutputArraySink(this);
 
             _solarSink = new SamilPanelMock();
+            _commandSink = new CommandMockSink(this);
 
             var controlPort = Manager.GetService<ControlPortListener>();
             controlPort.StartServer();
-            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink });
+            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
@@ -147,6 +149,33 @@ namespace Lucky.HomeMock
         {
             get { return (ObservableCollection<Switch>) GetValue(OutputsProperty); }
             set { SetValue(OutputsProperty, value); }
+        }
+
+        public static readonly DependencyProperty CommandProperty = DependencyProperty.Register(
+            "Command", typeof(string), typeof(MainWindow), new PropertyMetadata(default(string)));
+
+        public string Command
+        {
+            get { return (string)GetValue(CommandProperty); }
+            set { SetValue(CommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty CommandLogProperty = DependencyProperty.Register(
+            "CommandLog", typeof(string), typeof(MainWindow), new PropertyMetadata(default(string)));
+
+        public string CommandLog
+        {
+            get { return (string)GetValue(CommandLogProperty); }
+            set { SetValue(CommandLogProperty, value); }
+        }
+
+        public static readonly DependencyProperty SendCommandCommandProperty = DependencyProperty.Register(
+            "SendCommandCommand", typeof(UiCommand), typeof(MainWindow), new PropertyMetadata(default(UiCommand)));
+
+        public UiCommand SendCommandCommand
+        {
+            get { return (UiCommand)GetValue(SendCommandCommandProperty); }
+            set { SetValue(SendCommandCommandProperty, value); }
         }
     }
 }

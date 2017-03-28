@@ -2,10 +2,6 @@
 using Lucky.Home.Serialization;
 using System.Threading.Tasks;
 
-#pragma warning disable 414
-#pragma warning disable 649
-// ReSharper disable once UnusedMember.Global
-
 namespace Lucky.Home.Sinks
 {
     /// <summary>
