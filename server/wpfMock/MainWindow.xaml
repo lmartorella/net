@@ -86,7 +86,11 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <TextBox Grid.Row="0" Grid.Column="0" Margin="3" Text="{Binding Command, Mode=TwoWay}"/>
+                    <TextBox Grid.Row="0" Grid.Column="0" Margin="3" Text="{Binding Command, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" >
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding SendCommandCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
                     <Button Grid.Row="0" Grid.Column="1" Margin="3" Command="{Binding SendCommandCommand}">Send</Button>
                     <TextBox Grid.Row="1" Grid.ColumnSpan="2" IsReadOnly="True" AcceptsReturn="True" Margin="3" Text="{Binding CommandLog}"/>
                 </Grid>
