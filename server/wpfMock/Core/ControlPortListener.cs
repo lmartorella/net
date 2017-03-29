@@ -5,9 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using Lucky.HomeMock.Sinks;
 using Lucky.Services;
+using System.Threading;
 
 namespace Lucky.HomeMock.Core
 {
@@ -16,6 +16,7 @@ namespace Lucky.HomeMock.Core
     {
         private readonly TcpListener _serviceListener;
         private SinkMockBase[] _sinks;
+        private CancellationToken _cancellationToken;
 
         public ControlPortListener()
         {
@@ -44,8 +45,9 @@ namespace Lucky.HomeMock.Core
             }
         }
 
-        public void StartServer()
+        public void StartServer(CancellationToken cancellationToken)
         {
+            _cancellationToken = cancellationToken;
             System.Threading.Tasks.Task.Run(async () =>
             {
                 while (true)
@@ -53,7 +55,7 @@ namespace Lucky.HomeMock.Core
                     var tcpClient = await _serviceListener.AcceptTcpClientAsync();
                     HandleServiceSocketAccepted(tcpClient);
                 }
-            });
+            }, cancellationToken);
         }
 
         public void InitSinks(IEnumerable<SinkMockBase> sinks)
@@ -178,7 +180,7 @@ namespace Lucky.HomeMock.Core
             {
                 try
                 {
-                    while (true)
+                    while (!_listener._cancellationToken.IsCancellationRequested)
                     {
                         if (!RunServer())
                         {

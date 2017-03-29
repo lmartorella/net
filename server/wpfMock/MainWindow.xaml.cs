@@ -6,6 +6,7 @@ using Lucky.Home;
 using Lucky.HomeMock.Core;
 using Lucky.HomeMock.Sinks;
 using Lucky.Services;
+using System.Threading;
 
 namespace Lucky.HomeMock
 {
@@ -21,6 +22,7 @@ namespace Lucky.HomeMock
         private readonly DigitalOutputArraySink _digitalOutputsSink;
         private SamilPanelMock _solarSink;
         private CommandMockSink _commandSink;
+        private CancellationTokenSource _cancellationTokenSrc = new CancellationTokenSource();
 
         public MainWindow()
         {
@@ -50,11 +52,16 @@ namespace Lucky.HomeMock
             _commandSink = new CommandMockSink(this);
 
             var controlPort = Manager.GetService<ControlPortListener>();
-            controlPort.StartServer();
+            controlPort.StartServer(_cancellationTokenSrc.Token);
             controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink });
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
+
+            Closed += (o, e) =>
+            {
+                _cancellationTokenSrc.Cancel();
+            };
         }
 
         private HeloSender HeloSender
