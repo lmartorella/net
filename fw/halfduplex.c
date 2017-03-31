@@ -15,7 +15,10 @@ const Sink g_halfDuplexSink = { { "SLIN" },
                              &halfduplex_writeHandler
 };
 
-static WORD s_count;
+static struct {
+    BYTE mode;
+    WORD count;
+} s_header;
 static BYTE s_pos;
 static BYTE* s_ptr;
 
@@ -33,7 +36,7 @@ static enum {
 void halfduplex_init()
 {
     s_state = ST_IDLE;
-    s_count = 0;
+    s_header.count = 0;
 }
 
 static bit halfduplex_readHandler()
@@ -42,12 +45,12 @@ static bit halfduplex_readHandler()
         // IN HEADER READ
         s_state = ST_RECEIVE_SIZE;
         // Wait for size first
-        if (prot_control_readAvail() < 2) {
+        if (prot_control_readAvail() < sizeof(s_header)) {
             // Go on
             return 1;
         }
         // Have size
-        prot_control_readW(&s_count);
+        prot_control_read(&s_header, sizeof(s_header));
         // Wait for data
         s_state = ST_RECEIVE_DATA;
         s_ptr = max232_buffer1;
@@ -55,7 +58,7 @@ static bit halfduplex_readHandler()
     }
     
     // I'm in ST_RECEIVE_DATA mode
-    while (prot_control_readAvail() && s_pos < (BYTE)s_count) {
+    while (prot_control_readAvail() && s_pos < (BYTE)s_header.count) {
         prot_control_read(s_ptr, 1);
         s_pos++;
         // Read buffer data
@@ -68,7 +71,7 @@ static bit halfduplex_readHandler()
     }
 
     // Ask for more data?
-    if (s_pos < (BYTE)s_count) {
+    if (s_pos < (BYTE)s_header.count) {
         // Again
         return 1;
     }
@@ -97,8 +100,11 @@ static bit halfduplex_writeHandler()
         printch('0' + (s_count % 10));
         // Echo back same data
 #else
-        // Disable bus. Start read. Blocker.
-        s_count = max232_sendReceive(s_count);
+        if (s_header.mode != 0xff) {
+            // Disable bus. Start read. Blocker.
+            s_header.count = max232_sendReceive(s_header.count);
+        }
+        // else output back same data
 #endif
 
 #ifdef DEBUGMODE
@@ -106,14 +112,14 @@ static bit halfduplex_writeHandler()
         printch('0' + s_count);
 #endif
         // IN HEADER WRITE
-        prot_control_writeW(s_count);
+        prot_control_writeW(s_header.count);
         s_ptr = max232_buffer1;
         s_pos = 0;
         s_state = ST_TRANSMIT_DATA;
     }
 
     // Write max 0x10 bytes at a time
-    while (prot_control_writeAvail() && s_pos < (BYTE)s_count) {
+    while (prot_control_writeAvail() && s_pos < (BYTE)s_header.count) {
         prot_control_write(s_ptr, 1);
         s_pos++;
         if (s_pos == MAX232_BUFSIZE1) {
@@ -125,14 +131,14 @@ static bit halfduplex_writeHandler()
     }
    
     // Ask for more data?
-    if (s_pos < (BYTE)s_count) {
+    if (s_pos < (BYTE)s_header.count) {
         // Again
         return 1;
     }
     else { 
         // End of transmit task -> reset sink state
         s_state = ST_IDLE;
-        s_count = 0;
+        s_header.count = 0;
         return 0;
     }
 }

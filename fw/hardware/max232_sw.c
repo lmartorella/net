@@ -50,8 +50,8 @@ void max232_send(int size) {
         fatal("UAs.ov");
     }
 
-    INTCONbits.GIE = 0;
 #ifdef HAS_MAX232_SOFTWARE
+    INTCONbits.GIE = 0;
 
     RESETTIMER(RS232_TCON_VALUE)
     RS232_TCON = RS232_TCON_ON;
@@ -68,9 +68,9 @@ void max232_send(int size) {
         }
         WAITBIT()
     }
-#endif
     
     INTCONbits.GIE = 1;
+#endif
 }
 
 // Write sync, disable interrupts
@@ -79,6 +79,8 @@ int max232_sendReceive(int size) {
     max232_send(size);
 
 #ifdef HAS_MAX232_SOFTWARE
+    INTCONbits.GIE = 0;
+
     // Now receive
     BYTE* ptr = max232_buffer1;
     BYTE i = 0;
@@ -91,6 +93,7 @@ int max232_sendReceive(int size) {
             if (RS232_TCON_IF) {
                 RS232_TCON_IF = 0;
                 if ((timeoutCount--) == 0) {
+                    INTCONbits.GIE = 1;
                     return i;
                 }
             }

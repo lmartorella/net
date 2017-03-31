@@ -12,6 +12,8 @@ namespace Lucky.Home.Sinks
     {
         private class Message
         {
+            public byte Mode;
+
             [SerializeAsDynArray]
             public byte[] TxData;
         }
@@ -22,11 +24,11 @@ namespace Lucky.Home.Sinks
             public byte[] RxData;
         }
 
-        public async Task<byte[]> SendReceive(byte[] txData)
+        public async Task<byte[]> SendReceive(byte[] txData, bool echo = false)
         {
             Write(writer =>
             {
-                writer.Write(new Message { TxData = txData });
+                writer.Write(new Message { TxData = txData, Mode = echo ? (byte)0xff : (byte)0x00 });
             });
             byte[] data = null;
             Read(reader =>
