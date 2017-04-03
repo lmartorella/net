@@ -154,7 +154,7 @@ namespace Lucky.HomeMock.Core
             {
                 while (!_cancellationToken.IsCancellationRequested)
                 {
-                    if (session.RunServer() != ControlSession.RunStatus.Continue)
+                    if (session.RunServer() == ControlSession.RunStatus.Aborted)
                     {
                         break;
                     }
