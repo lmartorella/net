@@ -19,7 +19,7 @@ namespace Lucky.Services
             }
         }
 
-        protected ILogger Logger { get; private set; }
+        public ILogger Logger { get; private set; }
 
         public virtual void Dispose()
         { }

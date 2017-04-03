@@ -53,6 +53,7 @@
     </ApplicationDefinition>
     <Compile Include="Converters\IntToStringConverter.cs" />
     <Compile Include="Converters\ResetReasonToEnabledConverter.cs" />
+    <Compile Include="Core\ControlSession.cs" />
     <Compile Include="Core\ItemEventArgs.cs" />
     <Compile Include="GuiLoggerFactory.cs" />
     <Compile Include="Sinks\CommandMockSink.cs" />

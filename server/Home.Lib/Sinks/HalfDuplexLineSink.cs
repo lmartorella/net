@@ -24,7 +24,7 @@ namespace Lucky.Home.Sinks
             public byte[] RxData;
         }
 
-        public async Task<byte[]> SendReceive(byte[] txData, bool echo = false)
+        public byte[] SendReceive(byte[] txData, bool echo = false)
         {
             Write(writer =>
             {

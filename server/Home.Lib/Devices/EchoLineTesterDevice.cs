@@ -25,11 +25,11 @@ namespace Lucky.Home.Devices
             }, null, 0, 3000);
         }
 
-        private async void Check()
+        private void Check()
         {
             var v = Encoding.ASCII.GetBytes(_lastMessage);
             Console.WriteLine("ECHO: TX -> {0} bytes", v.Length);
-            var ret = await Sinks.OfType<HalfDuplexLineSink>().First().SendReceive(v);
+            var ret = Sinks.OfType<HalfDuplexLineSink>().First().SendReceive(v);
             if (ret != null)
             {
                 Console.WriteLine("ECHO: RX  <- {0} ({1} bytes)", Encoding.ASCII.GetString(ret), ret.Length);

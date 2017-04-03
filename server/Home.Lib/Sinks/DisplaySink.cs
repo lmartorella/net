@@ -36,7 +36,6 @@ namespace Lucky.Home.Sinks
             });
         }
 
-        // ReSharper disable once ClassNeverInstantiated.Local
         private class ReadCapMessageResponse
         {
             public short LineCount;

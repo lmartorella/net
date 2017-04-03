@@ -125,6 +125,7 @@ namespace Lucky.Home.Protocol
         {
             public Guid Guid;
 
+            // Number of children as bit array
             [SerializeAsDynArray]
             public byte[] Mask;
         }
