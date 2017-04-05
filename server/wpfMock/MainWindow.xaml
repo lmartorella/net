@@ -15,6 +15,7 @@
         
         <!-- Top Toolbar -->
         <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <CheckBox Margin="4" IsChecked="{Binding BindSlave}">Slave</CheckBox>
             <TextBlock Margin="4">Reset reason</TextBlock>
             <ComboBox Margin="4" ItemsSource="{Binding ResetReasons}" SelectedItem="{Binding ResetReason}"></ComboBox>
             <TextBlock Margin="4">Exc</TextBlock>

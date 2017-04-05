@@ -7,12 +7,14 @@ namespace Lucky.Home.Protocol
         public Guid Guid { get; private set; }
         public TcpNodeAddress Address { get; private set; }
         public PingMessageType MessageType { get; private set; }
+        public int[] ChildrenChanged { get; private set; }
 
-        public NodeMessageEventArgs(Guid guid, TcpNodeAddress address, PingMessageType messageType)
+        public NodeMessageEventArgs(Guid guid, TcpNodeAddress address, PingMessageType messageType, int[] childrenChanged)
         {
             MessageType = messageType;
             Guid = guid;
             Address = address;
+            ChildrenChanged = childrenChanged;
         }
     }
 }

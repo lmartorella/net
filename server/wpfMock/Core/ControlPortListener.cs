@@ -17,6 +17,7 @@ namespace Lucky.HomeMock.Core
         private SinkMockBase[] _sinks;
         private CancellationToken _cancellationToken;
         private SinkMockBase[] _childSinks;
+        private HeloSender _heloSender;
 
         public ControlPortListener()
         {
@@ -58,8 +59,9 @@ namespace Lucky.HomeMock.Core
             }, cancellationToken);
         }
 
-        public void InitSinks(IEnumerable<SinkMockBase> sinks, IEnumerable<SinkMockBase> childSinks)
+        public void InitSinks(IEnumerable<SinkMockBase> sinks, IEnumerable<SinkMockBase> childSinks, HeloSender heloSender)
         {
+            _heloSender = heloSender;
             _sinks = sinks.ToArray();
             _childSinks = childSinks.ToArray();
         }
@@ -140,7 +142,7 @@ namespace Lucky.HomeMock.Core
                 {
                     using (var writer = new BinaryWriter(stream))
                     {
-                        var controlSession = new ControlSession("Master", writer, reader, this, _sinks);
+                        var controlSession = new ControlSession("Master", writer, reader, this, _sinks, _heloSender);
                         controlSession.AddChild("Child", new Child(this), _childSinks);
                         Run(controlSession);
                     }

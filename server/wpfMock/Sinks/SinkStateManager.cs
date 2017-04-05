@@ -9,30 +9,37 @@ namespace Lucky.HomeMock.Sinks
     {
         [DataMember]
         public NodeStatus NodeStatus { get; set; }
+        [DataMember]
+        public NodeStatus ChildNodeStatus { get; set; }
     }
 
     class SinkStateManager : ServiceBaseWithData<SinkState>
     {
-        public NodeStatus NodeStatus
+        public NodeStatus GetNodeStatus(bool child)
         {
-            get
+            var sinkState = State;
+            if (sinkState != null)
             {
-                var sinkState = State;
-                if (sinkState != null)
-                {
-                    return sinkState.NodeStatus;
-                }
-                else
-                {
-                    return null;
-                }
+                return child ? sinkState.ChildNodeStatus : sinkState.NodeStatus;
             }
-            set
+            else
             {
-                var state = State ?? new SinkState();
+                return null;
+            }
+        }
+
+        public void SetNodeStatus(NodeStatus value, bool child)
+        { 
+            var state = State ?? new SinkState();
+            if (child)
+            {
+                state.ChildNodeStatus = value;
+            }
+            else
+            {
                 state.NodeStatus = value;
-                State = state;
             }
+            State = state;
         }
     }
 }

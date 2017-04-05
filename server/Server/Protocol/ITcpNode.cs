@@ -28,9 +28,9 @@ namespace Lucky.Home.Protocol
         ISink[] Sinks { get; }
 
         /// <summary>
-        /// An already logged-in node relogs in (e.g. after node reset)
+        /// An already logged-in node relogs in (e.g. after node reset) or children changes
         /// </summary>
-        Task Relogin(TcpNodeAddress address);
+        Task Relogin(TcpNodeAddress address, int[] childrenChanged = null);
 
         /// <summary>
         /// Open sink communication for write

@@ -21,7 +21,7 @@ namespace Lucky.Home.Protocol
 
         internal const string HeloMessageCode = "HEL3";
         internal const string HeartbeatMessageCode = "HTBT";
-        internal const string SubNodeChanged = "NWND";
+        internal const string SubNodeChanged = "CCHN";
         
         /// <summary>
         /// Device ID

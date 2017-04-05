@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using Lucky.Home;
-using Lucky.IO;
 using Lucky.Services;
 
 namespace Lucky.HomeMock.Core
@@ -16,6 +15,7 @@ namespace Lucky.HomeMock.Core
         private readonly bool _localhostMode;
         private readonly Timer _timer;
         private readonly ILogger _logger;
+        public bool ChildChanged = false;
 
         public HeloSender(ushort rcvPort, bool localhostMode)
         {
@@ -43,13 +43,25 @@ namespace Lucky.HomeMock.Core
         {
             // Send a broacast HELO message to port 17007
             MemoryStream stream = new MemoryStream();
-            var msg = (Registered ? "HTBT" : "HEL3");
+            var msg = "HEL3";
+            if (Registered)
+            {
+                msg = ChildChanged ? "CCHN" : "HTBT";
+            }
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 // Write HOMEHELO
                 writer.Write(Encoding.ASCII.GetBytes("HOME" + msg));
                 writer.Write(Manager.GetService<ControlPortListener>().State.DeviceId.ToByteArray());
                 writer.Write(BitConverter.GetBytes(_rcvPort));
+                // If child changed, add a mask for changes
+                if (ChildChanged)
+                {
+                    // Write num of bytes (1)
+                    writer.Write(BitConverter.GetBytes((short)1));
+                    // Child changed: 1
+                    writer.Write((byte)1);
+                }
             }
             byte[] dgram = stream.ToArray();
             UdpClient client = new UdpClient();

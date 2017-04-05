@@ -165,9 +165,10 @@ static void sendHelo()
 	}
 
 	UDPPutString("HOME");
-	UDPPutString(prot_registered ? (bus_dirtyChildren ? "NWND" : "HTBT") : "HEL3");
+	UDPPutString(prot_registered ? (bus_dirtyChildren ? "CCHN" : "HTBT") : "HEL3");
 	UDPPutArray((BYTE*)(&pers_data.deviceId), sizeof(GUID));
 	UDPPutW(CLIENT_TCP_PORT);
+TODO: SEND CHILDREN CHANGED
 	UDPFlush();   
 }
 

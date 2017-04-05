@@ -16,20 +16,22 @@ namespace Lucky.HomeMock.Core
         private readonly List<ControlSession> _children = new List<ControlSession>();
         private IdProvider _idProvider;
         private string _name;
+        private HeloSender _heloSender;
 
-        public ControlSession(string name, BinaryWriter writer, BinaryReader reader, IdProvider idProvider, SinkMockBase[] sinks)
+        public ControlSession(string name, BinaryWriter writer, BinaryReader reader, IdProvider idProvider, SinkMockBase[] sinks, HeloSender heloSender)
         {
             _name = name;
             Logger = idProvider.Logger;
             _idProvider = idProvider;
             _writer = writer;
             _reader = reader;
+            _heloSender = heloSender;
             Sinks = sinks;
         }
 
         public void AddChild(string name, IdProvider provider, SinkMockBase[] sinks)
         {
-            _children.Add(new ControlSession(name, _writer, _reader, provider, sinks));
+            _children.Add(new ControlSession(name, _writer, _reader, provider, sinks, _heloSender));
         }
 
         private string ReadCommand()
@@ -99,6 +101,7 @@ namespace Lucky.HomeMock.Core
                             var ret = _children[id - 1].RunServer();
                             if (ret == RunStatus.Closed)
                             {
+                                _heloSender.ChildChanged = false;
                                 break;
                             }
                             else if (ret == RunStatus.Aborted)

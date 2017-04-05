@@ -29,7 +29,7 @@ namespace Lucky.HomeMock
             InitializeComponent();
 
             _displaySink = new DisplaySink();
-            _systemSink = new SystemSink();
+            _systemSink = new SystemSink(false);
 
             ResetReasons = Enum.GetValues(typeof(ResetReason)).Cast<ResetReason>().ToArray();
             ResetReason = _systemSink.ResetReason;
@@ -53,8 +53,9 @@ namespace Lucky.HomeMock
 
             var controlPort = Manager.GetService<ControlPortListener>();
             controlPort.StartServer(_cancellationTokenSrc.Token);
-            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink }, new[] { new SystemSink() });
+            _childSystemSink = new SystemSink(true);
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
+            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink }, new[] { _childSystemSink }, HeloSender);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
 
@@ -105,8 +106,13 @@ namespace Lucky.HomeMock
         private static void ResetReasonPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
         {
             MainWindow me = (MainWindow)dependencyObject;
-            me._systemSink.ResetReason = me.ResetReason;
-            me._systemSink.ExcMsg = me.ExcMsg;
+            var sink = me.BindSlave ? me._childSystemSink : me._systemSink;
+            sink.ResetReason = me.ResetReason;
+            sink.ExcMsg = me.ExcMsg;
+            if (sink.ResetReason != ResetReason.None && me.BindSlave)
+            {
+                me._heloSender.ChildChanged = true;
+            }
         }
 
         public ResetReason ResetReason
@@ -183,6 +189,16 @@ namespace Lucky.HomeMock
         {
             get { return (UiCommand)GetValue(SendCommandCommandProperty); }
             set { SetValue(SendCommandCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty BindSlaveProperty = DependencyProperty.Register(
+            "BindSlave", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+        private SystemSink _childSystemSink;
+
+        public bool BindSlave
+        {
+            get { return (bool)GetValue(BindSlaveProperty); }
+            set { SetValue(BindSlaveProperty, value); }
         }
     }
 }

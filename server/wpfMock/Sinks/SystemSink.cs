@@ -10,11 +10,13 @@ namespace Lucky.HomeMock.Sinks
         private ResetReason _resetReason;
         private string _excMsg;
         private readonly bool _initialized;
+        private bool _isChild;
 
-        public SystemSink()
+        public SystemSink(bool isChild)
             : base("SYS ")
         {
-            NodeStatus = Manager.GetService<SinkStateManager>().NodeStatus;
+            _isChild = isChild;
+            NodeStatus = Manager.GetService<SinkStateManager>().GetNodeStatus(_isChild);
             _initialized = true;
         }
 
@@ -53,7 +55,7 @@ namespace Lucky.HomeMock.Sinks
                 _resetReason = value;
                 if (_initialized)
                 {
-                    Manager.GetService<SinkStateManager>().NodeStatus = NodeStatus;
+                    Manager.GetService<SinkStateManager>().SetNodeStatus(NodeStatus, _isChild);
                 }
             }
         }
@@ -69,7 +71,7 @@ namespace Lucky.HomeMock.Sinks
                 _excMsg = value;
                 if (_initialized)
                 {
-                    Manager.GetService<SinkStateManager>().NodeStatus = NodeStatus;
+                    Manager.GetService<SinkStateManager>().SetNodeStatus(NodeStatus, _isChild);
                 }
             }
         }

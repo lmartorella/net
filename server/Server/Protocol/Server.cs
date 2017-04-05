@@ -33,7 +33,7 @@ namespace Lucky.Home.Protocol
             {
                 // Start HELLO listener
                 var helloListener = new UdpControlPortListener(address);
-                helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.Guid, e.Address, e.MessageType);
+                helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.Guid, e.Address, e.MessageType, e.ChildrenChanged);
                 return helloListener;
             }).ToArray();
 
@@ -51,7 +51,7 @@ namespace Lucky.Home.Protocol
             _helloListeners = new UdpControlPortListener[0];
         }
 
-        private async void HandleNodeMessage(Guid guid, TcpNodeAddress address, PingMessageType messageType)
+        private async void HandleNodeMessage(Guid guid, TcpNodeAddress address, PingMessageType messageType, int[] childrenChanged)
         {
             // Messages from level-0
             switch (messageType)
@@ -63,7 +63,7 @@ namespace Lucky.Home.Protocol
                     await _nodeManager.HeartbeatNode(guid, address);
                     break;
                 case PingMessageType.SubNodeChanged:
-                    await _nodeManager.RefetchSubNodes(guid, address);
+                    await _nodeManager.RefetchSubNodes(guid, address, childrenChanged);
                     break;
             }
         }

@@ -38,7 +38,7 @@ namespace Lucky.Home.Protocol
         /// </summary>
         private readonly List<SinkBase> _sinks = new List<SinkBase>();
 
-        private ITcpNode[] _lastKnownChildren = new ITcpNode[0];
+        private Dictionary<int, ITcpNode> _lastKnownChildren = new Dictionary<int, ITcpNode>();
         private DateTime? _firstFailTime;
 
         private static readonly TimeSpan ZOMBIE_TIMEOUT = TimeSpan.FromSeconds(10);
@@ -64,7 +64,7 @@ namespace Lucky.Home.Protocol
             IsZombie = false;
 
             // Check for zombied children and try to de-zombie it
-            var lastKnownChildren = (ITcpNode[])_lastKnownChildren.Clone();
+            var lastKnownChildren = _lastKnownChildren.Values.ToArray();
             if (lastKnownChildren.Any(n => n == null || n.IsZombie))
             {
                 // Re-fire the children request and de-zombie
@@ -102,7 +102,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// An already logged-in node relogs in (e.g. after node reset)
         /// </summary>
-        public async Task Relogin(TcpNodeAddress address)
+        public async Task Relogin(TcpNodeAddress address, int[] childrenChanged = null)
         {
             // Update address!
             lock (Address)
@@ -111,8 +111,19 @@ namespace Lucky.Home.Protocol
             }
             IsZombie = false;
 
-            // Start data fetch asynchrously
-            await FetchMetadata();
+            if (childrenChanged == null)
+            {
+                // Start data fetch asynchrously
+                await FetchMetadata();
+            }
+            else
+            {
+                // Only fetch changed nodes
+                var nodeManager = Manager.GetService<INodeManager>();
+                // Register subnodes, asking for identity
+                var children = await Task.WhenAll(childrenChanged.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))));
+                children.Select(c => _lastKnownChildren[c.Address.Index] = c);
+            }
         }
 
         private class GetChildrenMessage
@@ -223,15 +234,11 @@ namespace Lucky.Home.Protocol
             }
 
             // Now register all the children
-            RegisterChildrenNodes(ret.Item2);
-        }
-
-        private async void RegisterChildrenNodes(TcpNodeAddress[] addresses)
-        {
             var nodeManager = Manager.GetService<INodeManager>();
-            // Now register children
             // Register subnodes, asking for identity
-            _lastKnownChildren = await Task.WhenAll(addresses.Select(async address => await nodeManager.RegisterUnknownNode(address)));
+            var children = await Task.WhenAll(ret.Item2.Select(async address => await nodeManager.RegisterUnknownNode(address)));
+            _lastKnownChildren.Clear();
+            children.Select(c => _lastKnownChildren[c.Address.Index] = c);
         }
 
         private static bool OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler, [CallerMemberName] string context = null)
@@ -319,7 +326,7 @@ namespace Lucky.Home.Protocol
                 var childNodes = connection.Read<GetChildrenMessageResponse>();
                 if (childNodes != null)
                 {
-                    ret = ToIntEnumerable(childNodes.Mask).Select(i => i + 1).ToArray();
+                    ret = DecodeRawMask(childNodes.Mask, i => i);
                     return true;
                 }
                 else
@@ -407,8 +414,7 @@ namespace Lucky.Home.Protocol
             // Now register sinks
             RegisterSinks(sinks);
 
-            var children = ToIntEnumerable(childMask).Select(i => address.SubNode(i + 1)).ToArray();
-            return Tuple.Create(true, children);
+            return Tuple.Create(true, DecodeRawMask(childMask, i => address.SubNode(i)));
         }
 
         private static IEnumerable<int> ToIntEnumerable(byte[] mask)
@@ -425,6 +431,11 @@ namespace Lucky.Home.Protocol
                     }
                 }
             }
+        }
+
+        public static T[] DecodeRawMask<T>(byte[] mask, Func<int, T> select)
+        {
+            return ToIntEnumerable(mask).Select(i => select(i + 1)).ToArray();
         }
 
         private void RegisterSinks(string[] sinks)

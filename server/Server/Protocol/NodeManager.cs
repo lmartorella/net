@@ -115,7 +115,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public async Task RefetchSubNodes(Guid guid, TcpNodeAddress address)
+        public async Task RefetchSubNodes(Guid guid, TcpNodeAddress address, int[] childrenChanged)
         {
             TcpNode node;
             lock (_nodeLock)
@@ -132,7 +132,7 @@ namespace Lucky.Home.Protocol
             else
             {
                 // Normal heartbeat
-                await node.Relogin(address);
+                await node.Relogin(address, childrenChanged);
             }
         }
 

@@ -40,16 +40,17 @@ namespace Lucky.Home.Protocol
                 using (BinaryReader reader = new BinaryReader(new MemoryStream(bytes)))
                 {
                     HeloMessage msg;
-                    var msgType = DecodeHelloMessage(reader, out msg);
+                    int[] childrenChanged;
+                    var msgType = DecodeHelloMessage(reader, out msg, out childrenChanged);
                     var tcpNodeAddress = new TcpNodeAddress(remoteEndPoint.Address, msg.ControlPort, 0);
-                    switch (msgType)
+                    if (msgType == PingMessageType.Unknown)
                     {
-                        case PingMessageType.Unknown:
-                            _logger.Warning("WRONGMSG");
-                            break;
-                        default:
-                            RaiseNodeMessageEvent(msgType, msg.DeviceId, tcpNodeAddress);
-                            break;
+                        _logger.Warning("WRONGMSG");
+                    }
+                    else
+                    {
+                        _logger.Log("NodeMessage", "ID", msg.DeviceId, "messageType", msgType);
+                        NodeMessage?.Invoke(this, new NodeMessageEventArgs(msg.DeviceId, tcpNodeAddress, msgType, childrenChanged));
                     }
                 }
             }
@@ -58,17 +59,10 @@ namespace Lucky.Home.Protocol
             _client.BeginReceive(OnReceiveData, null);
         }
 
-        private void RaiseNodeMessageEvent(PingMessageType messageType, Guid id, TcpNodeAddress address)
-        {
-            _logger.Log("NodeMessage", "ID", id, "messageType", messageType);
-            if (NodeMessage != null)
-            {
-                NodeMessage(this, new NodeMessageEventArgs(id, address, messageType));
-            }
-        }
 
-        private PingMessageType DecodeHelloMessage(BinaryReader reader, out HeloMessage msg)
+        private PingMessageType DecodeHelloMessage(BinaryReader reader, out HeloMessage msg, out int[] childrenChanged)
         {
+            childrenChanged = null;
             msg = NetSerializer<HeloMessage>.Read(reader);
             if (msg == null || msg.Preamble.Code != HeloMessage.PreambleValue)
             {
@@ -81,10 +75,19 @@ namespace Lucky.Home.Protocol
                 case HeloMessage.HeloMessageCode:
                     return PingMessageType.Hello;
                 case HeloMessage.SubNodeChanged:
+                    var mask = NetSerializer<HeloSubNodeChangedMessage>.Read(reader)?.Mask;
+                    childrenChanged = TcpNode.DecodeRawMask(mask, i => i);
                     return PingMessageType.SubNodeChanged;
                 default:
                     return PingMessageType.Unknown;
             }
+        }
+
+        private class HeloSubNodeChangedMessage
+        {
+            // Number of children as bit array
+            [SerializeAsDynArray]
+            public byte[] Mask;
         }
 
         /// <summary>
