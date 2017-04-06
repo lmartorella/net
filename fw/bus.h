@@ -36,6 +36,10 @@ typedef enum {
 
 #ifdef HAS_BUS_SERVER
 
+// 8*8 = 63 max children (last is broadcast)
+#define MAX_CHILDREN 2
+#define BUFFER_MASK_SIZE ((MAX_CHILDREN + 7) / 8)
+
 typedef enum {
     BUS_STATE_NONE,
     BUS_STATE_SOCKET_CONNECTED,
@@ -55,7 +59,11 @@ void bus_disconnectSocket(int val);
 
 // Is still in command execution, waiting for command data receive complete?
 BUS_STATE bus_getState();
-extern bit bus_dirtyChildren;
+
+// Dirty children
+extern bit bus_hasDirtyChildren;
+extern BYTE bus_dirtyChildren[BUFFER_MASK_SIZE];
+void bus_resetDirtyChildren();
 
 // Get active children mask & size
 int bus_getChildrenMaskSize();

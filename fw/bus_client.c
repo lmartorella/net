@@ -23,6 +23,8 @@ static enum {
 
 static BYTE s_header[3] = { 0x55, 0xAA, 0 };
 static bit s_availForAddressAssign;
+// The master knows me
+static bit s_known;
 static BYTE s_tempAddressForAssignment;
 
 /**
@@ -52,7 +54,8 @@ bit bus_isIdle()
 void bus_init()
 {
     // Prepare address
-    s_availForAddressAssign = FALSE;
+    s_availForAddressAssign = 0;
+    s_known = 0;
 
     // Address should be reset?
     if (g_resetReason == RESET_MCLR
@@ -148,6 +151,8 @@ void bus_poll()
                             printch('^');
 #endif
                             if (s_availForAddressAssign) {
+                                // Master now knows me
+                                s_known = 1;
                                 // Store the new address in memory
                                 bus_storeAddress();
                                 bus_sendAck(BUS_ACK_TYPE_HEARTBEAT);
@@ -161,7 +166,7 @@ void bus_poll()
 #endif
                             // Only respond to heartbeat if has address
                             if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
-                                bus_sendAck(BUS_ACK_TYPE_HEARTBEAT);
+                                bus_sendAck(s_known ? BUS_ACK_TYPE_HEARTBEAT : BUS_ACK_TYPE_HELLO);
                                 return;
                             }
                             break;
@@ -182,6 +187,8 @@ void bus_poll()
                             printch('=');
 #endif
                             if (s_header[2] != UNASSIGNED_SUB_ADDRESS) {
+                                // Master now knows me
+                                s_known = 1;
                                 // Start reading data with rc9 not set
                                 rs485_skipData = rs485_lastRc9 = FALSE;
                                 // Socket, direct connect

@@ -111,17 +111,17 @@ namespace Lucky.Home.Protocol
             }
             IsZombie = false;
 
-            if (childrenChanged == null)
+            // Start data fetch asynchrously
+            // This resets also the dirty children state
+            await FetchMetadata();
+            if (childrenChanged != null)
             {
-                // Start data fetch asynchrously
-                await FetchMetadata();
-            }
-            else
-            {
-                // Only fetch changed nodes
+                // Only fetch changed nodes AND present nodes
+                var toRefecth = childrenChanged.Where(i => _lastKnownChildren.ContainsKey(i));
+
                 var nodeManager = Manager.GetService<INodeManager>();
                 // Register subnodes, asking for identity
-                var children = await Task.WhenAll(childrenChanged.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))));
+                var children = await Task.WhenAll(toRefecth.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))));
                 children.Select(c => _lastKnownChildren[c.Address.Index] = c);
             }
         }

@@ -8,10 +8,9 @@
 
 #ifdef HAS_BUS_SERVER
 
-// 8*8 = 63 max children (last is broadcast)
-#define MAX_CHILDREN 2
-#define BUFFER_MASK_SIZE ((MAX_CHILDREN + 7) / 8)
 static BYTE s_childKnown[BUFFER_MASK_SIZE];
+BYTE bus_dirtyChildren[BUFFER_MASK_SIZE];
+bit bus_hasDirtyChildren;
 
 // Ack message contains ACK
 #define ACK_MSG_SIZE 4
@@ -20,7 +19,6 @@ static BYTE s_childKnown[BUFFER_MASK_SIZE];
 static BYTE s_scanIndex;
 static TICK_TYPE s_lastScanTime;
 static TICK_TYPE s_lastTime;
-bit bus_dirtyChildren;
 
 // Socket connected to child, or SOCKET_STATE
 static int s_socketConnected;
@@ -65,8 +63,14 @@ static BYTE countChildren()
     return count;
 }
 
+static void setDirtyChild(signed char i)
+{
+    bus_dirtyChildren[i / 8] |= (1 << (i % 8));
+}
+
 static void setChildKnown(signed char i)
 {
+    setDirtyChild(i);
     s_childKnown[i / 8] |= (1 << (i % 8));
     
     char msg[16];
@@ -76,22 +80,25 @@ static void setChildKnown(signed char i)
 
 void bus_init()
 {
-    // No beans are known
-    for (int i = 0; i < BUFFER_MASK_SIZE; i++) {
-        s_childKnown[i] = 0;
-    }
+    // No beans are known, nor dirty
+    memset(s_childKnown, 0, BUFFER_MASK_SIZE);
+    bus_resetDirtyChildren();
     
     // Starts from zero
     s_scanIndex = BROADCAST_ADDRESS;
     s_socketConnected = SOCKET_NOT_CONNECTED;
     s_waitTxFlush = 0;
     s_waitTxQuickEnd = 0;
-    bus_dirtyChildren = 0;
     
     // Do full scan
     s_lastScanTime = TickGet();
 
     memset(&g_busStats, 0, sizeof(BUS_MASTER_STATS));
+}
+
+void bus_resetDirtyChildren() {
+    bus_hasDirtyChildren = 0;
+    memset(bus_dirtyChildren, 0, BUFFER_MASK_SIZE);
 }
 
 // Ask for the next known child
@@ -158,15 +165,24 @@ static void bus_checkAck()
     rs485_read(buffer, ACK_MSG_SIZE);
     if (!rs485_lastRc9 && buffer[0] == 0x55 && buffer[1] == 0xaa && buffer[2] == s_scanIndex) {
         // Ok, good response
-        if (buffer[3] == BUS_ACK_TYPE_HELLO && s_scanIndex == BROADCAST_ADDRESS) {
-            // Need registration.
-            bus_registerNewNode();
-            return;
+        if (buffer[3] == BUS_ACK_TYPE_HELLO) {
+            if (s_scanIndex == BROADCAST_ADDRESS) {
+                // Need registration.
+                bus_registerNewNode();
+                return;
+            }
+            else if (isChildKnown(s_scanIndex)) {
+                // A known node reset! Notify it.
+                bus_hasDirtyChildren = 1;
+                setDirtyChild(s_scanIndex);
+            }
         }
-        else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT && !isChildKnown(s_scanIndex) && s_scanIndex != BROADCAST_ADDRESS) {
-            // A node with address registered, but I didn't knew it. Register it.
-            bus_dirtyChildren = TRUE;
-            setChildKnown(s_scanIndex);
+        else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT) {
+            if (!isChildKnown(s_scanIndex) && s_scanIndex != BROADCAST_ADDRESS) {
+                // A node with address registered, but I didn't knew it. Register it.
+                bus_hasDirtyChildren = 1;
+                setChildKnown(s_scanIndex);
+            }
         }
     }
     // Next one.

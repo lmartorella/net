@@ -107,7 +107,7 @@ static void CHIL_command()
     prot_control_writeW(count);
     prot_control_write(bus_getChildrenMask(), count);
 
-    bus_dirtyChildren = FALSE;
+    bus_resetDirtyChildren();
 #else    
     // No children
     count = 0;
