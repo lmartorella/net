@@ -65,7 +65,7 @@ void fatal(const char* msg);
 #define VS1011_GPIO3 	RB2
 #define VS1011_GPIO2  	RB3
 #define VS1011_XDCS 	RB0
-#define VS1011_XCS	RB1
+#define VS1011_XCS      RB1
 #define VS1011_XTALI    25000           // in mhz
 #define VS1011_CLK_DOUBLING    0
 
@@ -156,13 +156,14 @@ void fatal(const char* msg);
 #endif
 #endif
 
-#undef HAS_DCF77
-#define DCF77_IN_TRIS TRISDbits.RD1
-#define DCF77_IN_PORT PORTDbits.RD1
-#define DCF77_EN_TRIS TRISDbits.RD0
-#define DCF77_EN_PORT PORTDbits.RD0
-#define DCF77_PWR_TRIS TRISDbits.RD2
-#define DCF77_PWR_PORT PORTDbits.RD2
+#define HAS_DCF77
+#define DCF77_IN_TRIS TRISBbits.RB1
+#define DCF77_IN_PORT PORTBbits.RB1
+#ifdef HAS_DCF77
+#ifdef HAS_VS1011
+#error Cannot use DCF77 and VS1011 at the same time
+#endif
+#endif
 
 #define HAS_LED
 #define LED_PORTBIT PORTHbits.RH0

@@ -1,17 +1,21 @@
-#ifdef HAS_DCF77 
 #include "pch.h"
+#include "hardware/tick.h"
+#include "hardware/leds.h"
+#include "appio.h"
+
+#ifdef HAS_DCF77 
 
 static bit s_lastState;
 static TICK_TYPE s_lastTick;
 static TICK_TYPE s_lastValidBit;
 
-#define DCF77_IN_PORT PORTAbits.RA1
-#define LED PORTAbits.RA0
-
-// 8 bytes = 64 bits
-#define BUFFER_MASK_SIZE 8
-static BYTE s_message[BUFFER_MASK_SIZE];
 static char s_pos;
+// Process one byte (2 BCD digit + parity) at a time
+static BYTE s_acc;
+static bit s_err;
+
+static BYTE s_minutesL, s_minutesH;
+static BYTE s_hoursL, s_hoursH;
 
 // From DA6180B datasheet
 #define ZERO_MIN (TICK_TYPE)(TICKS_PER_SECOND * 0.04)
@@ -34,23 +38,97 @@ static enum {
 
 static void reset() {
     s_pos = 0;
-    //memset(s_message, 0, 8);
+    s_err = 0;
+    printlnUp("");
+}
+
+static void err(const char* msg) {
+    s_err = 1;
+    s_pos = 0;
+    printlnUp(msg);
+}
+
+static void printMin() {
+    println("");
+    printch('m');
+    printch(':');
+    printch(s_minutesH + '0');
+    printch(s_minutesL + '0');
+}
+
+static void printHrs() {
+    printch(' ');
+    printch('h');
+    printch(':');
+    printch(s_hoursH + '0');
+    printch(s_hoursL + '0');
 }
 
 static void addBit() {
-    if (s_lastMark == BIT_TYPE_ONE) { 
-        s_message[s_pos / 8] |= (1 << (s_pos % 8));
+    if (s_err) {
+        return;
     }
-    else {
-        s_message[s_pos / 8] &= ~(1 << (s_pos % 8));
+
+    if (s_pos == 0) {
+        // Start of packet, always 0
+        if (s_lastMark != BIT_TYPE_ZERO) {
+            err("NZ0");
+        }
+    } else if (s_pos == 20) {
+        // Start of encoded time. Always 1.
+        if (s_lastMark != BIT_TYPE_ONE) {
+            err("NH1");
+        } else {
+            s_acc = 0;
+        }
+    } else if (s_pos >= 21 && s_pos <= 35) {
+        // Accumulate
+        if (s_lastMark == BIT_TYPE_ONE) {
+            s_acc |= 80;
+        }
+        s_acc >>= 1;
+    } 
+
+    if (s_err) {
+        return;
     }
+        
+    if (s_pos == 28 || s_pos == 35) {
+        // Check even parity
+        BYTE p = s_acc;
+        p = p ^ (p >> 4 | p << 4);
+        p = p ^ (p >> 2);
+        p = p ^ (p >> 1);
+        if ((p & 1) == 0) {
+            if (s_pos == 28) {
+                // Have minutes!
+                s_minutesL = s_acc & 0x0f;
+                s_minutesH = (s_acc & 0x70) >> 4;
+                printMin();
+            } else {
+                // Have hours!
+                s_acc >>= 1;
+                s_hoursL = s_acc & 0x0f;
+                s_hoursH = (s_acc & 0x30) >> 4;
+                printMin();
+                printHrs();
+                
+                // End of string
+                err("OK");
+            }
+            s_acc = 0;
+        } else {
+            err("PAR");
+        }
+    }
+    // Advance
     s_pos++;
-    s_pos = s_pos % 64;
 }
 
 void dcf77_init() {
     s_lastState = 0;    // At reset the receiver line is zero
     s_lastMark = BIT_TYPE_INVALID;
+    DCF77_IN_TRIS = 0;
     s_lastValidBit = TickGet();
     reset();
 }
@@ -87,23 +165,25 @@ void dcf77_poll() {
             // 1 second? Accumulate bit into the string
             if (len > SPACE2_MIN && len < SPACE2_MAX) {
                 // First bit after space
-                //printHex();
                 reset();
+                addBit();
             }
             else if (len < SPACE_MIN || len > SPACE_MAX) {
-                reset();
-            } // else 1 second? Accumulate bit into the string
-
-            addBit();
-            LED = 1;
+                // Receive error
+                err("TMG");
+            } 
+            else {
+                // else exactly 1 second? Accumulate bit into the string
+                addBit();
+            }
+            
+            led_on();
             s_lastValidBit = now;
         }
-        
-        //printStat();
     }    
     
-    if (LED && now - s_lastValidBit > FLASH_TIME) {
-        LED = 0;
+    if (led_isOn() && now - s_lastValidBit > FLASH_TIME) {
+        led_off();
     }
 }
 
