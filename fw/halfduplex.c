@@ -94,23 +94,12 @@ static bit halfduplex_writeHandler()
             return 1;
         }
         
-#ifdef DEBUGMODE
-        printch('#');
-        printch('0' + (s_count / 10));
-        printch('0' + (s_count % 10));
-        // Echo back same data
-#else
         if (s_header.mode != 0xff) {
             // Disable bus. Start read. Blocker.
             s_header.count = max232_sendReceive(s_header.count);
         }
         // else output back same data
-#endif
 
-#ifdef DEBUGMODE
-        printch('&');
-        printch('0' + s_count);
-#endif
         // IN HEADER WRITE
         prot_control_writeW(s_header.count);
         s_ptr = max232_buffer1;
