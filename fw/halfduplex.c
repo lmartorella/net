@@ -5,7 +5,7 @@
 #include "hardware/max232.h"
 #include "hardware/rs485.h"
 
-#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
+#if (defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)) && defined(HAS_BUS)
 
 static bit halfduplex_readHandler();
 static bit halfduplex_writeHandler();

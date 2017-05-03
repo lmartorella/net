@@ -13,6 +13,7 @@
 #undef HAS_SPI_RAM
 #undef HAS_IP
 #define HAS_IO
+#define HAS_BUS
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)

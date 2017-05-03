@@ -39,7 +39,7 @@ static enum {
 static void reset() {
     s_pos = 0;
     s_err = 0;
-    printlnUp("");
+    printlnUp("...");
 }
 
 static void err(const char* msg) {
@@ -83,10 +83,10 @@ static void addBit() {
         }
     } else if (s_pos >= 21 && s_pos <= 35) {
         // Accumulate
-        if (s_lastMark == BIT_TYPE_ONE) {
-            s_acc |= 80;
-        }
         s_acc >>= 1;
+        if (s_lastMark == BIT_TYPE_ONE) {
+            s_acc |= 0x80;
+        }
     } 
 
     if (s_err) {
@@ -128,7 +128,7 @@ static void addBit() {
 void dcf77_init() {
     s_lastState = 0;    // At reset the receiver line is zero
     s_lastMark = BIT_TYPE_INVALID;
-    DCF77_IN_TRIS = 0;
+    DCF77_IN_TRIS = 1;  // input
     s_lastValidBit = TickGet();
     reset();
 }

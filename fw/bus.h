@@ -1,6 +1,8 @@
 #ifndef BUS_H
 #define	BUS_H
 
+#ifdef HAS_BUS
+
 #ifdef HAS_RS485
 #ifdef HAS_IP
 #define HAS_BUS_SERVER
@@ -82,5 +84,8 @@ typedef enum {
 } SOCKET_STATE;
 
 #endif
+
+#endif
+
 #endif	/* BUS_H */
 

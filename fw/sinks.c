@@ -6,6 +6,8 @@
 #include "hardware/dht11.h"
 #include "hardware/digio.h"
 
+#ifdef HAS_BUS
+
 static bit sysSink_receive();
 static bit sysSink_transmit();
 
@@ -119,3 +121,5 @@ static bit sysSink_transmit()
     // Finish
     return FALSE;
 }
+
+#endif

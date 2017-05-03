@@ -80,15 +80,19 @@ void main()
     rs485_init();
 #endif
 
+#ifdef HAS_BUS
     prot_init();
-
+#endif
+    
     enableInterrupts();
 
     // I'm alive
     while (1) {   
+#ifdef HAS_BUS
         bus_poll();
         prot_poll();
         rs485_poll();
+#endif
         pers_poll();
             
 #if HAS_VS1011

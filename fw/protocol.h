@@ -4,6 +4,8 @@
 #include "bus.h"
 #include "hardware/rs485.h"
 
+#ifdef HAS_BUS
+
 #ifdef HAS_BUS_CLIENT
 // Directly with define in order to minimize stack usage
 #define prot_control_readW(w) rs485_read((BYTE*)w, 2) 
@@ -55,6 +57,8 @@ typedef struct SinkStruct
 
 extern const Sink* AllSinks[];
 extern int AllSinksSize;
+
+#endif
 
 #endif	/* PROTOCOL_H */
 

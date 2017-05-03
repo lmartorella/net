@@ -9,9 +9,15 @@
 #define	DISPLAYSINK_H
 
 #include "protocol.h"
+
+#ifdef HAS_BUS
+#ifdef HAS_CM1602
+
 // The public sink descriptor
 extern const Sink g_displaySink;
 
+#endif
+#endif
 
 #endif	/* DISPLAYSINK_H */
 

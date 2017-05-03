@@ -19,6 +19,8 @@ void fatal(const char* msg);
 
 #define DEBUGMODE
 
+#undef HAS_BUS
+
 // ******* 
 // DISPLAY
 // Uses PORTE, 0, 2-7
@@ -101,7 +103,7 @@ void fatal(const char* msg);
 // ******
 // RS485: use USART2 on 18F87J60 (PORTG)
 // ******
-#define HAS_RS485
+#undef HAS_RS485
 #define RS485_BUF_SIZE 64
 #define RS485_RCSTA RCSTA2bits
 #define RS485_TXSTA TXSTA2bits

@@ -5,6 +5,8 @@
 #include "bus.h"
 #include "hardware/tick.h"
 
+#ifdef HAS_BUS
+
 #ifdef HAS_IP
 #include "Compiler.h"
 #include "TCPIPStack/TCPIP.h"
@@ -306,3 +308,5 @@ void prot_poll()
         // Otherwise wait for data
     }
 }
+
+#endif

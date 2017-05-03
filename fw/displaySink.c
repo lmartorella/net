@@ -4,7 +4,7 @@
 #include "protocol.h"
 #include "hardware/cm1602.h"
 
-#ifdef HAS_CM1602
+#if defined(HAS_BUS) && defined(HAS_CM1602)
 
 static bit readHandler();
 static bit writeHandler();

@@ -16,6 +16,8 @@
 
 #undef DEBUGMODE
 
+#define HAS_BUS
+
 #define HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB3
 #define RS232_TX_TRIS TRISBbits.TRISB4
