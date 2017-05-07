@@ -48,7 +48,9 @@ namespace Lucky.Home.Sinks
 
         private class BusMasterStats
         {
+#pragma warning disable CS0649 
             public byte SocketTimeoutCount;
+#pragma warning restore CS0649 
         }
 
         private NodeStatus GetBootStatus()
@@ -87,7 +89,10 @@ namespace Lucky.Home.Sinks
                 return null;
             }
 
-            Logger.Log("Getting boot status: " + status);
+            if (status.ResetReason != ResetReason.None)
+            {
+                Logger.Log("Getting boot status: " + status);
+            }
             if (stats?.SocketTimeoutCount > 0)
             {
                 Logger.Warning("Master Stats", "SocketTimeouts#", stats.SocketTimeoutCount);
@@ -106,7 +111,7 @@ namespace Lucky.Home.Sinks
         /// <summary>
         /// Reset the device
         /// </summary>
-        public async Task Reset()
+        public void Reset()
         {
             Write(writer =>
             {

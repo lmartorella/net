@@ -49,7 +49,9 @@ namespace Lucky.Home.Admin
             }
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task ResetNode(Guid id, string nodeAddress)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             ITcpNode node;
             if (id != Guid.Empty)
@@ -63,7 +65,7 @@ namespace Lucky.Home.Admin
 
             if (node != null)
             {
-                await node.Sink<SystemSink>().Reset();
+                node.Sink<SystemSink>().Reset();
             }
         }
 

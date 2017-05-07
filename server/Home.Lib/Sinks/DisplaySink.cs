@@ -2,6 +2,8 @@
 using Lucky.Home.Serialization;
 using System.Threading.Tasks;
 
+#pragma warning disable CS0649 
+
 namespace Lucky.Home.Sinks
 {
     /// <summary>

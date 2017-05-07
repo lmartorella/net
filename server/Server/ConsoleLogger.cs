@@ -19,7 +19,8 @@ namespace Lucky.Home
 
             public void LogFormat(string type, string message, params object[] args)
             {
-                Console.WriteLine(type + "|" + _name + ": " + message, args);
+                var ts = DateTime.Now.ToString("HH:mm:ss");
+                Console.WriteLine(ts + " " + type + "|" + _name + ": " + message, args);
             }
         }
 

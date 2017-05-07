@@ -49,7 +49,10 @@ namespace Lucky.Home.Protocol
                     }
                     else
                     {
-                        _logger.Log("NodeMessage", "ID", msg.DeviceId, "messageType", msgType);
+                        if (msgType != PingMessageType.Heartbeat)
+                        {
+                            _logger.Log("NodeMessage", "ID", msg.DeviceId, "messageType", msgType);
+                        }
                         NodeMessage?.Invoke(this, new NodeMessageEventArgs(msg.DeviceId, tcpNodeAddress, msgType, childrenChanged));
                     }
                 }
@@ -87,7 +90,9 @@ namespace Lucky.Home.Protocol
         {
             // Number of children as bit array
             [SerializeAsDynArray]
+#pragma warning disable 649
             public byte[] Mask;
+#pragma warning restore 649
         }
 
         /// <summary>
