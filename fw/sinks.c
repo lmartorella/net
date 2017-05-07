@@ -57,9 +57,11 @@ int AllSinksSize =
 
 bit sink_nullFunc()
 {
+    CLRWDT();
     // No data
     return FALSE;
 }
+
 const TWOCC ResetCode = "RS";
 const TWOCC ExceptionText = "EX";
 const TWOCC EndOfMetadataText = "EN";

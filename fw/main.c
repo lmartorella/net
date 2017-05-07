@@ -88,6 +88,7 @@ void main()
 
     // I'm alive
     while (1) {   
+        CLRWDT();
 #ifdef HAS_BUS
         bus_poll();
         prot_poll();
@@ -102,8 +103,6 @@ void main()
 #ifdef HAS_DCF77
         dcf77_poll();
 #endif
-        
-        CLRWDT();
     }
 }
 

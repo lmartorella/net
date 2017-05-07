@@ -72,6 +72,7 @@ void timers_init(void)
   ***************************************************************************/
 WORD TickGet()
 {
+    CLRWDT();
     // 2-byte value to store Ticks.  
     WORD vTickReading;
 

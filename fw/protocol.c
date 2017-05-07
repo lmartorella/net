@@ -186,6 +186,7 @@ static bit memcmp2(char c1, char c2, char d1, char d2) {
 */
 void prot_poll()
 {  
+    CLRWDT();
 #ifdef HAS_IP
     // Do ETH stuff
     StackTask();
@@ -250,6 +251,7 @@ void prot_poll()
             needed = 16;
         }
         if (s >= needed) {
+            CLRWDT();
             switch (s_commandToRun) {
                 case CMD_READ:
                     READ_command();

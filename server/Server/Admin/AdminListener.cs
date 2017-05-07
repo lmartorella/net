@@ -45,7 +45,8 @@ namespace Lucky.Home.Admin
                 Task task = (Task)_adminInterface.GetType().GetMethod(msg.Method).Invoke(_adminInterface, msg.Arguments);
                 await task;
                 object res = null;
-                if (task.GetType().GetGenericArguments()[0].Name != "VoidTaskResult")
+                var args = task.GetType().GetGenericArguments();
+                if (args.Length > 0 && args[0].Name != "VoidTaskResult")
                 {
                     res = ((dynamic)task).Result;
                 }

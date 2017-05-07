@@ -121,6 +121,7 @@ void rs485_interrupt()
     // Empty TX buffer. Check for more data
     if (RS485_PIR_TXIF && RS485_PIE_TXIE) {
         do {
+            CLRWDT();
             if (_rs485_readAvail() > 0) {
                 // Feed more data, read at read pointer and then increase
                 writeByte();
@@ -152,6 +153,7 @@ void rs485_interrupt()
     else if (RS485_PIR_RCIF && RS485_PIE_RCIE) {
         // Data received
         do {
+            CLRWDT();
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
                 s_oerr = 1;
@@ -179,6 +181,7 @@ void rs485_interrupt()
  */
 void rs485_poll()
 {
+    CLRWDT();
     if (s_oerr) {
         fatal("U.OER");
     }
@@ -259,6 +262,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
         *(s_writePtr++) = *(data++);
         ADJUST_PTR(s_writePtr);
         size--;
+        CLRWDT();
     }
 
     // 9-bit address
@@ -286,6 +290,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
 
 static void rs485_startRead()
 {
+    CLRWDT();
     if (rs485_state != RS485_LINE_RX) {
         // Break all
         rs485_state = RS485_LINE_TX_DISENGAGE;
@@ -340,6 +345,7 @@ bit rs485_read(BYTE* data, BYTE size)
                 *(data++) = *(s_readPtr++);
                 ADJUST_PTR(s_readPtr);
                 size--;
+                CLRWDT();
             }
         }
 
