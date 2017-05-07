@@ -1,0 +1,7 @@
+1.0
+ - Working protocol, resiliency, ok RS232 at desk.
+ 
+1.1
+ - Fixed non-zero timeout needed for Samil. Now the RS232 has correctly two timeouts (for first byte received and the last).
+ - Implemented protocol event to detect bus children reboot
+ - Socket timeout raised to 2 seconds (Samil need some time to read responses)
