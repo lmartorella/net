@@ -29,7 +29,7 @@ namespace Lucky.Home.Devices
         {
             var v = Encoding.ASCII.GetBytes(_lastMessage);
             Console.WriteLine("ECHO: TX -> {0} bytes", v.Length);
-            var ret = Sinks.OfType<HalfDuplexLineSink>().First().SendReceive(v);
+            var ret = Sinks.OfType<HalfDuplexLineSink>().First().SendReceive(v, false, "check");
             if (ret != null)
             {
                 Console.WriteLine("ECHO: RX  <- {0} ({1} bytes)", Encoding.ASCII.GetString(ret), ret.Length);

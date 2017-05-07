@@ -6,7 +6,7 @@
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
 
 // Debug when RS232 RX line is sampled
-#define TIMING_DEBUG
+#undef TIMING_DEBUG
 
 BYTE max232_buffer1[MAX232_BUFSIZE1];
 BYTE max232_buffer2[MAX232_BUFSIZE2];
@@ -27,6 +27,10 @@ void max232_init() {
 #ifdef HAS_MAX232_SOFTWARE
 #define RESETTIMER(t) { RS232_TCON_REG = t; RS232_TCON_ACC = 0; RS232_TCON_IF = 0; }
 #define WAITBIT() { while(!RS232_TCON_IF) { CLRWDT(); } RS232_TCON_IF = 0; }
+// Timeout to wait to receive the first byte: 0.5 seconds
+#define TIMEOUT_FIRST (int)(RS232_BAUD * 0.5)
+// Timeout after the last received byte
+#define TIMEOUT_LAST (int)(RS232_BAUD * 0.05) // 480 bits -> ~50 bytes @9600
 
 static void send(BYTE b) {
     // Write a idle bit
@@ -85,9 +89,10 @@ int max232_sendReceive(int size) {
     BYTE* ptr = max232_buffer1;
     BYTE i = 0;
 
+    // Set the timeout of the first byte
+    int timeoutCount = TIMEOUT_FIRST;
     while (1) {
         // Wait for start bit
-        int timeoutCount = 480;    // 480 bits = 0.05s
         while (RS232_RX_PORT) {
             CLRWDT();
             if (RS232_TCON_IF) {
@@ -136,6 +141,9 @@ int max232_sendReceive(int size) {
         // Wait for the stop bit
         WAITBIT();
         // Now in STOP state
+        
+        // Now change the timeout: use the shorter one now that at least 1 byte is received
+        timeoutCount = TIMEOUT_LAST;
     }   
 #endif
 }

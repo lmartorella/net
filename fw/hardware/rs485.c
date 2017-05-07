@@ -157,6 +157,8 @@ void rs485_interrupt()
             // Check for errors BEFORE reading RCREG
             if (RS485_RCSTA.OERR) {
                 s_oerr = 1;
+                // Disable IE otherwise the interrupt will loop
+                RS485_PIE_RCIE = 0;
                 return;
             }
             s_ferr = RS485_RCSTA.FERR;

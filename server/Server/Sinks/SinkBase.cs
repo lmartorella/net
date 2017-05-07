@@ -63,11 +63,11 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        protected bool Read(Action<IConnectionReader> readHandler)
+        protected bool Read(Action<IConnectionReader> readHandler, [CallerMemberName] string context = "")
         {
             if (Node != null)
             {
-                return Node.ReadFromSink(_index, readHandler);
+                return Node.ReadFromSink(_index, readHandler, context);
             }
             else
             {

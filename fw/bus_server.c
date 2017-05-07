@@ -24,7 +24,7 @@ static TICK_TYPE s_lastTime;
 static int s_socketConnected;
 
 #define BUS_SCAN_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 1.5) // 1500ms 
-#define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND / 2)  // 500ms
+#define BUS_SOCKET_TIMEOUT (TICK_TYPE)(TICKS_PER_SECOND * 2)  // 2000ms, SOLAR bean needs some time to sync wait for RS232 data
 // ack time is due to engage+disengage time (of the slave) + ack_size
 #define BUS_ACK_TIMEOUT (TICK_TYPE)(TICKS_PER_BYTE * ACK_MSG_SIZE * 4) // 9.1ms (19200,9,1 4*3bytes = )
 

@@ -41,7 +41,7 @@ namespace Lucky.Home.Protocol
         /// Open sink communication for read
         /// </summary>
         /// <returns>True if communication succeded</returns>
-        bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler);
+        bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler, [CallerMemberName] string context = "");
 
         /// <summary>
         /// Get the sink with the given type

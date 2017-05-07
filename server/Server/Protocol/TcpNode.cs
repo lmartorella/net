@@ -544,7 +544,7 @@ namespace Lucky.Home.Protocol
             }, "WriteToSink:" + context);
         }
 
-        public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler)
+        public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler, [CallerMemberName] string context = "")
         {
             return OpenNodeSession((connection, address) =>
             {
@@ -552,7 +552,7 @@ namespace Lucky.Home.Protocol
                 connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
                 readHandler(connection);
                 return true;
-            });
+            }, "ReadFromSink:" + context);
         }
 
         public T Sink<T>() where T : ISink
