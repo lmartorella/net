@@ -43,7 +43,7 @@ namespace Lucky.HomeMock.Core
         {
             // Send a broacast HELO message to port 17007
             MemoryStream stream = new MemoryStream();
-            var msg = "HEL3";
+            var msg = "HEL4";
             if (Registered)
             {
                 msg = ChildChanged ? "CCHN" : "HTBT";

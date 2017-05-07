@@ -6,7 +6,7 @@
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
 
 // Debug when RS232 RX line is sampled
-#undef TIMING_DEBUG
+#define TIMING_DEBUG
 
 BYTE max232_buffer1[MAX232_BUFSIZE1];
 BYTE max232_buffer2[MAX232_BUFSIZE2];

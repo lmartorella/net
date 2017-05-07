@@ -12,6 +12,8 @@
 #define SYSTEM_CLOCK 25000000ull
 #define PRIO_TYPE low_priority
 
+#define HAS_BUS
+
 // ******* 
 // DISPLAY
 // Uses PORTH

@@ -19,7 +19,7 @@ namespace Lucky.Home.Protocol
         /// </summary>
         public Fourcc MessageCode;
 
-        internal const string HeloMessageCode = "HEL3";
+        internal const string HeloMessageCode = "HEL4";
         internal const string HeartbeatMessageCode = "HTBT";
         internal const string SubNodeChanged = "CCHN";
         
