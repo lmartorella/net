@@ -176,6 +176,11 @@ static void bus_checkAck()
                 bus_hasDirtyChildren = 1;
                 setDirtyChild(s_scanIndex);
             }
+            else {
+                // Not known node hello: register it
+                bus_hasDirtyChildren = 1;
+                setChildKnown(s_scanIndex);
+            }
         }
         else if (buffer[3] == BUS_ACK_TYPE_HEARTBEAT) {
             if (!isChildKnown(s_scanIndex) && s_scanIndex != BROADCAST_ADDRESS) {

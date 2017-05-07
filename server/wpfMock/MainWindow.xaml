@@ -93,7 +93,7 @@
                         </TextBox.InputBindings>
                     </TextBox>
                     <Button Grid.Row="0" Grid.Column="1" Margin="3" Command="{Binding SendCommandCommand}">Send</Button>
-                    <TextBox Grid.Row="1" Grid.ColumnSpan="2" IsReadOnly="True" AcceptsReturn="True" Margin="3" Text="{Binding CommandLog}"/>
+                    <TextBox Grid.Row="1" Grid.ColumnSpan="2" IsReadOnly="False" AcceptsReturn="True" Margin="3" Text="{Binding CommandLog}"/>
                 </Grid>
             </TabItem>
 
