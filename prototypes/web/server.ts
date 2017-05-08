@@ -17,6 +17,8 @@ interface IPvData {
     error?: string;
     currentW?: number;
     totalDayW?: number;
+    peakW?: number;
+    peakTs?: Date;
 }
 
 interface ICsv {
@@ -35,20 +37,34 @@ function parseCsv(path: string): ICsv {
                 acc[k] = i;
                 return acc;
             }, colKeys);
+            return null;
         } else {
-            return cells.map(cell => {
-                if (cell.indexOf(':') > 0) {
-                    return new Date(cell);
+            return cells.map((cell, i) => {
+                if (i === 0) {
+                    // First column should be a date. If not, nullify the whole row (e.g. csv headers)
+                    return (cell.indexOf(':') > 0) && cell;
                 } else {
+                    // Other columns are number
                     return Number(cell);
                 }
             });
         }
-    });
+    }).filter(row => row && row[0]);
     return { 
         colKeys, 
         rows
     };
+}
+
+function findPeak(csv: ICsv, colKey: string): any[] {
+    var peakRow = csv.rows[0];
+    var idx = csv.colKeys[colKey];
+    csv.rows.forEach(row => {
+        if (row[idx] > peakRow[idx]) {
+            peakRow = row;
+        }
+    });
+    return peakRow;
 }
 
 function getPvData(): IPvData {
@@ -72,12 +88,21 @@ function getPvData(): IPvData {
         var lastSample = data.rows[data.rows.length - 1];
         ret.currentW = lastSample[data.colKeys['PowerW']]; 
         ret.totalDayW = lastSample[data.colKeys['EnergyTodayW']]; 
+
+        // Find the peak power
+        var peakPow = findPeak(data, 'PowerW');
+        ret.peakW = peakPow[data.colKeys['PowerW']];
+        ret.peakTs = peakPow[data.colKeys['TimeStamp']];
     }
     return ret;
 }
 
 function renderPage(pvData: IPvData): string {
-    return `Current power: ${pvData.currentW}W, total power today: ${pvData.totalDayW / 1000}kW`; 
+    return `
+<p> Current power: ${pvData.currentW}W </p>
+<p> Total power today: <b>${pvData.totalDayW / 1000}kW</b> </p>
+<p> Peak of ${pvData.peakW}W at ${pvData.peakTs} </p>
+`; 
 }
 
 app.get('/', (req, res) => {
