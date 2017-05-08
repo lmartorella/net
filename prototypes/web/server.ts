@@ -16,6 +16,7 @@ if (!fs.existsSync(csvFolder) || !fs.readdirSync(csvFolder)) {
 interface IPvData {
     error?: string;
     currentW?: number;
+    currentTs?: number;
     totalDayW?: number;
     peakW?: number;
     peakTs?: Date;
@@ -87,6 +88,7 @@ function getPvData(): IPvData {
     if (data.rows.length > 1) {
         var lastSample = data.rows[data.rows.length - 1];
         ret.currentW = lastSample[data.colKeys['PowerW']]; 
+        ret.currentTs = lastSample[data.colKeys['TimeStamp']]; 
         ret.totalDayW = lastSample[data.colKeys['EnergyTodayW']]; 
 
         // Find the peak power
@@ -99,9 +101,18 @@ function getPvData(): IPvData {
 
 function renderPage(pvData: IPvData): string {
     return `
-<p> Current power: ${pvData.currentW}W </p>
-<p> Total power today: <b>${pvData.totalDayW / 1000}kW</b> </p>
-<p> Peak of ${pvData.peakW}W at ${pvData.peakTs} </p>
+<html>
+<head>
+  <title>Solar</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <p> Current power: ${pvData.currentW}W </p>
+  <p> Total power today: <b>${pvData.totalDayW / 1000}kW</b> </p>
+  <p> Peak of ${pvData.peakW}W at ${pvData.peakTs} </p>
+  <p style="bottom: 0; position: absolute; font-size: 0.8rem"> Last valid sample taken at ${pvData.currentTs} </p>
+</body>
+</html>
 `; 
 }
 
