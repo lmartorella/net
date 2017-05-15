@@ -130,7 +130,7 @@ int max232_sendReceive(int size) {
         if (i == MAX232_BUFSIZE1) {
             ptr = max232_buffer2;
         }
-        else if (i == MAX232_BUFSIZE1) {
+        else if (i == MAX232_BUFSIZE2) {
             // Buffer overflow
             fatal("UAr.ov");
         }
