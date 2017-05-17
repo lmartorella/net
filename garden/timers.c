@@ -2,8 +2,8 @@
 
 #include "timers.h"
 
-// Without prescaler, counter will be reset to 625 to have 50Hz
-#define TMR1_VAL (0x10000u - (31250l / TICK_PER_SEC))
+// Without prescaler, counter will be reset to 2500 to have 50Hz
+#define TMR1_VAL (0x10000u - (125000l / TICK_PER_SEC))
 
 static long ticks = 0;
 static bit ticksDirty;
@@ -11,8 +11,8 @@ static bit on;
 
 void timer_setup() {
     on = 0;
-    // Set 1Mhz as int clock
-    OSCCONbits.IRCF = 4;
+    // Set 4Mhz as int clock
+    OSCCONbits.IRCF = 6;
     timer_on();
 }
 
@@ -20,7 +20,7 @@ void timer_on() {
     if (on) return;
     // USe TIMER1 (but NOT avail in SLEEP since LP uses RC0 and RC1)
     T1CONbits.TMR1CS = 0;   // USe fosc
-    T1CONbits.T1CKPS = 3;   // 1:8 prescaler -> 31250Hz
+    T1CONbits.T1CKPS = 3;   // 1:8 prescaler -> 125kHz
     T1CONbits.TMR1ON = 1;
     
     PIE1bits.TMR1IE = 1;

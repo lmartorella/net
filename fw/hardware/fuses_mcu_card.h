@@ -83,7 +83,6 @@
 #define RS485_TXSTA TXSTA1bits
 #define RS485_TXREG TXREG1
 #define RS485_RCREG RCREG1
-#define RS485_IPR IPR1bits
 #define RS485_PIR_TXIF PIR1bits.TX1IF
 #define RS485_PIR_RCIF PIR1bits.RC1IF
 #define RS485_PIE_TXIE PIE1bits.TX1IE
@@ -105,8 +104,8 @@
      SPBRGH1 = 0;\
      SPBRG1 = 80
 #define RS485_INIT_INT() \
-    RS485_IPR.TX1IP = 0; \
-    RS485_IPR.RC1IP = 0
+    IPR1bits.TX1IP = 0; \
+    IPR1bits.RC1IP = 0
     
 // *****
 // Tick timer source

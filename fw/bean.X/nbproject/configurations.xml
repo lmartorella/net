@@ -24,6 +24,7 @@
         <itemPath>../hardware/fuses_test_mini_bean.h</itemPath>
         <itemPath>../hardware/fuses_solar_bean.h</itemPath>
         <itemPath>../hardware/max232.h</itemPath>
+        <itemPath>../hardware/fuses_garden_bean.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>

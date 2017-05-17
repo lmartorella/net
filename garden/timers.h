@@ -1,6 +1,7 @@
 #ifndef TIMERS_H
 #define	TIMERS_H
 
+// 100Hz timer
 const long TICK_PER_SEC = 100l;
 
 // Setup all timers

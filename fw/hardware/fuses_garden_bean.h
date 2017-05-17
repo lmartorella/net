@@ -1,6 +1,7 @@
 #ifndef _FUSES_INCLUDE_
 #define _FUSES_INCLUDE_
 
+// Set via OSCCON (see garden/timers)
 #define SYSTEM_CLOCK 4000000ul
 #define _XTAL_FREQ SYSTEM_CLOCK
 #define PRIO_TYPE
@@ -18,7 +19,7 @@
 
 #define HAS_BUS
 
-#define HAS_MAX232_SOFTWARE
+#undef HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB3
 #define RS232_TX_TRIS TRISBbits.TRISB4
 #define RS232_RX_PORT PORTBbits.RB3
@@ -36,7 +37,7 @@
 #define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4) / RS232_BAUD / 2 - 38)  // 52-38. 38 Here is the result of checking with oscilloscope the exact poll point
 
 // ******
-// RS485: use USART1 on 16F628 (PORTB)
+// RS485: use USART on 16F877 (PORTB)
 // ******
 #define HAS_RS485
 #define RS485_BUF_SIZE 32
@@ -48,10 +49,10 @@
 #define RS485_PIR_RCIF PIR1bits.RCIF
 #define RS485_PIE_TXIE PIE1bits.TXIE
 #define RS485_PIE_RCIE PIE1bits.RCIE
-#define RS485_TRIS_TX TRISBbits.TRISB2
-#define RS485_TRIS_RX TRISBbits.TRISB1
-#define RS485_TRIS_EN TRISBbits.TRISB0
-#define RS485_PORT_EN PORTBbits.RB0
+#define RS485_TRIS_TX TRISBbits.TRISB6
+#define RS485_TRIS_RX TRISBbits.TRISB7
+#define RS485_TRIS_EN TRISDbits.TRISD1
+#define RS485_PORT_EN PORTDbits.RD1
 #define RS485_BAUD 19200
     // For 9600:
 //#define RS485_INIT_BAUD() \
@@ -59,6 +60,8 @@
 //    SPBRG = 25
 #define RS485_INIT_BAUD() \
      TXSTAbits.BRGH = 1;\
+     BAUDCTLbits.BRG16 = 0;\
+     SPBRGH = 0;\
      SPBRG = 12
 
 // *****
@@ -78,7 +81,7 @@
 #define TICK_PRESCALER 256
 #define TICK_TYPE WORD
 
-#define HAS_LED
+#undef HAS_LED
 #define LED_PORTBIT PORTBbits.RB5
 #define LED_TRISBIT TRISBbits.TRISB5
 
