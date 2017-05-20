@@ -17,9 +17,10 @@ interface IPvData {
     error?: string;
     currentW?: number;
     currentTs?: string;
-    totalDayW?: number;
+    totalDayWh?: number;
     peakW?: number;
     peakTs?: Date;
+    totalKwh?: number;
 }
 
 interface ICsv {
@@ -84,12 +85,13 @@ function getPvData(): IPvData {
     // Now parse it
     var data = parseCsv(path.join(csvFolder, csv));
 
-    var ret: IPvData = { currentW: 0, totalDayW: 0 };
+    var ret: IPvData = { currentW: 0, totalDayWh: 0, totalKwh: 0 };
     if (data.rows.length > 1) {
         var lastSample = data.rows[data.rows.length - 1];
         ret.currentW = lastSample[data.colKeys['PowerW']]; 
         ret.currentTs = lastSample[data.colKeys['TimeStamp']] + ' ' + csv.replace('.csv', ''); 
-        ret.totalDayW = lastSample[data.colKeys['EnergyTodayW']]; 
+        ret.totalDayWh = lastSample[data.colKeys['EnergyTodayW']]; 
+        ret.totalKwh = lastSample[data.colKeys['TotalPowerKW']]; 
 
         // Find the peak power
         var peakPow = findPeak(data, 'PowerW');
@@ -107,10 +109,14 @@ function renderPage(pvData: IPvData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <p> Current power: ${pvData.currentW}W </p>
-  <p> Total power today: <b>${pvData.totalDayW / 1000}kW</b> </p>
-  <p> Peak of ${pvData.peakW}W at ${pvData.peakTs} </p>
-  <p style="bottom: 0; position: absolute; font-size: 0.8rem"> Last valid sample taken at ${pvData.currentTs} </p>
+  <p> Potenza attuale: ${pvData.currentW}W </p>
+  <p> Energia totale oggi: <b>${pvData.totalDayWh / 1000}kWh</b> </p>
+  <p> Picco di ${pvData.peakW}W alle ${pvData.peakTs} </p>
+  <br/>
+  <p> Energia totale generata: ${pvData.totalKwh}kWh </p>
+  <p style="bottom: 0; position: absolute; font-size: 0.8rem"> 
+    Ultima lettura: ${pvData.currentTs} 
+  </p>
 </body>
 </html>
 `; 
