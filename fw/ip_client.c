@@ -22,6 +22,7 @@ static UDP_SOCKET s_heloSocket;
 // TCP lister control socket
 static TCP_SOCKET s_controlSocket;
 static bit s_started = FALSE;
+static bit s_sendHelo = 0;
 
 /*
 	HOME request
@@ -34,7 +35,6 @@ __PACK typedef struct
 	WORD controlPort;
 } HOME_REQUEST;
 
-static void sendHelo();
 static void pollControlPort();
 
 void prot_control_close()
@@ -121,6 +121,8 @@ void ip_prot_init()
 	{
 		fatal("SOC.opn2");
 	}
+    
+    s_sendHelo = 0;
 }
 
 /*
@@ -151,28 +153,30 @@ void ip_prot_slowTimer()
     }
     if (s_started)
     {
-        // Ping server every second
-        sendHelo();
+        // Ping server every second. Enqueue HELO packet
+        s_sendHelo = 1;
     }
 }
 
-static void sendHelo()
+void ip_poll() 
 {
-	// Still no HOME? Ping HELO
-	if (UDPIsPutReady(s_heloSocket) < sizeof(HOME_REQUEST))
-	{
-		fatal("HELO.rdy");
-	}
-
-	UDPPutString("HOME");
-	UDPPutString(prot_registered ? (bus_hasDirtyChildren ? "CCHN" : "HTBT") : "HEL4");
-	UDPPutArray((BYTE*)(&pers_data.deviceId), sizeof(GUID));
-	UDPPutW(CLIENT_TCP_PORT);
-    if (prot_registered && bus_hasDirtyChildren) {
-        UDPPutW(BUFFER_MASK_SIZE);
-        UDPPutArray(bus_dirtyChildren, BUFFER_MASK_SIZE);
+    if (s_sendHelo) {
+        // Still no HOME? Ping HELO
+        if (UDPIsPutReady(s_heloSocket) >= sizeof(HOME_REQUEST))
+        {
+            UDPPutString("HOME");
+            UDPPutString(prot_registered ? (bus_hasDirtyChildren ? "CCHN" : "HTBT") : "HEL4");
+            UDPPutArray((BYTE*)(&pers_data.deviceId), sizeof(GUID));
+            UDPPutW(CLIENT_TCP_PORT);
+            if (prot_registered && bus_hasDirtyChildren) {
+                UDPPutW(BUFFER_MASK_SIZE);
+                UDPPutArray(bus_dirtyChildren, BUFFER_MASK_SIZE);
+            }
+            UDPFlush();
+            
+            s_sendHelo = 0;
+        }
     }
-	UDPFlush();   
 }
 
 #endif // HAS_IP

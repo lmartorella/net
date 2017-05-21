@@ -198,6 +198,7 @@ void prot_poll()
         s_slowTimer = TickGet();
         ip_prot_slowTimer();
     }
+    ip_poll();
 #endif
     
     if (!prot_control_isConnected()) {
