@@ -32,6 +32,9 @@ void max232_init() {
 // Timeout after the last received byte
 #define TIMEOUT_LAST (int)(RS232_BAUD * 0.05) // 480 bits -> ~50 bytes @9600
 
+#define FRAME_ERROR -2
+#define OVERFLOW_ERROR -1
+
 static void send(BYTE b) {
     // Write a idle bit
     WAITBIT()
@@ -87,17 +90,18 @@ int max232_sendReceive(int size) {
 
     // Now receive
     BYTE* ptr = max232_buffer1;
-    BYTE i = 0;
+    // max 128. But use correct 8->16 expansion in return
+    char i = 0;
 
     // Set the timeout of the first byte
     int timeoutCount = TIMEOUT_FIRST;
     while (1) {
-        // Wait for start bit
+        // Wait for start bit (RX low)
         while (RS232_RX_PORT) {
             CLRWDT();
             if (RS232_TCON_IF) {
                 RS232_TCON_IF = 0;
-                if ((timeoutCount--) == 0) {
+                if ((timeoutCount--) <= 0) {
                     INTCONbits.GIE = 1;
                     return i;
                 }
@@ -126,6 +130,15 @@ int max232_sendReceive(int size) {
 #endif
         }
 
+        // Wait for the stop bit
+        WAITBIT();
+        if (!RS232_RX_PORT) {
+            // Invalid STOP bit, Frame Error
+            INTCONbits.GIE = 1;
+            return FRAME_ERROR;
+        }
+        // Now in STOP state
+
         *ptr = b;
         i++;
         CLRWDT();
@@ -136,18 +149,17 @@ int max232_sendReceive(int size) {
         else if (i == MAX232_BUFSIZE1 + MAX232_BUFSIZE2) {
             // Buffer overflow
             INTCONbits.GIE = 1;
-            return -1;
+            return OVERFLOW_ERROR;
         }
         else {
             ptr++;
         }
-
-        // Wait for the stop bit
-        WAITBIT();
-        // Now in STOP state
         
         // Now change the timeout: use the shorter one now that at least 1 byte is received
-        timeoutCount = TIMEOUT_LAST;
+        CLRWDT();
+        if (i == 1) {
+            timeoutCount = TIMEOUT_LAST;
+        }
     }   
 #endif
 }

@@ -252,10 +252,10 @@ namespace Lucky.Home.Protocol
                 {
                     // Connecion can be recycled
                     connection.Write(new SelectNodeMessage(address.Index));
+                    DateTime dt = DateTime.Now;
                     var ret = handler(connection, address);
                     if (ret)
                     {
-                        DateTime dt = DateTime.Now;
                         connection.Write(new CloseMessage());
                         var ack = connection.Read<CloseMessageResponse>();
                         if (ack == null || ack.Ack != 0x1e)

@@ -5,6 +5,16 @@ using System;
 
 namespace Lucky.Home.Sinks
 {
+    class OverflowErrorException : Exception
+    {
+
+    }
+
+    class FrameErrorException : Exception
+    {
+
+    }
+
     /// <summary>
     /// Sink for half-duplex serial line: 9600,N,1, 0.1 sec RX timeout
     /// </summary>
@@ -22,14 +32,16 @@ namespace Lucky.Home.Sinks
         private class Response
         {
             [SerializeAsDynArray]
-            [DynArrayCase(Key = -1, ExcType = typeof(OverflowException))]
+            [DynArrayCase(Key = -1, ExcType = typeof(OverflowErrorException))]
+            [DynArrayCase(Key = -2, ExcType = typeof(FrameErrorException))]
             public byte[] RxData;
         }
 
         public enum Error
         {
             Ok,
-            Overflow
+            Overflow,
+            FrameError
         }
 
         public byte[] SendReceive(byte[] txData, bool wantsResponse, bool echo, string opName, out Error error)
@@ -56,10 +68,15 @@ namespace Lucky.Home.Sinks
                 {
                     data = reader.Read<Response>()?.RxData;
                 }
-                catch (OverflowException)
+                catch (OverflowErrorException)
                 {
                     data = new byte[0];
                     err = Error.Overflow;
+                }
+                catch (FrameErrorException)
+                {
+                    data = new byte[0];
+                    err = Error.FrameError;
                 }
             }, opName);
 
