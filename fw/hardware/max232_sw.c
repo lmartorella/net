@@ -125,14 +125,18 @@ int max232_sendReceive(int size) {
             led_off();
 #endif
         }
+
         *ptr = b;
         i++;
+        CLRWDT();
+        
         if (i == MAX232_BUFSIZE1) {
             ptr = max232_buffer2;
         }
-        else if (i == MAX232_BUFSIZE2) {
+        else if (i == MAX232_BUFSIZE1 + MAX232_BUFSIZE2) {
             // Buffer overflow
-            fatal("UAr.ov");
+            INTCONbits.GIE = 1;
+            return -1;
         }
         else {
             ptr++;

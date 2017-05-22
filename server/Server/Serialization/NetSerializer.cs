@@ -43,7 +43,7 @@ namespace Lucky.Home.Serialization
                 {
                     throw new NotSupportedException("Array type not annoted: " + fieldInfo);
                 }
-                return new ArraySerializer(elSerializer, elType, false, "(arr)" + fieldName);
+                return new ArraySerializer(elSerializer, elType, false, "(arr)" + fieldName, fieldInfo.GetCustomAttributes<DynArrayCaseAttribute>().ToArray());
             }
             
             if (fieldType == typeof(string))
@@ -243,7 +243,7 @@ namespace Lucky.Home.Serialization
         private class FixedStringFieldItem : ArraySerializer
         {
             public FixedStringFieldItem(INetSerializer elementSerializer, Type elType, int size, string fieldName)
-                :base(elementSerializer, elType, true, fieldName)
+                :base(elementSerializer, elType, true, fieldName, new DynArrayCaseAttribute[0])
             {
                 if (size <= 0)
                 {
@@ -256,7 +256,7 @@ namespace Lucky.Home.Serialization
         private class DynStringFieldItem : ArraySerializer
         {
             public DynStringFieldItem(INetSerializer elementSerializer, Type elType, string fieldName)
-                : base(elementSerializer, elType, true, fieldName)
+                : base(elementSerializer, elType, true, fieldName, new DynArrayCaseAttribute[0])
             { }
         }
 
@@ -339,13 +339,15 @@ namespace Lucky.Home.Serialization
             protected int ForcedSize { get; set; }
             private readonly bool _isString;
             private readonly string _fieldName;
+            private readonly DynArrayCaseAttribute[] _cases;
 
-            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString, string fieldName)
+            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString, string fieldName, DynArrayCaseAttribute[] cases)
             {
                 _elementSerializer = elementSerializer;
                 _elementType = elType;
                 _isString = isString;
                 _fieldName = fieldName;
+                _cases = cases;
                 ForcedSize = 0;
             }
 
@@ -389,6 +391,16 @@ namespace Lucky.Home.Serialization
                     }
                     size = BitConverter.ToUInt16(b, 0);
                 }
+
+                if (_cases.Length > 0)
+                {
+                    var cm = _cases.FirstOrDefault(c => c.Key == size);
+                    if (cm != null)
+                    {
+                        throw (Exception)Activator.CreateInstance(cm.ExcType);
+                    }
+                }
+
                 Array array = Array.CreateInstance(_elementType, size);
                 for (int i = 0; i < size; i++)
                 {

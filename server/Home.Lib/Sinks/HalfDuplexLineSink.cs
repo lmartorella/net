@@ -1,6 +1,7 @@
 ﻿using Lucky.Home.Serialization;
+using System;
 
-#pragma warning disable CS0649 
+#pragma warning disable CS0649
 
 namespace Lucky.Home.Sinks
 {
@@ -21,20 +22,48 @@ namespace Lucky.Home.Sinks
         private class Response
         {
             [SerializeAsDynArray]
+            [DynArrayCase(Key = -1, ExcType = typeof(OverflowException))]
             public byte[] RxData;
         }
 
-        public byte[] SendReceive(byte[] txData, bool echo, string opName)
+        public enum Error
         {
+            Ok,
+            Overflow
+        }
+
+        public byte[] SendReceive(byte[] txData, bool wantsResponse, bool echo, string opName, out Error error)
+        {
+            byte mode = 0;
+            if (echo)
+            {
+                mode = 0xff;
+            }
+            else if (!wantsResponse)
+            {
+                mode = 0xfe;
+            }
             Write(writer =>
             {
-                writer.Write(new Message { TxData = txData, Mode = echo ? (byte)0xff : (byte)0x00 });
+                writer.Write(new Message { TxData = txData, Mode = mode });
             }, opName);
+
             byte[] data = null;
+            Error err = Error.Ok;
             Read(reader =>
             {
-                data = reader.Read<Response>()?.RxData;
+                try
+                {
+                    data = reader.Read<Response>()?.RxData;
+                }
+                catch (OverflowException)
+                {
+                    data = new byte[0];
+                    err = Error.Overflow;
+                }
             }, opName);
+
+            error = err;
             return data;
         }
     }

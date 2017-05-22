@@ -90,8 +90,8 @@ function getPvData(): IPvData {
         var lastSample = data.rows[data.rows.length - 1];
         ret.currentW = lastSample[data.colKeys['PowerW']]; 
         ret.currentTs = lastSample[data.colKeys['TimeStamp']] + ' ' + csv.replace('.csv', ''); 
-        ret.totalDayWh = lastSample[data.colKeys['EnergyTodayW']]; 
-        ret.totalKwh = lastSample[data.colKeys['TotalPowerKW']]; 
+        ret.totalDayWh = lastSample[data.colKeys['EnergyTodayWh']]; 
+        ret.totalKwh = lastSample[data.colKeys['TotalEnergyKWh']]; 
 
         // Find the peak power
         var peakPow = findPeak(data, 'PowerW');
@@ -115,7 +115,7 @@ function renderPage(pvData: IPvData): string {
   <br/>
   <p> Energia totale generata: ${pvData.totalKwh}kWh </p>
   <p style="bottom: 0; position: absolute; font-size: 0.8rem"> 
-    Ultima lettura: ${pvData.currentTs} 
+    Aggiornato a: ${pvData.currentTs} 
   </p>
 </body>
 </html>

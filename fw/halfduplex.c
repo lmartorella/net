@@ -16,6 +16,8 @@ const Sink g_halfDuplexSink = { { "SLIN" },
 };
 
 static struct {
+    // 0xff -> echo data
+    // 0xfe -> don't read any data
     BYTE mode;
     WORD count;
 } s_header;
@@ -94,14 +96,26 @@ static bit halfduplex_writeHandler()
             return 1;
         }
         
-        if (s_header.mode != 0xff) {
-            // Disable bus. Start read. Blocker.
-            s_header.count = max232_sendReceive(s_header.count);
+        switch (s_header.mode) {
+            case 0xfe:
+                // Don't read data, returns 0
+                max232_send(s_header.count);
+                s_header.count = 0;
+                break;
+            case 0xff:
+                // Echoes data
+                break;
+            default:
+                // Disable bus. Start read. Blocker.
+                s_header.count = max232_sendReceive(s_header.count);
         }
-        // else output back same data
-
+        
         // IN HEADER WRITE
         prot_control_writeW(s_header.count);
+        // In case of error don't send any data back
+        if ((int)(s_header.count) < 0) {
+            s_header.count = 0;
+        }
         s_ptr = max232_buffer1;
         s_pos = 0;
         s_state = ST_TRANSMIT_DATA;
