@@ -58,10 +58,12 @@ namespace Lucky.Home.Sinks
             Write(writer =>
             {
                 writer.Write(new Message { TxData = txData, Mode = mode });
-            }, opName);
+            }, opName + ":WR");
 
             byte[] data = null;
             Error err = Error.Ok;
+            // The Read operation is actually sending the buffer first and then synchronously (blocking the bus)
+            // reading the response (if mode is not 0xfe)
             Read(reader =>
             {
                 try
@@ -78,8 +80,7 @@ namespace Lucky.Home.Sinks
                     data = new byte[0];
                     err = Error.FrameError;
                 }
-            }, opName);
-
+            }, opName + ":RD");
             error = err;
             return data;
         }
