@@ -19,7 +19,7 @@ interface IPvData {
     currentTs?: string;
     totalDayWh?: number;
     peakW?: number;
-    peakTs?: Date;
+    peakTs?: string;
     totalKwh?: number;
 }
 
@@ -43,7 +43,7 @@ function parseCsv(path: string): ICsv {
         } else {
             return cells.map((cell, i) => {
                 if (i === 0) {
-                    // First column should be a date. If not, nullify the whole row (e.g. csv headers)
+                    // First column should be a time. If not, nullify the whole row (e.g. csv headers)
                     return (cell.indexOf(':') > 0) && cell;
                 } else {
                     // Other columns are number
@@ -85,7 +85,7 @@ function getPvData(): IPvData {
     // Now parse it
     var data = parseCsv(path.join(csvFolder, csv));
 
-    var ret: IPvData = { currentW: 0, totalDayWh: 0, totalKwh: 0 };
+    var ret: IPvData = { currentW: 0 };
     if (data.rows.length > 1) {
         var lastSample = data.rows[data.rows.length - 1];
         ret.currentW = lastSample[data.colKeys['PowerW']]; 
@@ -110,11 +110,11 @@ function renderPage(pvData: IPvData): string {
 </head>
 <body>
   <p> Potenza attuale: ${pvData.currentW}W </p>
-  <p> Energia totale oggi: <b>${pvData.totalDayWh / 1000}kWh</b> </p>
-  <p> Picco di ${pvData.peakW}W alle ${pvData.peakTs} </p>
+  <p style="visibility: ${pvData.totalDayWh ? 'visible' : 'hidden'}"> Energia totale oggi: <b>${pvData.totalDayWh / 1000}kWh</b> </p>
+  <p style="visibility: ${pvData.peakW ? 'visible' : 'hidden'}"> Picco di ${pvData.peakW}W alle ${pvData.peakTs} </p>
   <br/>
-  <p> Energia totale generata: ${pvData.totalKwh}kWh </p>
-  <p style="bottom: 0; position: absolute; font-size: 0.8rem"> 
+  <p style="visibility: ${pvData.totalKwh ? 'visible' : 'hidden'}"> Energia totale generata: ${pvData.totalKwh}kWh </p>
+  <p style="bottom: 0; position: absolute; font-size: 0.8rem; visibility: ${pvData.currentTs ? 'visible' : 'hidden'}"> 
     Aggiornato a: ${pvData.currentTs} 
   </p>
 </body>
