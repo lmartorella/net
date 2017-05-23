@@ -30,7 +30,7 @@ void max232_init() {
 // Timeout to wait to receive the first byte: 0.5 seconds
 #define TIMEOUT_FIRST (int)(RS232_BAUD * 0.5)
 // Timeout after the last received byte
-#define TIMEOUT_LAST (int)(RS232_BAUD * 0.05) // 480 bits -> ~50 bytes @9600
+#define TIMEOUT_LAST (int)(RS232_BAUD * 0.01) // 96 bits -> ~10 bytes @9600
 
 #define FRAME_ERROR -2
 #define OVERFLOW_ERROR -1
@@ -52,7 +52,7 @@ static void send(BYTE b) {
 }
 #endif
 
-void max232_send(int size) {
+void max232_send(signed char size) {
     if (size > MAX232_BUFSIZE1 + MAX232_BUFSIZE2) {
         fatal("UAs.ov");
     }
@@ -65,7 +65,7 @@ void max232_send(int size) {
     WAITBIT()
     
     BYTE* ptr = max232_buffer1;
-    for (BYTE i = 0; i < size; i++) {
+    for (signed char i = 0; i < size; i++) {
         send(*ptr);
         if (i == MAX232_BUFSIZE1 - 1) {
             ptr = max232_buffer2;
@@ -81,7 +81,7 @@ void max232_send(int size) {
 }
 
 // Write sync, disable interrupts
-int max232_sendReceive(int size) {
+signed char max232_sendReceive(signed char size) {
 
     max232_send(size);
 
@@ -90,8 +90,7 @@ int max232_sendReceive(int size) {
 
     // Now receive
     BYTE* ptr = max232_buffer1;
-    // max 128. But use correct 8->16 expansion in return
-    char i = 0;
+    signed char i = 0;
 
     // Set the timeout of the first byte
     int timeoutCount = TIMEOUT_FIRST;
@@ -115,7 +114,7 @@ int max232_sendReceive(int size) {
         RESETTIMER(RS232_TCON_VALUE)
 
         BYTE b = 0;
-        for (BYTE j = 0; j < 8; j++) {
+        for (char j = 0; j < 8; j++) {
             WAITBIT()
             b >>= 1;
 
@@ -132,6 +131,7 @@ int max232_sendReceive(int size) {
 
         // Wait for the stop bit
         WAITBIT();
+        i++;
         if (!RS232_RX_PORT) {
             // Invalid STOP bit, Frame Error
             INTCONbits.GIE = 1;
@@ -140,7 +140,6 @@ int max232_sendReceive(int size) {
         // Now in STOP state
 
         *ptr = b;
-        i++;
         CLRWDT();
         
         if (i == MAX232_BUFSIZE1) {
@@ -157,9 +156,7 @@ int max232_sendReceive(int size) {
         
         // Now change the timeout: use the shorter one now that at least 1 byte is received
         CLRWDT();
-        if (i == 1) {
-            timeoutCount = TIMEOUT_LAST;
-        }
+        timeoutCount = TIMEOUT_LAST;
     }   
 #endif
 }

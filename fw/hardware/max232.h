@@ -13,10 +13,10 @@ extern BYTE max232_buffer2[MAX232_BUFSIZE2];
 
 // Disable interrupts. Send txSize byte from the buffer and then receive in the buffer, and returns the size
 // Timeout of 0.05s of no data
-int max232_sendReceive(int txSize);
+signed char max232_sendReceive(signed char txSize);
 
 // Disable interrupts. Send txSize byte from the buffer
-void max232_send(int txSize);
+void max232_send(signed char txSize);
 
 #endif
 

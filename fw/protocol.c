@@ -236,10 +236,9 @@ void prot_poll()
         // Address sink
         if (!AllSinks[s_inWriteSink]->writeHandler()){
             s_inWriteSink = -1;
+            // end of transmission, over to Master
+            prot_control_over();
         }
-        
-        // end of transmission, over to Master
-        prot_control_over();
         return;
     }
 

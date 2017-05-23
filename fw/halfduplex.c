@@ -20,11 +20,17 @@ static struct {
     // 0xfe -> don't read any data
     BYTE mode;
     union {
-        char count8;
-        int count;
+        struct {
+            // Size 16-bit, but only 7 are used (+sign)
+            signed char countl;
+            signed char counth; 
+        };
+        struct { 
+            signed int count;
+        };
     };
 } s_header;
-static char s_pos;
+static signed char s_pos;
 static BYTE* s_ptr;
 
 static enum {
@@ -63,7 +69,7 @@ static bit halfduplex_readHandler()
     }
     
     // I'm in ST_RECEIVE_DATA mode
-    while (prot_control_readAvail() && s_pos < s_header.count8) {
+    while (prot_control_readAvail() && s_pos < s_header.countl) {
         prot_control_read(s_ptr, 1);
         s_pos++;
         // Read buffer data
@@ -76,7 +82,7 @@ static bit halfduplex_readHandler()
     }
 
     // Ask for more data?
-    if (s_pos < s_header.count8) {
+    if (s_pos < s_header.countl) {
         // Again
         return 1;
     }
@@ -99,24 +105,26 @@ static bit halfduplex_writeHandler()
             return 1;
         }
         
+        s_header.counth = 0;
         switch (s_header.mode) {
             case 0xfe:
                 // Don't read data, returns 0
-                max232_send(s_header.count);
-                s_header.count = 0;
+                max232_send(s_header.countl);
+                s_header.countl = 0;
                 break;
             case 0xff:
-                // Echoes data
+                // Echoes data without using the UART line
                 break;
             default:
                 // Disable bus. Start read. Blocker.
-                s_header.count = max232_sendReceive(s_header.count);
+                s_header.count = max232_sendReceive(s_header.countl);
+                break;
         }
         
         // IN HEADER WRITE
         prot_control_writeW(s_header.count);
         // In case of error don't send any data back
-        if (s_header.count < 0) {
+        if (s_header.countl < 0) {
             s_header.count = 0;
         }
         s_ptr = max232_buffer1;
@@ -125,7 +133,7 @@ static bit halfduplex_writeHandler()
     }
 
     // Write max 0x10 bytes at a time
-    while (prot_control_writeAvail() && s_pos < s_header.count8) {
+    while (prot_control_writeAvail() && s_pos < s_header.countl) {
         prot_control_write(s_ptr, 1);
         s_pos++;
         if (s_pos == MAX232_BUFSIZE1) {
@@ -137,7 +145,7 @@ static bit halfduplex_writeHandler()
     }
    
     // Ask for more data?
-    if (s_pos < s_header.count8) {
+    if (s_pos < s_header.countl) {
         // Again
         return 1;
     }
