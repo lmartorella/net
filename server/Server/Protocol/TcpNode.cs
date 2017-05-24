@@ -94,8 +94,12 @@ namespace Lucky.Home.Protocol
             // Ask system sink if ETH node DEBUG DEBUG
             if (!address.IsSubNode)
             {
-                // Ask system status
-                await Sink<SystemSink>().FetchStatus();
+                var systemSink = Sink<SystemSink>();
+                if (systemSink != null)
+                {
+                    // Ask system status
+                    await systemSink.FetchStatus();
+                }
             }
         }
 

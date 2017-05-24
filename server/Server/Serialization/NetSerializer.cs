@@ -39,11 +39,12 @@ namespace Lucky.Home.Serialization
                 var elType = fieldType.GetElementType();
                 var elSerializer = BuildFieldItem(fieldInfo, elType, "(el)");
 
-                if (fieldInfo == null || fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false).Length < 1)
+                var dynAttrs = fieldInfo.GetCustomAttributes(typeof(SerializeAsDynArrayAttribute), false);
+                if (fieldInfo == null || dynAttrs.Length < 1)
                 {
                     throw new NotSupportedException("Array type not annoted: " + fieldInfo);
                 }
-                return new ArraySerializer(elSerializer, elType, false, "(arr)" + fieldName, fieldInfo.GetCustomAttributes<DynArrayCaseAttribute>().ToArray());
+                return new ArraySerializer(elSerializer, elType, false, "(arr)" + fieldName);
             }
             
             if (fieldType == typeof(string))
@@ -243,7 +244,7 @@ namespace Lucky.Home.Serialization
         private class FixedStringFieldItem : ArraySerializer
         {
             public FixedStringFieldItem(INetSerializer elementSerializer, Type elType, int size, string fieldName)
-                :base(elementSerializer, elType, true, fieldName, new DynArrayCaseAttribute[0])
+                :base(elementSerializer, elType, true, fieldName)
             {
                 if (size <= 0)
                 {
@@ -256,7 +257,7 @@ namespace Lucky.Home.Serialization
         private class DynStringFieldItem : ArraySerializer
         {
             public DynStringFieldItem(INetSerializer elementSerializer, Type elType, string fieldName)
-                : base(elementSerializer, elType, true, fieldName, new DynArrayCaseAttribute[0])
+                : base(elementSerializer, elType, true, fieldName)
             { }
         }
 
@@ -339,15 +340,13 @@ namespace Lucky.Home.Serialization
             protected int ForcedSize { get; set; }
             private readonly bool _isString;
             private readonly string _fieldName;
-            private readonly DynArrayCaseAttribute[] _cases;
 
-            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString, string fieldName, DynArrayCaseAttribute[] cases)
+            public ArraySerializer(INetSerializer elementSerializer, Type elType, bool isString, string fieldName)
             {
                 _elementSerializer = elementSerializer;
                 _elementType = elType;
                 _isString = isString;
                 _fieldName = fieldName;
-                _cases = cases;
                 ForcedSize = 0;
             }
 
@@ -389,15 +388,10 @@ namespace Lucky.Home.Serialization
                     {
                         throw new BufferUnderrunException(2, b, "(sizeof)" + (_fieldName ?? ""));
                     }
-                    size = BitConverter.ToUInt16(b, 0);
-                }
-
-                if (_cases.Length > 0)
-                {
-                    var cm = _cases.FirstOrDefault(c => c.Key == size);
-                    if (cm != null)
+                    size = BitConverter.ToInt16(b, 0);
+                    if (size < 0)
                     {
-                        throw (Exception)Activator.CreateInstance(cm.ExcType);
+                        throw new InvalidOperationException("Dynamic Array with negative size: " + size);
                     }
                 }
 
