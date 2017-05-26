@@ -6,8 +6,6 @@
 // Connection 9600,N,8,1
 void max232_init();
 
-#define MAX232_BUFSIZE1 0x22
-#define MAX232_BUFSIZE2 0x22
 extern BYTE max232_buffer1[MAX232_BUFSIZE1];
 extern BYTE max232_buffer2[MAX232_BUFSIZE2];
 

@@ -34,6 +34,9 @@
 #define RS232_BAUD 9600
 #define RS232_TCON_VALUE ((SYSTEM_CLOCK/4) / RS232_BAUD)   // 104
 #define RS232_TCON_VALUE_HALF ((SYSTEM_CLOCK/4) / RS232_BAUD / 2 - 38)  // 52-38. 38 Here is the result of checking with oscilloscope the exact poll point
+// Solar needs 0x48 for the biggest message(get fw version)
+#define MAX232_BUFSIZE1 0x30
+#define MAX232_BUFSIZE2 0x30
 
 // ******
 // RS485: use USART1 on 16F628 (PORTB)

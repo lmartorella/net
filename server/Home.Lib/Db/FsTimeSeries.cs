@@ -41,7 +41,7 @@ namespace Lucky.Home.Db
 
                 // Write CSV header
                 WriteLine(writer => writer.WriteLine("TimeStamp," + _header));
-                _logger.Log("Rotated");
+                _logger.Log("Rotated", "date", start.Date);
             }
         }
 
