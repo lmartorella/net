@@ -3603,6 +3603,8 @@ general purpose rectifier, 1 A</description>
 <part name="VR1" library="custom" deviceset="TRIMMER" device="" value="4k7"/>
 <part name="GND18" library="custom" deviceset="GND" device=""/>
 <part name="R9" library="custom" deviceset="R-EU_" device="0207/10" value="4k7"/>
+<part name="R10" library="custom" deviceset="R-EU_" device="0207/10" value="10k"/>
+<part name="P+1" library="custom" deviceset="VCC" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -3674,6 +3676,8 @@ general purpose rectifier, 1 A</description>
 <instance part="VR1" gate="G$1" x="-53.34" y="2.54" rot="MR180"/>
 <instance part="GND18" gate="1" x="-53.34" y="-7.62"/>
 <instance part="R9" gate="G$1" x="-53.34" y="12.7" rot="R90"/>
+<instance part="R10" gate="G$1" x="2.54" y="111.76" rot="R180"/>
+<instance part="P+1" gate="VCC" x="10.16" y="116.84"/>
 </instances>
 <busses>
 </busses>
@@ -3951,6 +3955,12 @@ general purpose rectifier, 1 A</description>
 <pinref part="C11" gate="G$1" pin="1"/>
 <junction x="-20.32" y="71.12"/>
 </segment>
+<segment>
+<pinref part="R10" gate="G$1" pin="1"/>
+<pinref part="P+1" gate="VCC" pin="VCC"/>
+<wire x1="7.62" y1="111.76" x2="10.16" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="10.16" y1="111.76" x2="10.16" y2="114.3" width="0.1524" layer="91"/>
+</segment>
 </net>
 <net name="N$1" class="0">
 <segment>
@@ -4034,10 +4044,12 @@ general purpose rectifier, 1 A</description>
 <wire x1="-2.54" y1="53.34" x2="-2.54" y2="93.98" width="0.1524" layer="91"/>
 <pinref part="U$1" gate="G$1" pin="/MCLR"/>
 <wire x1="-2.54" y1="93.98" x2="-35.56" y2="93.98" width="0.1524" layer="91"/>
-<wire x1="-5.08" y1="111.76" x2="-2.54" y2="109.22" width="0.1524" layer="91"/>
-<wire x1="-2.54" y1="109.22" x2="-2.54" y2="93.98" width="0.1524" layer="91"/>
+<wire x1="-5.08" y1="111.76" x2="-2.54" y2="111.76" width="0.1524" layer="91"/>
+<wire x1="-2.54" y1="111.76" x2="-2.54" y2="93.98" width="0.1524" layer="91"/>
 <junction x="-2.54" y="93.98"/>
 <pinref part="BUT1" gate="G$1" pin="1@A"/>
+<pinref part="R10" gate="G$1" pin="2"/>
+<junction x="-2.54" y="111.76"/>
 </segment>
 </net>
 <net name="N$14" class="0">
@@ -4125,14 +4137,14 @@ general purpose rectifier, 1 A</description>
 <wire x1="-7.62" y1="0" x2="5.08" y2="0" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$18" class="0">
+<net name="485_B" class="0">
 <segment>
 <pinref part="J2" gate="G$1" pin="1"/>
 <pinref part="IC2" gate="G$1" pin="B"/>
 <wire x1="152.4" y1="30.48" x2="147.32" y2="27.94" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$24" class="0">
+<net name="485_A" class="0">
 <segment>
 <pinref part="IC2" gate="G$1" pin="A"/>
 <wire x1="147.32" y1="33.02" x2="149.86" y2="33.02" width="0.1524" layer="91"/>
