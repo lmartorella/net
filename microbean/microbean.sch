@@ -3067,17 +3067,17 @@ Source: http://www.onsemi.com/pub_link/Collateral/MBRA340T3-D.PDF</description>
 </class>
 </classes>
 <parts>
-<part name="IC1" library="custom" deviceset="78LXX" device="SOT89"/>
+<part name="IC1" library="custom" deviceset="78LXX" device="SOT89" value="L78L33/L78L05"/>
 <part name="J1" library="custom" deviceset="M02-SCREW-3.5MM" device="3.5MM"/>
 <part name="GND1" library="custom" deviceset="GND" device=""/>
 <part name="GND2" library="custom" deviceset="GND" device=""/>
-<part name="D3" library="diode" deviceset="S1M" device=""/>
-<part name="C1" library="custom" deviceset="C-EU" device="C0805"/>
-<part name="C2" library="custom" deviceset="C-EU" device="C0805"/>
-<part name="C3" library="custom" deviceset="CPOL-EU" device="SMD4X5.3"/>
-<part name="C4" library="custom" deviceset="CPOL-EU" device="SMD4X5.3"/>
+<part name="D3" library="diode" deviceset="S1M" device="" value="S1A"/>
+<part name="C1" library="custom" deviceset="C-EU" device="C0805" value="100n"/>
+<part name="C2" library="custom" deviceset="C-EU" device="C0805" value="100n"/>
+<part name="C3" library="custom" deviceset="CPOL-EU" device="SMD4X5.3" value="10u"/>
+<part name="C4" library="custom" deviceset="CPOL-EU" device="SMD4X5.3" value="10u"/>
 <part name="J2" library="custom" deviceset="M02-SCREW-3.5MM" device="3.5MM"/>
-<part name="IC2" library="custom" deviceset="MAX485" device="ST3485"/>
+<part name="IC2" library="custom" deviceset="MAX485" device="ST3485" value="ST485/ST3485"/>
 <part name="IC3" library="custom" deviceset="PIC16F1827" device="SO"/>
 <part name="GND3" library="custom" deviceset="GND" device=""/>
 <part name="ICSP" library="custom" deviceset="ICSP-HEADER-5" device=""/>
@@ -3085,10 +3085,10 @@ Source: http://www.onsemi.com/pub_link/Collateral/MBRA340T3-D.PDF</description>
 <part name="GND4" library="custom" deviceset="GND" device=""/>
 <part name="D2" library="custom" deviceset="LED" device="1206" value="LED1206"/>
 <part name="GND5" library="custom" deviceset="GND" device=""/>
-<part name="R1" library="custom" deviceset="R-EU_" device="R0805"/>
+<part name="R1" library="custom" deviceset="R-EU_" device="R0805" value="560"/>
 <part name="GND6" library="custom" deviceset="GND" device=""/>
 <part name="GND7" library="custom" deviceset="GND" device=""/>
-<part name="C5" library="custom" deviceset="C-EU" device="C0805"/>
+<part name="C5" library="custom" deviceset="C-EU" device="C0805" value="100n"/>
 <part name="J3" library="custom" deviceset="M05" device="PTH"/>
 <part name="J4" library="custom" deviceset="M04" device=""/>
 <part name="J5" library="custom" deviceset="M02" device=""/>
@@ -3117,7 +3117,7 @@ Source: http://www.onsemi.com/pub_link/Collateral/MBRA340T3-D.PDF</description>
 <instance part="GND4" gate="1" x="50.8" y="38.1"/>
 <instance part="D2" gate="G$1" x="101.6" y="25.4"/>
 <instance part="GND5" gate="1" x="101.6" y="17.78"/>
-<instance part="R1" gate="G$1" x="101.6" y="35.56" rot="R90"/>
+<instance part="R1" gate="G$1" x="101.6" y="33.02" rot="R270"/>
 <instance part="GND6" gate="1" x="60.96" y="63.5"/>
 <instance part="IC2" gate="P" x="-17.78" y="43.18"/>
 <instance part="GND7" gate="1" x="-17.78" y="33.02"/>
@@ -3255,14 +3255,14 @@ Source: http://www.onsemi.com/pub_link/Collateral/MBRA340T3-D.PDF</description>
 <segment>
 <pinref part="IC3" gate="G$1" pin="RB3"/>
 <pinref part="R1" gate="G$1" pin="1"/>
-<wire x1="101.6" y1="30.48" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="38.1" x2="101.6" y2="63.5" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$10" class="0">
 <segment>
 <pinref part="R1" gate="G$1" pin="2"/>
 <pinref part="D2" gate="G$1" pin="A"/>
-<wire x1="101.6" y1="30.48" x2="101.6" y2="40.64" width="0.1524" layer="91"/>
+<wire x1="101.6" y1="27.94" x2="101.6" y2="30.48" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$11" class="0">
