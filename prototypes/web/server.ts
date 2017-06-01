@@ -21,6 +21,8 @@ interface IPvData {
     peakW?: number;
     peakTs?: string;
     totalKwh?: number;
+    mode?: number;
+    fault?: string;
 }
 
 interface ICsv {
@@ -69,6 +71,14 @@ function findPeak(csv: ICsv, colKey: string): any[] {
     return peakRow;
 }
 
+function decodeFault(fault: number): string {
+    switch (fault) { 
+        case 2048:
+            return "Mancanza rete";
+    }
+    return fault.toString();
+}
+
 function getPvData(): IPvData {
     // Get the latest CSV in the disk
     var files = fs.readdirSync(csvFolder);
@@ -92,6 +102,8 @@ function getPvData(): IPvData {
         ret.currentTs = lastSample[data.colKeys['TimeStamp']] + ' ' + csv.replace('.csv', ''); 
         ret.totalDayWh = lastSample[data.colKeys['EnergyTodayWh']]; 
         ret.totalKwh = lastSample[data.colKeys['TotalEnergyKWh']]; 
+        ret.mode = lastSample[data.colKeys['Mode']];
+        ret.fault = decodeFault(lastSample[data.colKeys['Fault']]);
 
         // Find the peak power
         var peakPow = findPeak(data, 'PowerW');
@@ -102,6 +114,27 @@ function getPvData(): IPvData {
 }
 
 function renderPage(pvData: IPvData): string {
+
+    var firstLine: string;
+    var firstLineStyle: string;
+    switch (pvData.mode) {
+        case 0:
+            firstLine = 'OFF';
+            firstLineStyle = `style="color: gray"`;
+            break;
+        case 1:
+            firstLine = `Potenza attuale: ${pvData.currentW}W`;
+            break;
+        case 2:
+            firstLine = `ERRORE: ${pvData.fault}`;
+            firstLineStyle = `style="color: red"`;
+            break;
+        default:
+            firstLine = `Errore: modalità sconosciuta: ${pvData.mode}`;
+            firstLineStyle = `style="color: darkred"`;
+            break;
+    }
+
     return `
 <html>
 <head>
@@ -109,7 +142,7 @@ function renderPage(pvData: IPvData): string {
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <p> Potenza attuale: ${pvData.currentW}W </p>
+  <p ${firstLineStyle}> ${firstLine} </p>
   <p style="visibility: ${pvData.totalDayWh ? 'visible' : 'hidden'}"> Energia totale oggi: <b>${pvData.totalDayWh / 1000}kWh</b> </p>
   <p style="visibility: ${pvData.peakW ? 'visible' : 'hidden'}"> Picco di ${pvData.peakW}W alle ${pvData.peakTs} </p>
   <br/>
