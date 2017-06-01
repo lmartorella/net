@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="LoggerFactory.cs" />
     <Compile Include="Home\Admin\IAdminInterface.cs" />
     <Compile Include="Home\Admin\MessageRequest.cs" />
     <Compile Include="Home\Admin\MessageResponse.cs" />
@@ -46,6 +47,7 @@
     <Compile Include="Home\Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="Home\Devices\SinkPath.cs" />
     <Compile Include="Home\NodeStatus.cs" />
+    <Compile Include="Notification\NotificationService.cs" />
     <Compile Include="Services\ILogger.cs" />
     <Compile Include="Services\ILoggerFactory.cs" />
     <Compile Include="Services\IIsolatedStorageService.cs" />

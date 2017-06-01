@@ -76,7 +76,7 @@ function decodeFault(fault: number): string {
         case 2048:
             return "Mancanza rete";
     }
-    return fault.toString();
+    return fault && fault.toString();
 }
 
 function getPvData(): IPvData {
@@ -118,6 +118,7 @@ function renderPage(pvData: IPvData): string {
     var firstLine: string;
     var firstLineStyle: string;
     switch (pvData.mode) {
+        case undefined:
         case 0:
             firstLine = 'OFF';
             firstLineStyle = `style="color: gray"`;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Home.Notification;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +14,7 @@ namespace Lucky.Services
         static Manager()
         {
             Register<JsonIsolatedStorageService, IIsolatedStorageService>();
+            Register<NotificationService, INotificationService>();
         }
 
         public static T GetService<T>() where T : IService

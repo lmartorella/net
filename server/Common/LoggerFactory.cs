@@ -1,7 +1,7 @@
 ﻿using System;
 using Lucky.Services;
 
-namespace Lucky.Home
+namespace Lucky
 {
     /// <summary>
     /// Only console supported at the moment
