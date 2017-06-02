@@ -34,7 +34,7 @@ function parseCsv(path: string): ICsv {
     var content = fs.readFileSync(path, 'utf8');
     var colKeys: { [key: string]: number } = { };
     var rows = content.split('\n').map((line, idx) => {
-        var cells = line.split(',');
+        var cells = line.replace('\r', '').split(',');
         if (idx === 0) {
             // Decode keys
             colKeys = cells.reduce((acc, k, i) => {

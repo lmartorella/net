@@ -9,6 +9,11 @@ namespace Lucky.Home.Application
     {
         public virtual void Run()
         {
+            AppDomain.CurrentDomain.UnhandledException += (o, e) =>
+            {
+                Logger.Exception((Exception)e.ExceptionObject);
+            };
+
             WaitBreak();
         }
 

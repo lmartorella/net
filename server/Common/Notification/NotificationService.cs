@@ -20,18 +20,14 @@ namespace Lucky.Home.Notification
         private bool _enableSsl = true;
         private string _dest = "=HIDDEN=";
         private string _sender = "=HIDDEN=";
-        private ILogger _logger;
-
-        public NotificationService()
-        {
-            _logger = Manager.GetService<ILoggerFactory>().Create("NotificationService");
-        }
 
         /// <summary>
         /// Send a mail
         /// </summary>
         public void SendMail(string title, string body)
         {
+            Logger.Log("SendingMail", "title", title);
+
             // Command line argument must the the SMTP host.
             SmtpClient client = new SmtpClient();
             client.DeliveryMethod = SmtpDeliveryMethod.Network;
@@ -49,7 +45,18 @@ namespace Lucky.Home.Notification
             // Set the method that is called back when the send operation ends.
             client.SendCompleted += (o, e) =>
             {
-                _logger.Log("Mail sent to: " + _dest);
+                if (e.Error != null)
+                {
+                    Logger.Exception(e.Error);
+                }
+                else if (e.Cancelled)
+                {
+                    Logger.Log("MailSendCancelled");
+                }
+                else
+                {
+                    Logger.Log("Mail sent to: " + _dest);
+                }
             };
             client.SendAsync(message, null);
         }
