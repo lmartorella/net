@@ -20,13 +20,15 @@ namespace Lucky.Home.Notification
         private bool _enableSsl = true;
         private string _dest = "=HIDDEN=";
         private string _sender = "=HIDDEN=";
+        private string _user = "=HIDDEN=";
+        private string _password = "=HIDDEN=";
 
         /// <summary>
         /// Send a mail
         /// </summary>
         public void SendMail(string title, string body)
         {
-            Logger.Log("SendingMail", "title", title);
+            Logger.Log("SendingMail", "title", title, "body", body);
 
             // Command line argument must the the SMTP host.
             SmtpClient client = new SmtpClient();
@@ -34,7 +36,7 @@ namespace Lucky.Home.Notification
             //client.UseDefaultCredentials = false;
             client.Host = _smtpHost;
             client.Port = _smtpPort;
-            client.Credentials = new NetworkCredential("=HIDDEN=", "=HIDDEN=");
+            client.Credentials = new NetworkCredential(_user, _password);
             client.EnableSsl = _enableSsl;
 
             // Specify the message content.

@@ -73,10 +73,12 @@ function findPeak(csv: ICsv, colKey: string): any[] {
 
 function decodeFault(fault: number): string {
     switch (fault) { 
-        case 2048:
+        case 0x800:
             return "Mancanza rete";
+        case 0x2000:
+            return "Frequenza rete troppo alta";
     }
-    return fault && fault.toString();
+    return fault && ('0x' + fault.toString(16));
 }
 
 function getPvData(): IPvData {
