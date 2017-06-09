@@ -2,6 +2,7 @@
 using Lucky.Services;
 using System.Net.Mail;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Notification
 {
@@ -10,7 +11,7 @@ namespace Lucky.Home.Notification
         /// <summary>
         /// Send a mail
         /// </summary>
-        void SendMail(string title, string body);
+        Task SendMail(string title, string body);
     }
 
     class NotificationService : ServiceBase, INotificationService
@@ -26,14 +27,13 @@ namespace Lucky.Home.Notification
         /// <summary>
         /// Send a mail
         /// </summary>
-        public void SendMail(string title, string body)
+        public async Task SendMail(string title, string body)
         {
             Logger.Log("SendingMail", "title", title, "body", body);
 
             // Command line argument must the the SMTP host.
             SmtpClient client = new SmtpClient();
             client.DeliveryMethod = SmtpDeliveryMethod.Network;
-            //client.UseDefaultCredentials = false;
             client.Host = _smtpHost;
             client.Port = _smtpPort;
             client.Credentials = new NetworkCredential(_user, _password);
@@ -44,23 +44,24 @@ namespace Lucky.Home.Notification
             message.Subject = title;
             message.Body = body;
 
-            // Set the method that is called back when the send operation ends.
-            client.SendCompleted += (o, e) =>
+            try
             {
-                if (e.Error != null)
+                await client.SendMailAsync(message);
+                Logger.Log("Mail sent to: " + _dest);
+                client.Dispose();
+            }
+            catch (Exception exc)
+            {
+                try
                 {
-                    Logger.Exception(e.Error);
+                    client.Dispose();
                 }
-                else if (e.Cancelled)
-                {
-                    Logger.Log("MailSendCancelled");
-                }
-                else
-                {
-                    Logger.Log("Mail sent to: " + _dest);
-                }
-            };
-            client.SendAsync(message, null);
+                catch { }
+                Logger.Exception(exc);
+                Logger.Log("Retrying in 30 seconds...");
+                // Retry
+                await Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t => SendMail(title, body));
+            }
         }
     }
 }
