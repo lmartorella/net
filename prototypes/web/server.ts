@@ -115,57 +115,19 @@ function getPvData(): IPvData {
     return ret;
 }
 
-function renderPage(pvData: IPvData): string {
-
-    var firstLine: string;
-    var firstLineStyle: string;
-    switch (pvData.mode) {
-        case undefined:
-        case 0:
-            firstLine = 'OFF';
-            firstLineStyle = `style="color: gray"`;
-            break;
-        case 1:
-            firstLine = `Potenza attuale: ${pvData.currentW}W`;
-            break;
-        case 2:
-            firstLine = `ERRORE: ${pvData.fault}`;
-            firstLineStyle = `style="color: red"`;
-            break;
-        default:
-            firstLine = `Errore: modalità sconosciuta: ${pvData.mode}`;
-            firstLineStyle = `style="color: darkred"`;
-            break;
-    }
-
-    return `
-<html>
-<head>
-  <title>Solar &#9728</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-  <p ${firstLineStyle}> ${firstLine} </p>
-  <p style="visibility: ${pvData.totalDayWh ? 'visible' : 'hidden'}"> Energia totale oggi: <b>${pvData.totalDayWh / 1000}kWh</b> </p>
-  <p style="visibility: ${pvData.peakW ? 'visible' : 'hidden'}"> Picco di ${pvData.peakW}W alle ${pvData.peakTs} </p>
-  <br/>
-  <p style="visibility: ${pvData.totalKwh ? 'visible' : 'hidden'}"> Energia totale generata: ${pvData.totalKwh}kWh </p>
-  <p style="bottom: 0; position: absolute; font-size: 0.8rem; visibility: ${pvData.currentTs ? 'visible' : 'hidden'}"> 
-    Aggiornato a: ${pvData.currentTs} 
-  </p>
-</body>
-</html>
-`; 
-}
-
 app.get('/', (req, res) => {
+    res.redirect('/app/index.html');
+});
+app.get('/data', (req, res) => {
     var pvData = getPvData();
     if (pvData.error) {
-        res.send('ERROR: ' + pvData.error);
+        res.send({ error: pvData.error });
     } else {
-        res.send(renderPage(pvData));
+        res.send({ data: pvData });
     }
 });
+
+app.use('/app', express.static('app'));
 
 app.listen(80, () => {
   console.log('Webserver started at port 80');

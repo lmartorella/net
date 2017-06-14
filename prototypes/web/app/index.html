@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Solar &#9728</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://opensource.keycdn.com/angularjs/1.6.4/angular.min.js"></script>
+
+</head>
+<body ng-app="solar" ng-controller="solarCtrl as ctrl" ng-cloak>
+  <p ng-style="{ color: ctrl.firstLineColor }"> {{ctrl.firstLine}} </p>
+  <p ng-show="ctrl.pvData.totalDayWh"> Energia totale oggi: <b>{{ctrl.pvData.totalDayWh / 1000}}kWh</b> </p>
+  <p ng-show="ctrl.pvData.peakW"> Picco di {{ctrl.pvData.peakW}}W alle {{ctrl.pvData.peakTs}} </p>
+  <br/>
+  <p ng-show="ctrl.pvData.totalKwh"> Energia totale generata: {{ctrl.pvData.totalKwh}}kWh </p>
+  <p style="bottom: 0; position: absolute; font-size: 0.8rem" ng-show="ctrl.pvData.currentTs"> 
+    Aggiornato a: {{ctrl.pvData.currentTs}} 
+  </p>
+
+  <script>
+      class SolarController {
+          constructor($http) {
+              $http({ url: "/data" }).then(resp => {
+                  if (resp.status == 200) {
+                    this.pvData = resp.data.data;
+                    this.firstLineColor = "initial";
+                    switch (this.pvData.mode) {
+                        case undefined:
+                        case 0:
+                            this.firstLine = 'OFF';
+                            this.firstLineColor = "gray";
+                            break;
+                        case 1:
+                            this.firstLine = `Potenza attuale: ${this.pvData.currentW}W`;
+                            break;
+                        case 2:
+                            this.firstLine = `ERRORE: ${this.pvData.fault}`;
+                            this.firstLineColor = "red";
+                            break;
+                        default:
+                            this.firstLine = `Errore: modalità sconosciuta: ${this.pvData.mode}`;
+                            this.firstLineColor = "darkred";
+                            break;
+                        }
+                    }
+              });
+          }
+      }
+      var mod = angular.module('solar', []).controller('solarCtrl', ['$http', SolarController]);
+  </script>
+</body>
+</html>
