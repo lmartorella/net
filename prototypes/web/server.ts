@@ -16,7 +16,8 @@ if (!fs.existsSync(csvFolder) || !fs.readdirSync(csvFolder)) {
 interface IPvData {
     error?: string;
     currentW?: number;
-    currentTs?: string;
+    currentTsTime?: string;
+    currentTsDate?: string;
     totalDayWh?: number;
     peakW?: number;
     peakTs?: string;
@@ -100,8 +101,9 @@ function getPvData(): IPvData {
     var ret: IPvData = { currentW: 0 };
     if (data.rows.length > 1) {
         var lastSample = data.rows[data.rows.length - 1];
-        ret.currentW = lastSample[data.colKeys['PowerW']]; 
-        ret.currentTs = lastSample[data.colKeys['TimeStamp']] + ' ' + csv.replace('.csv', ''); 
+        ret.currentW = lastSample[data.colKeys['PowerW']];
+        ret.currentTsTime = lastSample[data.colKeys['TimeStamp']];
+        ret.currentTsDate = csv.replace('.csv', ''); 
         ret.totalDayWh = lastSample[data.colKeys['EnergyTodayWh']]; 
         ret.totalKwh = lastSample[data.colKeys['TotalEnergyKWh']]; 
         ret.mode = lastSample[data.colKeys['Mode']];
