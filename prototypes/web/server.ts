@@ -84,7 +84,7 @@ function decodeFault(fault: number): string {
 
 function getPvData(): IPvData {
     // Get the latest CSV in the disk
-    var files = fs.readdirSync(csvFolder);
+    var files = fs.readdirSync(csvFolder).filter(f => fs.lstatSync(path.join(csvFolder, f)).isFile());
     if (files.length === 0) {
         return { error: 'No files found' };
     }
