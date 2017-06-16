@@ -13,7 +13,7 @@ if (!fs.existsSync(csvFolder) || !fs.readdirSync(csvFolder)) {
     throw new Error('CSV folder not accessible: ' + csvFolder);
 }
 
-interface IPvData {
+interface IPvImmData {
     error?: string;
     currentW?: number;
     currentTsTime?: string;
@@ -82,11 +82,11 @@ function decodeFault(fault: number): string {
     return fault && ('0x' + fault.toString(16));
 }
 
-function getPvData(): IPvData {
+function getLastCsvName(): string {
     // Get the latest CSV in the disk
     var files = fs.readdirSync(csvFolder).filter(f => fs.lstatSync(path.join(csvFolder, f)).isFile());
     if (files.length === 0) {
-        return { error: 'No files found' };
+        return null;
     }
 
     // Sort it by date
@@ -96,9 +96,19 @@ function getPvData(): IPvData {
     var csv = files[files.length - 1];
 
     // Now parse it
+    return csv;
+}
+
+function getPvData(): IPvImmData {
+    var csv = getLastCsvName();
+    if (!csv) {
+        return { error: 'No files found' };
+    }
+
+    // Now parse it
     var data = parseCsv(path.join(csvFolder, csv));
 
-    var ret: IPvData = { currentW: 0 };
+    var ret: IPvImmData = { currentW: 0 };
     if (data.rows.length > 1) {
         var lastSample = data.rows[data.rows.length - 1];
         ret.currentW = lastSample[data.colKeys['PowerW']];
@@ -117,16 +127,47 @@ function getPvData(): IPvData {
     return ret;
 }
 
+function sample(sampling: number, arr: { ts: string, value: number }[]): { ts: string, value: number }[] {
+    var acc = 0;
+    var idx = 0;
+    return arr.reduce((ret, val) => {
+        acc += val.value;
+        idx++;
+        if (idx >= sampling) {
+            ret.push({ ts: val.ts, value: acc / sampling });
+            idx = 0;
+            acc = 0;
+        }   
+        return ret;     
+    }, []);
+}
+
+function getPvToday(): { ts: string, value: number }[] {
+    var csv = getLastCsvName();
+    if (!csv) {
+        return [];
+    }
+    var data = parseCsv(path.join(csvFolder, csv));
+    var tsIdx = data.colKeys['TimeStamp'];
+    var powIdx = data.colKeys['PowerW'];
+    return sample(4, data.rows.map(row => {
+        return { ts: row[tsIdx] as string, value: row[powIdx] as number };
+    })).filter(row => row.value);
+}
+
 app.get('/', (req, res) => {
     res.redirect('/app/index.html');
 });
-app.get('/data', (req, res) => {
+app.get('/r/imm', (req, res) => {
     var pvData = getPvData();
     if (pvData.error) {
         res.send({ error: pvData.error });
     } else {
-        res.send({ data: pvData });
+        res.send(pvData);
     }
+});
+app.get('/r/powToday', (req, res) => {
+    res.send(getPvToday());
 });
 
 app.use('/app', express.static('app'));

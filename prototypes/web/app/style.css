@@ -14,6 +14,9 @@
     color: gray;
 }
 
+.header {
+    font-size: xx-large;
+}
 .total-pw { 
     font-size: x-large;
 }
@@ -22,6 +25,10 @@
 }
 .total-pw { 
     font-size: x-large;
+}
+
+.container { 
+    width: 75%;
 }
 
 body {
