@@ -76,6 +76,8 @@ function decodeFault(fault: number): string {
     switch (fault) { 
         case 0x800:
             return "Mancanza rete";
+        case 0x1000:
+            return "Frequenza rete troppo bassa";
         case 0x2000:
             return "Frequenza rete troppo alta";
     }
