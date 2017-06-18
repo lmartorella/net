@@ -4,6 +4,8 @@
 #include "fuses_eth_card.inc"
 #elif defined(_IS_PIC16F628_CARD)
 #include "fuses_pic16f628.inc"
+#elif defined(_IS_PIC16F1827_CARD)
+#include "fuses_pic16f1827.inc"
 #else
 #error Missing configuration
 #endif

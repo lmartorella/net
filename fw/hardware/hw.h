@@ -21,6 +21,10 @@
 #include "fuses_garden_bean.h"
 #define _IS_PIC16F887_CARD
 
+#elif defined(_CONF_MICRO_BEAN)
+#include "fuses_micro_bean.h"
+#define _IS_PIC16F1827_CARD
+
 #else
 #error Missing configuration
 #endif

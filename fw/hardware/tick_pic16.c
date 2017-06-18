@@ -4,6 +4,8 @@
 #include "tick.h"
 #include "leds.h"
 
+#if defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F887_CARD) || defined(_IS_PIC16F1827_CARD)
+
 // Internal counter to store Ticks.  This variable is incremented in an ISR and
 // therefore must be marked volatile to prevent the compiler optimizer from
 // reordering code to use this value in the main context while interrupts are
@@ -117,3 +119,4 @@ void TickUpdate(void)
     }
 }
 
+#endif

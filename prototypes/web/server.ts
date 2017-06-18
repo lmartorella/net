@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as moment from 'moment';
 
 var app = express();
 var args = process.argv.slice(2);
@@ -129,16 +130,29 @@ function getPvData(): IPvImmData {
     return ret;
 }
 
-function sample(sampling: number, arr: { ts: string, value: number }[]): { ts: string, value: number }[] {
+// Sample each minute
+function sampleAtMin(arr: { ts: string, value: number }[]): { ts: string, value: number }[] {
+    if (arr.length === 0) {
+        return [];
+    }
+
     var acc = 0;
-    var idx = 0;
+    var toDateMin = (str: string) => {
+        var dur = moment.duration(str);
+        return moment.duration(Math.floor(dur.asMinutes()) + " minutes");
+    }
+
+    var lastMin: moment.Duration = toDateMin(arr[0].ts);
+    var count = 0;
     return arr.reduce((ret, val) => {
         acc += val.value;
-        idx++;
-        if (idx >= sampling) {
-            ret.push({ ts: val.ts, value: acc / sampling });
-            idx = 0;
+        count++;
+        var min = toDateMin(val.ts);
+        if (min > lastMin) {
+            ret.push({ ts: min.toIsoString(), value: acc / count });
+            count = 0;
             acc = 0;
+            lastMin = min;
         }   
         return ret;     
     }, []);
@@ -152,7 +166,7 @@ function getPvToday(): { ts: string, value: number }[] {
     var data = parseCsv(path.join(csvFolder, csv));
     var tsIdx = data.colKeys['TimeStamp'];
     var powIdx = data.colKeys['PowerW'];
-    return sample(4, data.rows.map(row => {
+    return sampleAtMin(data.rows.map(row => {
         return { ts: row[tsIdx] as string, value: row[powIdx] as number };
     })).filter(row => row.value);
 }

@@ -19,7 +19,7 @@ void fatal(const char* msg);
 
 #define DEBUGMODE
 
-#undef HAS_BUS
+#define HAS_BUS
 
 // ******* 
 // DISPLAY
@@ -92,18 +92,18 @@ void fatal(const char* msg);
 // ******
 // IP: uses PORTA0,1 (leds)
 // ******
-#undef HAS_IP
+#define HAS_IP
 // This causes the card to become a bus slave
 
 // ******
 // IO: uses PORTC and PORTF full
 // ******
-#define HAS_IO
+#undef HAS_IO
 
 // ******
 // RS485: use USART2 on 18F87J60 (PORTG)
 // ******
-#undef HAS_RS485
+#define HAS_RS485
 #define RS485_BUF_SIZE 64
 #define RS485_RCSTA RCSTA2bits
 #define RS485_TXSTA TXSTA2bits
@@ -158,7 +158,7 @@ void fatal(const char* msg);
 #endif
 #endif
 
-#define HAS_DCF77
+#undef HAS_DCF77
 #define DCF77_IN_TRIS TRISBbits.RB1
 #define DCF77_IN_PORT PORTBbits.RB1
 #ifdef HAS_DCF77
@@ -171,7 +171,7 @@ void fatal(const char* msg);
 #define LED_PORTBIT PORTHbits.RH0
 #define LED_TRISBIT TRISHbits.RH0
 
-#define HAS_FAKE_RS232
+#undef HAS_FAKE_RS232
 
 #endif
 

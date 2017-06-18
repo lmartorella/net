@@ -103,6 +103,13 @@ void main()
 #ifdef HAS_DCF77
         dcf77_poll();
 #endif
+        
+        /*
+        __delay_ms(500);
+        led_on();
+        __delay_ms(500);
+        led_off();
+		*/
     }
 }
 

@@ -5,6 +5,7 @@
 
 #ifdef HAS_IP
 
+void ip_poll();
 // Manage poll activities
 void ip_prot_init();
 // Manage slow timer (heartbeats)
