@@ -8,10 +8,13 @@ namespace Lucky.Home.Lib
 {
     static class Program
     {
-        public static void Main()
+        public static void Main(string[] arguments)
         {
             ServerEntryPoint.Load(() =>
             {
+                Manager.Register<ConfigurationService, IConfigurationService>();
+                Manager.GetService<ConfigurationService>().Init(arguments);
+
                 // Register app sinks
                 Manager.GetService<ISinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
                 // Register devices

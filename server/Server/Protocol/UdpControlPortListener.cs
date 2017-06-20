@@ -20,9 +20,16 @@ namespace Lucky.Home.Protocol
 
         public UdpControlPortListener(IPAddress address)
         {
+            int port = Constants.UdpControlPort;
+            var portConfig = Manager.GetService<IConfigurationService>().GetConfig("listen");
+            if (portConfig != null)
+            {
+                port = int.Parse(portConfig);
+            }
+
             //_address = address;
             _logger = Manager.GetService<ILoggerFactory>().Create("UdpControlPortListener");
-            _client = new UdpClient(new IPEndPoint(address, Constants.UdpControlPort));
+            _client = new UdpClient(new IPEndPoint(address, port));
             _client.BeginReceive(OnReceiveData, null);
         }
 

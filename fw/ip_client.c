@@ -14,8 +14,6 @@ APP_CONFIG AppConfig;
 #endif
 
 #ifdef HAS_IP
-#define SERVER_CONTROL_UDP_PORT 17007
-#define CLIENT_TCP_PORT 20000
 
 // UDP broadcast socket
 static UDP_SOCKET s_heloSocket;  

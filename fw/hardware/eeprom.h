@@ -13,7 +13,7 @@ void rom_write(const void* destination, const void* source, WORD length);
 
 #define EEPROM_MODIFIER const
 
-#elif defined(_IS_PIC16F628_CARD)
+#elif defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F1827_CARD)
 
 void rom_read(BYTE sourceAddress, BYTE* destination, BYTE length);
 void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length);
@@ -21,12 +21,6 @@ void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length);
 #define EEPROM_MODIFIER eeprom
 
 void rom_poll();
-
-#elif defined(_IS_PIC16F1827_CARD)
-
-#define rom_poll()
-#define rom_read(a, b, c)
-#define rom_write(a, b, c)
 
 #endif
 #endif

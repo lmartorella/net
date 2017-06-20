@@ -8,7 +8,7 @@ PersistentData pers_data;
 static EEPROM_MODIFIER PersistentData s_persistentData @ 0x1F800 = DEFAULT_PERS_DATA;
 static EEPROM_MODIFIER char s_persistentDataFiller[0x400 - PERSISTENT_SIZE] @ (0x1F800 + PERSISTENT_SIZE);
 #define ROM_ADDR ((const void*)&s_persistentData)
-#elif defined(_IS_PIC16F628_CARD)
+#elif defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F1827_CARD)
 #define ROM_ADDR 0
 static EEPROM_MODIFIER PersistentData s_persistentData = DEFAULT_PERS_DATA;
 #endif

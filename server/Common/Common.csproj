@@ -48,6 +48,7 @@
     <Compile Include="Home\Devices\SinkPath.cs" />
     <Compile Include="Home\NodeStatus.cs" />
     <Compile Include="Notification\NotificationService.cs" />
+    <Compile Include="Services\IConfigurationService.cs" />
     <Compile Include="Services\ILogger.cs" />
     <Compile Include="Services\ILoggerFactory.cs" />
     <Compile Include="Services\IIsolatedStorageService.cs" />

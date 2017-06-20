@@ -62,6 +62,8 @@
 // IP: uses PORTA0,1 (leds)
 // ******
 #define HAS_IP
+#define SERVER_CONTROL_UDP_PORT 17007
+#define CLIENT_TCP_PORT 20000
 
 // ******
 // IO: power line on/off

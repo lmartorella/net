@@ -38,6 +38,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Application\ConfigurationService.cs" />
     <Compile Include="Application\HomeApp.cs" />
     <Compile Include="Db\FsTimeSeries.cs" />
     <Compile Include="Db\Aggregation.cs" />

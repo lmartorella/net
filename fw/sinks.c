@@ -13,8 +13,8 @@ static bit sysSink_transmit();
 
 static const Sink s_sysSink = {
     "SYS ",
-    &sysSink_receive,
-    &sysSink_transmit
+    sysSink_receive,
+    sysSink_transmit
 };
 
 const Sink* AllSinks[] = { 
