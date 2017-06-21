@@ -53,10 +53,17 @@
 //    SPBRG = 25
 #define RS485_INIT_BAUD() \
      TXSTAbits.BRGH = 1;\
+     BAUDCONbits.SCKP = 0;\
+     BAUDCONbits.BRG16 = 0;\
      SPBRG = 12;\
+     ANSELBbits.ANSB2 = 0;\
+     ANSELBbits.ANSB5 = 0;\
      APFCON0bits.RXDTSEL = 1;\
      APFCON1bits.TXCKSEL = 1;\
 
+//RXDTSEL:1  RX/DT function is on RB2
+//TXCKSEL:1  TX/CK function is on RB5
+     
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;
 #define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }

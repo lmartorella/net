@@ -94,7 +94,7 @@ void fatal(const char* msg);
 // ******
 #define HAS_IP
 #define SERVER_CONTROL_UDP_PORT 17008
-#define CLIENT_TCP_PORT 20000
+#define CLIENT_TCP_PORT 20001
 
 // ******
 // IO: uses PORTC and PORTF full
