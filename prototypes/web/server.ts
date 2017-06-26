@@ -85,25 +85,23 @@ function decodeFault(fault: number): string {
     return fault && ('0x' + fault.toString(16));
 }
 
-function getLastCsvName(): string {
+// Day can be 0 or -1 (T-1), -2, etc..
+function getCsvName(day?: number): string {
     // Get the latest CSV in the disk
     var files = fs.readdirSync(csvFolder).filter(f => fs.lstatSync(path.join(csvFolder, f)).isFile());
-    if (files.length === 0) {
-        return null;
-    }
-
     // Sort it by date
     files = files.sort();
+    var idx = files.length - 1 + (day || 0);
 
-    // Take the last one
-    var csv = files[files.length - 1];
-
-    // Now parse it
-    return csv;
+    if (idx < 0) {
+        return null;
+    }
+    // Take the T-N one
+    return files[idx];
 }
 
 function getPvData(): IPvImmData {
-    var csv = getLastCsvName();
+    var csv = getCsvName(0);
     if (!csv) {
         return { error: 'No files found' };
     }
@@ -130,26 +128,32 @@ function getPvData(): IPvImmData {
     return ret;
 }
 
-// Sample each minute
+function formatDur(dur: moment.Duration): string {
+    var ts = moment().startOf('day').add(dur);
+    return ts.format('HH:mm');
+}
+
+
+// Sample each round minute
 function sampleAtMin(arr: { ts: string, value: number }[]): { ts: string, value: number }[] {
     if (arr.length === 0) {
         return [];
     }
 
-    var acc = 0;
-    var toDateMin = (str: string) => {
+    let toDateMin = (str: string) => {
         var dur = moment.duration(str);
-        return moment.duration(Math.floor(dur.asMinutes()) + " minutes");
+        return moment.duration(Math.floor(dur.asMinutes()), "minutes");
     }
 
-    var lastMin: moment.Duration = toDateMin(arr[0].ts);
-    var count = 0;
+    let lastMin: moment.Duration = toDateMin(arr[0].ts);
+    let count = 0;
+    let acc = 0;
     return arr.reduce((ret, val) => {
         acc += val.value;
         count++;
-        var min = toDateMin(val.ts);
+        let min = toDateMin(val.ts);
         if (min > lastMin) {
-            ret.push({ ts: min.toIsoString(), value: acc / count });
+            ret.push({ ts: formatDur(min), value: acc / count });
             count = 0;
             acc = 0;
             lastMin = min;
@@ -158,17 +162,43 @@ function sampleAtMin(arr: { ts: string, value: number }[]): { ts: string, value:
     }, []);
 }
 
-function getPvToday(): { ts: string, value: number }[] {
-    var csv = getLastCsvName();
+function first<T>(arr: T[], handler: (t: T) => boolean): number {
+    for (let i = 0; i < arr.length; i++) {
+        if (handler(arr[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function last<T>(arr: T[], handler: (t: T) => boolean): number {
+    for (let i = arr.length - 1; i >= 0; i--) {
+        if (handler(arr[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function getPvChart(day?: number): { ts: string, value: number }[] {
+    var csv = getCsvName(day);
     if (!csv) {
         return [];
     }
     var data = parseCsv(path.join(csvFolder, csv));
     var tsIdx = data.colKeys['TimeStamp'];
     var powIdx = data.colKeys['PowerW'];
-    return sampleAtMin(data.rows.map(row => {
+    let ret = sampleAtMin(data.rows.map(row => {
         return { ts: row[tsIdx] as string, value: row[powIdx] as number };
-    })).filter(row => row.value);
+    }));
+    // Trim initial and final zeroes
+    let i1 = first(ret, i => i.value > 0);
+    let i2 = last(ret, i => i.value > 0);
+    if (i1 >= 0 && i2 >= 0) {
+        return ret.slice(i1, i2);
+    } else {
+        return [];
+    }
 }
 
 app.get('/', (req, res) => {
@@ -183,7 +213,7 @@ app.get('/r/imm', (req, res) => {
     }
 });
 app.get('/r/powToday', (req, res) => {
-    res.send(getPvToday());
+    res.send(getPvChart(req.query && Number(req.query.day)));
 });
 
 app.use('/app', express.static('app'));

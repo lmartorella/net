@@ -1,8 +1,9 @@
 class SolarController {
-    constructor($http) {
+    constructor($http, $q) {
         this.$http = $http;
+        this.$q = $q;
 
-        $http.get('/r/imm').then(resp => {
+        this.$http.get('/r/imm').then(resp => {
             if (resp.status == 200) {
                 this.pvData = resp.data;
                 if (this.pvData.error) {
@@ -35,21 +36,34 @@ class SolarController {
         });
     }
 
-    drawChart() {
-        this.$http.get('/r/powToday').then(resp => {
-            if (resp.status == 200 && Array.isArray(resp.data)) {
-                Plotly.plot(document.getElementById('chart-today'), {
-                    data: [{
+    drawDays(count) {
+        let el = document.getElementById('chart');
+        for (let i = 0; i < el.childNodes.length; i++) {
+            el.removeChild(el.childNodes[i]);
+        }
+
+        // Fetch the last 4 days
+        var promises = [];
+        for (let day = 0; day > -count; day--) {
+            promises.push(this.$http.get('/r/powToday?day=' + day).then(resp => {
+                if (resp.status == 200 && Array.isArray(resp.data) && resp.data.length) {
+                    return {
                         x: resp.data.map(s => s.ts),
                         y: resp.data.map(s => s.value),
                         mode: 'lines',
-                        name: 'Potenza',
+                        name: 'T' + (day === 0 ? '' : day.toString()),
                         type: 'scatter'
-                    }]
-                })
-            }
+                    };
+                }
+            }));
+        }
+
+        this.$q.all(promises).then(res => {
+            Plotly.newPlot(el, {
+                data: res.filter(r => !!r)
+            });
         });
     }
 }
 
-angular.module('solar', []).controller('solarCtrl', ['$http', SolarController]);
+angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarController]);

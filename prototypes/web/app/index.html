@@ -13,7 +13,9 @@
 <body ng-app="solar" ng-controller="solarCtrl as ctrl" ng-cloak>
   <div class="container">
     <p><span class="header" ng-class="ctrl.firstLineClass"> {{ctrl.firstLine}} </span> 
-       <a ng-click="ctrl.drawChart()" href="#">andamento</a>
+       <a ng-click="ctrl.drawDays(1)" href="#">andamento oggi</a>
+       &nbsp;
+       <a ng-click="ctrl.drawDays(4)" href="#">andamento 4 giorni</a>
     </p>
     <p class="total-pw" ng-show="ctrl.pvData.totalDayWh"> Energia oggi: <b>{{ctrl.pvData.totalDayWh / 1000}} kWh</b> </p>
     <p class="peak-pw" ng-show="ctrl.pvData.peakW"> Picco di <b>{{ctrl.pvData.peakW}}W</b> alle {{ctrl.pvData.peakTs}} </p>
@@ -22,7 +24,7 @@
     <br/>
     <p class="total-pw" ng-show="ctrl.pvData.totalKwh"> Energia totale: <b>{{ctrl.pvData.totalKwh}} kWh</b> </p>
 
-    <div id="chart-today"></div>
+    <div id="chart"></div>
 
     <p class="bot" ng-show="ctrl.pvData.currentTsTime"> 
       Aggiornato alle {{ctrl.pvData.currentTsTime}} del {{ctrl.pvData.currentTsDate}}. 
