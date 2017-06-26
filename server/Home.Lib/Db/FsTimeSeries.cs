@@ -115,7 +115,7 @@ namespace Lucky.Home.Db
                 catch (Exception exc)
                 {
                     _logger.Exception(exc);
-                    Manager.GetService<INotificationService>().SendMail("File locked", "Cannot backup the db file: " + oldFileName.FullName + Environment.NewLine + "EXC: " + exc.Message);
+                    Manager.GetService<INotificationService>().EnqueueStatusUpdate("File locked", "Cannot backup the db file: " + oldFileName.FullName + Environment.NewLine + "EXC: " + exc.Message);
                 }
             }
         }
