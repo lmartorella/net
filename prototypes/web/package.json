@@ -12,6 +12,7 @@
     "moment": "^2.18.1"
   },
   "devDependencies": {
+    "@types/plotly.js": "^1.27.0",
     "typescript": "^2.3.2"
   }
 }

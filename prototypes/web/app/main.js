@@ -44,7 +44,7 @@ class SolarController {
 
         // Fetch the last 4 days
         var promises = [];
-        for (let day = 0; day > -count; day--) {
+        for (let day = -count + 1; day <= 0; day++) {
             promises.push(this.$http.get('/r/powToday?day=' + day).then(resp => {
                 if (resp.status == 200 && Array.isArray(resp.data) && resp.data.length) {
                     return {
@@ -58,9 +58,22 @@ class SolarController {
             }));
         }
 
+        function sortCat(series) {
+            var ret = series.reduce((times, serie) => {
+                return serie.x.reduce((times, v) => {
+                    times[v] = true;
+                    return times;             
+                }, times);
+            }, { });
+            return Object.getOwnPropertyNames(ret).sort();
+        }
+
         this.$q.all(promises).then(res => {
-            Plotly.newPlot(el, {
-                data: res.filter(r => !!r)
+            var series = res.filter(r => !!r);
+            Plotly.newPlot(el, series, {
+                xaxis: {
+                    categoryarray: sortCat(series)
+                }
             });
         });
     }
