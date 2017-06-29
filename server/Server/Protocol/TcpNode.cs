@@ -305,7 +305,11 @@ namespace Lucky.Home.Protocol
                     // Mark the node as a zombie after some time
                     if ((DateTime.Now - _firstFailTime) > ZOMBIE_TIMEOUT)
                     {
-                        IsZombie = true;
+                        if (!IsZombie)
+                        {
+                            Logger.Log("IsZombie");
+                            IsZombie = true;
+                        }
                     }
                 }
                 else

@@ -66,7 +66,14 @@ namespace Lucky.HomeMock.Core
             byte[] dgram = stream.ToArray();
             UdpClient client = new UdpClient();
             var ipAddress = _localhostMode ? new IPAddress(0x0100007f) : IPAddress.Broadcast;
-            client.Send(dgram, dgram.Length, new IPEndPoint(ipAddress, Constants.UdpControlPort));
+
+            int port =
+#if DEBUG
+                17008;
+#else
+                Constants.UdpControlPort;
+#endif
+            client.Send(dgram, dgram.Length, new IPEndPoint(ipAddress, port));
 
             _logger.Log(msg + " sent");
         }

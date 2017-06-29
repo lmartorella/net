@@ -49,7 +49,7 @@ namespace Lucky.Home.Protocol
                 {
                     _client = _clientManager.GetClient(_endPoint);
                 }
-                return _client.IsDisposed ? null : _client;
+                return (_client == null || _client.IsDisposed) ? null : _client;
             }
         }
 

@@ -123,8 +123,24 @@ namespace Lucky.Home.Protocol
                 if (!_clients.TryGetValue(endPoint, out client))
                 {
                     // Destroy the channel
-                    client = new Client(endPoint, this);
-                    _clients[endPoint] = client;
+                    try
+                    {
+                        client = new Client(endPoint, this);
+                        _clients[endPoint] = client;
+                    }
+                    catch (SocketException exc)
+                    {
+                        if (exc.ErrorCode == 10061)
+                        {
+                            // Cannot connect
+                            Logger.Log("Cannot Connect", "EP", endPoint);
+                            return null;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                 }
                 return client;
             }
