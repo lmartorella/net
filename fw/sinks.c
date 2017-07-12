@@ -1,10 +1,6 @@
 #include "pch.h"
 #include "protocol.h"
 #include "appio.h"
-#include "displaySink.h"
-#include "halfduplex.h"
-#include "hardware/dht11.h"
-#include "hardware/digio.h"
 
 #ifdef HAS_BUS
 
@@ -62,11 +58,11 @@ bit sink_nullFunc()
     return FALSE;
 }
 
-const TWOCC ResetCode = "RS";
-const TWOCC ExceptionText = "EX";
-const TWOCC EndOfMetadataText = "EN";
+const TWOCC ResetCode = { "RS" };
+const TWOCC ExceptionText = { "EX" };
+const TWOCC EndOfMetadataText = { "EN" };
 #ifdef HAS_BUS_SERVER
-const TWOCC BusMasterStats = "BM";
+const TWOCC BusMasterStats = { "BM" };
 #endif
 
 enum SYSSINK_CMD {

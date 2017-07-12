@@ -2,7 +2,10 @@
 #define PERSISTENCE_INCLUDE_
 
 #include "bus.h"
+
+#ifdef HAS_EEPROM
 #include "hardware/eeprom.h"
+#endif
 
 /********************
   USER-DATA PART OF LOADER RECORD (PROGRAMMABLE)

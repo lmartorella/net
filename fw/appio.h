@@ -1,7 +1,9 @@
 #ifndef _APPIO_INCLUDE_
 #define _APPIO_INCLUDE_
 
+#ifdef HAS_LED
 #include "hardware/leds.h"
+#endif
 
 void appio_init();
 

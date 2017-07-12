@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="hardware" projectFiles="true">
+        <itemPath>../hardware/fuses_raspbian.h</itemPath>
+        <itemPath>../hardware/hw.h</itemPath>
+        <itemPath>../hardware/ip_raspbian.h</itemPath>
+        <itemPath>../hardware/rs485.h</itemPath>
+        <itemPath>../hardware/tick.h</itemPath>
+        <itemPath>../hardware/utilities.h</itemPath>
+      </logicalFolder>
+      <itemPath>../appio.h</itemPath>
+      <itemPath>../bus.h</itemPath>
+      <itemPath>../guid.h</itemPath>
+      <itemPath>../ip_client.h</itemPath>
+      <itemPath>../pch.h</itemPath>
+      <itemPath>../persistence.h</itemPath>
+      <itemPath>../protocol.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <logicalFolder name="f1" displayName="hardware" projectFiles="true">
+        <itemPath>../hardware/hw_raspbian.c</itemPath>
+        <itemPath>../hardware/tick_raspbian.c</itemPath>
+      </logicalFolder>
+      <itemPath>../appio.c</itemPath>
+      <itemPath>../bus_server.c</itemPath>
+      <itemPath>../ip_client.c</itemPath>
+      <itemPath>../main.c</itemPath>
+      <itemPath>../persistence.c</itemPath>
+      <itemPath>../protocol.c</itemPath>
+      <itemPath>../sinks.c</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>10</standard>
+          <preprocessorList>
+            <Elem>_CONF_RASPBIAN</Elem>
+          </preprocessorList>
+        </cTool>
+      </compileType>
+      <item path="../appio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../appio.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../bus.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../bus_server.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../guid.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/fuses_raspbian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/hw.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/hw_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/rs485.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/tick.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/tick_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/utilities.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../ip_client.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../ip_client.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../pch.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../persistence.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../persistence.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../protocol.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../protocol.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="../appio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../appio.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../bus.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../bus_server.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../guid.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/fuses_raspbian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/hw.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/hw_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/rs485.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/tick.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/tick_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/utilities.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../ip_client.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../ip_client.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../pch.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../persistence.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../persistence.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../protocol.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../protocol.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

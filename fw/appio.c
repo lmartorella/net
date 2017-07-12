@@ -1,8 +1,5 @@
 #include "pch.h"
 #include "appio.h"
-#include "hardware/cm1602.h"
-#include "hardware/leds.h"
-#include "hardware/max232.h"
 
 const char* g_lastException;
 RESET_REASON g_resetReason;

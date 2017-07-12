@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "ip_client.h"
-#include "hardware/rs485.h"
-#include "hardware/tick.h"
 #include "bus.h"
 #include "protocol.h"
 #include "appio.h"

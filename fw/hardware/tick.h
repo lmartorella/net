@@ -7,9 +7,6 @@
 // For this definition, the Timer must be initialized to use a 1:256 prescalar
 // in Tick.c.  
 
-// Internal core clock drives timer with 1:256 prescaler
-#define TICKS_PER_SECOND		(TICK_TYPE)((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
-
 // Represents one second in Ticks
 #define TICK_SECOND				(TICK_TYPE)(TICKS_PER_SECOND)
 // Represents one minute in Ticks

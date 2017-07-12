@@ -1,13 +1,10 @@
 #include "pch.h"
 #include "protocol.h"
 #include "appio.h"
-#include "displaySink.h"
-#include "audioSink.h"
-#include "hardware/cm1602.h"
 #include "ip_client.h"
 #include "persistence.h"
 
-#if defined(_IS_ETH_CARD) || defined(HAS_IP)
+#if defined(HAS_IP) && defined(__XC8)
 #include "Compiler.h"
 #include "TCPIPStack/TCPIP.h"
 APP_CONFIG AppConfig;
@@ -95,6 +92,7 @@ WORD prot_control_readAvail()
 void ip_prot_init()
 {
     println("IP/DHCP");
+#ifdef __XC8
     memset(&AppConfig, 0, sizeof(AppConfig));
     AppConfig.Flags.bIsDHCPEnabled = 1;
     AppConfig.MyMACAddr.v[0] = MY_DEFAULT_MAC_BYTE1;
@@ -106,8 +104,9 @@ void ip_prot_init()
 
     // Init ETH loop data
     StackInit();  
-
-	s_heloSocket = UDPOpenEx(NULL, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
+#endif
+    
+	s_heloSocket = UDPOpenEx(0, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
 	if (s_heloSocket == INVALID_UDP_SOCKET)
 	{
 		fatal("SOC.opn1");
@@ -139,8 +138,7 @@ void ip_prot_slowTimer()
             {
                     unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
                     sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
-                    cm1602_setDdramAddr(0x0);
-                    cm1602_writeStr(buffer);
+                    printlnUp(buffer);
                     s_started = TRUE;
             }
             else

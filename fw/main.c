@@ -1,21 +1,10 @@
 #include "pch.h"
-#include "hardware/cm1602.h"
-#include "hardware/spiram.h"
-#include "hardware/spi.h"
-#include "hardware/vs1011e.h"
-#include "hardware/tick.h"
-#include "hardware/max232.h"
 #include "ip_client.h"
 #include "appio.h"
-#include "audioSink.h"
-#include "halfduplex.h"
-#include "dcf77.h"
 #include "persistence.h"
-#include "hardware/rs485.h"
-#include "hardware/dht11.h"
-#include "hardware/digio.h"
+#include "protocol.h"
 
-void interrupt PRIO_TYPE low_isr(void)
+void interrupt PRIO_TYPE low_isr()
 {
     // Update tick timers at ~Khz freq
     TickUpdate();
@@ -92,7 +81,9 @@ void main()
 #ifdef HAS_BUS
         bus_poll();
         prot_poll();
+#ifdef HAS_RS485
         rs485_poll();
+#endif
 #endif
         pers_poll();
             
@@ -103,13 +94,6 @@ void main()
 #ifdef HAS_DCF77
         dcf77_poll();
 #endif
-        
-        /*
-        __delay_ms(500);
-        led_on();
-        __delay_ms(500);
-        led_off();
-		*/
     }
 }
 

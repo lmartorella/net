@@ -25,6 +25,10 @@
 #include "fuses_micro_bean.h"
 #define _IS_PIC16F1827_CARD
 
+#elif defined(_CONF_RASPBIAN)
+#include "fuses_raspbian.h"
+#define _IS_RASPI_CARD
+
 #else
 #error Missing configuration
 #endif

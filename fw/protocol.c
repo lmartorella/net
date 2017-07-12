@@ -3,13 +3,10 @@
 #include "appio.h"
 #include "persistence.h"
 #include "bus.h"
-#include "hardware/tick.h"
 
 #ifdef HAS_BUS
 
 #ifdef HAS_IP
-#include "Compiler.h"
-#include "TCPIPStack/TCPIP.h"
 #include "ip_client.h"
 
 static TICK_TYPE s_slowTimer;

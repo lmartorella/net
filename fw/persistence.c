@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "hardware/eeprom.h"
 #include "persistence.h"
 
 PersistentData pers_data;
@@ -15,10 +14,14 @@ static EEPROM_MODIFIER PersistentData s_persistentData = DEFAULT_PERS_DATA;
 
 void pers_init()
 {
-	rom_read(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
+#ifdef HAS_EEPROM
+    rom_read(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
+#endif
 }
 
 void pers_save()
 {
-	rom_write(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
+#ifdef HAS_EEPROM
+    rom_write(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
+#endif
 }
