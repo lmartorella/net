@@ -26,9 +26,7 @@ static enum {
     CMD_NONE
 } s_commandToRun;
 
-#ifdef HAS_BUS_SERVER
 bit prot_registered;
-#endif
 
 void prot_init()
 {
@@ -43,9 +41,7 @@ void prot_init()
     bus_init();
 #endif
     
-#ifdef HAS_BUS_SERVER
     prot_registered = FALSE;
-#endif
     
     s_commandToRun = CMD_NONE;
     s_inWriteSink = s_inReadSink = -1;
@@ -84,8 +80,8 @@ static void SELE_command()
         // Otherwise connect the socket
         bus_connectSocket(w - 1);
     }
-    prot_registered = TRUE;
 #endif
+    prot_registered = TRUE;
 }
 
 // 0 bytes to receive

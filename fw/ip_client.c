@@ -102,22 +102,22 @@ void ip_prot_init()
     AppConfig.MyMACAddr.v[4] = MY_DEFAULT_MAC_BYTE5;
     AppConfig.MyMACAddr.v[5] = MY_DEFAULT_MAC_BYTE6;
 
+#endif
     // Init ETH loop data
     StackInit();  
-#endif
     
-	s_heloSocket = UDPOpenEx(0, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
-	if (s_heloSocket == INVALID_UDP_SOCKET)
-	{
-		fatal("SOC.opn1");
-	}
+    s_heloSocket = UDPOpenEx(0, UDP_OPEN_NODE_INFO, 0, SERVER_CONTROL_UDP_PORT);
+    if (s_heloSocket == INVALID_UDP_SOCKET)
+    {
+        fatal("SOC.opn1");
+    }
 
     // Open the sever TCP channel
-	s_controlSocket = TCPOpen(0, TCP_OPEN_SERVER, CLIENT_TCP_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
-	if (s_controlSocket == INVALID_SOCKET)
-	{
-		fatal("SOC.opn2");
-	}
+    s_controlSocket = TCPOpen(0, TCP_OPEN_SERVER, CLIENT_TCP_PORT, TCP_PURPOSE_GENERIC_TCP_SERVER);
+    if (s_controlSocket == INVALID_SOCKET)
+    {
+        fatal("SOC.opn2");
+    }
     
     s_sendHelo = 0;
 }
@@ -161,13 +161,19 @@ void ip_poll()
         if (UDPIsPutReady(s_heloSocket) >= sizeof(HOME_REQUEST))
         {
             UDPPutString("HOME");
+#ifdef HAS_BUS_SERVER
             UDPPutString(prot_registered ? (bus_hasDirtyChildren ? "CCHN" : "HTBT") : "HEL4");
+#else
+            UDPPutString(prot_registered ? "HTBT" : "HEL4");
+#endif
             UDPPutArray((BYTE*)(&pers_data.deviceId), sizeof(GUID));
             UDPPutW(CLIENT_TCP_PORT);
+#ifdef HAS_BUS_SERVER
             if (prot_registered && bus_hasDirtyChildren) {
                 UDPPutW(BUFFER_MASK_SIZE);
                 UDPPutArray(bus_dirtyChildren, BUFFER_MASK_SIZE);
             }
+#endif
             UDPFlush();
             
             s_sendHelo = 0;

@@ -78,12 +78,14 @@ void main()
     // I'm alive
     while (1) {   
         CLRWDT();
-#ifdef HAS_BUS
+#if defined(HAS_BUS_CLIENT) || defined(HAS_BUS_SERVER)
         bus_poll();
+#endif
+#ifdef HAS_BUS
         prot_poll();
+#endif
 #ifdef HAS_RS485
         rs485_poll();
-#endif
 #endif
         pers_poll();
             

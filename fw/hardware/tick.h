@@ -19,6 +19,6 @@ TICK_TYPE TickGetDiv256();
 TICK_TYPE TickGetDiv64K();
 void TickUpdate();
 
-void timers_init(void);
+void timers_init();
 
 #endif

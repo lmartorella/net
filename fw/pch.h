@@ -19,6 +19,7 @@ typedef unsigned char BOOL;
 #define PRIO_TYPE
 #define FALSE 0
 #define TRUE 1
+#define __GNU
 
 #endif
 

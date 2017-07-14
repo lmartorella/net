@@ -29,6 +29,7 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/hw_raspbian.c</itemPath>
+        <itemPath>../hardware/ip_raspbian.c</itemPath>
         <itemPath>../hardware/tick_raspbian.c</itemPath>
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
@@ -64,6 +65,7 @@
           <standard>10</standard>
           <preprocessorList>
             <Elem>_CONF_RASPBIAN</Elem>
+            <Elem>__USE_BSD</Elem>
           </preprocessorList>
         </cTool>
       </compileType>
@@ -82,6 +84,8 @@
       <item path="../hardware/hw.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/hw_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/ip_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -147,6 +151,8 @@
       <item path="../hardware/hw.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/hw_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/ip_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
       </item>

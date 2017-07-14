@@ -103,6 +103,10 @@ void println(const char* str)
 	_print(str, 0x40);	
 #elif defined(HAS_DEBUG_LINE)
     _stdout(str);
+#elif defined(__GNU)
+    printf("%s", str);
+    printf("\r\n");
+    fflush(stdout);
 #endif
 }
 
@@ -112,6 +116,10 @@ void printlnUp(const char* str)
 	_print(str, 0x00);	
 #elif defined(HAS_DEBUG_LINE)
     _stdout(str);
+#elif defined(__GNU)
+    printf("%s", str);
+    printf("\r\n");
+    fflush(stdout);
 #endif
 }
 
@@ -122,5 +130,8 @@ void printch(char ch)
 #elif defined(HAS_DEBUG_LINE)
     max232_buffer1[0] = ch;
     max232_send(1);
+#elif defined(__GNU)
+    printf("%c", ch);
+    fflush(stdout);
 #endif
 }

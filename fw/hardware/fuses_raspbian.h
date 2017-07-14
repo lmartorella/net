@@ -1,18 +1,20 @@
 #ifndef FUSES_RASPBIAN_H
 #define FUSES_RASPBIAN_H
 
+// Define IP and protocol
 #define HAS_IP
 #define HAS_BUS
-#define HAS_RS485
-#define RS485_BAUD 19200
-#define RS485_BUF_SIZE 128
 
-#define SERVER_CONTROL_UDP_PORT 17007
+// But not rs485
+#undef HAS_RS485
+
+#define SERVER_CONTROL_UDP_PORT 17008
 #define CLIENT_TCP_PORT 20000
 
 
 typedef DWORD TICK_TYPE;
-#define TICKS_PER_SECOND (4000000u)
+// Using gettime
+#define TICKS_PER_SECOND (1000000u)
 
 void CLRWDT();
 void enableInterrupts();

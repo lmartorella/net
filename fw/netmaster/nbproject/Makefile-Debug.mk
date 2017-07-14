@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/appio.o \
 	${OBJECTDIR}/_ext/5c0/bus_server.o \
 	${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o \
+	${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o \
 	${OBJECTDIR}/_ext/5c0/ip_client.o \
 	${OBJECTDIR}/_ext/5c0/main.o \
@@ -73,47 +74,52 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/netmaster: ${OBJECTFILES}
 ${OBJECTDIR}/_ext/5c0/appio.o: ../appio.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/appio.o ../appio.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/appio.o ../appio.c
 
 ${OBJECTDIR}/_ext/5c0/bus_server.o: ../bus_server.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/bus_server.o ../bus_server.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/bus_server.o ../bus_server.c
 
 ${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o: ../hardware/hw_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o ../hardware/hw_raspbian.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o ../hardware/hw_raspbian.c
+
+${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o: ../hardware/ip_raspbian.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
+	${RM} "$@.d"
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o ../hardware/ip_raspbian.c
 
 ${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o: ../hardware/tick_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o ../hardware/tick_raspbian.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o ../hardware/tick_raspbian.c
 
 ${OBJECTDIR}/_ext/5c0/ip_client.o: ../ip_client.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/ip_client.o ../ip_client.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/ip_client.o ../ip_client.c
 
 ${OBJECTDIR}/_ext/5c0/main.o: ../main.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/main.o ../main.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/main.o ../main.c
 
 ${OBJECTDIR}/_ext/5c0/persistence.o: ../persistence.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/persistence.o ../persistence.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/persistence.o ../persistence.c
 
 ${OBJECTDIR}/_ext/5c0/protocol.o: ../protocol.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/protocol.o ../protocol.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/protocol.o ../protocol.c
 
 ${OBJECTDIR}/_ext/5c0/sinks.o: ../sinks.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
-	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/sinks.o ../sinks.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/sinks.o ../sinks.c
 
 # Subprojects
 .build-subprojects:
