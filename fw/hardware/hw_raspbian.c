@@ -17,3 +17,8 @@ void rom_poll()
 
 void sys_storeResetReason()
 { }
+
+void fatal(const char* str) {
+    fprintf(stderr, "%s", str);
+    exit(1);
+}

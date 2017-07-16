@@ -19,7 +19,10 @@ typedef unsigned char BOOL;
 #define PRIO_TYPE
 #define FALSE 0
 #define TRUE 1
+// For netserver use
 #define __GNU
+// For POSIX extension
+#define _GNU_SOURCE
 
 #endif
 

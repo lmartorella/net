@@ -5,9 +5,17 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <ifaddrs.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
 
 AppConfig_t AppConfig;
 in_addr_t ip_bcastAddr;
+static int tcp_sock;
+static int listen_socket;
+#define TCP_BUFSIZE 1024
+static BYTE tcp_buffer[TCP_BUFSIZE];
+static BYTE* tcp_bufPtr = &tcp_buffer[0];
         
 void StackInit() {
     struct ifaddrs *ifaddr, *ifa;
@@ -32,13 +40,9 @@ void StackInit() {
         ip_bcastAddr = ((struct sockaddr_in*)(ifa->ifa_ifu.ifu_broadaddr))->sin_addr.s_addr;
     }
     freeifaddrs(ifaddr);
+    
+    listen_socket = -1;
 }
-
-static int tcp_sock;
-static int listen_socket;
-#define TCP_BUFSIZE 1024
-static BYTE tcp_buffer[TCP_BUFSIZE];
-static BYTE* tcp_bufPtr = &tcp_buffer[0];
 
 TCP_SOCKET TCPOpen(DWORD dwRemoteHost, BYTE vRemoteHostType, WORD wPort, BYTE vSocketPurpose) {
     if (dwRemoteHost != 0 || vRemoteHostType != TCP_OPEN_SERVER || vSocketPurpose != TCP_PURPOSE_GENERIC_TCP_SERVER) {
@@ -68,47 +72,85 @@ TCP_SOCKET TCPOpen(DWORD dwRemoteHost, BYTE vRemoteHostType, WORD wPort, BYTE vS
 
 void TCPDisconnect(TCP_SOCKET socket) {
     close(listen_socket);
+    listen_socket = -1;
 }
 
 void TCPDiscard(TCP_SOCKET socket) {
-    recv(listen_socket, tcp_buffer, TCP_BUFSIZE, MSG_DONTWAIT);
+    //recv(listen_socket, tcp_buffer, TCP_BUFSIZE, MSG_DONTWAIT);
 }
 
 WORD TCPIsGetReady(TCP_SOCKET socket) {
-    return recv(listen_socket, NULL, 0, MSG_PEEK | MSG_DONTWAIT);
+    if (listen_socket >= 0) {
+        struct pollfd pfd;
+        pfd.fd = listen_socket;
+        pfd.events = POLLIN | POLLHUP | POLLRDHUP;
+        int err = poll(&pfd, 1, 0);
+        if (err < 0) {
+            char buf[36];
+            sprintf(buf, "poll error: %d", errno);
+            fatal(buf);
+        }
+        if (err > 0) {
+            if (pfd.revents & (POLLHUP | POLLRDHUP)) {
+                // Socket closed
+                TCPDisconnect(listen_socket);
+            }
+            if (pfd.revents & POLLIN) {
+                // Data avail!
+                BYTE buf[256];
+                int ret = recv(listen_socket, buf, 256, MSG_PEEK | MSG_DONTWAIT);
+                return ret;
+            }
+        }
+    } 
+    return 0;
 }
 
 BOOL TCPIsConnected(TCP_SOCKET socket) {
-    xxx
+    return (listen_socket >= 0);
 }
 
-void TCPPoll() {
-    // clear the socket set
-    fd_set readfds;
-    FD_ZERO(&readfds);
+void StackTask() {
+    if (listen_socket < 0) {
+        // clear the socket set
+        fd_set readfds;
+        FD_ZERO(&readfds);
 
-    // add master socket to set
-    FD_SET(tcp_sock, &readfds);
-    int max_sd = tcp_sock;    
-    
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
-    int ret = select(max_sd + 1, &readfds, NULL, NULL, &tv);
-    if (ret < 0) {
-        fatal("Select error");
-    }
-    
-    if (ret > 0) {
-        struct sockaddr_in address;
-        int addrlen = sizeof(address);
-        listen_socket = accept(tcp_sock, (struct sockaddr *)&address, (socklen_t*)&addrlen);
-        if (listen_socket < 0) {
-            fatal("Error in TCP accept");
+        // add master socket to set
+        FD_SET(tcp_sock, &readfds);
+        int max_sd = tcp_sock;    
+
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+        int ret = select(max_sd + 1, &readfds, NULL, NULL, &tv);
+        if (ret < 0) {
+            fatal("Select error");
         }
-        return TRUE;
-    } else {
-        return FALSE;
+
+        if (ret > 0) {
+            struct sockaddr_in address;
+            int addrlen = sizeof(address);
+            listen_socket = accept(tcp_sock, (struct sockaddr *)&address, (socklen_t*)&addrlen);
+            if (listen_socket < 0) {
+                fatal("Error in TCP accept");
+            }
+            
+            // Set nonblocking IO
+            int flags = fcntl(listen_socket, F_GETFL, 0);
+            if (flags < 0) {
+                fatal("Error in fcntl get");
+            }
+
+            flags = flags | O_NONBLOCK;
+            if (fcntl(listen_socket, F_SETFL, flags) != 0) {
+                fatal("Error in fcntl set");
+            }
+            
+            // 1 byte enough for sending (e.g. close), low water 
+            int sndlowat = 1;
+            setsockopt(listen_socket, SOL_SOCKET, SO_SNDLOWAT, &sndlowat, sizeof(sndlowat));
+        } 
     }
 }
 

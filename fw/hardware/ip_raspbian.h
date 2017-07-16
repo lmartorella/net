@@ -16,6 +16,8 @@ extern AppConfig_t AppConfig;
 #define DHCPIsBound(v) (1)
 
 void StackInit();
+void StackTask();
+#define StackApplications()
 
 void TCPDiscard(TCP_SOCKET socket);
 void TCPDisconnect(TCP_SOCKET socket);

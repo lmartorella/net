@@ -19,11 +19,7 @@ typedef DWORD TICK_TYPE;
 void CLRWDT();
 void enableInterrupts();
 void rom_poll();
-
-#define StackTask()
-#define StackApplications()
-
-#define fatal(str) fprintf(stderr, "%s", str);exit(1);
+void fatal(const char* str);
 
 #endif /* FUSES_RASPBIAN_H */
 

@@ -17,6 +17,9 @@ void pers_init()
 #ifdef HAS_EEPROM
     rom_read(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
 #endif
+#ifdef __GNU
+    memset(&pers_data, 0, sizeof(pers_data));
+#endif
 }
 
 void pers_save()
