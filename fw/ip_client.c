@@ -34,6 +34,7 @@ static void pollControlPort();
 
 void prot_control_close()
 {
+    TCPFlush(s_controlSocket);
 }
 
 // Close the control port listener
@@ -47,19 +48,21 @@ void prot_control_abort()
 bit prot_control_readW(WORD* w)
 {
     WORD l = TCPIsGetReady(s_controlSocket);
-	if (l < 2) 
-		return FALSE;
-	TCPGetArray(s_controlSocket, (BYTE*)w, sizeof(WORD));
-	return TRUE;
+    if (l < 2) { 
+        return FALSE;
+    }
+    TCPGetArray(s_controlSocket, (BYTE*)w, sizeof(WORD));
+    return TRUE;
 }
 
 bit prot_control_read(void* data, WORD size)
 {
     WORD l = TCPIsGetReady(s_controlSocket);
-	if (l < size)
-		return FALSE;
-	TCPGetArray(s_controlSocket, (BYTE*)data, size);
-	return TRUE;
+    if (l < size) {
+        return FALSE;
+    }
+    TCPGetArray(s_controlSocket, (BYTE*)data, size);
+    return TRUE;
 }
 
 void prot_control_writeW(WORD w)

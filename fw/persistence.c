@@ -1,7 +1,11 @@
 #include "pch.h"
 #include "persistence.h"
 
-PersistentData pers_data;
+PersistentData pers_data
+#ifdef __GNU
+        = DEFAULT_PERS_DATA
+#endif
+        ;
 
 #ifdef _IS_ETH_CARD
 static EEPROM_MODIFIER PersistentData s_persistentData @ 0x1F800 = DEFAULT_PERS_DATA;
@@ -16,9 +20,6 @@ void pers_init()
 {
 #ifdef HAS_EEPROM
     rom_read(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
-#endif
-#ifdef __GNU
-    memset(&pers_data, 0, sizeof(pers_data));
 #endif
 }
 

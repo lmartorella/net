@@ -24,7 +24,7 @@ void TCPDisconnect(TCP_SOCKET socket);
 WORD TCPIsGetReady(TCP_SOCKET socket);
 BOOL TCPIsConnected(TCP_SOCKET socket);
 void TCPFlush(TCP_SOCKET socket);
-void TCPGetArray(TCP_SOCKET socket, BYTE* buf, WORD size);
+WORD TCPGetArray(TCP_SOCKET socket, BYTE* buf, WORD size);
 void TCPPutArray(TCP_SOCKET socket, const BYTE* buf, WORD size);
 TCP_SOCKET TCPOpen(DWORD dwRemoteHost, BYTE vRemoteHostType, WORD wPort, BYTE vSocketPurpose);
 #define TCP_OPEN_SERVER		0u

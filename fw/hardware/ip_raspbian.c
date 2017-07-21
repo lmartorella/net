@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <netinet/in.h>
+#include <linux/tcp.h>
 #include <unistd.h>
 #include <ifaddrs.h>
 #include <errno.h>
@@ -73,6 +74,7 @@ TCP_SOCKET TCPOpen(DWORD dwRemoteHost, BYTE vRemoteHostType, WORD wPort, BYTE vS
 void TCPDisconnect(TCP_SOCKET socket) {
     close(listen_socket);
     listen_socket = -1;
+    tcp_bufPtr = &tcp_buffer[0];
 }
 
 void TCPDiscard(TCP_SOCKET socket) {
@@ -99,6 +101,7 @@ WORD TCPIsGetReady(TCP_SOCKET socket) {
                 // Data avail!
                 BYTE buf[256];
                 int ret = recv(listen_socket, buf, 256, MSG_PEEK | MSG_DONTWAIT);
+                if (ret < 0) ret = 0;
                 return ret;
             }
         }
@@ -150,14 +153,14 @@ void StackTask() {
             // 1 byte enough for sending (e.g. close), low water 
             int sndlowat = 1;
             setsockopt(listen_socket, SOL_SOCKET, SO_SNDLOWAT, &sndlowat, sizeof(sndlowat));
+            int nodelay = 1;
+            setsockopt(listen_socket, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
         } 
     }
 }
 
-void TCPGetArray(TCP_SOCKET socket, BYTE* buf, WORD size) {
-    if (recv(listen_socket, buf, size, MSG_DONTWAIT) != size) {
-        fatal("Socket error, recv");
-    }
+WORD TCPGetArray(TCP_SOCKET socket, BYTE* buf, WORD size) {
+    return recv(listen_socket, buf, size, MSG_DONTWAIT);
 }
 
 void TCPPutArray(TCP_SOCKET socket, const BYTE* cData, WORD size) {

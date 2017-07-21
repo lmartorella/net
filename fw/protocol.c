@@ -91,21 +91,19 @@ static void CHIL_command()
     printch('c');
 #endif
     // Fetch my GUID
-    WORD count;
-    
     // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
     prot_control_write(&pers_data.deviceId, sizeof(GUID));
     
 #ifdef HAS_BUS_SERVER
     // Propagate the request to all children to fetch their GUIDs
-    count = bus_getChildrenMaskSize();
+    WORD count = bus_getChildrenMaskSize();
     prot_control_writeW(count);
     prot_control_write(bus_getChildrenMask(), count);
 
     bus_resetDirtyChildren();
 #else    
     // No children
-    count = 0;
+    WORD count = 0;
     prot_control_writeW(count);
 #endif
     
