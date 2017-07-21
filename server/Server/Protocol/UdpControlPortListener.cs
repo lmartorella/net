@@ -31,6 +31,8 @@ namespace Lucky.Home.Protocol
             _logger = Manager.GetService<ILoggerFactory>().Create("UdpControlPortListener");
             _client = new UdpClient(new IPEndPoint(address, port));
             _client.BeginReceive(OnReceiveData, null);
+
+            _logger.Log("Listening", "port", Constants.UdpControlPort.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
         }
 
         public void Dispose()

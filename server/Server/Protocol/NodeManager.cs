@@ -69,10 +69,20 @@ namespace Lucky.Home.Protocol
                 // Ignore consecutive messages
                 if (_unnamedNodes.TryGetValue(address, out newNode))
                 {
-                    return newNode;
+                    if (!newNode.IsZombie)
+                    {
+                        return newNode;
+                    }
+                    else
+                    {
+                        newNode.IsZombie = false;
+                    }
                 }
-                newNode = new TcpNode(Guid.Empty, address);
-                _unnamedNodes.Add(address, newNode);
+                else
+                {
+                    newNode = new TcpNode(Guid.Empty, address);
+                    _unnamedNodes.Add(address, newNode);
+                }
             }
             await newNode.FetchMetadata();
             return newNode;
