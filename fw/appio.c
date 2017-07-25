@@ -1,8 +1,11 @@
 #include "pch.h"
+#include "hardware/cm1602.h"
 #include "appio.h"
 
 const char* g_lastException;
 RESET_REASON g_resetReason;
+
+extern void wait1s();
 
 #if defined(HAS_MAX232_SOFTWARE) && defined(DEBUGMODE)
 #define HAS_DEBUG_LINE

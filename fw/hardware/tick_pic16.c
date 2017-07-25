@@ -1,5 +1,3 @@
-#define __TICK_C
-
 #include "../pch.h"
 #include "tick.h"
 #include "leds.h"

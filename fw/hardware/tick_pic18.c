@@ -1,9 +1,7 @@
-#define __TICK_C
-
 #include "../pch.h"
 #include "tick.h"
 
-#if defined(_IS_ETH_CARD)
+#ifdef _IS_ETH_CARD
 
 // Internal counter to store Ticks.  This variable is incremented in an ISR and
 // therefore must be marked volatile to prevent the compiler optimizer from

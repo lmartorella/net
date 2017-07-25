@@ -325,7 +325,7 @@
       </item>
       <HI-TECH-COMP>
         <property key="asmlist" value="true"/>
-        <property key="define-macros" value="_CONF_TEST_ETH_CARD"/>
+        <property key="define-macros" value="_CONF_TEST_ETH_CARD;NETSERVER_PRJ"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories"
                   value="..\;..\tcpipstack;..\tcpipstack\Include;..\tcpipstack\Include\TCPIPStack"/>
@@ -400,7 +400,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
@@ -909,7 +908,7 @@
       </item>
       <HI-TECH-COMP>
         <property key="asmlist" value="true"/>
-        <property key="define-macros" value="_CONF_TEST_MINI_BEAN"/>
+        <property key="define-macros" value="_CONF_TEST_MINI_BEAN;NETSERVER_PRJ"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories" value=""/>
         <property key="favor-optimization-for" value="-speed,+space"/>
@@ -1509,7 +1508,7 @@
       </item>
       <HI-TECH-COMP>
         <property key="asmlist" value="true"/>
-        <property key="define-macros" value="_CONF_MCU_CARD"/>
+        <property key="define-macros" value="_CONF_MCU_CARD;NETSERVER_PRJ"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories"
                   value="..\;..\tcpipstack;..\tcpipstack\Include;..\tcpipstack\Include\TCPIPStack"/>
@@ -2092,7 +2091,7 @@
       </item>
       <HI-TECH-COMP>
         <property key="asmlist" value="true"/>
-        <property key="define-macros" value="_CONF_SOLAR_BEAN"/>
+        <property key="define-macros" value="_CONF_SOLAR_BEAN;NETSERVER_PRJ"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories" value=""/>
         <property key="favor-optimization-for" value="-speed,+space"/>
@@ -2625,7 +2624,7 @@
       </item>
       <HI-TECH-COMP>
         <property key="asmlist" value="true"/>
-        <property key="define-macros" value="_CONF_MICRO_BEAN"/>
+        <property key="define-macros" value="_CONF_MICRO_BEAN;NETSERVER_PRJ"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories" value=""/>
         <property key="favor-optimization-for" value="-speed,+space"/>
@@ -2698,7 +2697,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
