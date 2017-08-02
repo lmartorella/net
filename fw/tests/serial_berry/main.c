@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -14,18 +15,18 @@
 
 enum {
     REG_DR = 0,
-    REG_RSRECR = 4,
-    REG_FR = 0x18,
-    REG_IBRD = 0x24,
-    REG_FBRD = 0x28,
-    REG_LCRH = 0x2c,
-    REG_CR = 0x30,
-    REG_IFLS = 0x34,
-    REG_IMSC = 0x38,
-    REG_RIS = 0x3c,
-    REG_MIS = 0x40,
-    REG_ICR = 0x44,
-    REG_DMACR = 0x48
+    REG_RSRECR = 1,
+    REG_FR = 6,
+    REG_IBRD = 9,
+    REG_FBRD = 0xa,
+    REG_LCRH = 0xb,
+    REG_CR = 0xc,
+    REG_IFLS = 0xd,
+    REG_IMSC = 0xe,
+    REG_RIS = 0xf,
+    REG_MIS = 0x10,
+    REG_ICR = 0x11,
+    REG_DMACR = 0x12
 };
 
 #define REG_FR_TXFE 0x80
@@ -93,44 +94,47 @@ static uint32_t mmap_rd(int regaddr) {
     return mmap_ptr[regaddr];
 }
 
-int main() {
-    const uint32_t pi_peri_phys = 0x20000000;
-    const uint32_t UART_BASE = (pi_peri_phys + 0x00201000);
-    const uint32_t UART_LEN = 0x90;
+uint32_t ibrd, fbrd;
 
-    mmap_create(UART_BASE, UART_LEN);
-    
-    for (int i = 0; i < UART_LEN / 4; i++) {
-        printf("%08x ", mmap_rd(i));
-    }
-        
+static void init(uint32_t parity) {
     // 1. Disable UART
     mmap_wr(REG_CR, 0);
     // 2. Wait for the end of transmission or reception of the current character
     while (mmap_rd(REG_FR) & REG_FR_BUSY);
     // 3. Flush the transmit FIFO by setting the FEN bit to 0 in the Line Control Register, UART_LCRH
     mmap_wr(REG_LCRH, 0);
-    // 4. Reprogram the Control Register, UART_CR.
-    double divisor = 700000000.0 / (16 * 19200.0);
-    mmap_wr(REG_FBRD, (int)divisor);
-    mmap_wr(REG_IBRD, (divisor - (int)divisor) * 64);
-    mmap_wr(REG_LCRH, REG_LCRH_SPS | REG_LCRH_WLEN8 | REG_LCRH_FEN | REG_LCRH_EPS | REG_LCRH_PEN);
+    // 4. Reprogram the Control Register, UART_LCR, writing xBRD registers and the LCRH at the end (strobe)
+    mmap_wr(REG_IBRD, ibrd);
+    mmap_wr(REG_FBRD, fbrd);
+    mmap_wr(REG_LCRH, REG_LCRH_SPS | REG_LCRH_WLEN8 | REG_LCRH_FEN | parity | REG_LCRH_PEN);
     // 5. Enable the UART.
-    mmap_wr(REG_CR, REG_CR_TXE | REG_CR_RXE | REG_CR_UARTEN);
+    mmap_wr(REG_CR, REG_CR_TXE | REG_CR_UARTEN);
+}
+
+int main() {
+    const uint32_t pi_peri_phys = 0x20000000;
+    const uint32_t UART_BASE = (pi_peri_phys + 0x00201000);
+    const uint32_t UART_LEN = 0x90;
+
+    mmap_create(UART_BASE, UART_LEN);
+
+    double fb = 48000000.0 / (16 * 19200.0);
+    ibrd = (uint32_t)floor(fb);
+    fbrd = (uint32_t)(fmod(fb, 1.0) * 64);
 
     // Disable interrupts
     mmap_wr(REG_IMSC, 0);
     mmap_wr(REG_ICR, 0);
     
+    init(REG_LCRH_EPS);
+    
     // Writes 0x1
     mmap_wr(REG_DR, 1);
-    mmap_wr(REG_DR, 1);
-    mmap_wr(REG_DR, 1);
-    mmap_wr(REG_DR, 1);
-    mmap_wr(REG_DR, 1);
 
-    // 2. Wait for the end of transmission or reception of the current character
-    while (mmap_rd(REG_FR) & REG_FR_BUSY);
+    init(0);
+
+    // Writes 0x1
+    mmap_wr(REG_DR, 1);
     
     return 0;
 }
