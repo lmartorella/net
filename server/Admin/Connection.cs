@@ -108,9 +108,9 @@ namespace Lucky.Home
             App.Current.Dispatcher.Invoke(() => Devices = new ObservableCollection<UiDevice>(devices));
         }
 
-        public async Task<bool> RenameNode(Node node, Guid newName)
+        public async Task<bool> RenameNode(Node node, NodeId newName)
         {
-            bool ret = await _adminInterface.RenameNode(node.Address, node.Id, newName);
+            bool ret = await _adminInterface.RenameNode(node.Address, node.NodeId, newName);
             await FetchTree();
             return ret;
         }
@@ -138,7 +138,7 @@ namespace Lucky.Home
 
         public async Task ResetNode(Node node)
         {
-            await _adminInterface.ResetNode(node.Id, node.Address);
+            await _adminInterface.ResetNode(node.NodeId, node.Address);
         }
 
         public event EventHandler NodeSelectionChanged;

@@ -24,9 +24,9 @@ namespace Lucky.Home.Protocol
         internal const string SubNodeChanged = "CCHN";
         
         /// <summary>
-        /// Device ID
+        /// Node ID
         /// </summary>
-        public Guid DeviceId;
+        public NodeId NodeId;
 
         /// <summary>
         /// Control TCP port

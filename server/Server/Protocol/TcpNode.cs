@@ -21,7 +21,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
-        public Guid Id { get; private set; }
+        public NodeId NodeId { get; private set; }
 
         /// <summary>
         /// If some active connection action was previously failed, and not yet restored by a heartbeat
@@ -43,11 +43,11 @@ namespace Lucky.Home.Protocol
 
         private static readonly TimeSpan ZOMBIE_TIMEOUT = TimeSpan.FromSeconds(10);
 
-        internal TcpNode(Guid guid, TcpNodeAddress address)
+        internal TcpNode(NodeId id, TcpNodeAddress address)
         {
-            Id = guid;
+            NodeId = id;
             Address = address;
-            Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + guid);
+            Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + id);
         }
 
         public TcpNodeAddress Address { get; private set; }
@@ -138,7 +138,7 @@ namespace Lucky.Home.Protocol
 
         private class GetChildrenMessageResponse
         {
-            public Guid Guid;
+            public NodeId Id;
 
             // Number of children as bit array
             [SerializeAsDynArray]
@@ -169,11 +169,11 @@ namespace Lucky.Home.Protocol
             [SerializeAsFixedString(2)]
             public string Cmd = "GU";
 
-            public readonly Guid Guid;
+            public readonly NodeId Id;
 
-            public NewGuidMessage(Guid guid)
+            public NewGuidMessage(NodeId id)
             {
-                Guid = guid;
+                Id = id;
             }
         }
 
@@ -345,10 +345,10 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
-        internal Guid? TryFetchGuid()
+        internal NodeId TryFetchGuid()
         {
             // Init a METADATA fetch connection
-            Guid? guid = null;
+            NodeId id = null;
 
             if (!OpenNodeSession((connection, addr) =>
             {
@@ -360,7 +360,7 @@ namespace Lucky.Home.Protocol
                     // Channel already destroyed
                     return false;
                 }
-                guid = childNodes.Guid;
+                id = childNodes.Id;
                 return true;
             }))
             {
@@ -368,7 +368,7 @@ namespace Lucky.Home.Protocol
                 return null;
             }
 
-            return guid;
+            return id;
         }
 
         private Tuple<bool, TcpNodeAddress[]> TryFetchMetadata()
@@ -377,7 +377,6 @@ namespace Lucky.Home.Protocol
             string[] sinks = null;
             byte[] childMask = new byte[0];
             TcpNodeAddress address = null;
-            Guid newGuidToAssign = Guid.Empty;
 
             if (!OpenNodeSession((connection, addr) =>
             {
@@ -391,10 +390,10 @@ namespace Lucky.Home.Protocol
                     return false;
                 }
 
-                if (childNodes.Guid != Id)
+                if (!childNodes.Id.Equals(NodeId))
                 {
                     // ERROR
-                    Logger.Warning("InvalidGuidInEnum", "Id", Id, "returned", childNodes.Guid);
+                    Logger.Warning("InvalidGuidInEnum", "Id", NodeId, "returned", childNodes.Id);
                 }
                 childMask = childNodes.Mask;
 
@@ -411,12 +410,6 @@ namespace Lucky.Home.Protocol
             {
                 // Error, no metadata
                 return Tuple.Create(false, new TcpNodeAddress[0]);
-            }
-
-            if (newGuidToAssign != Guid.Empty)
-            {
-                // Rename node
-                RenameInternal(newGuidToAssign);
             }
 
             // Now register sinks
@@ -474,10 +467,10 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private void RenameInternal(Guid newId)
+        private void RenameInternal(NodeId newId)
         {
-            Guid oldId = Id;
-            Id = newId;
+            NodeId oldId = NodeId;
+            NodeId = newId;
             Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
             Manager.GetService<INodeManager>().EndRenameNode(this, oldId, newId, true);
 
@@ -487,9 +480,9 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Change the ID of the node
         /// </summary>
-        public bool Rename(Guid newId)
+        public bool Rename(NodeId newId)
         {
-            if (newId == Guid.Empty)
+            if (newId.IsEmpty)
             {
                 throw new ArgumentNullException("newId");
             }
@@ -499,7 +492,7 @@ namespace Lucky.Home.Protocol
                 {
                     return false;
                 }
-                if (newId == Id)
+                if (newId.Equals(NodeId))
                 {
                     return true;
                 }
@@ -507,7 +500,7 @@ namespace Lucky.Home.Protocol
             }
 
             bool success = false;
-            Guid oldId = Guid.Empty;
+            NodeId oldId = new NodeId();
             try
             {
                 // Notify the node registrar too
@@ -520,8 +513,8 @@ namespace Lucky.Home.Protocol
                 });
 
                 success = true;
-                oldId = Id;
-                Id = newId;
+                oldId = NodeId;
+                NodeId = newId;
             }
             catch (Exception exc)
             {

@@ -35,6 +35,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Home\NodeId.cs" />
+    <Compile Include="ISerializable.cs" />
     <Compile Include="LoggerFactory.cs" />
     <Compile Include="Home\Admin\IAdminInterface.cs" />
     <Compile Include="Home\Admin\MessageRequest.cs" />

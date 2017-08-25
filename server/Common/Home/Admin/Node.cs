@@ -7,7 +7,7 @@ namespace Lucky.Home.Admin
     public class Node
     {
         [DataMember]
-        public Guid Id { get; set; }
+        public NodeId NodeId { get; set; }
 
         [DataMember]
         public string Address { get; set; } 

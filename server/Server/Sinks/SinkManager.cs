@@ -61,7 +61,7 @@ namespace Lucky.Home.Sinks
             if (!_sinkTypes.TryGetValue(sinkFourCc, out type))
             {
                 // Unknown sink type
-                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", node.Id);
+                Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", node.NodeId);
                 return null;
             }
 

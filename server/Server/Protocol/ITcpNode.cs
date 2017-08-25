@@ -15,7 +15,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// The Unique ID of the node, cannot be empty 
         /// </summary>
-        Guid Id { get; }
+        NodeId NodeId { get; }
 
         /// <summary>
         /// If some active connection action was previously failed, and not yet restored by a heartbeat
@@ -51,6 +51,6 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Change the ID of the node
         /// </summary>
-        bool Rename(Guid newId);
+        bool Rename(NodeId newId);
     }
 }

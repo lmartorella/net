@@ -7,7 +7,7 @@ namespace Lucky.Home.Devices
     public class SinkPath
     {
         [DataMember]
-        public Guid NodeId { get; set; }
+        public NodeId NodeId { get; set; }
 
         [DataMember]
         public string SinkId { get; set; }
@@ -21,7 +21,7 @@ namespace Lucky.Home.Devices
         public SinkPath()
         { }
 
-        public SinkPath(Guid nodeId, string sinkId, int subIndex = -1)
+        public SinkPath(NodeId nodeId, string sinkId, int subIndex = -1)
         {
             NodeId = nodeId;
             SinkId = sinkId;
@@ -35,7 +35,7 @@ namespace Lucky.Home.Devices
 
         public override bool Equals(object obj)
         {
-            return NodeId == ((SinkPath)obj).NodeId && SinkId.Equals(((SinkPath)obj).SinkId) && SubIndex == ((SinkPath)obj).SubIndex;
+            return NodeId.Equals(((SinkPath)obj).NodeId) && SinkId.Equals(((SinkPath)obj).SinkId) && SubIndex == ((SinkPath)obj).SubIndex;
         }
 
         public override string ToString()

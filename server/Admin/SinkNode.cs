@@ -59,7 +59,7 @@ namespace Lucky.Home
         {
             get
             {
-                return new SinkPath(ParentUiNode.Node.Id, ParentSink.Name, SubIndex);
+                return new SinkPath(ParentUiNode.Node.NodeId, ParentSink.Name, SubIndex);
             }
         }
     }

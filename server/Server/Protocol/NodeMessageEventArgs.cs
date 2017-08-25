@@ -4,15 +4,15 @@ namespace Lucky.Home.Protocol
 {
     class NodeMessageEventArgs : EventArgs
     {
-        public Guid Guid { get; private set; }
+        public NodeId NodeId { get; private set; }
         public TcpNodeAddress Address { get; private set; }
         public PingMessageType MessageType { get; private set; }
         public int[] ChildrenChanged { get; private set; }
 
-        public NodeMessageEventArgs(Guid guid, TcpNodeAddress address, PingMessageType messageType, int[] childrenChanged)
+        public NodeMessageEventArgs(NodeId nodeId, TcpNodeAddress address, PingMessageType messageType, int[] childrenChanged)
         {
             MessageType = messageType;
-            Guid = guid;
+            NodeId = nodeId;
             Address = address;
             ChildrenChanged = childrenChanged;
         }

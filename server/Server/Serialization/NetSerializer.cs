@@ -105,6 +105,11 @@ namespace Lucky.Home.Serialization
             {
                 return new IpAddressFieldItem(fieldName);
             }
+            else if (typeof(ISerializable).IsAssignableFrom(fieldType))
+            {
+                Type serType = typeof(NetSerializer<>.SerializableConverter).MakeGenericType(fieldType);
+                return (INetSerializer)Activator.CreateInstance(serType);
+            }
             else if (fieldType.IsClass)
             {
                 // Build nested class
@@ -112,6 +117,21 @@ namespace Lucky.Home.Serialization
                 return (INetSerializer)Activator.CreateInstance(serType);
             }
             throw new NotSupportedException("Type not supported: " + fieldType);
+        }
+
+        private class SerializableConverter : INetSerializer
+        {
+            public object Deserialize(BinaryReader reader)
+            {
+                ISerializable ret = (ISerializable)Activator.CreateInstance(typeof(T));
+                ret.Deserialize(reader.ReadBytes(ret.DataSize));
+                return ret;
+            }
+
+            public void Serialize(object value, BinaryWriter writer)
+            {
+                writer.Write(((ISerializable)value).Serialize());
+            }
         }
 
         private class ClassConverter : INetSerializer

@@ -158,12 +158,12 @@ namespace Lucky.Home
                 // Rename the node
                 if (commit)
                 {
-                    Guid newId;
+                    NodeId newId;
                     var inEditItem = _inEditItem;
                     _inEditItem = null;
                     inEditItem.InRename = false;
                     RenameCommand.RaiseCanExecuteChanged();
-                    if (Guid.TryParse(inEditItem.Name, out newId))
+                    if (NodeId.TryParse(inEditItem.Name, out newId))
                     {
                         inEditItem.Name = "Renaming...";
                         if (await TcpConnection.RenameNode(inEditItem.Node, newId))
@@ -174,14 +174,14 @@ namespace Lucky.Home
                         {
                             inEditItem.Name = "Error in connection!";
                             await Task.Delay(TimeSpan.FromSeconds(2));
-                            inEditItem.Name = inEditItem.Node.Id.ToString();
+                            inEditItem.Name = inEditItem.Node.NodeId.ToString();
                         }
                     }
                     else
                     {
                         inEditItem.Name = "Invalid GUID!";
                         await Task.Delay(TimeSpan.FromSeconds(2));
-                        inEditItem.Name = inEditItem.Node.Id.ToString();
+                        inEditItem.Name = inEditItem.Node.NodeId.ToString();
                     }
                 }
             }

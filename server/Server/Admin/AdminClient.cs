@@ -71,12 +71,12 @@ namespace Lucky.Home.Admin
             return (DeviceTypeDescriptor[])await Request();
         }
 
-        public async Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId)
+        public async Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId)
         {
             return (bool)await Request("RenameNode", nodeAddress, oldId, newId);
         }
 
-        public async Task ResetNode(Guid id, string nodeAddress)
+        public async Task ResetNode(NodeId id, string nodeAddress)
         {
             await Request("ResetNode", id, nodeAddress);
         }

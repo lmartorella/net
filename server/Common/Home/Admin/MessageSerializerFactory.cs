@@ -10,7 +10,7 @@ namespace Lucky.Home.Admin
 
         static MessageSerializerFactory()
         {
-            KnownTypes = new[] { typeof(Node), typeof(Node[]), typeof(DeviceDescriptor), typeof(DeviceDescriptor[]), typeof(DeviceTypeDescriptor), typeof(DeviceTypeDescriptor[]) };
+            KnownTypes = new[] { typeof(Node), typeof(Node[]), typeof(DeviceDescriptor), typeof(DeviceDescriptor[]), typeof(DeviceTypeDescriptor), typeof(DeviceTypeDescriptor[]), typeof(NodeId) };
         }
 
         public static DataContractSerializer MessageRequestSerialier

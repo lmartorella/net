@@ -40,7 +40,7 @@ namespace Lucky.Home.Sinks
         {
             get
             {
-                return new SinkPath(Node.Id, FourCc);
+                return new SinkPath(Node.NodeId, FourCc);
             }
         }
 

@@ -8,10 +8,10 @@ namespace Lucky.Home.Admin
     {
         Task<Node[]> GetTopology();
         Task<DeviceTypeDescriptor[]> GetDeviceTypes();
-        Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId);
+        Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId);
         Task<string> CreateDevice(DeviceDescriptor descriptor);
         Task<DeviceDescriptor[]> GetDevices();
         Task DeleteDevice(Guid id);
-        Task ResetNode(Guid id, string nodeAddress);
+        Task ResetNode(NodeId id, string nodeAddress);
     }
 }

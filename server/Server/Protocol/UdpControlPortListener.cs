@@ -32,7 +32,7 @@ namespace Lucky.Home.Protocol
             _client = new UdpClient(new IPEndPoint(address, port));
             _client.BeginReceive(OnReceiveData, null);
 
-            _logger.Log("Listening", "port", Constants.UdpControlPort.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
+            _logger.Log("Listening", "port", port.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
         }
 
         public void Dispose()
@@ -60,9 +60,9 @@ namespace Lucky.Home.Protocol
                     {
                         if (msgType != PingMessageType.Heartbeat)
                         {
-                            _logger.Log("NodeMessage", "ID", msg.DeviceId, "messageType", msgType);
+                            _logger.Log("NodeMessage", "ID", msg.NodeId, "messageType", msgType);
                         }
-                        NodeMessage?.Invoke(this, new NodeMessageEventArgs(msg.DeviceId, tcpNodeAddress, msgType, childrenChanged));
+                        NodeMessage?.Invoke(this, new NodeMessageEventArgs(msg.NodeId, tcpNodeAddress, msgType, childrenChanged));
                     }
                 }
             }

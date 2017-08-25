@@ -10,37 +10,37 @@ namespace Lucky.Home.Protocol
     // ReSharper disable once ClassNeverInstantiated.Global
     class NodeManager : ServiceBase, INodeManager
     {
-        private readonly Dictionary<Guid, TcpNode> _nodes = new Dictionary<Guid, TcpNode>();
+        private readonly Dictionary<NodeId, TcpNode> _nodes = new Dictionary<NodeId, TcpNode>();
         private readonly Dictionary<TcpNodeAddress, TcpNode> _unnamedNodes = new Dictionary<TcpNodeAddress, TcpNode>();
         private readonly object _nodeLock = new object();
 
         /// <summary>
         /// A node is discovered through heartbeat
         /// </summary>
-        public async Task<ITcpNode> RegisterNode(Guid guid, TcpNodeAddress address)
+        public async Task<ITcpNode> RegisterNode(NodeId id, TcpNodeAddress address)
         {
-            if (guid == Guid.Empty)
+            if (id.IsEmpty)
             {
                 return await RegisterNewNode(address);
             }
             else
             {
-                return await RegisterNamedNode(guid, address);
+                return await RegisterNamedNode(id, address);
             }
         }
 
-        private async Task<ITcpNode> RegisterNamedNode(Guid guid, TcpNodeAddress address)
+        private async Task<ITcpNode> RegisterNamedNode(NodeId id, TcpNodeAddress address)
         {
             TcpNode node;
             bool relogin;
             lock (_nodeLock)
             {
-                node = FindById(guid);
+                node = FindById(id);
                 if (node == null)
                 {
                     // New node!
-                    node = new TcpNode(guid, address);
-                    _nodes.Add(guid, node);
+                    node = new TcpNode(id, address);
+                    _nodes.Add(id, node);
                     relogin = false;
                 }
                 else
@@ -80,7 +80,7 @@ namespace Lucky.Home.Protocol
                 }
                 else
                 {
-                    newNode = new TcpNode(Guid.Empty, address);
+                    newNode = new TcpNode(new NodeId(), address);
                     _unnamedNodes.Add(address, newNode);
                 }
             }
@@ -91,8 +91,8 @@ namespace Lucky.Home.Protocol
         public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
         {
             // Ask for guid
-            var guid = new TcpNode(Guid.Empty, address).TryFetchGuid();
-            if (!guid.HasValue)
+            var id = new TcpNode(new NodeId(), address).TryFetchGuid();
+            if (id == null)
             {
                 // Error in fetching
                 Logger.Warning("Error/timeout in RegisterUnknownNode of " + address);
@@ -100,23 +100,23 @@ namespace Lucky.Home.Protocol
             }
             else
             {
-                return await RegisterNode((Guid)guid, address);
+                return await RegisterNode(id, address);
             }
         }
 
-        public async Task HeartbeatNode(Guid guid, TcpNodeAddress address)
+        public async Task HeartbeatNode(NodeId id, TcpNodeAddress address)
         {
             TcpNode node;
             lock (_nodeLock)
             {
-                node = guid != Guid.Empty ? FindById(guid) : FindUnnamed(address);
+                node = (!id.IsEmpty) ? FindById(id) : FindUnnamed(address);
             }
 
             // Not known?
             if (node == null)
             {
                 // The server was reset?
-                await RegisterNode(guid, address);
+                await RegisterNode(id, address);
             }
             else
             {
@@ -125,19 +125,19 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public async Task RefetchSubNodes(Guid guid, TcpNodeAddress address, int[] childrenChanged)
+        public async Task RefetchSubNodes(NodeId id, TcpNodeAddress address, int[] childrenChanged)
         {
             TcpNode node;
             lock (_nodeLock)
             {
-                node = guid != Guid.Empty ? FindById(guid) : FindUnnamed(address);
+                node = (!id.IsEmpty) ? FindById(id) : FindUnnamed(address);
             }
 
             // Not known?
             if (node == null)
             {
                 // The server was reset?
-                await RegisterNode(guid, address);
+                await RegisterNode(id, address);
             }
             else
             {
@@ -146,10 +146,10 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private TcpNode FindById(Guid guid)
+        private TcpNode FindById(NodeId id)
         {
             TcpNode node;
-            _nodes.TryGetValue(guid, out node);
+            _nodes.TryGetValue(id, out node);
             return node;
         }
 
@@ -160,11 +160,11 @@ namespace Lucky.Home.Protocol
             return node;
         }
 
-        ITcpNode INodeManager.FindNode(Guid guid)
+        ITcpNode INodeManager.FindNode(NodeId id)
         {
             lock (_nodeLock)
             {
-                return FindById(guid);
+                return FindById(id);
             }
         }
 
@@ -184,7 +184,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public void BeginRenameNode(TcpNode node, Guid newId)
+        public void BeginRenameNode(TcpNode node, NodeId newId)
         {
             lock (_nodeLock)
             {
@@ -196,27 +196,27 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public void EndRenameNode(TcpNode node, Guid oldId, Guid newId, bool success)
+        public void EndRenameNode(TcpNode node, NodeId oldId, NodeId newId, bool success)
         {
             lock (_nodeLock)
             {
                 if (!success)
                 {
-                    Debug.Assert(oldId == Guid.Empty || _nodes[oldId] == node);
-                    Debug.Assert(oldId != Guid.Empty || _unnamedNodes[node.Address] == node);
-                    Debug.Assert(oldId == node.Id);
+                    Debug.Assert(oldId.IsEmpty || _nodes[oldId] == node);
+                    Debug.Assert((!oldId.IsEmpty) || _unnamedNodes[node.Address] == node);
+                    Debug.Assert(oldId.Equals(node.NodeId));
 
                     // Cancel remove
                     _nodes.Remove(newId);
                 }
                 else
                 {
-                    Debug.Assert(oldId == Guid.Empty || _nodes[oldId] == node);
-                    Debug.Assert(oldId != Guid.Empty || _unnamedNodes[node.Address] == node);
-                    Debug.Assert(newId == node.Id);
+                    Debug.Assert(oldId.IsEmpty || _nodes[oldId] == node);
+                    Debug.Assert((!oldId.IsEmpty) || _unnamedNodes[node.Address] == node);
+                    Debug.Assert(newId.Equals(node.NodeId));
 
                     // Remove old id
-                    if (oldId != Guid.Empty)
+                    if (!oldId.IsEmpty)
                     {
                         _nodes.Remove(oldId);
                     }

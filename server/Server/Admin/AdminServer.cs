@@ -27,10 +27,10 @@ namespace Lucky.Home.Admin
             return Task.FromResult(Manager.GetService<DeviceManager>().DeviceTypes);
         }
 
-        public Task<bool> RenameNode(string nodeAddress, Guid oldId, Guid newId)
+        public Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId)
         {
             ITcpNode node;
-            if (oldId == Guid.Empty)
+            if (oldId.IsEmpty)
             {
                 node = _manager.FindNode(TcpNodeAddress.Parse(nodeAddress));
             }
@@ -49,12 +49,10 @@ namespace Lucky.Home.Admin
             }
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task ResetNode(Guid id, string nodeAddress)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task ResetNode(NodeId id, string nodeAddress)
         {
             ITcpNode node;
-            if (id != Guid.Empty)
+            if (!id.IsEmpty)
             {
                 node = _manager.FindNode(id);
             }
@@ -99,7 +97,7 @@ namespace Lucky.Home.Admin
             var systemSink = tcpNode.Sink<ISystemSink>();
             return new Node()
             {
-                Id = tcpNode.Id,
+                NodeId = tcpNode.NodeId,
                 Status = systemSink != null ? systemSink.Status : null,
                 Address = tcpNode.Address.ToString(),
                 Sinks = tcpNode.Sinks.Select(s => s.FourCc).ToArray(),

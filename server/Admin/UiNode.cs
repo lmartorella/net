@@ -19,7 +19,7 @@ namespace Lucky.Home
         {
             Node = node;
             Parent = parent;
-            Name = node.Id.ToString();
+            Name = node.NodeId.ToString();
             Status = node.Status;
             Children = new ObservableCollection<object>(node.Children.Select(n => new UiNode(n, this)));
             IsZombie = node.IsZombie;
