@@ -108,59 +108,80 @@ void interrupt PRIO_TYPE low_isr()
 #endif
 }
 
+static int headerPtr = 0;
+static short size = 0;
+static char str[16];
+
+static void discard(int err) {
+    headerPtr = 0;
+    sprintf(str, "err %d", err);
+    printlnUp(str);
+}
+
 void main() {
     appio_init();
     // Init Ticks on timer0 (low prio) module
     timers_init();
     
-    printlnUp("Serial Repeater");
-    char buf[16];
-    sprintf(buf, "%d baud ", RS485_BAUD);
-    char* point = buf + strlen(buf) - 1;
-    println(buf);
+    char title[20];
+    sprintf(title, "Serial Repeater ");
+    char* point = title + strlen(title) - 1;
+    printlnUp(title);
+    sprintf(str, "%d baud ", RS485_BAUD);
+    println(str);
     
+    rs485_init();
     enableInterrupts();
     
     TICK_TYPE time = TickGet();
-    BOOL headerReady = 0;
-    BYTE header[2];
-    WORD* pSize = (WORD*)header; 
+    BYTE b;
     BYTE data[16];
-    int packetCount = 0;
     
     while (1) {
         TICK_TYPE now = TickGet();
         if (now - time > TICKS_PER_SECOND) {
             *point = *point ^ (' ' ^ '.'); 
-            println(buf);
+            printlnUp(title);
             time = now;
         }
         CLRWDT();
         
-        if (!headerReady) {
-            if (rs485_readAvail() >= 4) {
-                rs485_read(header, 1);
-                if (header[0] == 0x55) {
-                    rs485_read(header, 1);
-                    if (header[0] == 0xAA) {
-                        rs485_read(header, 2);
-                        if (*pSize <= 16) {
-                            headerReady = 1;
-                        }
-                    }
-                }
-            }
-        } else {
-            if (rs485_readAvail() >= *pSize) {
-                // Read data
-                rs485_read(data, *pSize);
-                // Send back
-                rs485_write(0, data, *pSize);
-                headerReady = 0;
+        if (rs485_readAvail() == 0) {
+            continue;
+        }
+        RESET();
+        rs485_read(&b, 1);
 
-                packetCount++;
-                sprintf(data, "%d packets", packetCount);
-                printlnUp(data);
+        switch (headerPtr) {
+        case 0:
+            if (b == 0x55) {
+                headerPtr++;
+            } else {
+                discard(1);
+            }
+            break;
+        case 1:
+            if (b == 0xAA) {
+                headerPtr++;
+            } else {
+                discard(2);
+            }
+            break;
+        case 2:
+            ((BYTE*)&size)[0] = b;
+            headerPtr++;
+            break;
+        case 3:
+            ((BYTE*)&size)[1] = b;
+            headerPtr++;
+            break;
+        default:
+            if (headerPtr - 4 >= size) {
+                sprintf(str, "pack s:%d", size);
+                printlnUp(str);
+            } else {
+                data[headerPtr - 4] = b;
+                headerPtr++;
             }
         }
     }
