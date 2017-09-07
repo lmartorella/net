@@ -56,18 +56,18 @@ void fatal(const char* msg);
 // ******
 #define HAS_RS485
 #define RS485_BUF_SIZE 64
-#define RS485_RCSTA RCSTA1bits
-#define RS485_TXSTA TXSTA1bits
-#define RS485_TXREG TXREG1
-#define RS485_RCREG RCREG1
-#define RS485_PIR_TXIF PIR1bits.TX1IF
-#define RS485_PIR_RCIF PIR1bits.RC1IF
-#define RS485_PIE_TXIE PIE1bits.TX1IE
-#define RS485_PIE_RCIE PIE1bits.RC1IE
-#define RS485_TRIS_TX TRISCbits.RC6
-#define RS485_TRIS_RX TRISCbits.RC7
-#define RS485_TRIS_EN TRISCbits.RC4
-#define RS485_PORT_EN PORTCbits.RC4
+#define RS485_RCSTA RCSTA2bits
+#define RS485_TXSTA TXSTA2bits
+#define RS485_TXREG TXREG2
+#define RS485_RCREG RCREG2
+#define RS485_PIR_TXIF PIR3bits.TX2IF
+#define RS485_PIR_RCIF PIR3bits.RC2IF
+#define RS485_PIE_TXIE PIE3bits.TX2IE
+#define RS485_PIE_RCIE PIE3bits.RC2IE
+#define RS485_TRIS_TX TRISGbits.RG1
+#define RS485_TRIS_RX TRISGbits.RG2
+#define RS485_TRIS_EN TRISGbits.RG0
+#define RS485_PORT_EN PORTGbits.RG0
 #define RS485_BAUD 19200
     // For 9600:
 //#define RS485_INIT_BAUD() \
@@ -76,13 +76,13 @@ void fatal(const char* msg);
 //    SPBRGH1 = 0;\
 //    SPBRG1 = 162
  #define RS485_INIT_BAUD() \
-     TXSTA1bits.BRGH = 1;\
-     BAUDCON1bits.BRG16 = 0;\
-     SPBRGH1 = 0;\
-     SPBRG1 = 80
+     TXSTA2bits.BRGH = 1;\
+     BAUDCON2bits.BRG16 = 0;\
+     SPBRGH2 = 0;\
+     SPBRG2 = 80
 #define RS485_INIT_INT() \
-    IPR1bits.TX1IP = 0; \
-    IPR1bits.RC1IP = 0
+    IPR3bits.TX2IP = 0; \
+    IPR3bits.RC2IP = 0
 
 
 #endif	/* CIUCCIA_H */

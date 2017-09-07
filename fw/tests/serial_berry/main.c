@@ -146,6 +146,17 @@ static void gpio_write(Mmap* map, unsigned gpio, unsigned value)
     }
 }
 
+#define US_PER_BYTE (1000000ul / 19200 * 11)
+// time to wait before engaging the channel (after other station finished to transmit)
+#define ENGAGE_CHANNEL_TIMEOUT (US_PER_BYTE * 1)  
+// additional time to wait after channel engaged to start transmit
+// Consider that the glitch produced engaging the channel can be observed as a FRAMEERR by other stations
+// So use a long time here to avoid FERR to consume valid data
+#define START_TRANSMIT_TIMEOUT (US_PER_BYTE * 3)
+// time to wait before releasing the channel = 2 bytes,
+// but let's wait an additional byte since USART is free when still transmitting the last byte.
+#define DISENGAGE_CHANNEL_TIMEOUT (US_PER_BYTE * (2 + 1))
+
 int main() {
     const uint32_t pi_peri_phys = 0x20000000;
 
@@ -159,23 +170,27 @@ int main() {
     uart_init(uartMap, 19200, REG_LCRH_EPS);
     
     // Enable write channel
+    usleep(ENGAGE_CHANNEL_TIMEOUT);
     gpio_setMode(gpioMap, 2, GPIO_MODE_OUTPUT);
     gpio_write(gpioMap, 2, 1);
+    usleep(START_TRANSMIT_TIMEOUT);
    
     // Writes packet
     mmap_wr(uartMap, REG_DR, 0x55);
     mmap_wr(uartMap, REG_DR, 0xAA);
-    mmap_wr(uartMap, REG_DR, 0x01);
+    mmap_wr(uartMap, REG_DR, 0x02);
     mmap_wr(uartMap, REG_DR, 0x00);
     mmap_wr(uartMap, REG_DR, 0x33);
+    mmap_wr(uartMap, REG_DR, 0x44);
+    
+    // Wait for UART to be free
+    while (mmap_rd(uartMap, REG_FR) & REG_FR_BUSY);
+
+    usleep(DISENGAGE_CHANNEL_TIMEOUT);
+    gpio_write(gpioMap, 2, 0);
 
     printf("Packet with REG_LCRH_EPS written, 1 byte\n");
-    
-//    init(0);
-
-    // Writes 0x1
-//    mmap_wr(REG_DR, 1);
-    
+       
     mmap_destroy(uartMap);
     mmap_destroy(gpioMap);
     return 0;

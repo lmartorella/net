@@ -40,9 +40,64 @@
 // No code protection
 #pragma config CP0 = OFF
 
-// Long (callable) version of fatal
-void fatal(const char* str)
+// The pointer is pointing to ROM space that will not be reset
+// otherwise after the RESET the variable content can be lost.
+static persistent char g_exception[3];
+
+// Check RCON and STKPTR register for anormal reset cause
+void sys_storeResetReason()
 {
+    // Disable all A/D channels
+    ADCON1 |= 0xF;
+    
+    if (!RCONbits.NOT_RI)
+    {
+        // Software exception. 
+        // Obtain last reason from appio.h 
+        g_resetReason = RESET_EXC;
+        g_lastException = *(const char**)(&g_exception[0]);
+        g_exception[0] = g_exception[1] = g_exception[2] = 0;
+        RCONbits.NOT_RI = 1;
+    }
+    else if (!RCONbits.NOT_POR)
+    {
+        // Normal Power-on startup. Ok.
+        g_resetReason = RESET_POWER;
+        RCONbits.NOT_POR = 1;
+        RCONbits.NOT_BOR = 1;
+    }    
+    else if (!RCONbits.NOT_BOR)
+    {
+        // Brown-out reset. Low voltage.
+        g_resetReason = RESET_BROWNOUT;
+        RCONbits.NOT_POR = 1;
+        RCONbits.NOT_BOR = 1;
+    }    
+    else if (!RCONbits.NOT_TO)
+    {
+        // Watchdog reset. Loop detected.
+        g_resetReason = RESET_WATCHDOG;
+        RCONbits.NOT_TO = 1;
+    }
+    else if (STKPTRbits.STKFUL || STKPTRbits.STKUNF)
+    {
+        // Stack underrun/overrun reset. 
+        g_resetReason = RESET_STACKFAIL;
+        STKPTRbits.STKFUL = 0;
+        STKPTRbits.STKUNF = 0;
+    }
+    else
+    {
+        // Else it was reset manually (MCLR)
+        g_resetReason = RESET_MCLR;
+    }
+    CLRWDT();
+}
+
+// Long (callable) version of fatal
+void fatal2(const char* str)
+{
+    *((const char**)(&g_exception[0])) = str;
     wait30ms();
     RESET(); // generates RCON.RI
 }
@@ -109,7 +164,7 @@ void interrupt PRIO_TYPE low_isr()
 }
 
 static int headerPtr = 0;
-static short size = 0;
+static WORD size = 0;
 static char str[16];
 
 static void discard(int err) {
@@ -119,9 +174,16 @@ static void discard(int err) {
 }
 
 void main() {
+    sys_storeResetReason();
+    
     appio_init();
     // Init Ticks on timer0 (low prio) module
     timers_init();
+    
+    RS485_TRIS_EN = 0;
+    RS485_PORT_EN = 0;
+
+    wait1s();
     
     char title[20];
     sprintf(title, "Serial Repeater ");
@@ -139,7 +201,7 @@ void main() {
     
     while (1) {
         TICK_TYPE now = TickGet();
-        if (now - time > TICKS_PER_SECOND) {
+        if (now - time > (TICKS_PER_SECOND * 2)) {
             *point = *point ^ (' ' ^ '.'); 
             printlnUp(title);
             time = now;
@@ -149,7 +211,6 @@ void main() {
         if (rs485_readAvail() == 0) {
             continue;
         }
-        RESET();
         rs485_read(&b, 1);
 
         switch (headerPtr) {

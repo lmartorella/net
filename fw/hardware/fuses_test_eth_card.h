@@ -110,7 +110,6 @@ void fatal(const char* msg);
 #define RS485_TXSTA TXSTA2bits
 #define RS485_TXREG TXREG2
 #define RS485_RCREG RCREG2
-#define RS485_IPR IPR3bits
 #define RS485_PIR_TXIF PIR3bits.TX2IF
 #define RS485_PIR_RCIF PIR3bits.RC2IF
 #define RS485_PIE_TXIE PIE3bits.TX2IE
@@ -132,8 +131,8 @@ void fatal(const char* msg);
      SPBRGH2 = 0;\
      SPBRG2 = 80
 #define RS485_INIT_INT() \
-    RS485_IPR.TX2IP = 0; \
-    RS485_IPR.RC2IP = 0
+    IPR3bits.TX2IP = 0; \
+    IPR3bits.RC2IP = 0
     
 // *****
 // Tick timer source
