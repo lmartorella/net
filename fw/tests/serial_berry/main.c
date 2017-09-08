@@ -35,11 +35,15 @@ enum {
 #define REG_FR_RXFE 0x10
 #define REG_FR_BUSY 0x08
 
+// Sticky parity
 #define REG_LCRH_SPS   0x80
 #define REG_LCRH_WLEN8   0x60
 #define REG_LCRH_FEN   0x10
 #define REG_LCRH_EPS   0x04
 #define REG_LCRH_PEN   0x02
+
+#define REG_LCRH_SPS_1 (REG_LCRH_SPS | 0)
+#define REG_LCRH_SPS_0 (REG_LCRH_SPS | REG_LCRH_EPS)
 
 #define REG_CR_RXE   0x200
 #define REG_CR_TXE   0x100
@@ -121,7 +125,7 @@ static void uart_init(Mmap* map, int baud, uint32_t parity) {
     // 4. Reprogram the Control Register, UART_LCR, writing xBRD registers and the LCRH at the end (strobe)
     mmap_wr(map, REG_IBRD, ibrd);
     mmap_wr(map, REG_FBRD, fbrd);
-    mmap_wr(map, REG_LCRH, REG_LCRH_SPS | REG_LCRH_WLEN8 | REG_LCRH_FEN | parity | REG_LCRH_PEN);
+    mmap_wr(map, REG_LCRH, REG_LCRH_WLEN8 | REG_LCRH_FEN | parity | REG_LCRH_PEN);
     // 5. Enable the UART.
     mmap_wr(map, REG_CR, REG_CR_TXE | REG_CR_RXE | REG_CR_UARTEN);
 }
@@ -181,7 +185,10 @@ int main() {
     mmap_wr(uartMap, REG_IMSC, 0);
     mmap_wr(uartMap, REG_ICR, 0);
     
-    uart_init(uartMap, 19200, REG_LCRH_EPS);
+    // Parity sticky to 1
+    int parity = REG_LCRH_SPS_1;
+    
+    uart_init(uartMap, 19200, parity);
     
     // Enable write channel
     usleep(ENGAGE_CHANNEL_TIMEOUT);
@@ -191,6 +198,7 @@ int main() {
    
     // Writes packet
     char* data = strdup("luxsoftware17");
+    char* parStr = strdup(data);
     short size = strlen(data);
     
     mmap_wr(uartMap, REG_DR, 0x55);
@@ -229,11 +237,15 @@ int main() {
         if (rx & REG_RD_FE) {        
             fatalw("FE", rx);
         }
+        int pe = (rx & REG_RD_PE);
+        int par = (parity == REG_LCRH_SPS_1) ? !pe : pe;
         data[i] = rx & 0xff;
+        parStr[i] = par ? '1' : '0';
     }
     printf("Received %hd bytes\n", size);
     fflush(stdout);
-    printf("RX: %s\n", data);
+    printf("RX:  %s\n", data);
+    printf("PAR: %s\n", parStr);
        
     mmap_destroy(uartMap);
     mmap_destroy(gpioMap);

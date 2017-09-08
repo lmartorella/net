@@ -206,6 +206,8 @@ void main() {
     TICK_TYPE time = TickGet();
     BYTE b;
     BYTE data[16];
+    BOOL parity = FALSE;
+    
     headerPtr = 0;
     
     while (1) {
@@ -253,7 +255,10 @@ void main() {
             headerPtr++;
             break;
         default:
-            data[headerPtr - 4] = toUpper(b);
+            if (rs485_lastRc9) {
+                b = toUpper(b);
+            }
+            data[headerPtr - 4] = b;
             headerPtr++;
             if (headerPtr - 4 >= size) {
                 sprintf(str, "pack s:%d", size);
@@ -261,7 +266,8 @@ void main() {
                 sprintf(str, "%02x %02x", data[0], data[1]);
                 println(str);
                 // Send data back
-                rs485_write(TRUE, data, size);
+                rs485_write(parity, data, size);
+                parity = !parity;
                 headerPtr = 0;
             }
             break;
