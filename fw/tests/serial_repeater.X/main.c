@@ -95,7 +95,7 @@ void sys_storeResetReason()
 }
 
 // Long (callable) version of fatal
-void fatal2(const char* str)
+void fatal(const char* str)
 {
     *((const char**)(&g_exception[0])) = str;
     wait30ms();
@@ -173,6 +173,14 @@ static void discard(int err) {
     printlnUp(str);
 }
 
+static BYTE toUpper(BYTE b) {
+    if (b >= 'a' && b <= 'z') {
+        return b - ('a' - 'A');
+    } else {
+        return b;
+    }
+}
+
 void main() {
     sys_storeResetReason();
     
@@ -198,16 +206,24 @@ void main() {
     TICK_TYPE time = TickGet();
     BYTE b;
     BYTE data[16];
+    headerPtr = 0;
     
     while (1) {
         TICK_TYPE now = TickGet();
-        if (now - time > (TICKS_PER_SECOND * 2)) {
+        if (now - time > (TICKS_PER_SECOND * 1.5)) {
             *point = *point ^ (' ' ^ '.'); 
             printlnUp(title);
             time = now;
         }
         CLRWDT();
+        rs485_poll();
         
+        if (rs485_state != RS485_LINE_RX) {
+            // TX mode...
+            continue;
+        }
+
+        // Rx mode. Data?
         if (rs485_readAvail() == 0) {
             continue;
         }
@@ -237,13 +253,18 @@ void main() {
             headerPtr++;
             break;
         default:
+            data[headerPtr - 4] = toUpper(b);
+            headerPtr++;
             if (headerPtr - 4 >= size) {
                 sprintf(str, "pack s:%d", size);
                 printlnUp(str);
-            } else {
-                data[headerPtr - 4] = b;
-                headerPtr++;
+                sprintf(str, "%02x %02x", data[0], data[1]);
+                println(str);
+                // Send data back
+                rs485_write(TRUE, data, size);
+                headerPtr = 0;
             }
+            break;
         }
     }
 }

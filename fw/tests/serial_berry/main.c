@@ -45,6 +45,14 @@ enum {
 #define REG_CR_TXE   0x100
 #define REG_CR_UARTEN   0x01
 
+#define REG_ICR_RXIC    0x10
+
+#define REG_RIS_RXRIS 0x10
+
+#define REG_RD_FE   0x100
+#define REG_RD_PE   0x200
+#define REG_RD_BE   0x400
+#define REG_RD_OE   0x800
 
 static void fatal(const char* err) {
     fprintf(stderr, "%s: %d\n", err, errno);
@@ -115,7 +123,7 @@ static void uart_init(Mmap* map, int baud, uint32_t parity) {
     mmap_wr(map, REG_FBRD, fbrd);
     mmap_wr(map, REG_LCRH, REG_LCRH_SPS | REG_LCRH_WLEN8 | REG_LCRH_FEN | parity | REG_LCRH_PEN);
     // 5. Enable the UART.
-    mmap_wr(map, REG_CR, REG_CR_TXE | REG_CR_UARTEN);
+    mmap_wr(map, REG_CR, REG_CR_TXE | REG_CR_RXE | REG_CR_UARTEN);
 }
 
 typedef enum {
@@ -157,6 +165,12 @@ static void gpio_write(Mmap* map, unsigned gpio, unsigned value)
 // but let's wait an additional byte since USART is free when still transmitting the last byte.
 #define DISENGAGE_CHANNEL_TIMEOUT (US_PER_BYTE * (2 + 1))
 
+static void fatalw(const char* str, uint32_t data) {
+    //char buf[256];
+    printf("%s: 0x%08x\n", str, data);
+    //fatal(buf);
+}
+
 int main() {
     const uint32_t pi_peri_phys = 0x20000000;
 
@@ -176,12 +190,21 @@ int main() {
     usleep(START_TRANSMIT_TIMEOUT);
    
     // Writes packet
+    char* data = strdup("luxsoftware17");
+    short size = strlen(data);
+    
     mmap_wr(uartMap, REG_DR, 0x55);
     mmap_wr(uartMap, REG_DR, 0xAA);
-    mmap_wr(uartMap, REG_DR, 0x02);
-    mmap_wr(uartMap, REG_DR, 0x00);
-    mmap_wr(uartMap, REG_DR, 0x33);
-    mmap_wr(uartMap, REG_DR, 0x44);
+    mmap_wr(uartMap, REG_DR, size & 0xff);
+    mmap_wr(uartMap, REG_DR, (size >> 8) & 0xff);
+    for (int i = 0; i < size; i++) {
+        mmap_wr(uartMap, REG_DR, data[i]);
+    }
+
+    // Empty RX FIFO
+    while (!(mmap_rd(uartMap, REG_FR) & REG_FR_RXFE)) {
+        mmap_rd(uartMap, REG_DR);
+    }
     
     // Wait for UART to be free
     while (mmap_rd(uartMap, REG_FR) & REG_FR_BUSY);
@@ -189,7 +212,28 @@ int main() {
     usleep(DISENGAGE_CHANNEL_TIMEOUT);
     gpio_write(gpioMap, 2, 0);
 
-    printf("Packet with REG_LCRH_EPS written, 1 byte\n");
+    printf("Packet with REG_LCRH_EPS written, %hd byte\n", size);
+    
+    // Now receive data
+    for (int i = 0; i < size; i++) {
+        // Wait for the interrupt to be set
+        while (mmap_rd(uartMap, REG_FR) & REG_FR_RXFE);
+        // Read data
+        uint32_t rx = mmap_rd(uartMap, REG_DR);
+        if (rx & REG_RD_OE) {        
+            fatalw("OE", rx);
+        }
+        if (rx & REG_RD_BE) {        
+            fatalw("BE", rx);
+        }
+        if (rx & REG_RD_FE) {        
+            fatalw("FE", rx);
+        }
+        data[i] = rx & 0xff;
+    }
+    printf("Received %hd bytes\n", size);
+    fflush(stdout);
+    printf("RX: %s\n", data);
        
     mmap_destroy(uartMap);
     mmap_destroy(gpioMap);
