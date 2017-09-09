@@ -3,7 +3,9 @@
 #include "appio.h"
 #include "persistence.h"
 #include "protocol.h"
+#include "hardware/tick.h"
 
+#ifdef __XC8
 void interrupt PRIO_TYPE low_isr()
 {
     // Update tick timers at ~Khz freq
@@ -12,6 +14,7 @@ void interrupt PRIO_TYPE low_isr()
     rs485_interrupt();
 #endif
 }
+#endif
 
 void main()
 {

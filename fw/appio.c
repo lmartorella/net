@@ -1,6 +1,9 @@
 #include "pch.h"
-#include "hardware/cm1602.h"
 #include "appio.h"
+
+#ifdef HAS_CM1602
+#include "hardware/cm1602.h"
+#endif
 
 const char* g_lastException;
 RESET_REASON g_resetReason;

@@ -15,8 +15,6 @@ typedef unsigned long DWORD;
 typedef unsigned char bit;
 typedef unsigned char BOOL;
 #define __PACK
-#define interrupt
-#define PRIO_TYPE
 #define FALSE 0
 #define TRUE 1
 // For netserver use
@@ -30,8 +28,6 @@ typedef unsigned char BOOL;
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef NETSERVER_PRJ
-
 #include "hardware/hw.h"
 #include "hardware/utilities.h"
 #include "guid.h"
@@ -39,6 +35,8 @@ typedef unsigned char BOOL;
 #ifdef __XC8
 // Size optimized
 bit memcmp8(void* p1, void* p2, BYTE size);
+// Internal core clock drives timer with 1:256 prescaler
+#define TICKS_PER_SECOND		(TICK_TYPE)((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
 #endif
 
 #include "hardware/tick.h"
@@ -79,13 +77,6 @@ bit memcmp8(void* p1, void* p2, BYTE size);
 #ifdef HAS_EEPROM
 #include "hardware/eeprom.h"
 #endif
-
-#else
-#include <ext_config.h>
-#endif
-
-// Internal core clock drives timer with 1:256 prescaler
-#define TICKS_PER_SECOND		(TICK_TYPE)((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
 
 #endif	/* PCH_H */
 

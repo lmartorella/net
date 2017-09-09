@@ -6,13 +6,13 @@
 // Define IP and protocol
 #define HAS_IP
 #define HAS_BUS
-
-// But not rs485
-#undef HAS_RS485
+#define HAS_RS485
 
 #define SERVER_CONTROL_UDP_PORT 17008
 #define CLIENT_TCP_PORT 20000
 
+#define RS485_BAUD 19200
+#define RS485_BUF_SIZE 64
 
 typedef DWORD TICK_TYPE;
 // Using gettime

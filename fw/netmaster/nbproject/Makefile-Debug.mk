@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/bus_server.o \
 	${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o \
+	${OBJECTDIR}/_ext/e5d2b957/rs485_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o \
 	${OBJECTDIR}/_ext/5c0/ip_client.o \
 	${OBJECTDIR}/_ext/5c0/main.o \
@@ -61,7 +62,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=
+LDLIBSOPTIONS=-lm
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -90,6 +91,11 @@ ${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o: ../hardware/ip_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
 	${RM} "$@.d"
 	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o ../hardware/ip_raspbian.c
+
+${OBJECTDIR}/_ext/e5d2b957/rs485_raspbian.o: ../hardware/rs485_raspbian.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
+	${RM} "$@.d"
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/rs485_raspbian.o ../hardware/rs485_raspbian.c
 
 ${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o: ../hardware/tick_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
