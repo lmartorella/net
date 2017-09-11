@@ -3,7 +3,7 @@
 
 #include "bus.h"
 #ifdef HAS_RS485
-#include "hardware/rs485.h"
+#include "rs485.h"
 #endif
 
 #ifdef HAS_BUS

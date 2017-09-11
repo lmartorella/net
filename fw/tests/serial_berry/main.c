@@ -250,4 +250,3 @@ int main() {
     mmap_destroy(gpioMap);
     return 0;
 }
-

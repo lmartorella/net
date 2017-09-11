@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../../appio.h"
 #include "../../hardware/tick.h"
-#include "../../hardware/rs485.h"
+#include "../../rs485.h"
 
 // ==== ETH CARD based on 18f87j60
 

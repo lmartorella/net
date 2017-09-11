@@ -39,12 +39,13 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/bus_server.o \
 	${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o \
-	${OBJECTDIR}/_ext/e5d2b957/rs485_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o \
+	${OBJECTDIR}/_ext/e5d2b957/uart_raspbian.o \
 	${OBJECTDIR}/_ext/5c0/ip_client.o \
 	${OBJECTDIR}/_ext/5c0/main.o \
 	${OBJECTDIR}/_ext/5c0/persistence.o \
 	${OBJECTDIR}/_ext/5c0/protocol.o \
+	${OBJECTDIR}/_ext/5c0/rs485.o \
 	${OBJECTDIR}/_ext/5c0/sinks.o
 
 
@@ -92,15 +93,15 @@ ${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o: ../hardware/ip_raspbian.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o ../hardware/ip_raspbian.c
 
-${OBJECTDIR}/_ext/e5d2b957/rs485_raspbian.o: ../hardware/rs485_raspbian.c
-	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/rs485_raspbian.o ../hardware/rs485_raspbian.c
-
 ${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o: ../hardware/tick_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o ../hardware/tick_raspbian.c
+
+${OBJECTDIR}/_ext/e5d2b957/uart_raspbian.o: ../hardware/uart_raspbian.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/e5d2b957/uart_raspbian.o ../hardware/uart_raspbian.c
 
 ${OBJECTDIR}/_ext/5c0/ip_client.o: ../ip_client.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
@@ -121,6 +122,11 @@ ${OBJECTDIR}/_ext/5c0/protocol.o: ../protocol.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/protocol.o ../protocol.c
+
+${OBJECTDIR}/_ext/5c0/rs485.o: ../rs485.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/rs485.o ../rs485.c
 
 ${OBJECTDIR}/_ext/5c0/sinks.o: ../sinks.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0

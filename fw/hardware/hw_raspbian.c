@@ -19,6 +19,6 @@ void sys_storeResetReason()
 { }
 
 void fatal(const char* str) {
-    fprintf(stderr, "%s", str);
+    fprintf(stderr, "FATAL: %s\n", str);
     exit(1);
 }

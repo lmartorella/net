@@ -66,7 +66,7 @@ bit memcmp8(void* p1, void* p2, BYTE size);
 #include "dcf77.h"
 #endif
 #ifdef HAS_RS485
-#include "hardware/rs485.h"
+#include "rs485.h"
 #endif
 #ifdef HAS_DIGIO
 #include "hardware/digio.h"

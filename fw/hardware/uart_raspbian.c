@@ -1,5 +1,5 @@
 #include "../pch.h"
-#include "rs485.h"
+#include "uart.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -22,10 +22,10 @@ typedef enum {
     UART_REG_LCRH = 0x0b,
     UART_REG_CR = 0x0c,
     //UART_REG_IFLS = 0x0d,
-    //UART_REG_IMSC = 0x0e,
+    UART_REG_IMSC = 0x0e,
     //UART_REG_RIS = 0x0f,
     //UART_REG_MIS = 0x10,
-    //UART_REG_ICR = 0x11,
+    UART_REG_ICR = 0x11,
     //UART_REG_DMACR = 0x12
 } UART_REGS;
 
@@ -140,66 +140,131 @@ static void gpio_write(Mmap* map, unsigned gpio, unsigned value)
     }
 }
 
-static void uart_init(Mmap* map, int baud, uint32_t parity) {
-    double fb = 48000000.0 / (16.0 * baud);
-    uint32_t ibrd = (uint32_t)floor(fb);
-    uint32_t fbrd = (uint32_t)(fmod(fb, 1.0) * 64);
+static uint32_t ibrd, fbrd;
+static Mmap* uartMap;
+static Mmap* gpioMap;
 
+static BOOL s_rc9;
+static BOOL s_txEn;
+static BOOL s_rxEn;
+
+static void uart_reset() {
     // 1. Disable UART
-    mmap_wr(map, UART_REG_CR, 0);
+    mmap_wr(uartMap, UART_REG_CR, 0);
     // 2. Wait for the end of transmission or reception of the current character
-    while (mmap_rd(map, UART_REG_FR) & UART_REG_FR_BUSY);
+    while (mmap_rd(uartMap, UART_REG_FR) & UART_REG_FR_BUSY);
     // 3. Flush the transmit FIFO by setting the FEN bit to 0 in the Line Control Register, UART_LCRH
-    mmap_wr(map, UART_REG_LCRH, 0);
+    mmap_wr(uartMap, UART_REG_LCRH, 0);
     // 4. Reprogram the Control Register, UART_LCR, writing xBRD registers and the LCRH at the end (strobe)
-    mmap_wr(map, UART_REG_IBRD, ibrd);
-    mmap_wr(map, UART_REG_FBRD, fbrd);
-    mmap_wr(map, UART_REG_LCRH, UART_REG_LCRH_WLEN8 | UART_REG_LCRH_FEN | parity | UART_REG_LCRH_PEN);
+    mmap_wr(uartMap, UART_REG_IBRD, ibrd);
+    mmap_wr(uartMap, UART_REG_FBRD, fbrd);
+    mmap_wr(uartMap, UART_REG_LCRH, UART_REG_LCRH_WLEN8 | UART_REG_LCRH_FEN | (s_rc9 ? UART_REG_LCRH_SPS_1 : UART_REG_LCRH_SPS_0) | UART_REG_LCRH_PEN);
     // 5. Enable the UART.
-    mmap_wr(map, UART_REG_CR, UART_REG_CR_TXE | UART_REG_CR_RXE | UART_REG_CR_UARTEN);
+    uint32_t en = UART_REG_CR_UARTEN;
+    if (s_txEn) en = en | UART_REG_CR_TXE;
+    if (s_rxEn) en = en | UART_REG_CR_RXE;
+    mmap_wr(uartMap, UART_REG_CR, en);
 }
 
-#define US_PER_BYTE (1000000ul / BAUD * 11)
-// time to wait before engaging the channel (after other station finished to transmit)
-#define ENGAGE_CHANNEL_TIMEOUT (US_PER_BYTE * 1)  
-// additional time to wait after channel engaged to start transmit
-// Consider that the glitch produced engaging the channel can be observed as a FRAMEERR by other stations
-// So use a long time here to avoid FERR to consume valid data
-#define START_TRANSMIT_TIMEOUT (US_PER_BYTE * 3)
-// time to wait before releasing the channel = 2 bytes,
-// but let's wait an additional byte since USART is free when still transmitting the last byte.
-#define DISENGAGE_CHANNEL_TIMEOUT (US_PER_BYTE * (2 + 1))
+void uart_init() {
+    // TODO: get the peripherial frequency
+    double fb = 48000000.0 / (16.0 * RS485_BAUD);
+    ibrd = (uint32_t)floor(fb);
+    fbrd = (uint32_t)(fmod(fb, 1.0) * 64);
 
-bit rs485_over;
-bit rs485_close;
-bit rs485_master;
-bit rs485_lastRc9;
-bit rs485_skipData;
-RS485_STATE rs485_state;
-
-void rs485_init() {
+    s_rc9 = 0;
+    s_txEn = 0;
+    s_rxEn = 0;
     
-}
+    const uint32_t pi_peri_phys = 0x20000000;
+    uartMap = mmap_create((pi_peri_phys + 0x00201000), 0x90);
+    gpioMap = mmap_create((pi_peri_phys + 0x00200000), 0xB4);
 
-void rs485_poll() {
+    // Disable UART interrupts (avoid clash with OS)
+    mmap_wr(uartMap, UART_REG_IMSC, 0);
+    mmap_wr(uartMap, UART_REG_ICR, 0);
     
+    // MAX485 pin as output
+    gpio_setMode(gpioMap, 2, GPIO_MODE_OUTPUT);
 }
 
-void rs485_write(BOOL address, const BYTE* data, BYTE size) {
-    
+// MAX485 levels
+#define EN_TRANSMIT 1
+#define EN_RECEIVE 0
+
+void uart_trasmit() {
+    gpio_write(gpioMap, 2, EN_TRANSMIT);
 }
 
-bit rs485_read(BYTE* data, BYTE size) {
-    return 0;
+void uart_receive() {
+    gpio_write(gpioMap, 2, EN_RECEIVE);
 }
 
-BYTE rs485_readAvail() {
-    return 0;
+void uart_set_9b(BOOL b) {
+    if (!b == !s_rc9) {
+        s_rc9 = b;
+        uart_reset();
+    }
 }
 
-BYTE rs485_writeAvail() {
-    return 0;
+void uart_write(BYTE b) {
+    mmap_wr(uartMap, UART_REG_DR, b);
 }
 
-void rs485_waitDisengageTime() {
+void uart_read(BYTE* data, UART_RX_MD* md) {
+    // Read data
+    uint32_t rx = mmap_rd(uartMap, UART_REG_DR);
+    md->oerr = (rx & UART_REG_RD_OE);
+    md->ferr = (rx & UART_REG_RD_FE);
+    int perr = (rx & UART_REG_RD_PE);
+    md->rc9 = s_rc9 ? !perr : perr;
+    *data = rx & 0xff;
 }
+
+BOOL uart_tx_fifo_empty() {
+    return s_txEn && (mmap_rd(uartMap, UART_REG_FR) & UART_REG_FR_TXFE);
+}
+
+BOOL uart_rx_fifo_empty() {
+    return s_rxEn && (mmap_rd(uartMap, UART_REG_FR) & UART_REG_FR_RXFE);
+}
+
+static BOOL s_txFifoMask;
+static BOOL s_rxFifoMask;
+
+BOOL uart_tx_fifo_empty_get_mask() {
+    return s_txFifoMask;    
+}
+
+BOOL uart_rx_fifo_empty_get_mask() {
+    return s_rxFifoMask;    
+}
+
+void uart_tx_fifo_empty_set_mask(BOOL b) {
+    s_txFifoMask = b;
+}
+
+void uart_rx_fifo_empty_set_mask(BOOL b) {
+    s_rxFifoMask = b;
+}
+
+void uart_enable_tx() {
+    s_txEn = TRUE;
+    uart_reset();
+}
+
+void uart_disable_tx() {
+    s_txEn = FALSE;
+    uart_reset();
+}
+
+void uart_enable_rx() {
+    s_rxEn = TRUE;
+    uart_reset();
+}
+
+void uart_disable_rx() {
+    s_rxEn = FALSE;
+    uart_reset();
+}
+

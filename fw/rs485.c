@@ -1,13 +1,10 @@
-#include "../pch.h"
+#include "pch.h"
 #include "rs485.h"
-#include "tick.h"
-#include "../appio.h"
-#include "leds.h"
+#include "hardware/tick.h"
+#include "hardware/uart.h"
+#include "appio.h"
 
 #ifdef HAS_RS485
-
-#define EN_TRANSMIT 1
-#define EN_RECEIVE 0
 
 #undef ETH_DEBUG_LINES
 
@@ -32,10 +29,8 @@ bit rs485_close;
 // When set after a write operation, remain in TX state when data finishes until next write operation
 bit rs485_master;
 
-static bit s_ferr;
-static bit s_lastrc9;
-static bit s_oerr;
 static bit s_lastTx;
+static bit s_oerr;
 
 static TICK_TYPE s_lastTick;
 
@@ -53,22 +48,9 @@ static void rs485_startRead();
 
 void rs485_init()
 {
-    // Enable EUSART2 on PIC18f
-    RS485_RCSTA.SPEN = 1;
-    RS485_RCSTA.RX9 = 1;
-    RS485_TXSTA.SYNC = 0;
-    RS485_TXSTA.TX9 = 1;
-    
-    RS485_INIT_BAUD();
-    
-    // Enable ports
-    RS485_TRIS_RX = 1;
-    RS485_TRIS_TX = 0;
-    
-    // Enable control ports
-    RS485_TRIS_EN = 0;
-    RS485_PORT_EN = EN_RECEIVE;
-    
+    uart_init();
+    uart_receive();
+   
 #ifdef ETH_DEBUG_LINES
     TRISDbits.RD0 = 0;
 #endif
@@ -112,14 +94,14 @@ BYTE rs485_writeAvail()
 // Feed more data, read at read pointer and then increase
 // and re-enable interrupts now
 #define writeByte() \
-    RS485_TXREG = *(s_readPtr++); \
-    ADJUST_PTR(s_readPtr); \
-    RS485_PIE_TXIE = 1;
+    uart_write(*(s_readPtr++)); \
+    uart_tx_fifo_empty_set_mask(TRUE); \
+    ADJUST_PTR(s_readPtr);
 
 void rs485_interrupt()
 {
-    // Empty TX buffer. Check for more data
-    if (RS485_PIR_TXIF && RS485_PIE_TXIE) {
+    // Empty TX buffer? Check for more data
+    if (uart_tx_fifo_empty() && uart_tx_fifo_empty_get_mask()) {
         do {
             CLRWDT();
             if (_rs485_readAvail() > 0) {
@@ -128,19 +110,20 @@ void rs485_interrupt()
             }
             else if (rs485_master) {
                 // Disable interrupt but remain in write mode
-                RS485_PIE_TXIE = 0;
+                uart_tx_fifo_empty_set_mask(FALSE);
                 break;
             }
             else if (rs485_over) {
                 rs485_over = 0;
                 // Send OVER byte
-                RS485_TXSTA.TX9D = 1;
-                RS485_TXREG = rs485_close ? RS485_CCHAR_CLOSE : RS485_CCHAR_OVER;
+                uart_set_9b(1);
+                uart_write(rs485_close ? RS485_CCHAR_CLOSE : RS485_CCHAR_OVER);
+                uart_tx_fifo_empty_set_mask(TRUE);
             } 
             else {
                 // NO MORE data to transmit
-                // TX2IF cannot be cleared, shut IE 
-                RS485_PIE_TXIE = 0;
+                // TX2IF cannot be cleared, shut IE
+                uart_tx_fifo_empty_set_mask(FALSE);
                 // goto first phase of tx end
                 s_lastTx = 1;
 #ifdef ETH_DEBUG_LINES
@@ -148,33 +131,33 @@ void rs485_interrupt()
 #endif
                 break;
             }
-        } while (RS485_PIR_TXIF);
+        } while (uart_tx_fifo_empty());
     }
-    else if (RS485_PIR_RCIF && RS485_PIE_RCIE) {
+    else if (uart_rx_fifo_empty() && uart_rx_fifo_empty_get_mask()) {
         // Data received
         do {
             CLRWDT();
-            // Check for errors BEFORE reading RCREG
-            if (RS485_RCSTA.OERR) {
-                s_oerr = 1;
+            
+            BYTE data;
+            UART_RX_MD md;
+
+            uart_read(&data, &md);
+            
+            if (md.oerr) {
                 // Disable IE otherwise the interrupt will loop
-                RS485_PIE_RCIE = 0;
+                s_oerr = 1;
+                uart_rx_fifo_empty_set_mask(FALSE);
                 return;
             }
-            s_ferr = RS485_RCSTA.FERR;
-
-            // read data to reset IF and FERR
-            s_lastrc9 = RS485_RCSTA.RX9D;
-            BYTE data = RS485_RCREG;
             
             // if s_ferr don't disengage read, only set the flag, in order to not lose next bytes
             // Only read data (0) if enabled
-            if (!s_ferr && (s_lastrc9 || !rs485_skipData)) {
-                rs485_lastRc9 = s_lastrc9;
+            if (!md.ferr && (md.rc9 || !rs485_skipData)) {
+                rs485_lastRc9 = md.rc9;
                 *(s_writePtr++) = data;
                 ADJUST_PTR(s_writePtr);
             }
-        } while (RS485_PIR_RCIF);
+        } while (uart_rx_fifo_empty());
     }
 }
 
@@ -202,7 +185,7 @@ void rs485_poll()
                 // Engage
                 rs485_state = RS485_LINE_WAIT_FOR_START_TRANSMIT;
                 // Enable RS485 driver
-                RS485_PORT_EN = EN_TRANSMIT;
+                uart_trasmit();
                 s_lastTick = TickGet();
             }
             break;
@@ -216,7 +199,7 @@ void rs485_poll()
                     writeByte();
                 } else {
                     // Enable interrupts now to eventually change state
-                    RS485_PIE_TXIE = 1;
+                    uart_tx_fifo_empty_set_mask(TRUE);
                 }
             }
             break;
@@ -240,19 +223,19 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     // Reset reader, if in progress
     if (rs485_state == RS485_LINE_RX) {
         // Truncate reading
-        RS485_RCSTA.CREN = 0;
-        RS485_PIE_RCIE = 0;
+        uart_disable_rx();
+        uart_rx_fifo_empty_set_mask(0);
         s_readPtr = s_writePtr = s_buffer;
 
         // Enable UART transmit. This will trigger the TXIF, but don't enable it now.
-        RS485_TXSTA.TXEN = 1;
+        uart_enable_tx();
 
         rs485_state = RS485_LINE_WAIT_FOR_ENGAGE;
         s_lastTick = TickGet();
     }
 
     // Disable interrupts
-    RS485_PIE_TXIE = 0;
+    uart_tx_fifo_empty_set_mask(FALSE);
 
     if (size > _rs485_writeAvail()) {
         // Overflow error
@@ -268,7 +251,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
     }
 
     // 9-bit address
-    RS485_TXSTA.TX9D = address;
+    uart_set_9b(address);
 
     // Schedule trasmitting, if not yet ready
     switch (rs485_state) {
@@ -279,7 +262,7 @@ void rs485_write(BOOL address, const BYTE* data, BYTE size)
             break;
         case RS485_LINE_TX:
             // Was in transmit state: reenable TX feed interrupt
-            RS485_PIE_TXIE = 1;
+            uart_tx_fifo_empty_set_mask(TRUE);
             break;
             
         //case RS485_LINE_TX:
@@ -301,28 +284,26 @@ static void rs485_startRead()
     }
     
     // Disable writing (and reset OERR)
-    RS485_TXSTA.TXEN = 0;
-    RS485_RCSTA.CREN = 0;
-    RS485_PIE_TXIE = 0;
-    RS485_PIE_RCIE = 0;
+    uart_disable_tx();
+    uart_tx_fifo_empty_set_mask(FALSE);
 
     // Disable RS485 driver
-    RS485_PORT_EN = EN_RECEIVE;
+    uart_receive();
     rs485_state = RS485_LINE_RX;
 
     // Reset circular buffer
     s_readPtr = s_writePtr = s_buffer;
 
     // Enable UART receiver
-    RS485_PIE_RCIE = 1;
-    RS485_RCSTA.CREN = 1;
+    uart_enable_rx();
+    uart_rx_fifo_empty_set_mask(1);
 }
 
 void rs485_waitDisengageTime() {
     if (rs485_state == RS485_LINE_RX) { 
         // Disable rx receiver
-        RS485_PIE_RCIE = 0;
-        RS485_RCSTA.CREN = 0;
+        uart_disable_rx();
+        uart_rx_fifo_empty_set_mask(0);
         
         rs485_state = RS485_LINE_TX_DISENGAGE;
         s_lastTick = TickGet();
@@ -338,7 +319,7 @@ bit rs485_read(BYTE* data, BYTE size)
     else {
         static bit ret = FALSE;
         // Disable RX interrupts
-        RS485_PIE_RCIE = 0;
+        uart_rx_fifo_empty_set_mask(FALSE);
 
         // Active? Read immediately.
         if (_rs485_readAvail() >= size) {
@@ -352,7 +333,7 @@ bit rs485_read(BYTE* data, BYTE size)
         }
 
         // Re-enabled interrupts
-        RS485_PIE_RCIE = 1;
+        uart_rx_fifo_empty_set_mask(TRUE);
         return ret;
     }   
 }

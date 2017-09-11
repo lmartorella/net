@@ -8,8 +8,8 @@
         <itemPath>../hardware/fuses_raspbian.h</itemPath>
         <itemPath>../hardware/hw.h</itemPath>
         <itemPath>../hardware/ip_raspbian.h</itemPath>
-        <itemPath>../hardware/rs485.h</itemPath>
         <itemPath>../hardware/tick.h</itemPath>
+        <itemPath>../hardware/uart.h</itemPath>
         <itemPath>../hardware/utilities.h</itemPath>
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
@@ -19,6 +19,7 @@
       <itemPath>../pch.h</itemPath>
       <itemPath>../persistence.h</itemPath>
       <itemPath>../protocol.h</itemPath>
+      <itemPath>../rs485.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -30,8 +31,8 @@
       <logicalFolder name="f1" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/hw_raspbian.c</itemPath>
         <itemPath>../hardware/ip_raspbian.c</itemPath>
-        <itemPath>../hardware/rs485_raspbian.c</itemPath>
         <itemPath>../hardware/tick_raspbian.c</itemPath>
+        <itemPath>../hardware/uart_raspbian.c</itemPath>
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
       <itemPath>../bus_server.c</itemPath>
@@ -39,6 +40,7 @@
       <itemPath>../main.c</itemPath>
       <itemPath>../persistence.c</itemPath>
       <itemPath>../protocol.c</itemPath>
+      <itemPath>../rs485.c</itemPath>
       <itemPath>../sinks.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -57,7 +59,7 @@
   <confs>
     <conf name="Debug" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
@@ -95,13 +97,13 @@
       </item>
       <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../hardware/rs485.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../hardware/rs485_raspbian.c" ex="false" tool="0" flavor2="0">
-      </item>
       <item path="../hardware/tick.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/tick_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/uart.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/uart_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/utilities.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -120,6 +122,10 @@
       <item path="../protocol.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../protocol.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../rs485.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../rs485.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../sinks.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -164,13 +170,13 @@
       </item>
       <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../hardware/rs485.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../hardware/rs485_raspbian.c" ex="false" tool="0" flavor2="0">
-      </item>
       <item path="../hardware/tick.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/tick_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../hardware/uart.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/uart_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/utilities.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -189,6 +195,10 @@
       <item path="../protocol.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../protocol.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../rs485.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../rs485.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../sinks.c" ex="false" tool="0" flavor2="0">
       </item>
