@@ -6,6 +6,7 @@ using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 using System.Runtime.CompilerServices;
+using Lucky.Home.Notification;
 
 #pragma warning disable 414
 #pragma warning disable 649
@@ -61,7 +62,7 @@ namespace Lucky.Home.Protocol
             {
                 Address = address;
             }
-            IsZombie = false;
+            Dezombie();
 
             // Check for zombied children and try to de-zombie it
             var lastKnownChildren = _lastKnownChildren.Values.ToArray();
@@ -113,7 +114,7 @@ namespace Lucky.Home.Protocol
             {
                 Address = address;
             }
-            IsZombie = false;
+            Dezombie();
 
             // Start data fetch asynchrously
             // This resets also the dirty children state
@@ -305,11 +306,7 @@ namespace Lucky.Home.Protocol
                     // Mark the node as a zombie after some time
                     if ((DateTime.Now - _firstFailTime) > ZOMBIE_TIMEOUT)
                     {
-                        if (!IsZombie)
-                        {
-                            Logger.Log("IsZombie");
-                            IsZombie = true;
-                        }
+                        ToZombie();
                     }
                 }
                 else
@@ -323,6 +320,26 @@ namespace Lucky.Home.Protocol
                 _firstFailTime = null;
             }
             return ret;
+        }
+
+        private void Dezombie()
+        {
+            if (IsZombie)
+            {
+                Logger.Log("Dezombie");
+                IsZombie = false;
+                Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Risolto: ristabilita connessione con " + NodeId);
+            }
+        }
+
+        private void ToZombie()
+        {
+            if (!IsZombie)
+            {
+                Logger.Log("IsZombie");
+                IsZombie = true;
+                Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Errore: persa connessione con " + NodeId);
+            }
         }
 
         private int[] GetChildrenIndexes()
