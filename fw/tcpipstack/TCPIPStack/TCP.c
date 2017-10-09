@@ -59,6 +59,7 @@
 #define __TCP_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 #if defined(STACK_USE_TCP)
 
@@ -5562,3 +5563,4 @@ void TCPSSLHandleIncoming(TCP_SOCKET hTCP)
 
 
 #endif //#if defined(STACK_USE_TCP)
+#endif

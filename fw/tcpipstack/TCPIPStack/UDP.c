@@ -87,6 +87,7 @@
 #define __UDP_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 #if defined(STACK_USE_UDP)
 
@@ -1384,3 +1385,4 @@ static UDP_SOCKET FindMatchingSocket(UDP_HEADER *h,
 
 
 #endif //#if defined(STACK_USE_UDP)
+#endif

@@ -2,8 +2,6 @@
 #define	EXT_CONFIG_H
 
 #define SYSTEM_CLOCK 25000000ull
-extern void Delay1KTCYx(unsigned char unit);
-extern void Delay10TCYx(unsigned char unit);
 extern void wait30ms();
 extern void wait40us();
 extern void wait2ms();

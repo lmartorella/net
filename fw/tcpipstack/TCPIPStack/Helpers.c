@@ -57,6 +57,7 @@
 
 #include <stdarg.h>
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 
 // Default Random Number Generator seed. 0x41FE9F9E corresponds to calling LFSRSeedRand(1)
@@ -2176,4 +2177,5 @@ SHORT Replace(BYTE *vExpression, ROM BYTE *vFind, ROM BYTE *vReplacement, WORD w
 	}
 	return wFindCount;
 }
+#endif
 #endif

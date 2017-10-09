@@ -62,6 +62,7 @@
 #define __ARP_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 /****************************************************************************
   Section:
@@ -696,3 +697,5 @@ void SwapARPPacket(ARP_PACKET* p)
     p->Protocol         = swaps(p->Protocol);
     p->Operation        = swaps(p->Operation);
 }
+
+#endif

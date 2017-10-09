@@ -44,7 +44,7 @@ typedef struct {
 #define uart_tx_fifo_empty_get_mask() RS485_PIE_TXIE
 #define uart_tx_fifo_empty_set_mask(b) RS485_PIE_TXIE = b
 
-#define uart_rx_fifo_empty() RS485_PIR_RCIF
+#define uart_rx_fifo_empty() !RS485_PIR_RCIF
 #define uart_rx_fifo_empty_get_mask() RS485_PIE_RCIE
 #define uart_rx_fifo_empty_set_mask(b) RS485_PIE_RCIE = b
 

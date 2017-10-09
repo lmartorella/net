@@ -81,6 +81,12 @@ void main()
     // I'm alive
     while (1) {   
         CLRWDT();
+        
+#ifdef _CONF_RASPBIAN
+        usleep(300);
+        rs485_interrupt();
+#endif
+        
 #if defined(HAS_BUS_CLIENT) || defined(HAS_BUS_SERVER)
         bus_poll();
 #endif

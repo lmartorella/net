@@ -54,6 +54,7 @@
 #define __ICMP_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 #if defined(STACK_USE_ICMP_SERVER) || defined(STACK_USE_ICMP_CLIENT)
 
@@ -486,3 +487,4 @@ void ICMPEndUsage(void)
 #endif //#if defined(STACK_USE_ICMP_CLIENT)
 
 #endif //#if defined(STACK_USE_ICMP_SERVER) || defined(STACK_USE_ICMP_CLIENT)
+#endif

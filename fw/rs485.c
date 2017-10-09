@@ -133,7 +133,7 @@ void rs485_interrupt()
             }
         } while (uart_tx_fifo_empty());
     }
-    else if (uart_rx_fifo_empty() && uart_rx_fifo_empty_get_mask()) {
+    else if (!uart_rx_fifo_empty() && uart_rx_fifo_empty_get_mask()) {
         // Data received
         do {
             CLRWDT();

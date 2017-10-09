@@ -4,13 +4,12 @@
 #include "ip_client.h"
 #include "persistence.h"
 
-#if defined(HAS_IP) && defined(__XC8)
-#include "Compiler.h"
-#include "TCPIPStack/TCPIP.h"
-APP_CONFIG AppConfig;
-#endif
-
 #ifdef HAS_IP
+#ifdef __XC8
+    #include "Compiler.h"
+    #include "TCPIPStack/TCPIP.h"
+    APP_CONFIG AppConfig;
+#endif
 
 // UDP broadcast socket
 static UDP_SOCKET s_heloSocket;  

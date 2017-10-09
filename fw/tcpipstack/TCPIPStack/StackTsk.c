@@ -54,6 +54,7 @@
 #define __STACKTSK_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 #if defined( WF_CS_TRIS )
     #if defined( WF_CONFIG_CONSOLE )
@@ -497,5 +498,4 @@ void RenewDhcp(void)
 
 #endif
 
-
-
+#endif

@@ -1,6 +1,5 @@
 #include "../../pch.h"
-#include <stdio.h>
-#include <string.h>
+#include "ext_config.h"
 #include "../../appio.h"
 #include "../../hardware/tick.h"
 #include "../../rs485.h"

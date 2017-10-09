@@ -17,7 +17,7 @@ void fatal(const char* msg);
 #define SYSTEM_CLOCK 25000000ull
 #define PRIO_TYPE low_priority
 
-#undef DEBUGMODE
+#define DEBUGMODE
 
 #define HAS_BUS
 
@@ -92,7 +92,7 @@ void fatal(const char* msg);
 // ******
 // IP: uses PORTA0,1 (leds)
 // ******
-#define HAS_IP
+#undef HAS_IP
 #define SERVER_CONTROL_UDP_PORT 17008
 #define CLIENT_TCP_PORT 20001
 

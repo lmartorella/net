@@ -57,6 +57,7 @@
 #define __DNS_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 #if defined(STACK_USE_DNS)
 
@@ -782,3 +783,4 @@ static void DNSDiscardName(void)
 
 
 #endif	//#if defined(STACK_USE_DNS)
+#endif

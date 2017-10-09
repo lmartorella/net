@@ -147,6 +147,8 @@ static Mmap* gpioMap;
 static BOOL s_rc9;
 static BOOL s_txEn;
 static BOOL s_rxEn;
+static BOOL s_txFifoMask;
+static BOOL s_rxFifoMask;
 
 static void uart_reset() {
     // 1. Disable UART
@@ -175,7 +177,9 @@ void uart_init() {
     s_rc9 = 0;
     s_txEn = 0;
     s_rxEn = 0;
-    
+    s_txFifoMask = 0;
+    s_rxFifoMask = 0;
+
     const uint32_t pi_peri_phys = 0x20000000;
     uartMap = mmap_create((pi_peri_phys + 0x00201000), 0x90);
     gpioMap = mmap_create((pi_peri_phys + 0x00200000), 0xB4);
@@ -201,7 +205,7 @@ void uart_receive() {
 }
 
 void uart_set_9b(BOOL b) {
-    if (!b == !s_rc9) {
+    if (b != s_rc9) {
         s_rc9 = b;
         uart_reset();
     }
@@ -228,9 +232,6 @@ BOOL uart_tx_fifo_empty() {
 BOOL uart_rx_fifo_empty() {
     return s_rxEn && (mmap_rd(uartMap, UART_REG_FR) & UART_REG_FR_RXFE);
 }
-
-static BOOL s_txFifoMask;
-static BOOL s_rxFifoMask;
 
 BOOL uart_tx_fifo_empty_get_mask() {
     return s_txFifoMask;    

@@ -83,6 +83,7 @@
 #define __DHCP_C
 
 #include "TCPIPConfig.h"
+#ifdef HAS_IP
 
 #if defined(STACK_USE_DHCP_CLIENT)
 
@@ -1152,3 +1153,4 @@ static void _DHCPSend(BYTE messageType, BOOL bRenewing)
 
 
 #endif	//#if defined(STACK_USE_DHCP_CLIENT)
+#endif

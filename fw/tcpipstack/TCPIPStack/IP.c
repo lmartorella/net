@@ -61,6 +61,7 @@
 #define __IP_C
 
 #include "TCPIPStack/TCPIP.h"
+#ifdef HAS_IP
 
 // This is left shifted by 4.  Actual value is 0x04.
 #define IPv4                (0x40u)
@@ -309,3 +310,5 @@ static void SwapIPHeader(IP_HEADER* h)
     h->Identification   = swaps(h->Identification);
     h->HeaderChecksum   = swaps(h->HeaderChecksum);
 }
+
+#endif
