@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "persistence.h"
+#include "appio.h"
 
 PersistentData pers_data
-#ifdef __GNU
+#ifdef _CONF_RASPBIAN
         = DEFAULT_PERS_DATA
 #endif
         ;
@@ -18,14 +19,34 @@ static EEPROM_MODIFIER PersistentData s_persistentData = DEFAULT_PERS_DATA;
 
 void pers_init()
 {
-#ifdef HAS_EEPROM
+#if defined(HAS_EEPROM)
     rom_read(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
+#elif defined(_CONF_RASPBIAN)
+    FILE* file = fopen("home.mem", "rb");
+    if (file) {
+        if (fread(&pers_data, sizeof(PersistentData), 1, file) == 1) {
+            flog("Persistence file read");
+        }
+        fclose(file);
+    } else {
+        flog("Persistence file read err: %d", errno);
+    }
 #endif
 }
 
 void pers_save()
 {
-#ifdef HAS_EEPROM
+#if defined(HAS_EEPROM)
     rom_write(ROM_ADDR, (BYTE*)&pers_data, sizeof(PersistentData));
+#elif defined(_CONF_RASPBIAN)
+    FILE* file = fopen("home.mem", "wb");
+    if (file) {
+        if (fwrite(&pers_data, sizeof(PersistentData), 1, file) == 1) {
+            flog("Persistence file written");
+        }
+        fclose(file);
+    } else {
+        flog("Persistence file write err: %d", errno);
+    }
 #endif
 }

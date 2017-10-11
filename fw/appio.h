@@ -37,4 +37,10 @@ extern RESET_REASON g_resetReason;
 // Get last reset reason as 3 char code
 void sys_storeResetReason();
 
+#ifdef __GNU
+void flog(const char* format, ...);
+#else
+#define flog() 
+#endif
+
 #endif

@@ -141,3 +141,12 @@ void printch(char ch)
     fflush(stdout);
 #endif
 }
+
+#ifdef __GNU
+void flog(const char* format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    vprintf(format, args);
+}
+#endif

@@ -22,6 +22,10 @@ typedef unsigned char BOOL;
 // For POSIX extension
 #define _GNU_SOURCE
 
+#include <errno.h>
+#include <unistd.h>
+#include <stdarg.h>
+
 #endif
 
 #include <stdio.h>
