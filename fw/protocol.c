@@ -35,6 +35,8 @@ void prot_init()
 
     // Align 1sec to now()
     s_slowTimer = TickGet();
+#else
+    println("No IP");
 #endif
 
 #ifdef HAS_RS485

@@ -157,7 +157,7 @@ void rs485_interrupt()
                 *(s_writePtr++) = data;
                 ADJUST_PTR(s_writePtr);
             }
-        } while (uart_rx_fifo_empty());
+        } while (!uart_rx_fifo_empty());
     }
 }
 
