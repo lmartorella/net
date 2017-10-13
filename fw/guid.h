@@ -1,9 +1,6 @@
 #ifndef _VER_APP_H
 #define _VER_APP_H
 
-// Update this at every build
-//#define APP_VER "0.1"
-
 typedef struct 
 {
 	DWORD data1;

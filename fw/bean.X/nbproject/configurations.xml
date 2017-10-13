@@ -73,6 +73,7 @@
       <itemPath>../halfduplex.h</itemPath>
       <itemPath>../dcf77.h</itemPath>
       <itemPath>../rs485.h</itemPath>
+      <itemPath>../sinks.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

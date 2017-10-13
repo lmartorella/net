@@ -1,62 +1,92 @@
 #include "pch.h"
-#include "protocol.h"
+#include "sinks.h"
 #include "appio.h"
+#include "displaySink.h"
 
 #ifdef HAS_BUS
 
-static bit sysSink_receive();
-static bit sysSink_transmit();
-
-static const Sink s_sysSink = {
-    "SYS ",
-    sysSink_receive,
-    sysSink_transmit
-};
-
-const Sink* AllSinks[] = { 
-    &s_sysSink,
 #ifdef HAS_DIGIO
-    &g_outSink,
-    &g_inSink,
+#include "hardware/digio.h"
 #endif
-    
-#if defined(HAS_CM1602) && !(defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232))
-    &g_displaySink, 
-#endif
-    
 #ifdef HAS_DHT11
-    &g_tempSink,
+#include "hardware/dht11.h"
+#endif
+#ifdef HAS_MAX232_SOFTWARE
+#include "halfduplex.h"
 #endif
 
-#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
-    &g_halfDuplexSink 
-#endif
-};
+static bit nil() {
+    CLRWDT();
+    return FALSE;
+}
 
-int AllSinksSize =
+const char* const SINK_IDS = 
+    SINK_SYS_ID
+#ifdef HAS_DIGIO
+    DIGIO_OUT_SINK_ID
+    DIGIO_IN_SINK_ID
+#endif
+#ifdef SINK_LINE_ID
+    SINK_LINE_ID
+#endif
+#ifdef HAS_DHT11
+    DHT11_SINK_ID
+#endif
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
-    2
-#elif defined(HAS_DIGIO) && defined(HAS_CM1602) && defined(HAS_DHT11)
-    5
-#elif (defined(HAS_DIGIO) && defined(HAS_CM1602)) || (defined(HAS_DIGIO) && defined(HAS_DHT11))
-    4
-#elif defined(HAS_DIGIO)
-    3
-#elif defined(HAS_CM1602) && defined(HAS_DHT11)
-    3
-#elif defined(HAS_CM1602) || defined(HAS_DHT11)
-    2
-#else
-    1
+    SINK_HALFDUPLEX_ID 
 #endif
 ;
 
-bit sink_nullFunc()
-{
-    CLRWDT();
-    // No data
-    return FALSE;
-}
+const int SINK_IDS_COUNT = 
+    1
+#ifdef HAS_DIGIO
+    + 2
+#endif
+#ifdef SINK_LINE_ID
+    + 1
+#endif
+#ifdef HAS_DHT11
+    + 1
+#endif
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
+    + 1
+#endif
+;
+
+const SinkFunction const sink_readHandlers[] = {
+    &sys_read
+#ifdef HAS_DIGIO
+    ,digio_out_read
+    ,nil
+#endif
+#ifdef SINK_LINE_ID
+    ,&line_read
+#endif
+#ifdef HAS_DHT11
+    ,nil
+#endif
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
+    ,halfduplex_read 
+#endif
+};
+
+const SinkFunction const sink_writeHandlers[] = {
+    sys_write
+#ifdef HAS_DIGIO
+    ,digio_out_write
+    ,digio_in_write
+#endif
+#ifdef SINK_LINE_ID
+    ,line_write
+#endif
+#ifdef HAS_DHT11
+    ,dht11_write
+#endif
+#if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
+    ,halfduplex_write 
+#endif
+};
+
 
 const TWOCC ResetCode = { "RS" };
 const TWOCC ExceptionText = { "EX" };
@@ -70,7 +100,7 @@ enum SYSSINK_CMD {
     SYSSINK_CMD_CLRRST = 2,
 };
 
-static bit sysSink_receive()
+bit sys_read()
 {
     if (prot_control_readAvail() < 1) {
         // Wait cmd
@@ -92,7 +122,7 @@ static bit sysSink_receive()
     return FALSE;
 }
 
-static bit sysSink_transmit()
+bit sys_write()
 {
     WORD l = g_resetReason;
     // Write reset reason

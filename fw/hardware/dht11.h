@@ -3,8 +3,9 @@
 
 #ifdef HAS_DHT11
 
-extern const Sink g_tempSink;
 void dht11_init();
+#define DHT11_SINK_ID "TEMP"
+bit dht11_write();
 
 #endif
 

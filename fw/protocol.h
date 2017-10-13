@@ -37,29 +37,6 @@ bit prot_control_isConnected();
 void prot_init();
 void prot_poll();
 
-// Process WRIT message: read data for sink
-// Return TRUE to continue to read, FALSE if read process finished
-typedef bit (*Sink_ReadHandler)();
-// Process READ message: write data from sink
-// Return TRUE to continue to write, FALSE if write process finished
-typedef bit (*Sink_WriteHandler)();
-
-bit sink_nullFunc();
-
-// Class virtual pointers
-typedef struct SinkStruct
-{	
-	// Device ID
-	FOURCC fourCc;
-	// Pointer to RX function
-	Sink_ReadHandler readHandler;
-	// Pointer to TX function
-	Sink_WriteHandler writeHandler;
-} Sink;
-
-extern const Sink* AllSinks[];
-extern int AllSinksSize;
-
 #endif
 
 #endif	/* PROTOCOL_H */

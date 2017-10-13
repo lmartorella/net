@@ -110,8 +110,7 @@ void println(const char* str)
 #elif defined(HAS_DEBUG_LINE)
     _stdout(str);
 #elif defined(__GNU)
-    printf("%s", str);
-    printf("\r\n");
+    printf("%s\r\n", str);
     fflush(stdout);
 #endif
 }
@@ -123,8 +122,7 @@ void printlnUp(const char* str)
 #elif defined(HAS_DEBUG_LINE)
     _stdout(str);
 #elif defined(__GNU)
-    printf("%s", str);
-    printf("\r\n");
+    printf("%s\r\n", str);
     fflush(stdout);
 #endif
 }

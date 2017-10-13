@@ -3,15 +3,6 @@
 
 #ifdef HAS_DHT11
 
-static bit tempSink_read();
-static bit tempSink_write();
-
-const Sink g_tempSink = {
-    "TEMP",
-    &sink_nullFunc,
-    &tempSink_write
-};
-
 void dht11_init()
 {
     // Port high, pullups, output
@@ -90,7 +81,7 @@ bit dht11_read(BYTE* buffer)
     return TRUE;
 }
 
-static bit tempSink_write() {
+bit dht11_write() {
     BYTE data[6];
     data[0] = dht11_read(data + 1);
     prot_control_write(data, 6);

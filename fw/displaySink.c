@@ -2,17 +2,15 @@
 #include "displaySink.h"
 #include "appio.h"
 #include "protocol.h"
+
+#if defined(HAS_BUS) && (defined(HAS_CM1602) || defined(_CONF_RASPBIAN))
+
+#ifdef HAS_CM1602
 #include "hardware/cm1602.h"
-
-#if defined(HAS_BUS) && defined(HAS_CM1602)
-
-static bit readHandler();
-static bit writeHandler();
-
-const Sink g_displaySink = { { "LINE" },
-                             &readHandler,
-                             &writeHandler
-};
+#elif defined(_CONF_RASPBIAN)
+#define CM1602_COL_COUNT 80
+#define CM1602_LINE_COUNT 25
+#endif
 
 static BYTE s_buf[CM1602_COL_COUNT];
 static WORD s_length;
@@ -22,7 +20,7 @@ static enum {
     STATE_LEN_READY,
 } s_state = STATE_NONE;
 
-static bit readHandler()
+bit line_read()
 {
     if (s_state == STATE_NONE) {
         if (prot_control_readAvail() < 2) {
@@ -53,7 +51,7 @@ static bit readHandler()
     return 0;
 }
 
-static bit writeHandler()
+bit line_write()
 {
     // Num of lines
     WORD l = CM1602_LINE_COUNT - 1;

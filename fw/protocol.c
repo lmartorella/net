@@ -3,6 +3,7 @@
 #include "appio.h"
 #include "persistence.h"
 #include "bus.h"
+#include "sinks.h"
 
 #ifdef HAS_BUS
 
@@ -119,12 +120,8 @@ static void SINK_command()
 #ifdef DEBUGMODE
     printch('k');
 #endif
-    prot_control_writeW(AllSinksSize);
-    for (int i = 0; i < AllSinksSize; i++) {
-        // Put device ID
-        prot_control_write(&AllSinks[i]->fourCc, sizeof(FOURCC));
-    }
-    
+    prot_control_writeW(SINK_IDS_COUNT);
+    prot_control_write(SINK_IDS, SINK_IDS_COUNT * 4);
     // end of transmission, over to Master
     prot_control_over();
 }
@@ -221,14 +218,14 @@ void prot_poll()
 
     if (s_inReadSink >= 0) {
         // Tolerates empty rx buffer
-        if (!AllSinks[s_inReadSink]->readHandler()) {
+        if (!sink_readHandlers[s_inReadSink]()) {
             s_inReadSink = -1;
         }
         return;
     }
     if (s_inWriteSink >= 0) {
         // Address sink
-        if (!AllSinks[s_inWriteSink]->writeHandler()){
+        if (!sink_writeHandlers[s_inWriteSink]()){
             s_inWriteSink = -1;
             // end of transmission, over to Master
             prot_control_over();

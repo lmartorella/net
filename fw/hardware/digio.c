@@ -4,22 +4,6 @@
 
 #ifdef HAS_DIGIO
 
-static bit outSink_receive();
-static bit outSink_transmit();
-static bit inSink_write();
-
-const Sink g_outSink = {
-    "DOAR",
-    &outSink_receive,
-    &outSink_transmit
-};
-
-const Sink g_inSink = {
-    "DIAR",
-    &sink_nullFunc,
-    &inSink_write,
-};
-
 void digio_init()
 {
     // First enable input bits
@@ -28,7 +12,7 @@ void digio_init()
     DIGIO_TRIS_OUT_BIT = 0;
 }
 
-static bit outSink_transmit()
+bit digio_out_write()
 {
     // One port
     WORD b = 1;
@@ -37,7 +21,7 @@ static bit outSink_transmit()
 }
 
 // Read bits to set as output
-static bit outSink_receive()
+bit digio_out_read()
 {
     if (prot_control_readAvail() < 5) {
         // Need more data
@@ -53,7 +37,7 @@ static bit outSink_receive()
 }
 
 // Write bits read as input
-static bit inSink_write()
+bit digio_in_write()
 {   
     WORD swCount = 1;
     prot_control_write(&swCount, 2);

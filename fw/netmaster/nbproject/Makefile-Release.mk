@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/appio.o \
 	${OBJECTDIR}/_ext/5c0/bus_server.o \
+	${OBJECTDIR}/_ext/5c0/displaySink.o \
 	${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o \
@@ -82,6 +83,11 @@ ${OBJECTDIR}/_ext/5c0/bus_server.o: ../bus_server.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/bus_server.o ../bus_server.c
+
+${OBJECTDIR}/_ext/5c0/displaySink.o: ../displaySink.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/displaySink.o ../displaySink.c
 
 ${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o: ../hardware/hw_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957

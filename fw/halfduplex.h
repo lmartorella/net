@@ -5,8 +5,10 @@
 
 #if defined(HAS_BUS) && defined(HAS_MAX232_SOFTWARE)
 
+#define SINK_HALFDUPLEX_ID "SLIN"
 void halfduplex_init();
-extern const Sink g_halfDuplexSink;
+bit halfduplex_read();
+bit halfduplex_write();
 
 #endif
 

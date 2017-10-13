@@ -2,9 +2,7 @@
 #include "audioSink.h"
 #include "appio.h"
 #include "hardware/vs1011e.h"
-//#include "hardware/spiram.h"
 #include "hardware/spi.h"
-//#include "TCPIPStack/TCPIP.h"
 
 #ifdef HAS_VS1011
 

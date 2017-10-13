@@ -7,14 +7,6 @@
 
 #if (defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)) && defined(HAS_BUS)
 
-static bit halfduplex_readHandler();
-static bit halfduplex_writeHandler();
-
-const Sink g_halfDuplexSink = { { "SLIN" },
-                             &halfduplex_readHandler,
-                             &halfduplex_writeHandler
-};
-
 static struct {
     // 0xff -> echo data
     // 0xfe -> don't read any data
@@ -50,7 +42,7 @@ void halfduplex_init()
     s_header.count = 0;
 }
 
-static bit halfduplex_readHandler()
+bit halfduplex_read()
 {
     if (s_state != ST_RECEIVE_DATA) {
         // IN HEADER READ
@@ -97,7 +89,7 @@ static bit halfduplex_readHandler()
     }
 }
 
-static bit halfduplex_writeHandler()
+bit halfduplex_write()
 {
     if (s_state != ST_TRANSMIT_DATA) {
         if (prot_control_writeAvail() < 2) {

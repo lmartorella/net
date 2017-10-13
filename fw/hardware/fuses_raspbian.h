@@ -1,7 +1,7 @@
 #ifndef FUSES_RASPBIAN_H
 #define FUSES_RASPBIAN_H
 
-#define DEBUGMODE
+#undef DEBUGMODE
 
 // Define IP and protocol
 #define HAS_IP

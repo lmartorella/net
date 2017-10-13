@@ -14,12 +14,14 @@
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
       <itemPath>../bus.h</itemPath>
+      <itemPath>../displaySink.h</itemPath>
       <itemPath>../guid.h</itemPath>
       <itemPath>../ip_client.h</itemPath>
       <itemPath>../pch.h</itemPath>
       <itemPath>../persistence.h</itemPath>
       <itemPath>../protocol.h</itemPath>
       <itemPath>../rs485.h</itemPath>
+      <itemPath>../sinks.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -36,6 +38,7 @@
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
       <itemPath>../bus_server.c</itemPath>
+      <itemPath>../displaySink.c</itemPath>
       <itemPath>../ip_client.c</itemPath>
       <itemPath>../main.c</itemPath>
       <itemPath>../persistence.c</itemPath>
@@ -85,6 +88,10 @@
       </item>
       <item path="../bus_server.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="../displaySink.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../displaySink.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../guid.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/fuses_raspbian.h" ex="false" tool="3" flavor2="0">
@@ -128,6 +135,8 @@
       <item path="../rs485.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../sinks.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -158,6 +167,10 @@
       </item>
       <item path="../bus_server.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="../displaySink.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../displaySink.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../guid.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/fuses_raspbian.h" ex="false" tool="3" flavor2="0">
@@ -201,6 +214,8 @@
       <item path="../rs485.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../sinks.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
