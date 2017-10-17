@@ -20,9 +20,11 @@ namespace Lucky.Home.Db
         private string _timeStampFormat;
         private string _header;
         private ILogger _logger;
+        private readonly bool _useSummerTime;
 
-        public FsTimeSeries(string folderPath, string timeStampFormat)
+        public FsTimeSeries(string folderPath, string timeStampFormat, bool useSummerTime)
         {
+            _useSummerTime = useSummerTime;
             _logger = Manager.GetService<ILoggerFactory>().Create("Db/" + folderPath);
             _timeStampFormat = timeStampFormat;
             _folder = Manager.GetService<PersistenceService>().GetAppFolderPath("Db/" + folderPath);
@@ -41,7 +43,7 @@ namespace Lucky.Home.Db
                 // Change filename, so open a new file
                 _fileName = new FileInfo(Path.Combine(_folder, fileName));
                 _lastPeriod = _currentPeriod;
-                _currentPeriod = new PeriodData<T>(start);
+                _currentPeriod = new PeriodData<T>(start, _useSummerTime);
 
                 // Write CSV header
                 WriteLine(writer => writer.WriteLine("TimeStamp," + _header));
@@ -99,6 +101,8 @@ namespace Lucky.Home.Db
                 _currentPeriod.Add(sample, ts);
 
                 // In addition write on the CSV file
+                // Convert TS to non-daylight saving time
+                ts = _currentPeriod.Adjust(ts);
                 WriteLine(writer => writer.WriteLine(ts.ToString(_timeStampFormat) + "," + sample.ToCsv()));
             }
         }

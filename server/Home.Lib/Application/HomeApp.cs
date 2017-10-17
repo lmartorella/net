@@ -36,13 +36,13 @@ namespace Lucky.Home.Application
                 IFsTimeSeries db;
                 if (device is SamilInverterLoggerDevice)
                 {
-                    var dbd = new FsTimeSeries<SamilPowerData>(device.Name, "HH:mm:ss");
+                    var dbd = new FsTimeSeries<SamilPowerData>(device.Name, "HH:mm:ss", false);
                     ((SamilInverterLoggerDevice)device).Database = dbd;
                     db = dbd;
                 }
                 else
                 {
-                    var dbd = new FsTimeSeries<PowerData>(device.Name, "HH:mm:ss");
+                    var dbd = new FsTimeSeries<PowerData>(device.Name, "HH:mm:ss", false);
                     device.Database = dbd;
                     db = dbd;
                 }

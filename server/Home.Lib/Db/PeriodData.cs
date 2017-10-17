@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lucky.Home.Db
 {
@@ -20,11 +21,25 @@ namespace Lucky.Home.Db
         private T _maxV;
         private DateTime _minT;
         private DateTime _maxT;
+        private readonly TimeSpan _daylightDelta = TimeSpan.Zero;
 
-        public PeriodData(DateTime begin)
+        public PeriodData(DateTime begin, bool useSummerTime)
         {
             _begin = _lastTs = begin;
             Add(new T(), begin, true);
+
+            if (begin.IsDaylightSavingTime() && useSummerTime)
+            {
+                // Calc summer time offset
+                var rule = TimeZoneInfo.Local.GetAdjustmentRules().FirstOrDefault(r =>
+                {
+                    return (begin > r.DateStart && begin < r.DateEnd);
+                });
+                if (rule != null)
+                {
+                    _daylightDelta = rule.DaylightDelta;
+                }
+            }
         }
 
         public void Add(T sample, DateTime ts)
@@ -82,6 +97,11 @@ namespace Lucky.Home.Db
                     MaxValue = _maxV
                 };
             }
+        }
+
+        internal DateTime Adjust(DateTime ts)
+        {
+            return ts - _daylightDelta;
         }
     }
 }
