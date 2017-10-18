@@ -54,6 +54,9 @@ TCP_SOCKET TCPOpen(DWORD dwRemoteHost, BYTE vRemoteHostType, WORD wPort, BYTE vS
     if (tcp_sock < 0) {
         fatal("Could not create TCP socket");
     }
+    if (setsockopt(tcp_sock, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int)) < 0) {
+        fatal("Could not call setsockopt on TCP socket");
+    }
 
     struct sockaddr_in server;
     server.sin_family = AF_INET;

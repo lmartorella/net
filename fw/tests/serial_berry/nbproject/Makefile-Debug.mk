@@ -35,6 +35,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/_ext/c0d57b88/tick_raspbian.o \
+	${OBJECTDIR}/_ext/c0d57b88/uart_raspbian.o \
+	${OBJECTDIR}/_ext/29dd86f/rs485.o \
 	${OBJECTDIR}/main.o
 
 
@@ -62,10 +65,25 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/serial_berry: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/serial_berry ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/_ext/c0d57b88/tick_raspbian.o: ../../hardware/tick_raspbian.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/c0d57b88
+	${RM} "$@.d"
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/c0d57b88/tick_raspbian.o ../../hardware/tick_raspbian.c
+
+${OBJECTDIR}/_ext/c0d57b88/uart_raspbian.o: ../../hardware/uart_raspbian.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/c0d57b88
+	${RM} "$@.d"
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/c0d57b88/uart_raspbian.o ../../hardware/uart_raspbian.c
+
+${OBJECTDIR}/_ext/29dd86f/rs485.o: ../../rs485.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/29dd86f
+	${RM} "$@.d"
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/29dd86f/rs485.o ../../rs485.c
+
 ${OBJECTDIR}/main.o: main.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.c) -g -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.c
+	$(COMPILE.c) -g -D_CONF_RASPBIAN -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.c
 
 # Subprojects
 .build-subprojects:

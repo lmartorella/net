@@ -205,7 +205,7 @@ void main() {
     TICK_TYPE time = TickGet();
     BYTE b;
     BYTE data[16];
-    BOOL parity = FALSE;
+    //BOOL parity = FALSE;
     
     headerPtr = 0;
     
@@ -264,9 +264,10 @@ void main() {
                 printlnUp(str);
                 sprintf(str, "%02x %02x", data[0], data[1]);
                 println(str);
+
                 // Send data back
-                rs485_write(parity, data, size);
-                parity = !parity;
+                rs485_write(0, data, size);
+                rs485_over = 1;
                 headerPtr = 0;
             }
             break;

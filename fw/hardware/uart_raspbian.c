@@ -63,6 +63,13 @@ typedef enum {
 } UART_REG_RD_BITS;
 
 typedef enum {
+    UART_REG_RSRECR_FE = 0x1,
+    UART_REG_RSRECR_PE = 0x2,
+    UART_REG_RSRECR_BE = 0x4,
+    UART_REG_RSRECR_OE = 0x8
+} UART_REG_RSRECR_BITS;
+
+typedef enum {
     GPIO_MODE_INPUT = 0,
     GPIO_MODE_OUTPUT = 1
 } GPIO_MODE;
@@ -221,14 +228,21 @@ void uart_write(BYTE b) {
 void uart_read(BYTE* data, UART_RX_MD* md) {
     // Read data
     uint32_t rx = mmap_rd(uartMap, UART_REG_DR);
-    md->oerr = (rx & UART_REG_RD_OE);
-    md->ferr = (rx & UART_REG_RD_FE);
-    int perr = (rx & UART_REG_RD_PE);
-    md->rc9 = s_rc9 ? !perr : perr;
     *data = rx & 0xff;
+    
+    // And then read ERRORS associated to that byte
+    uint32_t rxe = mmap_rd(uartMap, UART_REG_RSRECR);
+    md->oerr = (rxe & UART_REG_RSRECR_OE);
+    md->ferr = (rxe & UART_REG_RSRECR_FE);
+    int perr = (rxe & UART_REG_RSRECR_PE);
+    md->rc9 = s_rc9 ? !perr : perr;
+
 #ifdef DEBUGMODE
     printf(" R%c%02x ", md->rc9 ? '1' : '0', *data);
 #endif
+
+    // Reset errors
+    mmap_wr(uartMap, UART_REG_RSRECR, 0);
 }
 
 BOOL uart_tx_fifo_empty() {

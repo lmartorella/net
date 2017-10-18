@@ -13,6 +13,9 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
+      <itemPath>../../rs485.c</itemPath>
+      <itemPath>../../hardware/tick_raspbian.c</itemPath>
+      <itemPath>../../hardware/uart_raspbian.c</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -37,6 +40,9 @@
       <compileType>
         <cTool>
           <standard>10</standard>
+          <preprocessorList>
+            <Elem>_CONF_RASPBIAN</Elem>
+          </preprocessorList>
         </cTool>
         <linkerTool>
           <linkerLibItems>
@@ -44,6 +50,12 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="../../hardware/tick_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../hardware/uart_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../rs485.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
@@ -67,6 +79,12 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="../../hardware/tick_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../hardware/uart_raspbian.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../rs485.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
