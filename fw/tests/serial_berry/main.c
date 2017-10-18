@@ -44,7 +44,7 @@ int main() {
     printf("Packet written, %hd byte\n", size);
     
     // Now receive data
-    int i = 0;
+    int i = -1;
     while (i < size) {
         rs485_interrupt();
         rs485_poll();

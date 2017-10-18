@@ -56,11 +56,11 @@ typedef enum {
 } UART_REG_CR_BITS;
 
 typedef enum {
-    UART_REG_RD_FE = 0x100,
-    UART_REG_RD_PE = 0x200,
-    UART_REG_RD_BE = 0x400,
-    UART_REG_RD_OE = 0x800
-} UART_REG_RD_BITS;
+    UART_REG_DR_FE = 0x100,
+    UART_REG_DR_PE = 0x200,
+    UART_REG_DR_BE = 0x400,
+    UART_REG_DR_OE = 0x800
+} UART_REG_DR_BITS;
 
 typedef enum {
     UART_REG_RSRECR_FE = 0x1,
@@ -229,16 +229,18 @@ void uart_read(BYTE* data, UART_RX_MD* md) {
     // Read data
     uint32_t rx = mmap_rd(uartMap, UART_REG_DR);
     *data = rx & 0xff;
-    
     // And then read ERRORS associated to that byte
-    uint32_t rxe = mmap_rd(uartMap, UART_REG_RSRECR);
-    md->oerr = (rxe & UART_REG_RSRECR_OE);
-    md->ferr = (rxe & UART_REG_RSRECR_FE);
-    int perr = (rxe & UART_REG_RSRECR_PE);
+    md->oerr = (rx & UART_REG_DR_OE);
+    md->ferr = (rx & UART_REG_DR_FE);
+    BOOL perr = (rx & UART_REG_DR_PE) != 0;
     md->rc9 = s_rc9 ? !perr : perr;
 
 #ifdef DEBUGMODE
-    printf(" R%c%02x ", md->rc9 ? '1' : '0', *data);
+    printf(" R");
+    if (rx & ~(0xff | UART_REG_DR_PE)) {
+        printf("E");
+    }
+    printf("%c%02x ", md->rc9 ? '1' : '0', *data);
 #endif
 
     // Reset errors
