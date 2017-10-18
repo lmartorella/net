@@ -213,6 +213,9 @@ void uart_set_9b(BOOL b) {
 
 void uart_write(BYTE b) {
     mmap_wr(uartMap, UART_REG_DR, b);
+#ifdef DEBUGMODE
+    printf(" T%c%02x ", s_rc9 ? '1' : '0', b);
+#endif
 }
 
 void uart_read(BYTE* data, UART_RX_MD* md) {
@@ -223,6 +226,9 @@ void uart_read(BYTE* data, UART_RX_MD* md) {
     int perr = (rx & UART_REG_RD_PE);
     md->rc9 = s_rc9 ? !perr : perr;
     *data = rx & 0xff;
+#ifdef DEBUGMODE
+    printf(" R%c%02x ", md->rc9 ? '1' : '0', *data);
+#endif
 }
 
 BOOL uart_tx_fifo_empty() {
