@@ -1,6 +1,8 @@
 #ifndef _ROM_INCLUDE_H_
 #define _ROM_INCLUDE_H_
 
+#include "../pch.h"
+
 #ifdef _IS_ETH_CARD
 
 // PIC18 has memcpy
@@ -13,10 +15,11 @@ void rom_write(const void* destination, const void* source, WORD length);
 
 #define EEPROM_MODIFIER const
 
-#elif defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F1827_CARD)
+#elif defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F1827_CARD) || defined(_IS_PIC16F887_CARD)
 
 void rom_read(BYTE sourceAddress, BYTE* destination, BYTE length);
 void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length);
+void rom_write_imm(BYTE destinationAddr, const BYTE* source, BYTE length);
 
 #define EEPROM_MODIFIER eeprom
 

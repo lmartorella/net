@@ -6,6 +6,13 @@
 #include "outputs.h"
 #include "program.h"
 
+#include "../fw/pch.h"
+#include "../fw/hardware/tick.h"
+#include "../fw/rs485.h"
+#include "../fw/appio.h"
+#include "../fw/persistence.h"
+#include "../fw/protocol.h"
+
 // CONFIG1
 #pragma config FOSC = INTRC_NOCLKOUT// Oscillator Selection bits (INTOSCIO oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
 #pragma config WDTE = ON        // Watchdog Timer Enable bit (WDT enabled)
@@ -58,6 +65,12 @@ static void interrupt low_isr() {
     if (PIR1bits.TMR1IF) {
         timer_isr();
     }
+
+    // Update tick timers at ~Khz freq
+    TickUpdate();
+#ifdef HAS_RS485
+    rs485_interrupt();
+#endif
 }
 
 static void go_immediate(int zone) {
@@ -86,6 +99,23 @@ static void go_program() {
 }
 
 int main() {
+    // Analyze RESET reason
+    sys_storeResetReason();
+
+    // Init Ticks on timer0 (low prio) module
+    timers_init();
+    appio_init();
+
+    pers_init();
+
+#ifdef HAS_RS485
+    rs485_init();
+#endif
+
+#ifdef HAS_BUS
+    prot_init();
+#endif
+
     timer_setup();
     display_setup();
     portb_setup();
@@ -94,14 +124,21 @@ int main() {
     
     g_state = OFF;
     
-    INTCONbits.PEIE = 1;
-    INTCONbits.GIE = 1;
-    
+    enableInterrupts();
+   
     while (1) {
-        // Go sleep and wait for interrupts
-        //SLEEP();
         CLRWDT();
         
+#if defined(HAS_BUS_CLIENT) || defined(HAS_BUS_SERVER)
+        bus_poll();
+#endif
+#ifdef HAS_BUS
+        prot_poll();
+#endif
+#ifdef HAS_RS485
+        rs485_poll();
+#endif
+
         // Poll animations
         display_poll();
         // Poll timer

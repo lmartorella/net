@@ -1,5 +1,6 @@
 #include "../pch.h"
 #include "../appio.h"
+#include "eeprom.h"
 
 #ifdef _IS_ETH_CARD
 // Source: http://www.microchip.com/forums/m339126.aspx
@@ -116,10 +117,13 @@ void rom_write(const void* destination, const void* source, WORD length)
 	rowWrite(); 
 }
 
-#elif defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F1827_CARD)
+#elif defined(_IS_PIC16F628_CARD) || defined(_IS_PIC16F1827_CARD) || defined(_IS_PIC16F887_CARD)
 
 void rom_read(BYTE sourceAddress, BYTE* destination, BYTE length)
 {
+#ifdef _IS_PIC16F887_CARD
+    EECON1bits.EEPGD = 0;
+#endif
     for (; length > 0; length--) { 
         // Wait for previous WR to finish
         while (EECON1bits.WR);
@@ -142,7 +146,9 @@ void rom_poll()
     if (s_length > 0 && !EECON1bits.WR) {
         INTCONbits.GIE = 0;
         EECON1bits.WREN = 1;
-
+#ifdef _IS_PIC16F887_CARD
+        EECON1bits.EEPGD = 0;
+#endif
         EEADR = s_destinationAddr++;
         EEDATA = *(s_source++);
         EECON2 = 0x55;
@@ -160,6 +166,13 @@ void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length)
     s_length = length;
     s_destinationAddr = destinationAddr;
     s_source = source;
+}
+
+void rom_write_imm(BYTE destinationAddr, const BYTE* source, BYTE length) {
+    rom_write(destinationAddr, source, length);
+    while (s_length > 0) {
+        rom_poll();
+    }
 }
 
 #endif

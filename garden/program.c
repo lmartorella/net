@@ -5,11 +5,14 @@
 #include "display.h"
 #include "timers.h"
 #include "outputs.h"
-#include "eeprom.h"
+
+#include "../fw/hardware/eeprom.h"
 
 static const long RELAIS_ON_TIME_TICKS = 3 * TICK_PER_SEC;
 static const long RELAIS_OFF_TIME_TICKS = 3 * TICK_PER_SEC;
 static long s_ticksToWait;
+
+static __eeprom char PROGR_DATA[8];
 
 #ifndef __DEBUG
 #define SUPPORTED_ZONES 4
@@ -56,14 +59,14 @@ void imm_init() {
 void program_load() {
     memcpy(s_savedTimes, s_times, sizeof(char) * SUPPORTED_ZONES);
     // TODO: read EEPROM
-    eprom_read(s_times, sizeof(char) * SUPPORTED_ZONES);
+    rom_read((BYTE)PROGR_DATA, s_times, sizeof(char) * SUPPORTED_ZONES);
     s_modified = 0;
 }
 
 // Save program from immediate memory
 void program_save() {
     // TODO: write EEPROM
-    eprom_write(s_times, sizeof(char) * SUPPORTED_ZONES);
+    rom_write_imm((BYTE)PROGR_DATA, s_times, sizeof(char) * SUPPORTED_ZONES);
     s_modified = 0;
 }
 

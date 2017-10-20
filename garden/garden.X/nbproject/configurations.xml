@@ -4,13 +4,21 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f1" displayName="bus" projectFiles="true">
+        <logicalFolder name="f1" displayName="hardware" projectFiles="true">
+          <itemPath>../../fw/hardware/hw.h</itemPath>
+          <itemPath>../../fw/hardware/fuses_garden_bean.h</itemPath>
+          <itemPath>../../fw/hardware/eeprom.h</itemPath>
+          <itemPath>../../fw/hardware/fuses_pic16f887.inc</itemPath>
+        </logicalFolder>
+        <itemPath>../../fw/pch.h</itemPath>
+      </logicalFolder>
       <itemPath>../timers.h</itemPath>
       <itemPath>../display.h</itemPath>
       <itemPath>../inputs.h</itemPath>
       <itemPath>../program.h</itemPath>
       <itemPath>../outputs.h</itemPath>
       <itemPath>../hw/ports.h</itemPath>
-      <itemPath>../eeprom.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -20,12 +28,18 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f1" displayName="bus" projectFiles="true">
+        <logicalFolder name="f1" displayName="hardware" projectFiles="true">
+          <itemPath>../../fw/hardware/eeprom.c</itemPath>
+          <itemPath>../../fw/hardware/hw.c</itemPath>
+          <itemPath>../../fw/hardware/tick_pic16.c</itemPath>
+        </logicalFolder>
         <itemPath>../../fw/appio.c</itemPath>
         <itemPath>../../fw/bus_client.c</itemPath>
         <itemPath>../../fw/lib8.c</itemPath>
         <itemPath>../../fw/persistence.c</itemPath>
         <itemPath>../../fw/protocol.c</itemPath>
         <itemPath>../../fw/sinks.c</itemPath>
+        <itemPath>../../fw/rs485.c</itemPath>
       </logicalFolder>
       <itemPath>../main.c</itemPath>
       <itemPath>../program.c</itemPath>
@@ -34,7 +48,6 @@
       <itemPath>../display.c</itemPath>
       <itemPath>../inputs.c</itemPath>
       <itemPath>../tests/porttest.c</itemPath>
-      <itemPath>../eeprom.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
