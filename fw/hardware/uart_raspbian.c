@@ -230,8 +230,8 @@ void uart_read(BYTE* data, UART_RX_MD* md) {
     uint32_t rx = mmap_rd(uartMap, UART_REG_DR);
     *data = rx & 0xff;
     // And then read ERRORS associated to that byte
-    md->oerr = (rx & UART_REG_DR_OE);
-    md->ferr = (rx & UART_REG_DR_FE);
+    md->oerr = (rx & UART_REG_DR_OE) != 0;
+    md->ferr = (rx & UART_REG_DR_FE) != 0;
     BOOL perr = (rx & UART_REG_DR_PE) != 0;
     md->rc9 = s_rc9 ? !perr : perr;
 
