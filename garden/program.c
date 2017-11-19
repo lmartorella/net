@@ -12,15 +12,7 @@ static const long RELAIS_ON_TIME_TICKS = 3 * TICK_PER_SEC;
 static const long RELAIS_OFF_TIME_TICKS = 3 * TICK_PER_SEC;
 static long s_ticksToWait;
 
-static __eeprom char PROGR_DATA[8];
-
-#ifndef __DEBUG
-#define SUPPORTED_ZONES 4
-static const int SECONDS_PER_MINUTE = 60;
-#else
-#define SUPPORTED_ZONES 3
-static const int SECONDS_PER_MINUTE = 3;
-#endif
+static __eeprom char PROGR_DATA[SUPPORTED_ZONES];
 
 static char s_times[SUPPORTED_ZONES];
 static char s_savedTimes[SUPPORTED_ZONES];

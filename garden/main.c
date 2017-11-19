@@ -5,6 +5,7 @@
 #include "inputs.h"
 #include "outputs.h"
 #include "program.h"
+#include "state.h"
 
 #include "../fw/pch.h"
 #include "../fw/hardware/tick.h"
@@ -28,21 +29,6 @@
 // CONFIG2
 #pragma config BOR4V = BOR40V   // Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
 #pragma config WRT = OFF        // Flash Program Memory Self Write Enable bits (Write protection off)
-
-typedef enum { 
-    // Off, display off
-    OFF,
-    // Immediate program mode
-    PROGRAM_IMMEDIATE,
-    // Display water level (future usage))
-    LEVEL_CHECK,
-    // Program the timer mode
-    PROGRAM_TIMER,
-    // Looping a program (manual or automatic)
-    IN_USE,
-    // Timer for OK string
-    WAIT_FOR_IMMEDIATE            
-} UI_STATE;
 
 UI_STATE g_state;
 

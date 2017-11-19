@@ -1,6 +1,14 @@
 #ifndef PROGRAM_H
 #define	PROGRAM_H
 
+#ifndef __DEBUG
+#define SUPPORTED_ZONES 4
+static const int SECONDS_PER_MINUTE = 60;
+#else
+#define SUPPORTED_ZONES 3
+static const int SECONDS_PER_MINUTE = 3;
+#endif
+
 // Load program to immediate memory
 void program_load();
 // Save program from immediate memory

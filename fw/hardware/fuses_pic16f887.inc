@@ -1,11 +1,8 @@
 #include "../pch.h"
 #include "../appio.h"
-
+   
+// Configuraton in garden source code
     
-    // Configuraton in garden source code
-    
-#define _XTAL_FREQ SYSTEM_CLOCK
-
 void wait40us(void)
 {	
     __delay_us(40);
