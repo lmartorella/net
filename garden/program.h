@@ -9,6 +9,8 @@ static const int SECONDS_PER_MINUTE = 60;
 static const int SECONDS_PER_MINUTE = 3;
 #endif
 
+extern char imm_times[SUPPORTED_ZONES];
+
 // Load program to immediate memory
 void program_load();
 // Save program from immediate memory
@@ -30,6 +32,10 @@ void imm_start();
 void imm_stop();
 // Poll
 bit imm_poll();
+
+extern bit gsink_start;
+void gsink_init();
+
 
 #endif	/* PROGRAM_H */
 

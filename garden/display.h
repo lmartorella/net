@@ -9,6 +9,9 @@ void display_mode(char modeCode);
 void display_data(const char* str);
 void display_dotBlink(char _dotBlink);
 
+// Display last E with stopped timers
+void display_error_fixed();
+
 // Start irrigation animation on first digit
 void display_mode_anim();
 

@@ -12,9 +12,12 @@ static const long RELAIS_ON_TIME_TICKS = 3 * TICK_PER_SEC;
 static const long RELAIS_OFF_TIME_TICKS = 3 * TICK_PER_SEC;
 static long s_ticksToWait;
 
+// The non-volatile program (for timer input)
 static __eeprom char PROGR_DATA[SUPPORTED_ZONES];
 
-static char s_times[SUPPORTED_ZONES];
+// The current program ready to start. During activity, the numbers decreases to zero (TODO)
+char imm_times[SUPPORTED_ZONES];
+// Temp buffer to save immediate times when the user changes the program through the UI
 static char s_savedTimes[SUPPORTED_ZONES];
 static int s_current_zone;
 static bit s_modified;
@@ -40,7 +43,7 @@ static void imm_update_disp();
 
 // Clear immediate memory
 void imm_init() {
-    memset(s_times, 0, SUPPORTED_ZONES * sizeof(char));
+    memset(imm_times, 0, SUPPORTED_ZONES * sizeof(char));
     memset(s_savedTimes, 0, SUPPORTED_ZONES * sizeof(char));
     s_current_zone = -1;
     s_modified = 0;
@@ -49,16 +52,16 @@ void imm_init() {
 
 // Load program to immediate memory
 void program_load() {
-    memcpy(s_savedTimes, s_times, sizeof(char) * SUPPORTED_ZONES);
+    memcpy(s_savedTimes, imm_times, sizeof(char) * SUPPORTED_ZONES);
     // TODO: read EEPROM
-    rom_read((BYTE)PROGR_DATA, s_times, sizeof(char) * SUPPORTED_ZONES);
+    rom_read((BYTE)PROGR_DATA, imm_times, sizeof(char) * SUPPORTED_ZONES);
     s_modified = 0;
 }
 
 // Save program from immediate memory
 void program_save() {
     // TODO: write EEPROM
-    rom_write_imm((BYTE)PROGR_DATA, s_times, sizeof(char) * SUPPORTED_ZONES);
+    rom_write_imm((BYTE)PROGR_DATA, imm_times, sizeof(char) * SUPPORTED_ZONES);
     s_modified = 0;
 }
 
@@ -70,8 +73,8 @@ void imm_zone_pressed(int zone) {
     if (zone != s_current_zone) {
         s_current_zone = zone;
         // If zero, change it
-        if (s_times[zone] == 0) {
-            s_times[zone] = 1;
+        if (imm_times[zone] == 0) {
+            imm_times[zone] = 1;
             s_modified = 1;
         }
     }
@@ -80,7 +83,7 @@ void imm_zone_pressed(int zone) {
         
         // Change the time
         // Step 0 -> 1,2,3,4,5,7,10,13,16,20,25,30
-        int v = s_times[zone];
+        int v = imm_times[zone];
         if (v < 5) {
             v++;
         }
@@ -99,24 +102,26 @@ void imm_zone_pressed(int zone) {
         else {
             v = 0;
         }
-        s_times[zone] = v;
+        imm_times[zone] = v;
     }
 }
 
 // reset 
 void imm_load() { 
-    memcpy(s_times, s_savedTimes, sizeof(char) * SUPPORTED_ZONES);
+    memcpy(imm_times, s_savedTimes, sizeof(char) * SUPPORTED_ZONES);
 }
 
 void imm_restart(int zone) {
+    // Find the starting zone
     s_current_zone = zone;
     for (signed char i = SUPPORTED_ZONES - 1; i >= 0; i--) {
-        if (s_times[i]) {
+        if (imm_times[i]) {
             s_current_zone = i;
         }
     }
-    if (s_times[s_current_zone] == 0) { 
-        s_times[s_current_zone] = 1;
+    // If user clicked to enter in IMM mode, have at least 1 minute if all zero.
+    if (imm_times[s_current_zone] == 0) { 
+        imm_times[s_current_zone] = 1;
     }
     
     s_modified = 0;
@@ -129,7 +134,7 @@ void imm_restart(int zone) {
 
 // Update the display with the immediate memory
 static void imm_update_disp() {
-    int val = s_times[s_current_zone];
+    int val = imm_times[s_current_zone];
     if (s_state == RELAIS_ON) {
         // Use elapsing time
         int elapsedMinutes = ((timer_get_time() - s_stateTime) / (TICK_PER_SEC * SECONDS_PER_MINUTE));
@@ -154,7 +159,7 @@ static void imm_update_disp() {
             disp_zone_led(i, LED_BLINK);
         }
         else {
-            disp_zone_led(i, s_times[i] != 0 ? LED_ON : LED_OFF);
+            disp_zone_led(i, imm_times[i] != 0 ? LED_ON : LED_OFF);
         }
     }
 }
@@ -171,7 +176,7 @@ static void go_state(IMM_STATE state) {
 static void go_next_zone() {
     // Find next programmed
     while (++s_current_zone < SUPPORTED_ZONES) {
-        if (s_times[s_current_zone] > 0) {
+        if (imm_times[s_current_zone] > 0) {
             // Found.
             go_state(RELAIS_WAIT_FOR_ON);
             return;
@@ -211,7 +216,7 @@ bit imm_poll() {
             if (elapsedTicks > RELAIS_ON_TIME_TICKS) { 
                 // Switch it on, go next state
                 output_set(s_current_zone, 1);
-                s_ticksToWait = s_times[s_current_zone] * SECONDS_PER_MINUTE * TICK_PER_SEC;
+                s_ticksToWait = imm_times[s_current_zone] * SECONDS_PER_MINUTE * TICK_PER_SEC;
                 go_state(RELAIS_ON);
             }
             break;
@@ -221,7 +226,7 @@ bit imm_poll() {
                 // Switch off
                 output_set(s_current_zone, 0);
                 // Switch off the led
-                s_times[s_current_zone] = 0;
+                imm_times[s_current_zone] = 0;
                 go_state(RELAIS_WAIT_FOR_OFF);
             }
             break;

@@ -44,6 +44,7 @@ namespace Lucky.HomeMock.Core
                     _serviceListener = null;
                 }
             }
+            Logger.Log("Listen", "Port", Port);
         }
 
         public void StartServer(CancellationToken cancellationToken)

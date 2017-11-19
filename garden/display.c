@@ -86,6 +86,12 @@ static void display_on() {
     BUTTON_LED_0 = 1;
 }
 
+void display_error_fixed() {
+    digits[2] = 'E';
+    currDig = 1;
+    timer_off();
+}
+
 // Common bank
 static unsigned char map @0x7d;
 static void next_digit() {

@@ -49,8 +49,8 @@
 #define RS485_PIR_RCIF PIR1bits.RCIF
 #define RS485_PIE_TXIE PIE1bits.TXIE
 #define RS485_PIE_RCIE PIE1bits.RCIE
-#define RS485_TRIS_TX TRISBbits.TRISB6
-#define RS485_TRIS_RX TRISBbits.TRISB7
+#define RS485_TRIS_TX TRISCbits.TRISC6
+#define RS485_TRIS_RX TRISCbits.TRISC7
 #define RS485_TRIS_EN TRISDbits.TRISD1
 #define RS485_PORT_EN PORTDbits.RD1
 #define RS485_BAUD 19200
@@ -82,8 +82,6 @@
 #define TICK_TYPE WORD
 
 #undef HAS_LED
-#define LED_PORTBIT PORTBbits.RB5
-#define LED_TRISBIT TRISBbits.TRISB5
 
 
 // Reset the device with fatal error

@@ -8,6 +8,7 @@
 #define HAS_BUS
 #define HAS_RS485
 
+// 17008 is the debug port
 #define SERVER_CONTROL_UDP_PORT 17008
 #define CLIENT_TCP_PORT 20000
 

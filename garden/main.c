@@ -27,7 +27,7 @@
 #pragma config LVP = OFF        // Low Voltage Programming Enable bit (RB3 pin has digital I/O, HV on MCLR must be used for programming)
 
 // CONFIG2
-#pragma config BOR4V = BOR40V   // Brown-out Reset Selection bit (Brown-out Reset set to 4.0V)
+#pragma config BOR4V = BOR21V   // Brown-out Reset Selection bit (Brown-out Reset set to 2.1V), since now Raspberry introduce a lot of noise on the PSU
 #pragma config WRT = OFF        // Flash Program Memory Self Write Enable bits (Write protection off)
 
 UI_STATE g_state;
@@ -107,6 +107,7 @@ int main() {
     portb_setup();
     imm_init();
     output_setup();
+    gsink_init();
     
     g_state = OFF;
     
@@ -114,6 +115,15 @@ int main() {
    
     while (1) {
         CLRWDT();
+        
+ /*       if (g_lastException) {
+            // Show E
+            display_error_fixed();
+            INTCONbits.GIE = 0;
+            // Wait 2 secs and reset
+            wait1s();
+            RESET();
+        }*/
         
 #if defined(HAS_BUS_CLIENT) || defined(HAS_BUS_SERVER)
         bus_poll();
@@ -242,6 +252,13 @@ int main() {
                 }
             }
         }
+
+        // Received program from the bus?
+        if (gsink_start) {
+            gsink_start = 0;
+            goto in_use;
+        }
+
         continue;
 in_use:    
         // Immediately switch to in use, using the current loaded program

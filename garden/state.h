@@ -3,7 +3,7 @@
 
 typedef enum { 
     // Off, display off
-    OFF,
+    OFF = 0,
     // Immediate program mode
     PROGRAM_IMMEDIATE,
     // Display water level (future usage))
@@ -12,7 +12,7 @@ typedef enum {
     PROGRAM_TIMER,
     // Looping a program (manual or automatic)
     IN_USE,
-    // Timer for OK string
+    // Timer used after new programming, while the display shows OK, to go back to imm state (2 seconds)
     WAIT_FOR_IMMEDIATE            
 } UI_STATE;
 
