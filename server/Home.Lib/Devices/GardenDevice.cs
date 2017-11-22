@@ -17,9 +17,14 @@ namespace Lucky.Home.Devices
             {
                 if (IsFullOnline)
                 {
-                    Sinks.OfType<GardenSink>().First().Read();
+                    var sink = Sinks.OfType<GardenSink>().First();
+                    bool isAval = sink.Read();
+                    if (isAval)
+                    {
+                        sink.WriteProgram(new int[] { 2, 3, 99 });
+                    }
                 }
-            }, null, 0, 500);
+            }, null, 0, 1000);
         }
     }
 }
