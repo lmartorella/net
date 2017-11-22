@@ -62,7 +62,7 @@ namespace Lucky.Home.Sinks
             {
                 // Unknown sink type
                 Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", node.NodeId);
-                return null;
+                return new SinkBase(sinkFourCc);
             }
 
             var sink = (SinkBase)Activator.CreateInstance(type);

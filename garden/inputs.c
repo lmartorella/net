@@ -40,7 +40,7 @@ static unsigned char get_state() {
     char ret = 0;
     ret |= !BUTTON_IN_EXT;
     ret <<= 1;
-#ifndef __DEBUG
+#ifndef DEBUG_PINS
     ret |= !BUTTON_IN_4;
 #endif
     ret <<= 1;

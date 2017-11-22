@@ -1,6 +1,10 @@
 #ifndef DISPLAY_H
 #define	DISPLAY_H
 
+#ifdef __DEBUG
+#define DEBUG_PINS
+#endif
+
 void display_setup();
 void display_off();
 void display_poll();

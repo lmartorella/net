@@ -1,6 +1,10 @@
 #ifndef INPUTS_H
 #define	INPUTS_H
 
+#ifdef __DEBUG
+#define DEBUG_PINS
+#endif
+
 void portb_setup();
 
 // Wait for a PORTB event.

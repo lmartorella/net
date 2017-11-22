@@ -14,10 +14,11 @@ namespace Lucky.Home.Sinks
         private int _index;
         protected ILogger Logger;
 
-        protected SinkBase()
+        public SinkBase(string fourcc = null)
         {
             Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name);
             SubCount = 0;
+            FourCc = fourcc ?? SinkManager.GetSinkFourCc(GetType());
         }
 
         internal void Init(ITcpNode node, int index)
@@ -55,13 +56,7 @@ namespace Lucky.Home.Sinks
 
         internal ITcpNode Node { get; private set; }
 
-        public string FourCc
-        {
-            get
-            {
-                return SinkManager.GetSinkFourCc(GetType());
-            }
-        }
+        public string FourCc { get; private set; }
 
         protected bool Read(Action<IConnectionReader> readHandler, [CallerMemberName] string context = "")
         {

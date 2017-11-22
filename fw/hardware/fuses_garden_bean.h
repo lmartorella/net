@@ -81,7 +81,10 @@
 #define TICK_PRESCALER 256
 #define TICK_TYPE WORD
 
-#undef HAS_LED
+// The protocol led is overridden with the first button (in OFF state)
+#define HAS_LED
+#define LED_PORTBIT PORTAbits.RA3
+#define LED_TRISBIT TRISAbits.TRISA3
 
 
 // Reset the device with fatal error

@@ -116,15 +116,6 @@ int main() {
     while (1) {
         CLRWDT();
         
- /*       if (g_lastException) {
-            // Show E
-            display_error_fixed();
-            INTCONbits.GIE = 0;
-            // Wait 2 secs and reset
-            wait1s();
-            RESET();
-        }*/
-        
 #if defined(HAS_BUS_CLIENT) || defined(HAS_BUS_SERVER)
         bus_poll();
 #endif
@@ -134,6 +125,7 @@ int main() {
 #ifdef HAS_RS485
         rs485_poll();
 #endif
+        pers_poll();
 
         // Poll animations
         display_poll();

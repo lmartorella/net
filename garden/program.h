@@ -1,7 +1,11 @@
 #ifndef PROGRAM_H
 #define	PROGRAM_H
 
-#ifndef __DEBUG
+#ifdef __DEBUG
+#define DEBUG_PINS
+#endif
+
+#ifndef DEBUG_PINS
 #define SUPPORTED_ZONES 4
 static const int SECONDS_PER_MINUTE = 60;
 #else

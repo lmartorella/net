@@ -1,11 +1,15 @@
 #ifndef XC_PORTS_H
 #define	XC_PORTS_H
 
+#ifdef __DEBUG
+#define DEBUG_PINS
+#endif
+
 #define BUTTON_LED_0 PORTDbits.RD2
 #define BUTTON_LED_1 PORTDbits.RD3
 #define BUTTON_LED_2 PORTEbits.RE1
 #define BUTTON_LED_3 PORTBbits.RB5
-#ifndef __DEBUG
+#if !defined(DEBUG_PINS)
 // ICD uses RB7
 #define BUTTON_LED_4 PORTBbits.RB7
 #endif
@@ -14,12 +18,12 @@
 #define BUTTON_IN_1 PORTBbits.RB1
 #define BUTTON_IN_2 PORTBbits.RB3
 #define BUTTON_IN_3 PORTBbits.RB0
-#ifndef __DEBUG
+#if !defined(DEBUG_PINS)
 // ICD uses RB6
 #define BUTTON_IN_4 PORTBbits.RB6
 #endif
 #define BUTTON_IN_EXT PORTBbits.RB2
-#ifndef __DEBUG
+#if !defined(DEBUG_PINS)
 #define BUTTON_IN_MASK 0x5f
 #else
 #define BUTTON_IN_MASK 0x1f

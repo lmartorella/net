@@ -68,7 +68,7 @@ void display_off() {
     BUTTON_LED_1 = 0;
     BUTTON_LED_2 = 0;
     BUTTON_LED_3 = 0;
-#ifndef __DEBUG
+#ifndef DEBUG_PINS
     BUTTON_LED_4 = 0;
 #endif
     
@@ -84,12 +84,6 @@ static void display_on() {
     s_state = 1;
     timer_on();
     BUTTON_LED_0 = 1;
-}
-
-void display_error_fixed() {
-    digits[2] = 'E';
-    currDig = 1;
-    timer_off();
 }
 
 // Common bank
@@ -245,7 +239,7 @@ static void set_zone_led(char led, char lit) {
         case 2:
             BUTTON_LED_3 = lit;
             break;
-#ifndef __DEBUG
+#ifndef DEBUG_PINS
         case 3:
             BUTTON_LED_4 = lit;
             break;
