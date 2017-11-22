@@ -19,7 +19,6 @@ void rom_write(const void* destination, const void* source, WORD length);
 
 void rom_read(BYTE sourceAddress, BYTE* destination, BYTE length);
 void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length);
-void rom_write_imm(BYTE destinationAddr, const BYTE* source, BYTE length);
 
 #define EEPROM_MODIFIER eeprom
 

@@ -13,6 +13,7 @@ static const int SECONDS_PER_MINUTE = 60;
 static const int SECONDS_PER_MINUTE = 3;
 #endif
 
+// The current program ready to start or in use. During activity, each numbers decreases to zero
 extern char imm_times[SUPPORTED_ZONES];
 
 // Load program to immediate memory

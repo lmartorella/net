@@ -109,7 +109,6 @@
         <itemPath>../tcpipstack/TCPIPStack/UDP.c</itemPath>
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
-      <itemPath>../main.c</itemPath>
       <itemPath>../persistence.c</itemPath>
       <itemPath>../displaySink.c</itemPath>
       <itemPath>../audioSink.c</itemPath>
@@ -122,6 +121,7 @@
       <itemPath>../halfduplex.c</itemPath>
       <itemPath>../dcf77.c</itemPath>
       <itemPath>../rs485.c</itemPath>
+      <itemPath>../net.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

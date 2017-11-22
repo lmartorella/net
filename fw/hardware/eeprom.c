@@ -168,11 +168,4 @@ void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length)
     s_source = source;
 }
 
-void rom_write_imm(BYTE destinationAddr, const BYTE* source, BYTE length) {
-    rom_write(destinationAddr, source, length);
-    while (s_length > 0) {
-        rom_poll();
-    }
-}
-
 #endif
