@@ -177,6 +177,7 @@ static void uart_reset() {
 
 void uart_init() {
     // TODO: get the peripherial frequency
+    // Measure it with "vcgencmd measure_clock uart"
     double fb = 48000000.0 / (16.0 * RS485_BAUD);
     ibrd = (uint32_t)floor(fb);
     fbrd = (uint32_t)(fmod(fb, 1.0) * 64);

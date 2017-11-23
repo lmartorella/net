@@ -32,6 +32,7 @@ bit gardenSink_read() {
         s_readState = RS_READZONES;
     }
     if (s_readState == RS_READZONES) {
+        memset(s_zoneTimes, 0, SUPPORTED_ZONES);
         // Read zone count
         if (prot_control_readAvail() < s_readZoneCount) {
             // Poll again

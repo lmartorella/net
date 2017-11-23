@@ -21,7 +21,7 @@ namespace Lucky.Home.Devices
                     bool isAval = sink.Read();
                     if (isAval)
                     {
-                        sink.WriteProgram(new int[] { 2, 3, 99 });
+                        sink.WriteProgram(new int[] { 0, 0, 0, 1 });
                     }
                 }
             }, null, 0, 1000);
