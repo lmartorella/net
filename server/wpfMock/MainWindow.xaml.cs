@@ -18,6 +18,7 @@ namespace Lucky.HomeMock
         private HeloSender _heloSender;
         private DisplaySink _displaySink;
         private readonly SystemSink _systemSink;
+        private readonly GardenSink _gardenSink;
         private readonly DigitalInputArraySink _digitalInputsSink;
         private readonly DigitalOutputArraySink _digitalOutputsSink;
         private SamilPanelMock _solarSink;
@@ -30,6 +31,7 @@ namespace Lucky.HomeMock
 
             _displaySink = new DisplaySink();
             _systemSink = new SystemSink(false);
+            _gardenSink = new GardenSink();
 
             ResetReasons = Enum.GetValues(typeof(ResetReason)).Cast<ResetReason>().ToArray();
             ResetReason = _systemSink.ResetReason;
@@ -43,6 +45,10 @@ namespace Lucky.HomeMock
                     DisplayBox.Text = args.Item;
                 });
             };
+            _gardenSink.NewConfig += (sender, args) =>
+            {
+                LogLine(args.Item);
+            };
 
             SwitchesCount = 8;
             _digitalInputsSink = new DigitalInputArraySink(this);
@@ -55,7 +61,7 @@ namespace Lucky.HomeMock
             controlPort.StartServer(_cancellationTokenSrc.Token);
             _childSystemSink = new SystemSink(true);
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
-            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink }, new[] { _childSystemSink }, HeloSender);
+            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink, _gardenSink }, new[] { _childSystemSink }, HeloSender);
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
 

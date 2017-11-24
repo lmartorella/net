@@ -14,9 +14,11 @@ namespace Lucky.Home.Devices
         private readonly Type[] _requiredSinkTypes;
         private readonly ObservableCollection<SubSink> _sinks = new ObservableCollection<SubSink>();
         private bool _isFullOnline;
+        protected ILogger Logger;
 
         protected DeviceBase()
         {
+            Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name);
             var attr = (RequiresAttribute[])GetType().GetCustomAttributes(typeof(RequiresAttribute));
             if (attr == null || attr.Length == 0)
             {
