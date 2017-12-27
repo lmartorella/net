@@ -2,6 +2,8 @@ import * as express from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as moment from 'moment';
+import * as net from 'net';
+import { setTimeout } from 'timers';
 
 var app = express();
 var args = process.argv.slice(2);
@@ -213,7 +215,38 @@ app.get('/r/imm', (req, res) => {
     }
 });
 app.get('/r/powToday', (req, res) => {
-    res.send(getPvChart(req.query && Number(req.query.day)));
+    setTimeout(() => {
+        res.send(getPvChart(req.query && Number(req.query.day)));
+    }, 1000);
+});
+
+app.get('/r/garden', (req, res) => {
+    // Make request to server
+    let pipe = net.connect('\\\\.\\pipe\\NETGARDEN', () => {
+        // Connected
+        pipe.setNoDelay(true);
+        pipe.setDefaultEncoding('utf8');
+        
+        let resp = '';
+
+        let respond = () => {
+            pipe.destroy();
+            res.send("Resp: " + JSON.parse(resp).resp);
+        };
+
+        pipe.on('data', data => {
+            resp += data.toString();
+            if (resp.charCodeAt(resp.length - 1) === 13) {
+                respond();
+            }
+        });
+        pipe.once('end', data => {
+            respond();
+        });
+        
+        // Send request
+        pipe.write(JSON.stringify({ req: "Hello world" }) + '\r\n');
+    });
 });
 
 app.use('/app', express.static('app'));

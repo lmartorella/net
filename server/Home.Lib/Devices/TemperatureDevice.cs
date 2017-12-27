@@ -13,12 +13,9 @@ namespace Lucky.Home.Devices
     public class TemperatureDevice : DeviceBase
     {
         private Timer _timer;
-        private ILogger Logger { get; set; }
 
         public TemperatureDevice()
         {
-            Logger = Manager.GetService<LoggerFactory>().Create("TempDevice");
-
             _timer = new Timer(o =>
             {
                 if (IsFullOnline)

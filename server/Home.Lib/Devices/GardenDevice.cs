@@ -4,9 +4,10 @@ using System;
 using System.Threading;
 using Lucky.Services;
 using System.IO;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.IO.Pipes;
+using System.Text;
 
 namespace Lucky.Home.Devices
 {
@@ -41,18 +42,71 @@ namespace Lucky.Home.Devices
             cfgFIleObserver.NotifyFilter = NotifyFilters.LastWrite;
             cfgFIleObserver.EnableRaisingEvents = true;
 
-            //_timer = new Timer(o =>
-            //{
-            //    if (IsFullOnline)
-            //    {
-            //        var sink = Sinks.OfType<GardenSink>().First();
-            //        bool isAval = sink.Read();
-            //        if (isAval)
-            //        {
-            //            sink.WriteProgram(new int[] { 0, 0, 0, 1 });
-            //        }
-            //    }
-            //}, null, 0, 1000);
+            _timer = new Timer(o =>
+            {
+                if (IsFullOnline)
+                {
+                    var sink = Sinks.OfType<GardenSink>().First();
+                    bool isAval = sink.Read();
+                    if (isAval)
+                    {
+                        sink.WriteProgram(new int[] { 0, 0, 0, 1 });
+                    }
+                }
+            }, null, 0, 3000);
+
+            StartNamedPipe();
+        }
+
+        [DataContract]
+        public class WebResponse
+        {
+            [DataMember]
+            public string resp { get; set; }
+        }
+
+        [DataContract]
+        public class WebRequest
+        {
+            [DataMember]
+            public string req { get; set; }
+        }
+
+        private async void StartNamedPipe()
+        {
+            var reqSer = new DataContractJsonSerializer(typeof(WebRequest));
+            var respSer = new DataContractJsonSerializer(typeof(WebResponse));
+
+            while (true)
+            {
+                NamedPipeServerStream stream = null;
+                try
+                {
+                    // Open named pipe
+                    stream = new NamedPipeServerStream(@"\\.\NETGARDEN");
+                    await stream.WaitForConnectionAsync();
+                    WebRequest req;
+                    //var req = reqSer.ReadObject(stream) as WebRequest;
+                    {
+                        var r = new StreamReader(stream, Encoding.UTF8, false, 1024, true);
+                        var buf = await r.ReadLineAsync();
+                        req = (WebRequest)reqSer.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(buf)));
+                        Console.WriteLine("<- " + req);
+                    }
+                    respSer.WriteObject(stream, new WebResponse { resp = req.req });
+                    stream.Write(new byte[] { 10, 13 }, 0, 2);
+                    stream.Flush();
+                    stream.WaitForPipeDrain();
+                    stream.Disconnect();
+                }
+                finally
+                {
+                    if (stream != null)
+                    {
+                        stream.Dispose();
+                    }
+                }
+            }
         }
 
         private void Debounce(Action handler)

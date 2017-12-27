@@ -8,9 +8,9 @@
             "type": "node",
             "request": "launch",
             "name": "Avvia programma",
-            "program": "${file}",
+            "program": "${workspaceFolder}/server.js",
             "args": [
-                "C:\\Users\\lucia\\AppData\\Roaming\\Home\\Db\\SAMIL"
+                "${workspaceFolder}/debug"
             ]
         }
     ]
