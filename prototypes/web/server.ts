@@ -231,7 +231,7 @@ app.get('/r/garden', (req, res) => {
 
         let respond = () => {
             pipe.destroy();
-            res.send("Resp: " + JSON.parse(resp).resp);
+            res.send("Resp: " + resp);
         };
 
         pipe.on('data', data => {
@@ -245,7 +245,7 @@ app.get('/r/garden', (req, res) => {
         });
         
         // Send request
-        pipe.write(JSON.stringify({ req: "Hello world" }) + '\r\n');
+        pipe.write(JSON.stringify({ getProgram: true }) + '\r\n');
     });
 });
 

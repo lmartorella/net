@@ -6,8 +6,9 @@ using Lucky.Services;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using System.IO.Pipes;
-using System.Text;
+using Lucky.Net;
+using System.Threading.Tasks;
+using Lucky.Home.Model;
 
 namespace Lucky.Home.Devices
 {
@@ -18,6 +19,14 @@ namespace Lucky.Home.Devices
         private Timer _timer;
         private FileInfo _cfgFile;
         private Timer _debounceTimer;
+        private TimeProgram<GardenCycle> _timeProgram;
+
+        [DataContract]
+        public class GardenCycle : TimeProgram<GardenCycle>.Cycle
+        {
+            [DataMember]
+            public int[] Zones;
+        }
 
         public GardenDevice()
         {
@@ -27,11 +36,8 @@ namespace Lucky.Home.Devices
             {
                 using (var stream = _cfgFile.OpenWrite())
                 {
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        // No data
-                        writer.Write("{ }");
-                    }
+                    // No data. Write the current settings
+                    new DataContractJsonSerializer(typeof(Configuration)).WriteObject(stream, new Configuration { Program = TimeProgram<GardenCycle>.DefaultProgram });
                 }
             }
             ReadConfig();
@@ -59,56 +65,40 @@ namespace Lucky.Home.Devices
         }
 
         [DataContract]
-        public class WebResponse
+        public class WebRequest
         {
-            [DataMember]
-            public string resp { get; set; }
+            [DataMember(Name = "getProgram")]
+            public bool GetProgram { get; set; }
         }
 
         [DataContract]
-        public class WebRequest
+        public class WebResponse
         {
-            [DataMember]
-            public string req { get; set; }
+            /// <summary>
+            /// List of programs (if requested)
+            /// </summary>
+            [DataMember(Name = "program")]
+            public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
         }
 
         private async void StartNamedPipe()
         {
-            var reqSer = new DataContractJsonSerializer(typeof(WebRequest));
-            var respSer = new DataContractJsonSerializer(typeof(WebResponse));
-
-            while (true)
+            var server = new PipeJsonServer<WebRequest, WebResponse>("NETGARDEN");
+            server.ManageRequest = req => 
             {
-                NamedPipeServerStream stream = null;
-                try
+                var resp = new WebResponse();
+                if (req.GetProgram)
                 {
-                    // Open named pipe
-                    stream = new NamedPipeServerStream(@"\\.\NETGARDEN");
-                    await stream.WaitForConnectionAsync();
-                    WebRequest req;
-                    //var req = reqSer.ReadObject(stream) as WebRequest;
-                    {
-                        var r = new StreamReader(stream, Encoding.UTF8, false, 1024, true);
-                        var buf = await r.ReadLineAsync();
-                        req = (WebRequest)reqSer.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(buf)));
-                        Console.WriteLine("<- " + req);
-                    }
-                    respSer.WriteObject(stream, new WebResponse { resp = req.req });
-                    stream.Write(new byte[] { 10, 13 }, 0, 2);
-                    stream.Flush();
-                    stream.WaitForPipeDrain();
-                    stream.Disconnect();
+                    resp.Program = _timeProgram.Program;
                 }
-                finally
-                {
-                    if (stream != null)
-                    {
-                        stream.Dispose();
-                    }
-                }
-            }
+                return Task.FromResult(resp);
+            };
+            await server.Start();
         }
 
+        /// <summary>
+        /// Used to read config when the FS notifies changes
+        /// </summary>
         private void Debounce(Action handler)
         {
             // Event comes two time (the first one with an empty file)
@@ -123,22 +113,25 @@ namespace Lucky.Home.Devices
         }
 
         /// <summary>
-        /// Deserialize JSON
+        /// JSON for configuration serialization
         /// </summary>
         [DataContract]
         public class Configuration
         {
-            [DataContract]
-            public class Program
-            {
-                [DataMember]
-                public string startTime;
-                [DataMember]
-                public int[] daysOfWeek;
-            }
+            [DataMember(Name = "program")]
+            public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
 
-            [DataMember]
-            public Program[] programs;
+            [DataMember(Name = "zoneMd")]
+            public ZoneMd[] ZoneMd { get; set; }
+        }
+
+        /// <summary>
+        /// Metadata descriptor for each zone
+        /// </summary>
+        public class ZoneMd
+        {
+            [DataMember(Name = "name")]
+            public string Name { get; set; }
         }
 
         private void ReadConfig()
@@ -159,7 +152,16 @@ namespace Lucky.Home.Devices
             }
 
             // Apply configuration
-            Logger.Log("New configuration acquired", "program#", configuration.programs.Length);
+            Logger.Log("New configuration acquired", "program#", configuration.Program.Cycles.Length);
+
+            if (_timeProgram == null)
+            {
+                _timeProgram = new TimeProgram<GardenCycle>(configuration.Program);
+            }
+            else
+            {
+                _timeProgram.Program = configuration.Program;
+            }
         }
     }
 }

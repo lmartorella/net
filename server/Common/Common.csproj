@@ -49,6 +49,8 @@
     <Compile Include="Home\Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="Home\Devices\SinkPath.cs" />
     <Compile Include="Home\NodeStatus.cs" />
+    <Compile Include="Net\IJsonWebServer.cs" />
+    <Compile Include="Net\PipeJsonServer.cs" />
     <Compile Include="Notification\NotificationService.cs" />
     <Compile Include="Services\IConfigurationService.cs" />
     <Compile Include="Services\ILogger.cs" />
