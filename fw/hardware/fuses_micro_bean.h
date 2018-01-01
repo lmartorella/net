@@ -7,6 +7,10 @@
 
 #define HAS_BUS
 
+// Enable firmware area
+#define HAS_FIRMWARE
+#define SINK_VECTOR_PTR @ 0x800
+
 // *****
 // Tick timer source. Uses TMR0 (8-bit prescales to 1:256), that resolve from 0.25ms to 16.7secs
 // *****

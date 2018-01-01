@@ -15,11 +15,15 @@
 #include "halfduplex.h"
 #endif
 
+
+#ifndef HAS_FIRMWARE
+
 static bit nil() {
     CLRWDT();
     return FALSE;
 }
 
+// Static allocation of sinks
 const char* const SINK_IDS = 
     SINK_SYS_ID
 #ifdef HAS_DIGIO
@@ -99,6 +103,7 @@ const SinkFunction const sink_writeHandlers[] = {
 #endif
 };
 
+#endif
 
 const TWOCC ResetCode = { "RS" };
 const TWOCC ExceptionText = { "EX" };

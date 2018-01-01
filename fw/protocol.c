@@ -120,8 +120,16 @@ static void SINK_command()
 #ifdef DEBUGMODE
     printch('k');
 #endif
+    
+#ifdef HAS_FIRMWARE
+    prot_control_writeW(e_header.sinkCount);
+    for (int i = 0; i < e_header.sinkCount; i++) {
+        prot_control_write(e_header.sinks[i].ID, sizeof(FOURCC));
+    }
+#else
     prot_control_writeW(SINK_IDS_COUNT);
     prot_control_write(SINK_IDS, SINK_IDS_COUNT * 4);
+#endif
     // end of transmission, over to Master
     prot_control_over();
 }
