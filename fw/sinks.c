@@ -103,6 +103,11 @@ const SinkFunction const sink_writeHandlers[] = {
 #endif
 };
 
+#else
+
+const FIRMWARE_HEADER e_header @ FW_SINK_VECTOR_PTR;
+const BYTE _e_filler[FW_SIZE] @ FW_SINK_VECTOR_PTR;
+
 #endif
 
 const TWOCC ResetCode = { "RS" };

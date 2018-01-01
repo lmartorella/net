@@ -226,14 +226,24 @@ void prot_poll()
 
     if (s_inReadSink >= 0) {
         // Tolerates empty rx buffer
-        if (!sink_readHandlers[s_inReadSink]()) {
+#ifdef HAS_FIRMWARE
+        BOOL again = e_header.sinks[s_inReadSink].readPtr();
+#else
+        BOOL again = sink_readHandlers[s_inReadSink]();
+#endif
+        if (!again) {
             s_inReadSink = -1;
         }
         return;
     }
     if (s_inWriteSink >= 0) {
         // Address sink
-        if (!sink_writeHandlers[s_inWriteSink]()){
+#ifdef HAS_FIRMWARE
+        BOOL again = e_header.sinks[s_inWriteSink].writePtr();
+#else
+        BOOL again = sink_writeHandlers[s_inWriteSink]();
+#endif
+        if (!again){
             s_inWriteSink = -1;
             // end of transmission, over to Master
             prot_control_over();

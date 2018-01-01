@@ -24,7 +24,8 @@ typedef struct {
     SINK_DESC sinks[];
 } FIRMWARE_HEADER;
 
-extern const FIRMWARE_HEADER e_header;// SINK_VECTOR_PTR;
+// Firmware location
+extern const FIRMWARE_HEADER e_header;
 
 #else
 extern const char* const SINK_IDS;
