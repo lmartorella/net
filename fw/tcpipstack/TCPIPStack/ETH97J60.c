@@ -57,6 +57,7 @@
 ********************************************************************/
 #define __ETH97J60_C
 
+#include "TCPIPStack/TCPIP.h"
 #include "HardwareProfile.h"
 #ifdef HAS_IP
 

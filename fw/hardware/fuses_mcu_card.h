@@ -62,7 +62,10 @@
 // IP: uses PORTA0,1 (leds)
 // ******
 #define HAS_IP
+
+// 17007: release, 17008: debug
 #define SERVER_CONTROL_UDP_PORT 17007
+// 20000: release, 20001: debug
 #define CLIENT_TCP_PORT 20000
 
 // ******

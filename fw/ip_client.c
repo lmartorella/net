@@ -15,7 +15,7 @@
 static UDP_SOCKET s_heloSocket;  
 // TCP lister control socket
 static TCP_SOCKET s_controlSocket;
-static bit s_started = FALSE;
+static bit s_lastDhcpState = FALSE;
 static bit s_sendHelo = 0;
 
 /*
@@ -83,7 +83,7 @@ void prot_control_over()
 
 bit prot_control_isConnected()
 {
-    return s_started && TCPIsConnected(s_controlSocket);
+    return s_lastDhcpState && TCPIsConnected(s_controlSocket);
 }
 
 WORD prot_control_readAvail()
@@ -129,27 +129,27 @@ void ip_prot_init()
 */
 void ip_prot_slowTimer()
 {
-    char buffer[16];
-    int dhcpOk;
+    BOOL dhcpOk = DHCPIsBound(0);
 
-    dhcpOk = DHCPIsBound(0) != 0;
-
-    if (dhcpOk != s_started)
+    if (dhcpOk != s_lastDhcpState)
     {
-            if (dhcpOk)
-            {
-                    unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
-                    sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
-                    printlnUp(buffer);
-                    s_started = TRUE;
-            }
-            else
-            {
-                    s_started = FALSE;
-                    fatal("DHCP.nok");
-            }
+        char buffer[16];
+        if (dhcpOk)
+        {
+            unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
+            sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
+            printlnUp(buffer);
+            s_lastDhcpState = TRUE;
+        }
+        else
+        {
+            sprintf(buffer, "DHCP ERR");
+            printlnUp(buffer);
+            s_lastDhcpState = FALSE;
+            //fatal("DHCP.nok");
+        }
     }
-    if (s_started)
+    if (dhcpOk)
     {
         // Ping server every second. Enqueue HELO packet
         s_sendHelo = 1;

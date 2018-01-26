@@ -152,7 +152,7 @@ namespace Lucky.Home.Devices
             }
 
             // Apply configuration
-            Logger.Log("New configuration acquired", "program#", configuration.Program.Cycles.Length);
+            Logger.Log("New configuration acquired", "program#", configuration?.Program?.Cycles?.Length);
 
             if (_timeProgram == null)
             {
