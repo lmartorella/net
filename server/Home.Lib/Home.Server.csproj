@@ -43,7 +43,6 @@
     <Compile Include="Application\ConfigurationService.cs" />
     <Compile Include="Application\HomeApp.cs" />
     <Compile Include="Db\FsTimeSeries.cs" />
-    <Compile Include="Db\Aggregation.cs" />
     <Compile Include="Db\ISupportCsv.cs" />
     <Compile Include="Db\ITimeSeries.cs" />
     <Compile Include="Db\PeriodData.cs" />

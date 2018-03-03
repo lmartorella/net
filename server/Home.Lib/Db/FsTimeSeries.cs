@@ -10,13 +10,12 @@ namespace Lucky.Home.Db
         void Rotate(string fileName, DateTime start);
     }
 
-    class FsTimeSeries<T> : IFsTimeSeries, ITimeSeries<T> where T : ISupportAverage<T>, ISupportCsv, new()
+    class FsTimeSeries<T> : IFsTimeSeries, ITimeSeries<T> where T : IComparable<T>, ISupportCsv, new()
     {
         private string _folder;
         private FileInfo _fileName;
 
         private PeriodData<T> _currentPeriod;
-        private PeriodData<T> _lastPeriod;
         private string _timeStampFormat;
         private string _header;
         private ILogger _logger;
@@ -42,7 +41,6 @@ namespace Lucky.Home.Db
 
                 // Change filename, so open a new file
                 _fileName = new FileInfo(Path.Combine(_folder, fileName));
-                _lastPeriod = _currentPeriod;
                 _currentPeriod = new PeriodData<T>(start, _useSummerTime);
 
                 // Write CSV header
@@ -52,35 +50,6 @@ namespace Lucky.Home.Db
                 // Now the old file is free to be copied in backup
                 CopyToBackup(oldFileName);
             }
-        }
-
-        public T LastData
-        {
-            get
-            {
-                return _currentPeriod.LastSample;
-            }
-        }
-
-        public Aggregation<T> CurrentPeriodData
-        {
-            get
-            {
-                return _currentPeriod.GetAggregation(DateTime.Now);
-            }
-        }
-
-        public Aggregation<T> LastPeriodData
-        {
-            get
-            {
-                return _lastPeriod.GetAggregation(_currentPeriod.Begin);
-            }
-        }
-
-        public Aggregation<T> FromCustomPeriod(DateTime start, DateTime end)
-        {
-            throw new NotImplementedException();
         }
 
         private void WriteLine(Action<StreamWriter> handler)
