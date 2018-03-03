@@ -10,7 +10,7 @@ namespace Lucky.Home.Db
     /// <summary>
     /// Supports summer time translation
     /// </summary>
-    class FsTimeSeries<T> : ITimeSeries<T> where T : ISupportCsv, new()
+    class FsTimeSeries<T, Taggr> : ITimeSeries<T, Taggr> where T : ISample<T, Taggr>, new() where Taggr : class
     {
         private string _folder;
         private FileInfo _fileName;
