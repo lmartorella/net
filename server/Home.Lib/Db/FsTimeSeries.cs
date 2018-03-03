@@ -1,29 +1,70 @@
 ﻿using Lucky.Home.Notification;
 using Lucky.Services;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Lucky.Home.Db
 {
-    interface IFsTimeSeries
-    {
-        void Rotate(string fileName, DateTime start);
-    }
-
-    class FsTimeSeries<T> : IFsTimeSeries, ITimeSeries<T> where T : IComparable<T>, ISupportCsv, new()
+    /// <summary>
+    /// Supports summer time translation
+    /// </summary>
+    class FsTimeSeries<T> : ITimeSeries<T> where T : ISupportCsv, new()
     {
         private string _folder;
         private FileInfo _fileName;
 
-        private PeriodData<T> _currentPeriod;
+        private PeriodData _currentPeriod;
         private string _timeStampFormat;
         private string _header;
         private ILogger _logger;
-        private readonly bool _useSummerTime;
 
-        public FsTimeSeries(string folderPath, string timeStampFormat, bool useSummerTime)
+        private class PeriodData
         {
-            _useSummerTime = useSummerTime;
+            private List<Tuple<DateTime, T>> _data = new List<Tuple<DateTime, T>>();
+            private readonly TimeSpan _daylightDelta = TimeSpan.Zero;
+
+            public PeriodData(DateTime begin, bool useSummerTime)
+            {
+                Add(new T(), begin, true);
+
+                if (begin.IsDaylightSavingTime() && useSummerTime)
+                {
+                    // Calc summer time offset
+                    var rule = TimeZoneInfo.Local.GetAdjustmentRules().FirstOrDefault(r =>
+                    {
+                        return (begin > r.DateStart && begin < r.DateEnd);
+                    });
+                    if (rule != null)
+                    {
+                        _daylightDelta = rule.DaylightDelta;
+                    }
+                }
+            }
+
+            public void Add(T sample, DateTime ts)
+            {
+                Add(sample, ts, false);
+            }
+
+            private void Add(T sample, DateTime ts, bool init)
+            {
+                lock (_data)
+                {
+                    _data.Add(Tuple.Create(ts, sample));
+                }
+            }
+
+            internal DateTime Adjust(DateTime ts)
+            {
+                return ts - _daylightDelta;
+            }
+        }
+
+        public FsTimeSeries(string folderPath)
+        {
+            const string timeStampFormat = "HH:mm:ss";
             _logger = Manager.GetService<ILoggerFactory>().Create("Db/" + folderPath);
             _timeStampFormat = timeStampFormat;
             _folder = Manager.GetService<PersistenceService>().GetAppFolderPath("Db/" + folderPath);
@@ -33,15 +74,21 @@ namespace Lucky.Home.Db
             _logger.Log("Started");
         }
 
-        public void Rotate(string fileName, DateTime start)
+        private string ToPowerCvsName(DateTime now)
         {
+            return now.ToString("yyyy-MM-dd") + ".csv";
+        }
+
+        public void Rotate(DateTime start)
+        {
+            var fileName = ToPowerCvsName(start);
             lock (_fileName)
             {
                 var oldFileName = _fileName;
 
                 // Change filename, so open a new file
                 _fileName = new FileInfo(Path.Combine(_folder, fileName));
-                _currentPeriod = new PeriodData<T>(start, _useSummerTime);
+                _currentPeriod = new PeriodData(start, true);
 
                 // Write CSV header
                 WriteLine(writer => writer.WriteLine("TimeStamp," + _header));

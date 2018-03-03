@@ -33,21 +33,21 @@ namespace Lucky.Home.Application
             // Process all device created
             foreach (var device in devices.OfType<ISolarPanelDevice>())
             {
-                IFsTimeSeries db;
+                ITimeSeries db;
                 if (device is SamilInverterLoggerDevice)
                 {
-                    var dbd = new FsTimeSeries<SamilPowerData>(device.Name, "HH:mm:ss", false);
+                    var dbd = new FsTimeSeries<SamilPowerData>(device.Name);
                     ((SamilInverterLoggerDevice)device).Database = dbd;
                     db = dbd;
                 }
                 else
                 {
-                    var dbd = new FsTimeSeries<PowerData>(device.Name, "HH:mm:ss", false);
+                    var dbd = new FsTimeSeries<PowerData>(device.Name);
                     device.Database = dbd;
                     db = dbd;
                 }
-                db.Rotate(ToPowerCvsName(DateTime.Now), DateTime.Now);
-                _dayRotation += () => db.Rotate(ToPowerCvsName(DateTime.Now), DateTime.Now);
+                db.Rotate(DateTime.Now);
+                _dayRotation += () => db.Rotate(DateTime.Now);
             }
 
             // Rotate solar db at midnight 
@@ -69,11 +69,6 @@ namespace Lucky.Home.Application
             }, null, 0, 30 * 1000);
 
             base.Run();
-        }
-
-        private static string ToPowerCvsName(DateTime now)
-        {
-            return now.ToString("yyyy-MM-dd") + ".csv";
         }
     }
 }
