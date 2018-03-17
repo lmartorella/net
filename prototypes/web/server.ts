@@ -90,7 +90,7 @@ function decodeFault(fault: number): string {
 // Day can be 0 or -1 (T-1), -2, etc..
 function getCsvName(day?: number): string {
     // Get the latest CSV in the disk
-    var files = fs.readdirSync(csvFolder).filter(f => fs.lstatSync(path.join(csvFolder, f)).isFile());
+    var files = fs.readdirSync(csvFolder).filter(f => fs.lstatSync(path.join(csvFolder, f)).isFile() && f[0] !== '_');
     // Sort it by date
     files = files.sort();
     var idx = files.length - 1 + (day || 0);
