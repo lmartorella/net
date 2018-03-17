@@ -7,6 +7,7 @@ namespace ChartGen
 {
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             var chart = new CategoryChart("Title", "X Axis", "Y Axis");
@@ -14,7 +15,14 @@ namespace ChartGen
             var names = new[] { "One", "Two", "Three", "Four" };
             chart.AddSerie(values.Zip(names, (i1, i2) => Tuple.Create(i1, i2)));
 
-            var file = chart.CreateImage(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "chart.svg"));
+            var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "chart.png"));
+            using (var png = chart.ToPng())
+            {
+                using (var stream = file.OpenWrite())
+                {
+                    png.CopyTo(stream);
+                }
+            }
             Console.WriteLine(file.FullName);
         }
     }

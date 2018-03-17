@@ -11,6 +11,7 @@ namespace Lucky
 {
     class Program
     {
+        [STAThread]
         static void Main(string[] args)
         {
             Manager.Register<LoggerFactory, ILoggerFactory>();
@@ -44,7 +45,7 @@ namespace Lucky
                             </html>";
             var attachments = new Tuple<Stream, ContentType, string>[]
             {
-                Tuple.Create(CreateChartSvg(), new ContentType("image/svg+xml"), "chart")
+                Tuple.Create(CreateChartSvg(), new ContentType("image/png"), "chart")
             };
             notificationSvc.SendHtmlMail("Test HTML Mail", body, attachments);
         }
@@ -56,7 +57,7 @@ namespace Lucky
             var names = new[] { "One", "Two", "Three", "Four" };
             chart.AddSerie(values.Zip(names, (i1, i2) => Tuple.Create(i1, i2)));
 
-            return chart.CreateSvgStream();
+            return chart.ToPng();
         }
 
         private static void WaitBreak()

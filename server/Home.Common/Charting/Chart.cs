@@ -31,20 +31,9 @@ namespace Lucky.Charting
             _plotModel.Series.Add(serie);
         }
 
-        public FileInfo CreateImage(string path)
+        public Stream ToPng()
         {
-            SvgExporter exporter = new SvgExporter();
-            var ret = new FileInfo(path);
-            using (var file = ret.OpenWrite())
-            {
-                exporter.Export(_plotModel, file);
-            }
-            return ret;
-        }
-
-        public Stream CreateSvgStream()
-        {
-            SvgExporter exporter = new SvgExporter();
+            var exporter = new OxyPlot.Wpf.PngExporter();
             MemoryStream ms = new MemoryStream();
             exporter.Export(_plotModel, ms);
             ms.Position = 0;
