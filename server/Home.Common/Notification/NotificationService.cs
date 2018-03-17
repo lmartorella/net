@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using System.Linq;
+using System.Net.Mime;
+using System.IO;
 
 namespace Lucky.Home.Notification
 {
@@ -32,9 +34,14 @@ namespace Lucky.Home.Notification
     public interface INotificationService : IService
     {
         /// <summary>
-        /// Send an immediate mail (not coalesced)
+        /// Send an immediate text mail (not coalesced)
         /// </summary>
         Task SendMail(string title, string body);
+
+        /// <summary>
+        /// Send an immediate HTML mail (not coalesced)
+        /// </summary>
+        Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments);
 
         /// <summary>
         /// Enqueue a low-priority notification (sent aggregated each hour).
@@ -141,12 +148,48 @@ namespace Lucky.Home.Notification
         private Dictionary<string, Bucket> _statusBuckets = new Dictionary<string, Bucket>();
 
         /// <summary>
-        /// Send a mail
+        /// Send a text mail
         /// </summary>
         public async Task SendMail(string title, string body)
         {
             Logger.Log("SendingMail", "title", title, "body", body);
 
+            // Specify the message content.
+            MailMessage message = new MailMessage(_sender, _dest);
+            message.Subject = title;
+            message.Body = body;
+
+            await SendMail(message, () => SendMail(title, body));
+        }
+
+        /// <summary>
+        /// Send a HTML mail
+        /// </summary>
+        public async Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments)
+        {
+            Logger.Log("SendingHtmlMail", "title", title, "attch", attachments.Count());
+
+            // Specify the message content.
+            MailMessage message = new MailMessage(_sender, _dest);
+            message.Subject = title;
+
+            var alternateView = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
+
+            foreach (var attInfo in attachments)
+            {
+                LinkedResource resource = new LinkedResource(attInfo.Item1, attInfo.Item2);
+                resource.ContentId = attInfo.Item3;
+                alternateView.LinkedResources.Add(resource);
+            }
+
+            message.AlternateViews.Add(alternateView);
+            message.IsBodyHtml = true;
+
+            await SendMail(message, () => SendHtmlMail(title, htmlBody, attachments));
+        }
+
+        private async Task SendMail(MailMessage message, Func<Task> retry)
+        {
             // Command line argument must the the SMTP host.
             SmtpClient client = new SmtpClient();
             client.DeliveryMethod = SmtpDeliveryMethod.Network;
@@ -154,11 +197,6 @@ namespace Lucky.Home.Notification
             client.Port = _smtpPort;
             client.Credentials = new NetworkCredential(_user, _password);
             client.EnableSsl = _enableSsl;
-
-            // Specify the message content.
-            MailMessage message = new MailMessage(_sender, _dest);
-            message.Subject = title;
-            message.Body = body;
 
             try
             {
@@ -176,7 +214,7 @@ namespace Lucky.Home.Notification
                 Logger.Exception(exc);
                 Logger.Log("Retrying in 30 seconds...");
                 // Retry
-                await Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t => SendMail(title, body));
+                await Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t => retry());
             }
         }
 

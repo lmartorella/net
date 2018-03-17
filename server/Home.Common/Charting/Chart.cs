@@ -41,5 +41,14 @@ namespace Lucky.Charting
             }
             return ret;
         }
+
+        public Stream CreateSvgStream()
+        {
+            SvgExporter exporter = new SvgExporter();
+            MemoryStream ms = new MemoryStream();
+            exporter.Export(_plotModel, ms);
+            ms.Position = 0;
+            return ms;
+        }
     }
 }
