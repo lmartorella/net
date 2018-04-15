@@ -31,9 +31,9 @@ namespace Lucky.Charting
             _plotModel.Series.Add(serie);
         }
 
-        public Stream ToPng()
+        public Stream ToPng(int width, int height)
         {
-            var exporter = new OxyPlot.Wpf.PngExporter();
+            var exporter = new OxyPlot.Wpf.PngExporter { Height = height, Width = width, Background = OxyColors.Transparent };
             MemoryStream ms = new MemoryStream();
             exporter.Export(_plotModel, ms);
             ms.Position = 0;

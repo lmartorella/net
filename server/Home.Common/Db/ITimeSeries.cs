@@ -44,5 +44,10 @@ namespace Lucky.Db
         /// Register new sample
         /// </summary>
         void AddNewSample(T sample);
+
+        /// <summary>
+        /// Get the current period data
+        /// </summary>
+        Taggr GetAggregatedData();
     }
 }

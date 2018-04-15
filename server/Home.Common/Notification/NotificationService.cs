@@ -41,7 +41,7 @@ namespace Lucky.Home.Notification
         /// <summary>
         /// Send an immediate HTML mail (not coalesced)
         /// </summary>
-        Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments);
+        Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null);
 
         /// <summary>
         /// Enqueue a low-priority notification (sent aggregated each hour).
@@ -165,8 +165,12 @@ namespace Lucky.Home.Notification
         /// <summary>
         /// Send a HTML mail
         /// </summary>
-        public async Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments)
+        public async Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null)
         {
+            if (attachments == null)
+            {
+                attachments = new Tuple<Stream, ContentType, string>[0];
+            }
             Logger.Log("SendingHtmlMail", "title", title, "attch", attachments.Count());
 
             // Specify the message content.

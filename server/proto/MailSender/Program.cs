@@ -31,33 +31,22 @@ namespace Lucky
         private static void SendHtmlMail()
         {
             var notificationSvc = Manager.GetService<INotificationService>();
-            var body = @"<html>
-                          <body>
-                            <table width=""100%"">
-                            <tr>
-                                <td style=""font-style:arial; color:maroon; font-weight:bold"">
-                                Test HTML message <br>
-                                <img src=""cid:chart"">
-                                </td>
-                            </tr>
-                            </table>
-                            </body>
-                            </html>";
+            var body = Resources.body;
             var attachments = new Tuple<Stream, ContentType, string>[]
             {
-                Tuple.Create(CreateChartSvg(), new ContentType("image/png"), "chart")
+                Tuple.Create(CreateChartPng(), new ContentType("image/png"), "chart")
             };
             notificationSvc.SendHtmlMail("Test HTML Mail", body, attachments);
         }
 
-        private static Stream CreateChartSvg()
+        private static Stream CreateChartPng()
         {
             var chart = new CategoryChart("Title", "X Axis", "Y Axis");
             var values = new[] { 12.0, 24.0, 48.0, 56.0 };
             var names = new[] { "One", "Two", "Three", "Four" };
             chart.AddSerie(values.Zip(names, (i1, i2) => Tuple.Create(i1, i2)));
 
-            return chart.ToPng();
+            return chart.ToPng(250, 250);
         }
 
         private static void WaitBreak()

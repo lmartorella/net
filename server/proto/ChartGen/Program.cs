@@ -16,7 +16,7 @@ namespace ChartGen
             chart.AddSerie(values.Zip(names, (i1, i2) => Tuple.Create(i1, i2)));
 
             var file = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "chart.png"));
-            using (var png = chart.ToPng())
+            using (var png = chart.ToPng(300, 300))
             {
                 using (var stream = file.OpenWrite())
                 {
