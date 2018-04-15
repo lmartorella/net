@@ -36,7 +36,8 @@ namespace Lucky.Home.Db
                 Begin = begin;
                 Enqueue(new T() { TimeStamp = begin }, true);
 
-                if (begin.IsDaylightSavingTime() && useSummerTime)
+                // Check if DST. However DST is usually starting at 3:00 AM, so use midday time
+                if ((begin.Date + TimeSpan.FromHours(12)).IsDaylightSavingTime() && useSummerTime)
                 {
                     // Calc summer time offset
                     var rule = TimeZoneInfo.Local.GetAdjustmentRules().FirstOrDefault(r =>
@@ -79,13 +80,16 @@ namespace Lucky.Home.Db
             public Taggr GetAggregatedData()
             {
                 var ret = new Taggr();
-                if (ret.Aggregate(Begin.Date, _data))
+                lock (_data)
                 {
-                    return ret;
-                }
-                else
-                {
-                    return null;
+                    if (ret.Aggregate(Begin.Date, _data))
+                    {
+                        return ret;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
         }
@@ -174,6 +178,11 @@ namespace Lucky.Home.Db
                     }
                 }
             }
+        }
+
+        public Taggr GetAggregatedData()
+        {
+            return _currentPeriod.GetAggregatedData();
         }
 
         public void AddNewSample(T sample)
