@@ -240,22 +240,25 @@ diameter 2.54 mm, horizontal, grid 10.16 mm</description>
 <text x="-1.27" y="2.54" size="0.4064" layer="25">&gt;NAME</text>
 <text x="-1.27" y="1.27" size="0.4064" layer="27">&gt;VALUE</text>
 </package>
-<package name="POLOLU-10-13">
-<wire x1="-4.93" y1="-2.54" x2="-4.93" y2="10.16" width="0.127" layer="21"/>
-<wire x1="-4.93" y1="10.16" x2="4.73" y2="10.16" width="0.127" layer="21"/>
-<wire x1="4.73" y1="10.16" x2="4.73" y2="-2.54" width="0.127" layer="21"/>
-<wire x1="4.73" y1="-2.54" x2="-4.93" y2="-2.54" width="0.127" layer="21"/>
-<pad name="P$1" x="-4.16" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<pad name="P$2" x="-1.62" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<pad name="P$3" x="0.92" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<pad name="P$4" x="3.46" y="-1.27" drill="0.9" shape="long" rot="R90"/>
-<circle x="2" y="8" radius="1.802775" width="0.127" layer="21"/>
-<wire x1="-3" y1="8" x2="-3" y2="4" width="0.127" layer="21"/>
-<wire x1="-3" y1="4" x2="-1" y2="4" width="0.127" layer="21"/>
-<wire x1="-1" y1="4" x2="-1" y2="8" width="0.127" layer="21"/>
-<wire x1="-1" y1="8" x2="-3" y2="8" width="0.127" layer="21"/>
-<rectangle x1="-4" y1="2" x2="-2" y2="3" layer="21"/>
-<rectangle x1="-4" y1="1" x2="-1" y2="3" layer="21"/>
+<package name="DSUN-MP1584">
+<wire x1="-11.788" y1="-7.62" x2="-11.788" y2="8.255" width="0.127" layer="21"/>
+<wire x1="-11.788" y1="8.255" x2="10.318" y2="8.255" width="0.127" layer="21"/>
+<wire x1="10.318" y1="8.255" x2="10.318" y2="-7.62" width="0.127" layer="21"/>
+<wire x1="10.318" y1="-7.62" x2="-11.788" y2="-7.62" width="0.127" layer="21"/>
+<pad name="IN1" x="8.89" y="7.27" drill="0.9" shape="long" rot="R180"/>
+<pad name="GND4" x="8.89" y="-6.7" drill="0.9" shape="long" rot="R180"/>
+<pad name="OUT1" x="-10.16" y="7.27" drill="0.9" shape="long" rot="R180"/>
+<pad name="GND1" x="-10.16" y="-4.16" drill="0.9" shape="long" rot="R180"/>
+<circle x="-4.35" y="5.46" radius="1.802775" width="0.127" layer="21"/>
+<wire x1="0.81" y1="1.65" x2="0.81" y2="-2.35" width="0.127" layer="21"/>
+<wire x1="0.81" y1="-2.35" x2="4.08" y2="-2.35" width="0.127" layer="21"/>
+<wire x1="4.08" y1="-2.35" x2="4.08" y2="1.65" width="0.127" layer="21"/>
+<wire x1="4.08" y1="1.65" x2="0.81" y2="1.65" width="0.127" layer="21"/>
+<pad name="IN2" x="8.89" y="4.73" drill="0.9" shape="long" rot="R180"/>
+<pad name="GND3" x="8.89" y="-4.16" drill="0.9" shape="long" rot="R180"/>
+<pad name="OUT2" x="-10.16" y="4.73" drill="0.9" shape="long" rot="R180"/>
+<pad name="GND2" x="-10.16" y="-6.7" drill="0.9" shape="long" rot="R180"/>
+<rectangle x1="-6.35" y1="-5.08" x2="-1.27" y2="1.27" layer="21"/>
 </package>
 <package name="1X04">
 <wire x1="6.985" y1="1.27" x2="8.255" y2="1.27" width="0.2032" layer="21"/>
@@ -1445,15 +1448,14 @@ Source: http://products.nichicon.co.jp/en/pdf/XJA043/e-ud.pdf</description>
 <text x="-2.54" y="-2.54" size="1.778" layer="96">&gt;VALUE</text>
 <pin name="GND" x="0" y="2.54" visible="off" length="short" direction="sup" rot="R270"/>
 </symbol>
-<symbol name="POLOLU">
-<pin name="VIN" x="-22.86" y="12.7" visible="pin" length="middle" direction="pwr"/>
-<pin name="SHTD" x="-22.86" y="7.62" visible="pin" length="middle" direction="pwr"/>
-<pin name="GND" x="-10.16" y="-5.08" visible="pin" length="middle" rot="R90"/>
-<pin name="VOUT" x="2.54" y="12.7" visible="pin" length="middle" rot="R180"/>
-<wire x1="-17.78" y1="0" x2="-2.54" y2="0" width="0.254" layer="94"/>
-<wire x1="-2.54" y1="0" x2="-2.54" y2="17.78" width="0.254" layer="94"/>
-<wire x1="-2.54" y1="17.78" x2="-17.78" y2="17.78" width="0.254" layer="94"/>
-<wire x1="-17.78" y1="17.78" x2="-17.78" y2="0" width="0.254" layer="94"/>
+<symbol name="SWITCH-REG">
+<pin name="VIN" x="-12.7" y="5.08" visible="pin" length="middle" direction="pwr"/>
+<pin name="GND" x="0" y="-12.7" visible="pin" length="middle" rot="R90"/>
+<pin name="VOUT" x="12.7" y="5.08" visible="pin" length="middle" rot="R180"/>
+<wire x1="-7.62" y1="-7.62" x2="7.62" y2="-7.62" width="0.254" layer="94"/>
+<wire x1="7.62" y1="-7.62" x2="7.62" y2="10.16" width="0.254" layer="94"/>
+<wire x1="7.62" y1="10.16" x2="-7.62" y2="10.16" width="0.254" layer="94"/>
+<wire x1="-7.62" y1="10.16" x2="-7.62" y2="-7.62" width="0.254" layer="94"/>
 </symbol>
 <symbol name="M04">
 <wire x1="3.81" y1="-7.62" x2="-2.54" y2="-7.62" width="0.4064" layer="94"/>
@@ -1616,18 +1618,19 @@ general purpose rectifier, 1 A</description>
 </device>
 </devices>
 </deviceset>
-<deviceset name="POLOLU-2098">
-<description>5V Regulator - Max in 42V</description>
+<deviceset name="DSUN-MP1584">
+<description>Switching Variable Regulator - 0.8V-18V
+Input: 4.5V-28V
+Max current: 3A</description>
 <gates>
-<gate name="G$1" symbol="POLOLU" x="10.16" y="-7.62"/>
+<gate name="G$1" symbol="SWITCH-REG" x="0" y="0"/>
 </gates>
 <devices>
-<device name="" package="POLOLU-10-13">
+<device name="" package="DSUN-MP1584">
 <connects>
-<connect gate="G$1" pin="GND" pad="P$3"/>
-<connect gate="G$1" pin="SHTD" pad="P$1"/>
-<connect gate="G$1" pin="VIN" pad="P$2"/>
-<connect gate="G$1" pin="VOUT" pad="P$4"/>
+<connect gate="G$1" pin="GND" pad="GND1"/>
+<connect gate="G$1" pin="VIN" pad="IN1"/>
+<connect gate="G$1" pin="VOUT" pad="OUT1"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -2110,24 +2113,23 @@ general purpose rectifier, 1 A</description>
 </class>
 </classes>
 <parts>
-<part name="IC1" library="custom" deviceset="MAX485" device="ST3485"/>
+<part name="IC1" library="custom" deviceset="MAX485" device="" value="MAX485"/>
 <part name="D1" library="custom" deviceset="1N4007" device=""/>
 <part name="J3" library="custom" deviceset="M02-SCREW-3.5MM" device="3.5MM"/>
 <part name="J4" library="custom" deviceset="M02-SCREW-3.5MM" device="3.5MM"/>
 <part name="GND1" library="custom" deviceset="GND" device=""/>
-<part name="U$1" library="custom" deviceset="POLOLU-2098" device=""/>
+<part name="U$1" library="custom" deviceset="DSUN-MP1584" device=""/>
 <part name="J1" library="custom" deviceset="M04" device=""/>
 <part name="J2" library="custom" deviceset="M02" device=""/>
 <part name="J5" library="custom" deviceset="M03" device=""/>
 <part name="C1" library="custom" deviceset="C-EU" device="050-025X075"/>
-<part name="C2" library="custom" deviceset="CPOL-EU" device="SMD4X5.3"/>
-<part name="C3" library="custom" deviceset="CPOL-EU" device="SMD4X5.3"/>
+<part name="C2" library="custom" deviceset="CPOL-EU" device="E2-4"/>
+<part name="C3" library="custom" deviceset="CPOL-EU" device="E2-4"/>
 <part name="GND2" library="custom" deviceset="GND" device=""/>
 <part name="GND3" library="custom" deviceset="GND" device=""/>
 <part name="GND4" library="custom" deviceset="GND" device=""/>
 <part name="GND5" library="custom" deviceset="GND" device=""/>
 <part name="GND6" library="custom" deviceset="GND" device=""/>
-<part name="C4" library="custom" deviceset="C-EU" device="050-025X075"/>
 </parts>
 <sheets>
 <sheet>
@@ -2157,7 +2159,7 @@ general purpose rectifier, 1 A</description>
 <instance part="J3" gate="G$1" x="-45.72" y="68.58"/>
 <instance part="J4" gate="G$1" x="73.66" y="35.56" rot="R180"/>
 <instance part="GND1" gate="1" x="-20.32" y="58.42"/>
-<instance part="U$1" gate="G$1" x="12.7" y="58.42"/>
+<instance part="U$1" gate="G$1" x="2.54" y="66.04"/>
 <instance part="J1" gate="G$1" x="12.7" y="15.24"/>
 <instance part="J2" gate="G$1" x="38.1" y="71.12" smashed="yes" rot="R180">
 <attribute name="VALUE" x="40.64" y="76.2" size="1.778" layer="96" rot="R180"/>
@@ -2173,7 +2175,6 @@ general purpose rectifier, 1 A</description>
 <instance part="IC1" gate="P" x="38.1" y="5.08"/>
 <instance part="GND5" gate="1" x="20.32" y="30.48"/>
 <instance part="GND6" gate="1" x="30.48" y="-5.08"/>
-<instance part="C4" gate="G$1" x="-15.24" y="66.04"/>
 </instances>
 <busses>
 </busses>
@@ -2181,8 +2182,8 @@ general purpose rectifier, 1 A</description>
 <net name="N$1" class="0">
 <segment>
 <pinref part="D1" gate="1" pin="A"/>
-<pinref part="J3" gate="G$1" pin="2"/>
-<wire x1="-38.1" y1="71.12" x2="-30.48" y2="71.12" width="0.1524" layer="91"/>
+<pinref part="J3" gate="G$1" pin="1"/>
+<wire x1="-38.1" y1="68.58" x2="-30.48" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -2192,26 +2193,19 @@ general purpose rectifier, 1 A</description>
 <wire x1="-20.32" y1="71.12" x2="-25.4" y2="71.12" width="0.1524" layer="91"/>
 <pinref part="U$1" gate="G$1" pin="VIN"/>
 <wire x1="-20.32" y1="68.58" x2="-20.32" y2="71.12" width="0.1524" layer="91"/>
-<wire x1="-20.32" y1="71.12" x2="-15.24" y2="71.12" width="0.1524" layer="91"/>
 <junction x="-20.32" y="71.12"/>
-<pinref part="C4" gate="G$1" pin="1"/>
-<wire x1="-15.24" y1="71.12" x2="-10.16" y2="71.12" width="0.1524" layer="91"/>
-<wire x1="-15.24" y1="68.58" x2="-15.24" y2="71.12" width="0.1524" layer="91"/>
-<junction x="-15.24" y="71.12"/>
+<wire x1="-20.32" y1="71.12" x2="-10.16" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="GND" class="0">
 <segment>
 <pinref part="C2" gate="G$1" pin="-"/>
 <pinref part="GND1" gate="1" pin="GND"/>
-<pinref part="C4" gate="G$1" pin="2"/>
-<wire x1="-20.32" y1="60.96" x2="-15.24" y2="60.96" width="0.1524" layer="91"/>
-<junction x="-20.32" y="60.96"/>
 </segment>
 <segment>
-<pinref part="J3" gate="G$1" pin="1"/>
+<pinref part="J3" gate="G$1" pin="2"/>
 <pinref part="GND2" gate="1" pin="GND"/>
-<wire x1="-35.56" y1="68.58" x2="-38.1" y2="68.58" width="0.1524" layer="91"/>
+<wire x1="-35.56" y1="68.58" x2="-38.1" y2="71.12" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="U$1" gate="G$1" pin="GND"/>
@@ -2235,7 +2229,7 @@ general purpose rectifier, 1 A</description>
 <junction x="30.48" y="-2.54"/>
 </segment>
 </net>
-<net name="N$4" class="0">
+<net name="5V" class="0">
 <segment>
 <pinref part="U$1" gate="G$1" pin="VOUT"/>
 <pinref part="C3" gate="G$1" pin="+"/>
@@ -2246,24 +2240,25 @@ general purpose rectifier, 1 A</description>
 <pinref part="J2" gate="G$1" pin="2"/>
 <wire x1="30.48" y1="71.12" x2="30.48" y2="68.58" width="0.1524" layer="91"/>
 <junction x="30.48" y="71.12"/>
+<junction x="17.78" y="71.12"/>
 </segment>
 </net>
-<net name="N$3" class="0">
+<net name="A" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="A"/>
-<pinref part="J4" gate="G$1" pin="2"/>
-<wire x1="55.88" y1="33.02" x2="66.04" y2="33.02" width="0.1524" layer="91"/>
+<pinref part="J4" gate="G$1" pin="1"/>
+<wire x1="55.88" y1="33.02" x2="66.04" y2="35.56" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$5" class="0">
+<net name="B" class="0">
 <segment>
-<pinref part="J4" gate="G$1" pin="1"/>
+<pinref part="J4" gate="G$1" pin="2"/>
 <pinref part="IC1" gate="G$1" pin="B"/>
-<wire x1="66.04" y1="35.56" x2="66.04" y2="38.1" width="0.1524" layer="91"/>
+<wire x1="66.04" y1="33.02" x2="66.04" y2="38.1" width="0.1524" layer="91"/>
 <wire x1="66.04" y1="38.1" x2="55.88" y2="38.1" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$6" class="0">
+<net name="TX" class="0">
 <segment>
 <pinref part="J5" gate="G$1" pin="2"/>
 <wire x1="20.32" y1="35.56" x2="25.4" y2="35.56" width="0.1524" layer="91"/>
@@ -2272,7 +2267,7 @@ general purpose rectifier, 1 A</description>
 <wire x1="25.4" y1="27.94" x2="30.48" y2="27.94" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$7" class="0">
+<net name="RX" class="0">
 <segment>
 <pinref part="J5" gate="G$1" pin="3"/>
 <pinref part="IC1" gate="G$1" pin="RO"/>
@@ -2280,7 +2275,7 @@ general purpose rectifier, 1 A</description>
 <wire x1="20.32" y1="43.18" x2="30.48" y2="43.18" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="N$8" class="0">
+<net name="3.3V" class="0">
 <segment>
 <pinref part="IC1" gate="P" pin="VCC"/>
 <pinref part="C1" gate="G$1" pin="1"/>
@@ -2292,7 +2287,7 @@ general purpose rectifier, 1 A</description>
 <junction x="30.48" y="12.7"/>
 </segment>
 </net>
-<net name="N$10" class="0">
+<net name="EN" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="RE/"/>
 <pinref part="IC1" gate="G$1" pin="DE"/>
