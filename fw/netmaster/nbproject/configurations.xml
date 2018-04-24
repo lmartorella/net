@@ -70,6 +70,7 @@
         <cTool>
           <standard>10</standard>
           <preprocessorList>
+            <Elem>DEBUG</Elem>
             <Elem>_CONF_RASPBIAN</Elem>
             <Elem>__USE_BSD</Elem>
           </preprocessorList>
@@ -141,13 +142,19 @@
     </conf>
     <conf name="Release" type="1">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
+          <standard>10</standard>
+          <commandlineTool>gcc</commandlineTool>
+          <preprocessorList>
+            <Elem>_CONF_RASPBIAN</Elem>
+            <Elem>__USE_BSD</Elem>
+          </preprocessorList>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
@@ -158,6 +165,11 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
       <item path="../appio.c" ex="false" tool="0" flavor2="0">
       </item>

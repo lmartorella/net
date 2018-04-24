@@ -8,8 +8,14 @@
 #define HAS_BUS
 #define HAS_RS485
 
+#ifdef DEBUG
 // 17008 is the debug port
 #define SERVER_CONTROL_UDP_PORT 17008
+#else
+// 17007 is the release port
+#define SERVER_CONTROL_UDP_PORT 17007
+#endif
+
 #define CLIENT_TCP_PORT 20000
 
 #define RS485_BAUD 19200

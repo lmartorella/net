@@ -94,6 +94,10 @@ WORD prot_control_readAvail()
 void ip_prot_init()
 {
     println("IP/DHCP");
+#if defined(__GNU)
+    printf("Listen port: %d\n", SERVER_CONTROL_UDP_PORT);
+#endif
+    
 #ifdef __XC8
     memset(&AppConfig, 0, sizeof(AppConfig));
     AppConfig.Flags.bIsDHCPEnabled = 1;

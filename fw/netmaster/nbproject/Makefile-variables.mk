@@ -15,13 +15,13 @@ CND_PACKAGE_DIR_Debug=dist/Debug/GNU-Linux/package
 CND_PACKAGE_NAME_Debug=netmaster.tar
 CND_PACKAGE_PATH_Debug=dist/Debug/GNU-Linux/package/netmaster.tar
 # Release configuration
-CND_PLATFORM_Release=GNU-Windows
-CND_ARTIFACT_DIR_Release=dist/Release/GNU-Windows
+CND_PLATFORM_Release=GNU-Linux
+CND_ARTIFACT_DIR_Release=dist/Release/GNU-Linux
 CND_ARTIFACT_NAME_Release=netmaster
-CND_ARTIFACT_PATH_Release=dist/Release/GNU-Windows/netmaster
-CND_PACKAGE_DIR_Release=dist/Release/GNU-Windows/package
+CND_ARTIFACT_PATH_Release=dist/Release/GNU-Linux/netmaster
+CND_PACKAGE_DIR_Release=dist/Release/GNU-Linux/package
 CND_PACKAGE_NAME_Release=netmaster.tar
-CND_PACKAGE_PATH_Release=dist/Release/GNU-Windows/package/netmaster.tar
+CND_PACKAGE_PATH_Release=dist/Release/GNU-Linux/package/netmaster.tar
 #
 # include compiler specific variables
 #
