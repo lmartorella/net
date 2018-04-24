@@ -9,6 +9,7 @@ using System.Runtime.Serialization.Json;
 using Lucky.Net;
 using System.Threading.Tasks;
 using Lucky.Home.Model;
+using System.Collections.Generic;
 
 namespace Lucky.Home.Devices
 {
@@ -16,10 +17,13 @@ namespace Lucky.Home.Devices
     [Requires(typeof(GardenSink))]
     public class GardenDevice : DeviceBase
     {
-        private Timer _timer;
+        private static int POLL_PERIOD = 3000;
+        private Timer _pollTimer;
         private FileInfo _cfgFile;
         private Timer _debounceTimer;
+        private object _timeProgramLock = new object();
         private TimeProgram<GardenCycle> _timeProgram;
+        private readonly Queue<int[]> _cycleQueue = new Queue<int[]>();
 
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
@@ -48,27 +52,39 @@ namespace Lucky.Home.Devices
             cfgFIleObserver.NotifyFilter = NotifyFilters.LastWrite;
             cfgFIleObserver.EnableRaisingEvents = true;
 
-            _timer = new Timer(o =>
-            {
-                if (IsFullOnline)
-                {
-                    var sink = Sinks.OfType<GardenSink>().First();
-                    bool isAval = sink.Read();
-                    if (isAval)
-                    {
-                        sink.WriteProgram(new int[] { 0, 0, 0, 1 });
-                    }
-                }
-            }, null, 0, 3000);
-
+            // To receive commands from UI
             StartNamedPipe();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            lock (_timeProgramLock)
+            {
+                if (_timeProgram != null)
+                {
+                    _timeProgram.Dispose();
+                    _timeProgram = null;
+                }
+                if (_pollTimer != null)
+                {
+                    _pollTimer.Dispose();
+                }
+                _pollTimer = null;
+            }
+            base.Dispose(disposing);
         }
 
         [DataContract]
         public class WebRequest
         {
-            [DataMember(Name = "getProgram")]
-            public bool GetProgram { get; set; }
+            /// <summary>
+            /// Can be getProgram, setImmediate
+            /// </summary>
+            [DataMember(Name = "command")]
+            public string Command { get; set; }
+
+            [DataMember(Name = "immediate")]
+            public int[] ImmediateZones { get; set; }
         }
 
         [DataContract]
@@ -87,9 +103,17 @@ namespace Lucky.Home.Devices
             server.ManageRequest = req => 
             {
                 var resp = new WebResponse();
-                if (req.GetProgram)
+                switch (req.Command)
                 {
-                    resp.Program = _timeProgram.Program;
+                    case "getProgram":
+                        lock (_timeProgramLock)
+                        {
+                            resp.Program = _timeProgram.Program;
+                        }
+                        break;
+                    case "setImmediate":
+                        ScheduleCycle(req.ImmediateZones);
+                        break;
                 }
                 return Task.FromResult(resp);
             };
@@ -136,31 +160,97 @@ namespace Lucky.Home.Devices
 
         private void ReadConfig()
         {
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Configuration));
-            Configuration configuration;
-            try
+            lock (_timeProgramLock)
             {
-                using (var stream = File.Open(_cfgFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                if (_timeProgram != null)
                 {
-                    configuration = serializer.ReadObject(stream) as Configuration;
-                } 
-            }
-            catch (Exception exc)
-            {
-                Logger.Log("Cannot read garden configuration", "Exc", exc.Message);
-                return;
-            }
+                    _timeProgram.CycleTriggered -= HandleProgramCycle;
+                }
 
-            // Apply configuration
-            Logger.Log("New configuration acquired", "program#", configuration?.Program?.Cycles?.Length);
+                DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Configuration));
+                Configuration configuration;
+                try
+                {
+                    using (var stream = File.Open(_cfgFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        configuration = serializer.ReadObject(stream) as Configuration;
+                    }
+                }
+                catch (Exception exc)
+                {
+                    Logger.Log("Cannot read garden configuration", "Exc", exc.Message);
+                    return;
+                }
 
-            if (_timeProgram == null)
-            {
-                _timeProgram = new TimeProgram<GardenCycle>(configuration.Program);
+                // Apply configuration
+                Logger.Log("New configuration acquired", "program#", configuration?.Program?.Cycles?.Length);
+
+                if (_timeProgram == null)
+                {
+                    _timeProgram = new TimeProgram<GardenCycle>(configuration.Program);
+                }
+                else
+                {
+                    _timeProgram.Program = configuration.Program;
+                }
+
+                _timeProgram.CycleTriggered += HandleProgramCycle;
             }
-            else
+        }
+
+        private void HandleProgramCycle(object sender, TimeProgram<GardenCycle>.CycleTriggeredEventArgs e)
+        {
+            ScheduleCycle(e.Cycle.Zones);
+        }
+
+        private void ScheduleCycle(int[] zones)
+        {
+            lock (_cycleQueue)
             {
-                _timeProgram.Program = configuration.Program;
+                _cycleQueue.Enqueue(zones);
+            }
+            StartPollTimer();
+        }
+
+        private void StartPollTimer()
+        {
+            if (_pollTimer == null)
+            {
+                _pollTimer = new Timer(o =>
+                {
+                    if (IsFullOnline)
+                    {
+                        var sink = Sinks.OfType<GardenSink>().First();
+                        // Wait for a free garden device
+                        // Write fancy logs
+                        bool isAval = sink.Read();
+                        if (isAval)
+                        {
+                            lock (_cycleQueue)
+                            {
+                                if (_cycleQueue.Count == 0)
+                                {
+                                    StopPollTimer();
+                                }
+                                else
+                                {
+                                    var cycle = _cycleQueue.Dequeue();
+                                    sink.WriteProgram(cycle);
+                                    Console.WriteLine("== GARDEN RUN: Times: {0}", string.Join(", ", cycle.Select(t => t.ToString())));
+                                }
+                            }
+                        }
+                    }
+                }, null, 0, POLL_PERIOD);
+            }
+        }
+
+        private void StopPollTimer()
+        {
+            if (_pollTimer != null)
+            {
+                _pollTimer.Dispose();
+                _pollTimer = null;
             }
         }
     }

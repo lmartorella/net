@@ -245,7 +245,7 @@ app.get('/r/garden', (req, res) => {
         });
         
         // Send request
-        pipe.write(JSON.stringify({ getProgram: true }) + '\r\n');
+        pipe.write(JSON.stringify({ command: "setImmediate", immediate: [0, 0, 0, 5] }) + '\r\n');
     });
 });
 

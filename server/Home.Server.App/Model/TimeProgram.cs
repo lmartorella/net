@@ -21,9 +21,18 @@ namespace Lucky.Home.Model
             }
         }
 
-        public TimeProgram(ProgramData program)
+        public TimeProgram(ProgramData program = null)
         {
             Program = program ?? DefaultProgram;
+        }
+
+        public void Dispose()
+        {
+            if (_refreshTimer != null)
+            {
+                _refreshTimer.Dispose();
+                _refreshTimer = null;
+            }
         }
 
         public ProgramData Program
