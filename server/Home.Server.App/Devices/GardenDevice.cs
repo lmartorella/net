@@ -23,13 +23,19 @@ namespace Lucky.Home.Devices
         private Timer _debounceTimer;
         private object _timeProgramLock = new object();
         private TimeProgram<GardenCycle> _timeProgram;
-        private readonly Queue<int[]> _cycleQueue = new Queue<int[]>();
+        private readonly Queue<ImmediateProgram> _cycleQueue = new Queue<ImmediateProgram>();
 
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
         {
-            [DataMember]
+            [DataMember(Name = "zones")]
             public int[] Zones;
+        }
+
+        private class ImmediateProgram
+        {
+            public int[] Zones;
+            public string Name;
         }
 
         public GardenDevice()
@@ -112,7 +118,7 @@ namespace Lucky.Home.Devices
                         }
                         break;
                     case "setImmediate":
-                        ScheduleCycle(req.ImmediateZones);
+                        ScheduleCycle(new ImmediateProgram { Zones = req.ImmediateZones, Name = "Immediate" });
                         break;
                 }
                 return Task.FromResult(resp);
@@ -200,14 +206,14 @@ namespace Lucky.Home.Devices
 
         private void HandleProgramCycle(object sender, TimeProgram<GardenCycle>.CycleTriggeredEventArgs e)
         {
-            ScheduleCycle(e.Cycle.Zones);
+            ScheduleCycle(new ImmediateProgram { Zones = e.Cycle.Zones, Name = e.Cycle.Name } );
         }
 
-        private void ScheduleCycle(int[] zones)
+        private void ScheduleCycle(ImmediateProgram program)
         {
             lock (_cycleQueue)
             {
-                _cycleQueue.Enqueue(zones);
+                _cycleQueue.Enqueue(program);
             }
             StartPollTimer();
         }
@@ -235,8 +241,8 @@ namespace Lucky.Home.Devices
                                 else
                                 {
                                     var cycle = _cycleQueue.Dequeue();
-                                    sink.WriteProgram(cycle);
-                                    Console.WriteLine("== GARDEN RUN: Times: {0}", string.Join(", ", cycle.Select(t => t.ToString())));
+                                    sink.WriteProgram(cycle.Zones);
+                                    Console.WriteLine("== GARDEN RUN {1}: Times: {0}", string.Join(", ", cycle.Zones.Select(t => t.ToString()), cycle.Name));
                                 }
                             }
                         }
