@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Lucky.Home.Model;
 using System.Collections.Generic;
 using Lucky.Db;
+using Lucky.Home.Notification;
 
 namespace Lucky.Home.Devices
 {
@@ -48,6 +49,7 @@ namespace Lucky.Home.Devices
         private readonly Queue<ImmediateProgram> _cycleQueue = new Queue<ImmediateProgram>();
         private readonly FileInfo _csvFile;
         private Action _lastLogForStop;
+        private string[] _zoneNames = new string[0];
 
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
@@ -181,17 +183,8 @@ namespace Lucky.Home.Devices
             [DataMember(Name = "program")]
             public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
 
-            [DataMember(Name = "zoneMd")]
-            public ZoneMd[] ZoneMd { get; set; }
-        }
-
-        /// <summary>
-        /// Metadata descriptor for each zone
-        /// </summary>
-        public class ZoneMd
-        {
-            [DataMember(Name = "name")]
-            public string Name { get; set; }
+            [DataMember(Name = "zones")]
+            public string[] ZoneNames { get; set; }
         }
 
         private void ReadConfig()
@@ -219,6 +212,7 @@ namespace Lucky.Home.Devices
                 try
                 {
                     _timeProgram.SetProgram(configuration.Program);
+                    _zoneNames = configuration.ZoneNames ?? new string[0];
                 }
                 catch (ArgumentException exc)
                 {
@@ -318,7 +312,26 @@ namespace Lucky.Home.Devices
                 {
                     CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
                 }
+
+                // Send mail
+                string body = "Zone irrigate:" + Environment.NewLine + string.Join(Environment.NewLine, cycle.Zones.Select((z, i) => Tuple.Create(z, i)).Where(t => t.Item1 > 0).Select(t =>
+                {
+                    return string.Format("{0}: {1} minuti", GetZoneName(t.Item2), t.Item1);
+                }));
+                Manager.GetService<INotificationService>().SendMail("Giardino innaffiato", body);
             };
+        }
+
+        private string GetZoneName(int index)
+        {
+            if (index < _zoneNames.Length)
+            {
+                return _zoneNames[index];
+            }
+            else
+            {
+                return index.ToString();
+            }
         }
     }
 }
