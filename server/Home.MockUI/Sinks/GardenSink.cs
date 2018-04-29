@@ -2,12 +2,31 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace Lucky.HomeMock.Sinks
 {
     class GardenSink : SinkMockBase
     {
-        private byte[] _times = new byte[] { 2, 3, 4, 5, 6 };
+        private enum DeviceState : byte
+        {
+            Off = 0,
+            // Immediate program mode
+            ProgramImmediate,
+            // Display water level (future usage))
+            LevelCheck,
+            // Program the timer mode
+            ProgramTimer,
+            // Looping a program (manual or automatic)
+            InUse,
+            // Timer used after new programming, while the display shows OK, to go back to imm state (2 seconds)
+            WaitForImmediate
+        }
+
+        private byte[] _times = new byte[] { 0, 0, 0, 0, 0 };
+        private DeviceState _state = DeviceState.Off;
+        private Timer _timer;
+        private readonly object _lockObject = new object();
 
         public GardenSink() : base("GARD")
         {
@@ -17,19 +36,67 @@ namespace Lucky.HomeMock.Sinks
         {
             // Read new program
             short count = reader.ReadInt16();
-            _times = reader.ReadBytes(count);
-            NewConfig?.Invoke(this, new ItemEventArgs<string>(string.Format("Garden timer: {0)", string.Join(", ", _times.Select(t => t.ToString())))));
+            var times = reader.ReadBytes(count);
+
+            lock (_lockObject)
+            {
+                if (_state == DeviceState.Off)
+                {
+                    _times = times;
+                    LogLine?.Invoke(this, new ItemEventArgs<string>(string.Format("Garden timer: {0}", string.Join(", ", _times.Select(t => t.ToString())))));
+                    StartProgram();
+                }
+                else
+                {
+                    LogLine?.Invoke(this, new ItemEventArgs<string>("Program ignored: " + _state));
+                }
+            }
         }
 
-        public event EventHandler<ItemEventArgs<string>> NewConfig;
+        private void StartProgram()
+        {
+            lock (_lockObject)
+            {
+                _state = DeviceState.InUse;
+                _timer = new Timer(o =>
+                {
+                    lock (_lockObject)
+                    {
+                        if (_times.All(t => t == 0))
+                        {
+                            _state = DeviceState.Off;
+                            _timer.Dispose();
+                            _timer = null;
+                        }
+                        else
+                        {
+                            for (int i = 0; i < _times.Length; i++)
+                            {
+                                if (_times[i] > 0)
+                                {
+                                    _times[i]--;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }, null, 3000, 3000);
+            }
+        }
+
+        /// <summary>
+        /// For logging
+        /// </summary>
+        public event EventHandler<ItemEventArgs<string>> LogLine;
 
         public override void Write(BinaryWriter writer)
         {
-            // Returns always off
-            writer.Write((byte)0);
-            // Returns 5 lines
-            writer.Write((short)_times.Length);
-            writer.Write(_times);
+            lock (_lockObject)
+            {
+                writer.Write((byte)_state);
+                writer.Write((short)_times.Length);
+                writer.Write(_times);
+            }
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Lucky.HomeMock
                     DisplayBox.Text = args.Item;
                 });
             };
-            _gardenSink.NewConfig += (sender, args) =>
+            _gardenSink.LogLine += (sender, args) =>
             {
                 LogLine(args.Item);
             };

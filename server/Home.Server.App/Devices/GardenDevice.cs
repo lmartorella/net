@@ -10,9 +10,31 @@ using Lucky.Net;
 using System.Threading.Tasks;
 using Lucky.Home.Model;
 using System.Collections.Generic;
+using Lucky.Db;
 
 namespace Lucky.Home.Devices
 {
+    class GardenCsvRecord
+    {
+        [Csv("yyyy-MM-dd")]
+        public DateTime Date;
+
+        /// <summary>
+        /// Time of day of the first sample with power > 0
+        /// </summary>
+        [Csv("hh\\:mm\\:ss")]
+        public TimeSpan Time;
+
+        [Csv]
+        public string Cycle;
+
+        [Csv]
+        public string Zones;
+
+        [Csv]
+        public int Start;
+    }
+
     [Device("Garden")]
     [Requires(typeof(GardenSink))]
     public class GardenDevice : DeviceBase
@@ -22,8 +44,10 @@ namespace Lucky.Home.Devices
         private FileInfo _cfgFile;
         private Timer _debounceTimer;
         private object _timeProgramLock = new object();
-        private TimeProgram<GardenCycle> _timeProgram;
+        private readonly TimeProgram<GardenCycle> _timeProgram = new TimeProgram<GardenCycle>();
         private readonly Queue<ImmediateProgram> _cycleQueue = new Queue<ImmediateProgram>();
+        private readonly FileInfo _csvFile;
+        private Action _lastLogForStop;
 
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
@@ -40,8 +64,8 @@ namespace Lucky.Home.Devices
 
         public GardenDevice()
         {
-            var folder = Manager.GetService<PersistenceService>().GetAppFolderPath("Server");
-            _cfgFile = new FileInfo(Path.Combine(folder, "gardenCfg.json"));
+            var cfgColder = Manager.GetService<PersistenceService>().GetAppFolderPath("Server");
+            _cfgFile = new FileInfo(Path.Combine(cfgColder, "gardenCfg.json"));
             if (!_cfgFile.Exists)
             {
                 using (var stream = _cfgFile.OpenWrite())
@@ -50,10 +74,20 @@ namespace Lucky.Home.Devices
                     new DataContractJsonSerializer(typeof(Configuration)).WriteObject(stream, new Configuration { Program = TimeProgram<GardenCycle>.DefaultProgram });
                 }
             }
+
+            _timeProgram.CycleTriggered += HandleProgramCycle;
             ReadConfig();
 
+            // Prepare CSV file
+            var dbFolder = new DirectoryInfo(Manager.GetService<PersistenceService>().GetAppFolderPath("Db/GARDEN"));
+            _csvFile = new FileInfo(Path.Combine(dbFolder.FullName, "garden.csv"));
+            if (!_csvFile.Exists)
+            {
+                CsvHelper<GardenCsvRecord>.WriteCsvHeader(_csvFile);
+            }
+
             // Subscribe changes
-            var cfgFIleObserver = new FileSystemWatcher(folder, "gardenCfg.json");
+            var cfgFIleObserver = new FileSystemWatcher(cfgColder, "gardenCfg.json");
             cfgFIleObserver.Changed += (o, e) => Debounce(() => ReadConfig());
             cfgFIleObserver.NotifyFilter = NotifyFilters.LastWrite;
             cfgFIleObserver.EnableRaisingEvents = true;
@@ -66,11 +100,7 @@ namespace Lucky.Home.Devices
         {
             lock (_timeProgramLock)
             {
-                if (_timeProgram != null)
-                {
-                    _timeProgram.Dispose();
-                    _timeProgram = null;
-                }
+                _timeProgram.Dispose();
                 if (_pollTimer != null)
                 {
                     _pollTimer.Dispose();
@@ -168,11 +198,6 @@ namespace Lucky.Home.Devices
         {
             lock (_timeProgramLock)
             {
-                if (_timeProgram != null)
-                {
-                    _timeProgram.CycleTriggered -= HandleProgramCycle;
-                }
-
                 DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Configuration));
                 Configuration configuration;
                 try
@@ -189,18 +214,17 @@ namespace Lucky.Home.Devices
                 }
 
                 // Apply configuration
-                Logger.Log("New configuration acquired", "program#", configuration?.Program?.Cycles?.Length);
+                Logger.Log("New configuration acquired", "cycles#", configuration?.Program?.Cycles?.Length);
 
-                if (_timeProgram == null)
+                try
                 {
-                    _timeProgram = new TimeProgram<GardenCycle>(configuration.Program);
+                    _timeProgram.SetProgram(configuration.Program);
                 }
-                else
+                catch (ArgumentException exc)
                 {
-                    _timeProgram.Program = configuration.Program;
+                    // Error applying configuration
+                    Logger.Log("CONFIGURATION ERROR", "exc", exc.Message);
                 }
-
-                _timeProgram.CycleTriggered += HandleProgramCycle;
             }
         }
 
@@ -229,11 +253,17 @@ namespace Lucky.Home.Devices
                         var sink = Sinks.OfType<GardenSink>().First();
                         // Wait for a free garden device
                         // Write fancy logs
-                        bool isAval = sink.Read();
-                        if (isAval)
+                        bool isAvail = sink.Read(false);
+                        if (isAvail)
                         {
                             lock (_cycleQueue)
                             {
+                                if (_lastLogForStop != null)
+                                {
+                                    _lastLogForStop();
+                                    _lastLogForStop = null;
+                                }
+
                                 if (_cycleQueue.Count == 0)
                                 {
                                     StopPollTimer();
@@ -242,7 +272,8 @@ namespace Lucky.Home.Devices
                                 {
                                     var cycle = _cycleQueue.Dequeue();
                                     sink.WriteProgram(cycle.Zones);
-                                    Console.WriteLine("== GARDEN RUN {1}: Times: {0}", string.Join(", ", cycle.Zones.Select(t => t.ToString()), cycle.Name));
+
+                                    _lastLogForStop = LogStartProgram(cycle);
                                 }
                             }
                         }
@@ -258,6 +289,36 @@ namespace Lucky.Home.Devices
                 _pollTimer.Dispose();
                 _pollTimer = null;
             }
+        }
+
+        private Action LogStartProgram(ImmediateProgram cycle)
+        {
+            Logger.Log("Garden", "cycle start", cycle.Name);
+
+            var now = DateTime.Now;
+            GardenCsvRecord data = new GardenCsvRecord
+            {
+                Date = now.Date,
+                Time = now.TimeOfDay,
+                Cycle = cycle.Name,
+                Zones = string.Join(";", cycle.Zones.Select(t => t.ToString())),
+                Start = 1
+            };
+            lock (_csvFile)
+            {
+                CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
+            }
+
+            // Return the action to log the stop program
+            return () =>
+            {
+                Logger.Log("Garden", "cycle end", cycle.Name);
+                data.Start = 0;
+                lock (_csvFile)
+                {
+                    CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
+                }
+            };
         }
     }
 }

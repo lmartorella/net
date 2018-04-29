@@ -1,5 +1,5 @@
 ﻿using Lucky.Home.Serialization;
-using System;
+using Lucky.Services;
 using System.Linq;
 
 #pragma warning disable 649
@@ -41,7 +41,7 @@ namespace Lucky.Home.Sinks
             public byte[] ZoneTimes;
         }
 
-        public bool Read()
+        public bool Read(bool log)
         {
             bool isAvail = false;
             Read(reader =>
@@ -49,12 +49,15 @@ namespace Lucky.Home.Sinks
                 var md = reader.Read<ReadStatusMessageResponse>();
                 if (md != null)
                 {
-                    Console.WriteLine("== GARDEN MD: State {0}, Count {1}, Times: {2}", md.State, md.ZoneTimes.Length, string.Join(", ", md.ZoneTimes.Select(t => t.ToString())));
+                    if (log)
+                    {
+                        Logger.Log("GardenMd", "State", md.State, "Times", string.Join(", ", md.ZoneTimes.Select(t => t.ToString())));
+                    }
                     isAvail = md.State == DeviceState.Off;
                 }
                 else
                 {
-                    Console.WriteLine("== GARDEN MD: NO DATA");
+                    Logger.Log("GardenMd NO DATA");
                 }
             });
             return isAvail;
@@ -66,6 +69,8 @@ namespace Lucky.Home.Sinks
             {
                 writer.Write(new WriteStatusMessageRequest { ZoneTimes = zoneTimes.Select(t => (byte)t).ToArray() });
             });
+            // Log aloud new state
+            Read(true);
         }
     }
 }

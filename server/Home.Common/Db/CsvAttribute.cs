@@ -5,7 +5,7 @@ namespace Lucky.Db
     [AttributeUsage(AttributeTargets.Field)]
     public class CsvAttribute : Attribute
     {
-        public CsvAttribute(string format)
+        public CsvAttribute(string format = null)
         {
             Format = format;
         }

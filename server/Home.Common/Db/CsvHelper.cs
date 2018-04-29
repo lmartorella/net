@@ -43,7 +43,7 @@ namespace Lucky.Db
 
         private static string ToCsv(T value)
         {
-            return string.Join(",", s_fields.Select(fi => string.Format("{0:" + fi.Item2 + "}", fi.Item1.GetValue(value))));
+            return string.Join(",", s_fields.Select(fi => fi.Item2 != null ? string.Format("{0:" + fi.Item2 + "}", fi.Item1.GetValue(value)) : fi.Item1.GetValue(value)));
         }
 
         public static int[] ParseHeader(string line)
@@ -104,6 +104,9 @@ namespace Lucky.Db
                                 {
                                     value = d;
                                 }
+                                break;
+                            case TypeCode.String:
+                                value = parts[i];
                                 break;
                         }
 

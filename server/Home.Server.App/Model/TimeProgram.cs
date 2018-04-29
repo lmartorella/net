@@ -21,9 +21,9 @@ namespace Lucky.Home.Model
             }
         }
 
-        public TimeProgram(ProgramData program = null)
+        public TimeProgram()
         {
-            Program = program ?? DefaultProgram;
+            SetProgram(DefaultProgram);
         }
 
         public void Dispose()
@@ -41,26 +41,27 @@ namespace Lucky.Home.Model
             {
                 return _program;
             }
-            set
-            {
-                _program = value;
-                Validate();
-                InitTimers();
-            }
         }
 
-        private void Validate()
+        public void SetProgram(ProgramData value)
         {
-            if (_program == null || _program.Cycles == null)
+            Validate(value);
+            _program = value;
+            InitTimers();
+        }
+
+        private static void Validate(ProgramData program)
+        {
+            if (program == null || program.Cycles == null)
             {
-                throw new ArgumentNullException("Missing program");
+                throw new ArgumentNullException("program", "Missing program");
             }
-            foreach (var t in _program.Cycles.Select((cycle, idx) => new { cycle, idx }))
+            foreach (var t in program.Cycles.Select((cycle, idx) => new { cycle, idx }))
             {
                 var name = t.cycle.Name ?? t.idx.ToString();
                 if (t.cycle.End.HasValue && t.cycle.Start.HasValue && t.cycle.Start > t.cycle.End)
                 {
-                    throw new ArgumentOutOfRangeException("End before start: cycle " + name);
+                    throw new ArgumentOutOfRangeException("cycle " + name, "End before start");
                 }
                 if (t.cycle.WeekDays != null && t.cycle.WeekDays.Length == 0)
                 {
@@ -68,19 +69,19 @@ namespace Lucky.Home.Model
                 }
                 if (t.cycle.DayPeriod > 0 && t.cycle.WeekDays != null)
                 {
-                    throw new ArgumentOutOfRangeException("Both day period and week days specified: cycle " + name);
+                    throw new ArgumentOutOfRangeException("cycle " + name, "Both day period and week days specified");
                 }
                 if (t.cycle.DayPeriod <= 0 && t.cycle.WeekDays == null)
                 {
-                    throw new ArgumentOutOfRangeException("No day period nor week days specified: cycle " + name);
+                    throw new ArgumentOutOfRangeException("cycle " + name, "No day period nor week days specified");
                 }
                 if (t.cycle.DayPeriod > 0 && !t.cycle.Start.HasValue)
                 {
-                    throw new ArgumentOutOfRangeException("No start day for periodic table: cycle " + name);
+                    throw new ArgumentOutOfRangeException("cycle " + name, "No start day for periodic table");
                 }
                 if (t.cycle.StartTime < TimeSpan.Zero || t.cycle.StartTime > TimeSpan.FromDays(1))
                 {
-                    throw new ArgumentOutOfRangeException("Invalid start time: cycle " + name);
+                    throw new ArgumentOutOfRangeException("cycle " + name, "Invalid start time");
                 }
             }
         }

@@ -6,17 +6,13 @@ namespace Lucky.Db
 {
     public class TimeSample
     {
-        private const string DAY_TS_FORMAT = "HH:mm:ss";
-
-        [Csv(DAY_TS_FORMAT)]
+        [Csv("HH:mm:ss")]
         public DateTime TimeStamp;
     }
 
     public abstract class DayTimeSample<T> where T : TimeSample
     {
-        private const string DAY_AGGR_FORMAT = "yyyy-MM-dd";
-
-        [Csv(DAY_AGGR_FORMAT)]
+        [Csv("yyyy-MM-dd")]
         public DateTime Date;
 
         /// <summary>
