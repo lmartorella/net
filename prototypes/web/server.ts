@@ -233,20 +233,9 @@ app.get('/r/gardenCfg', (req, res) => {
     res.send(gardenCfg);
 });
 
-app.post('/r/gardenStart', (req, res) => {
-    let immediate = req.body;
-    if (!Array.isArray(immediate) || !immediate.every(v => typeof v === "number") || immediate.every(v => v <= 0)) {
-        // Do nothing
-        res.status(500);
-        res.send("Request incompatible");
-        console.log("r/gardenStart: incompatible request: " + JSON.stringify(req.body));
-        return;
-    }
-
+let sendToServer = (data: string, handler: (data: string) => void) => {
     // Make request to server
-    console.log("Connecting to pipe...");
     let pipe = net.connect('\\\\.\\pipe\\NETGARDEN', () => {
-        console.log("Connected to pipe.");
         // Connected
         pipe.setNoDelay(true);
         pipe.setDefaultEncoding('utf8');
@@ -255,7 +244,7 @@ app.post('/r/gardenStart', (req, res) => {
 
         let respond = () => {
             pipe.destroy();
-            res.send("Resp: " + resp);
+            handler(resp);
         };
 
         pipe.on('data', data => {
@@ -269,8 +258,29 @@ app.post('/r/gardenStart', (req, res) => {
         });
         
         // Send request
-        pipe.write(JSON.stringify({ command: "setImmediate", immediate }) + '\r\n');
+        pipe.write(data);
     });
+}
+
+app.post('/r/gardenStart', (req, res) => {
+    let immediate = req.body;
+    if (!Array.isArray(immediate) || !immediate.every(v => typeof v === "number") || immediate.every(v => v <= 0)) {
+        // Do nothing
+        res.status(500);
+        res.send("Request incompatible");
+        console.log("r/gardenStart: incompatible request: " + JSON.stringify(req.body));
+        return;
+    }
+
+    sendToServer(JSON.stringify({ command: "setImmediate", immediate }) + '\r\n', resp => {
+        res.send(resp);
+    })
+});
+
+app.post('/r/gardenStop', (req, res) => {
+    sendToServer(JSON.stringify({ command: "stop" }) + '\r\n', resp => {
+        res.send(resp);
+    })
 });
 
 app.use('/app', express.static('app'));

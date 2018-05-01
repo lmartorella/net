@@ -3,6 +3,7 @@ using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Services;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Sinks
 {
@@ -83,5 +84,14 @@ namespace Lucky.Home.Sinks
         }
 
         public int SubCount { get; protected set; }
+
+        public void ResetNode()
+        {
+            var systemSink = Node.Sink<ISystemSink>();
+            if (systemSink != null)
+            {
+                systemSink.Reset();
+            }
+        }
     }
 }

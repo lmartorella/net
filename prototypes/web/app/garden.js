@@ -17,12 +17,31 @@ class GardenController {
         });
     }
 
+    stop() {
+        this.$http.post("/r/gardenStop", "").then(resp => {
+            if (resp.status == 200) {
+                if (resp.data.error) {
+                    this.error = "ERROR: " + resp.data.error;
+                } else {
+                    this.message = "Fermato!";
+                }
+            } else {
+                this.error = "Cannot stop garden!";
+            }
+        }, err => {
+            this.error = "Cannot stop garden: " + err.statusText;
+        });
+    }
+
     start() {
-        console.log(JSON.stringify(this.zones));
         var body = this.zones.map(zone => new Number(zone.time));
         this.$http.post("/r/gardenStart", JSON.stringify(body)).then(resp => {
             if (resp.status == 200) {
-                this.message = "Avviato!";
+                if (resp.data.error) {
+                    this.error = "ERROR: " + resp.data.error;
+                } else {
+                    this.message = "Avviato!";
+                }
             } else {
                 this.error = "Cannot start garden!";
             }

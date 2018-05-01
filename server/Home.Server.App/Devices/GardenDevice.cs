@@ -62,6 +62,14 @@ namespace Lucky.Home.Devices
         {
             public int[] Zones;
             public string Name;
+
+            public bool IsEmpty
+            {
+                get
+                {
+                    return Zones.All(z => z <= 0);
+                }
+            }
         }
 
         public GardenDevice()
@@ -127,6 +135,12 @@ namespace Lucky.Home.Devices
         public class WebResponse
         {
             /// <summary>
+            /// Result/error
+            /// </summary>
+            [DataMember(Name = "error")]
+            public string Error { get; set; }
+
+            /// <summary>
             /// List of programs (if requested)
             /// </summary>
             [DataMember(Name = "program")]
@@ -136,7 +150,7 @@ namespace Lucky.Home.Devices
         private async void StartNamedPipe()
         {
             var server = new PipeJsonServer<WebRequest, WebResponse>("NETGARDEN");
-            server.ManageRequest = req => 
+            server.ManageRequest = async req => 
             {
                 var resp = new WebResponse();
                 switch (req.Command)
@@ -148,10 +162,22 @@ namespace Lucky.Home.Devices
                         }
                         break;
                     case "setImmediate":
-                        ScheduleCycle(new ImmediateProgram { Zones = req.ImmediateZones, Name = "Immediate" });
+                        resp.Error = ScheduleCycle(new ImmediateProgram { Zones = req.ImmediateZones, Name = "Immediate" });
+                        break;
+                    case "stop":
+                        bool stopped = false;
+                        foreach (var sink in Sinks.OfType<GardenSink>())
+                        {
+                            sink.ResetNode();
+                            stopped = true;
+                        }
+                        if (!stopped)
+                        {
+                            resp.Error = "Cannot stop, no sink";
+                        }
                         break;
                 }
-                return Task.FromResult(resp);
+                return resp;
             };
             await server.Start();
         }
@@ -225,11 +251,19 @@ namespace Lucky.Home.Devices
             ScheduleCycle(new ImmediateProgram { Zones = e.Cycle.Zones, Name = e.Cycle.Name } );
         }
 
-        private void ScheduleCycle(ImmediateProgram program)
+        private string ScheduleCycle(ImmediateProgram program)
         {
-            lock (_cycleQueue)
+            if (!program.IsEmpty)
             {
-                _cycleQueue.Enqueue(program);
+                lock (_cycleQueue)
+                {
+                    _cycleQueue.Enqueue(program);
+                }
+                return null;
+            }
+            else
+            {
+                return "Empty program";
             }
         }
 

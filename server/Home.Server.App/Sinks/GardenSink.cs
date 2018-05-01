@@ -65,6 +65,11 @@ namespace Lucky.Home.Sinks
 
         public void WriteProgram(int[] zoneTimes)
         {
+            if (zoneTimes.All(z => z <= 0))
+            {
+                return;
+            }
+
             Write(writer =>
             {
                 writer.Write(new WriteStatusMessageRequest { ZoneTimes = zoneTimes.Select(t => (byte)t).ToArray() });
