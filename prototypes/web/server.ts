@@ -6,14 +6,23 @@ import * as net from 'net';
 import { setTimeout } from 'timers';
 
 var app = express();
+
+app.use(express.json());
+
 var args = process.argv.slice(2);
 
-var csvFolder = args[0];
-if (!csvFolder) {
-    throw new Error('Missing CSV folder argument');
+let homeFolder = args[0];
+if (!homeFolder) {
+    throw new Error('Missing home folder argument');
 }
+let csvFolder = path.join(homeFolder, 'DB', 'SAMIL');
 if (!fs.existsSync(csvFolder) || !fs.readdirSync(csvFolder)) {
     throw new Error('CSV folder not accessible: ' + csvFolder);
+}
+let gardenCfgPath = path.join(homeFolder, 'Server', 'gardenCfg.json');
+let gardenCfg: string;
+if (!fs.existsSync(gardenCfgPath) || !(gardenCfg = fs.readFileSync(gardenCfgPath, 'utf8'))) {
+    throw new Error('Garden configuration file not accessible: ' + gardenCfgPath);
 }
 
 interface IPvImmData {
@@ -220,9 +229,24 @@ app.get('/r/powToday', (req, res) => {
     }, 1000);
 });
 
-app.get('/r/garden', (req, res) => {
+app.get('/r/gardenCfg', (req, res) => {
+    res.send(gardenCfg);
+});
+
+app.post('/r/gardenStart', (req, res) => {
+    let immediate = req.body;
+    if (!Array.isArray(immediate) || !immediate.every(v => typeof v === "number") || immediate.every(v => v <= 0)) {
+        // Do nothing
+        res.status(500);
+        res.send("Request incompatible");
+        console.log("r/gardenStart: incompatible request: " + JSON.stringify(req.body));
+        return;
+    }
+
     // Make request to server
+    console.log("Connecting to pipe...");
     let pipe = net.connect('\\\\.\\pipe\\NETGARDEN', () => {
+        console.log("Connected to pipe.");
         // Connected
         pipe.setNoDelay(true);
         pipe.setDefaultEncoding('utf8');
@@ -245,7 +269,7 @@ app.get('/r/garden', (req, res) => {
         });
         
         // Send request
-        pipe.write(JSON.stringify({ command: "setImmediate", immediate: [1, 0, 1, 5, 0] }) + '\r\n');
+        pipe.write(JSON.stringify({ command: "setImmediate", immediate }) + '\r\n');
     });
 });
 

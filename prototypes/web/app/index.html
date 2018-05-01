@@ -16,6 +16,8 @@
        <a ng-click="ctrl.drawDays(1)" href="#">andamento oggi</a>
        &nbsp;
        <a ng-click="ctrl.drawDays(4)" href="#">andamento 4 giorni</a>
+       &nbsp;
+       <button ng-click="ctrl.goGarden()">Giardino</button>
     </p>
     <p class="total-pw" ng-show="ctrl.pvData.totalDayWh"> Energia oggi: <b>{{ctrl.pvData.totalDayWh / 1000}} kWh</b> </p>
     <p class="peak-pw" ng-show="ctrl.pvData.peakW"> Picco di <b>{{ctrl.pvData.peakW}}W</b> alle {{ctrl.pvData.peakTs}} </p>

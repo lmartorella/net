@@ -77,6 +77,10 @@ class SolarController {
             });
         });
     }
+
+    goGarden() {
+        window.location.pathname = "/app/garden.html";
+    }
 }
 
 angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarController]);

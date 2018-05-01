@@ -96,6 +96,8 @@ namespace Lucky.Home.Devices
 
             // To receive commands from UI
             StartNamedPipe();
+
+            _pollTimer = new Timer(HandlePollTimer, null, 0, POLL_PERIOD);
         }
 
         protected override void Dispose(bool disposing)
@@ -103,11 +105,7 @@ namespace Lucky.Home.Devices
             lock (_timeProgramLock)
             {
                 _timeProgram.Dispose();
-                if (_pollTimer != null)
-                {
-                    _pollTimer.Dispose();
-                }
-                _pollTimer = null;
+                _pollTimer.Dispose();
             }
             base.Dispose(disposing);
         }
@@ -233,55 +231,35 @@ namespace Lucky.Home.Devices
             {
                 _cycleQueue.Enqueue(program);
             }
-            StartPollTimer();
         }
 
-        private void StartPollTimer()
+        private void HandlePollTimer(object o)
         {
-            if (_pollTimer == null)
+            if (IsFullOnline)
             {
-                _pollTimer = new Timer(o =>
+                var sink = Sinks.OfType<GardenSink>().First();
+                // Wait for a free garden device
+                // Write fancy logs
+                bool isAvail = sink.Read(false);
+                if (isAvail)
                 {
-                    if (IsFullOnline)
+                    lock (_cycleQueue)
                     {
-                        var sink = Sinks.OfType<GardenSink>().First();
-                        // Wait for a free garden device
-                        // Write fancy logs
-                        bool isAvail = sink.Read(false);
-                        if (isAvail)
+                        if (_lastLogForStop != null)
                         {
-                            lock (_cycleQueue)
-                            {
-                                if (_lastLogForStop != null)
-                                {
-                                    _lastLogForStop();
-                                    _lastLogForStop = null;
-                                }
+                            _lastLogForStop();
+                            _lastLogForStop = null;
+                        }
 
-                                if (_cycleQueue.Count == 0)
-                                {
-                                    StopPollTimer();
-                                }
-                                else
-                                {
-                                    var cycle = _cycleQueue.Dequeue();
-                                    sink.WriteProgram(cycle.Zones);
+                        if (_cycleQueue.Count > 0)
+                        {
+                            var cycle = _cycleQueue.Dequeue();
+                            sink.WriteProgram(cycle.Zones);
 
-                                    _lastLogForStop = LogStartProgram(cycle);
-                                }
-                            }
+                            _lastLogForStop = LogStartProgram(cycle);
                         }
                     }
-                }, null, 0, POLL_PERIOD);
-            }
-        }
-
-        private void StopPollTimer()
-        {
-            if (_pollTimer != null)
-            {
-                _pollTimer.Dispose();
-                _pollTimer = null;
+                }
             }
         }
 
