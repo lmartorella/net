@@ -76,8 +76,15 @@ namespace Lucky.Home
 
         private async void Connect(Action connectedHandler)
         {
+            // Connect to?
+            var args = Environment.GetCommandLineArgs();
+            var targetHost = "localhost";
+            if (args.Length >= 2)
+            {
+                targetHost = args[1];
+            }
             // Start listener
-            await _client.ConnectAsync("localhost", Constants.DefaultAdminPort);
+            await _client.ConnectAsync(targetHost, Constants.DefaultAdminPort);
             await FetchTree();
             await FetchDevices();
             Connected = true;
