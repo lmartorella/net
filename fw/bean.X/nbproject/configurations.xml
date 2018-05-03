@@ -27,6 +27,8 @@
         <itemPath>../hardware/fuses_micro_bean.h</itemPath>
         <itemPath>../hardware/fuses_pic16f1827.inc</itemPath>
         <itemPath>../hardware/uart.h</itemPath>
+        <itemPath>../hardware/bpm180.h</itemPath>
+        <itemPath>../hardware/i2c.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -94,6 +96,8 @@
         <itemPath>../hardware/digio.c</itemPath>
         <itemPath>../hardware/hw.c</itemPath>
         <itemPath>../hardware/max232_sw.c</itemPath>
+        <itemPath>../hardware/bpm180.c</itemPath>
+        <itemPath>../hardware/i2c.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>

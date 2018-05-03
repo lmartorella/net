@@ -4,6 +4,7 @@
 #include "persistence.h"
 #include "protocol.h"
 #include "hardware/tick.h"
+#include "hardware/bpm180.h"
 
 #ifdef __XC8
 void interrupt PRIO_TYPE low_isr()
@@ -61,6 +62,10 @@ void main()
 #ifdef HAS_DCF77
     dcf77_init();
 #endif
+
+#ifdef HAS_BPM180
+    bpm180_init();
+#endif
     
 #ifdef BUSPOWER_PORT
     // Enable bus power to slaves
@@ -104,6 +109,10 @@ void main()
 
 #ifdef HAS_DCF77
         dcf77_poll();
+#endif
+
+#ifdef HAS_BPM180
+    bpm180_poll();
 #endif
     }
 }
