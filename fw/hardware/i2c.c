@@ -50,8 +50,8 @@ void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
 
     // Store regs
     s_addr = addr;
-    s_dest = s_addr + size;
     s_buf = buf;
+    s_dest = buf + size;
     
     // Start bit!
     // Start
@@ -101,6 +101,9 @@ loop:
             }
             break;
         case STATE_RXDATA:
+            if (!SSPSTATbits.BF) {
+                fatal("I.BF");
+            }
             *s_buf = SSPBUF;
             s_buf++;
             // Again?
@@ -115,19 +118,15 @@ loop:
             s_state = STATE_ACK;
             break;
         case STATE_TXDATA:
+            if (SSPCON2bits.ACKSTAT) {
+                // ACK not received? Err. (even the last byte, see BPM180 specs)
+                fatal("I2.AI");
+            }
             if (s_buf >= s_dest) {
-                if (!SSPCON2bits.ACKSTAT) {
-                    // ACK received? Err.
-                    fatal("I2.AF");
-                }
                 // Send STOP
                 SSPCON2bits.PEN = 1;
                 s_state = STATE_STOP;
             } else {
-                if (SSPCON2bits.ACKSTAT) {
-                    // ACK not received? Err.
-                    fatal("I2.AI");
-                }
                 // TX again
                 SSPBUF = *s_buf;
                 s_buf++;

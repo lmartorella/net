@@ -41,6 +41,7 @@ typedef unsigned char BOOL;
 bit memcmp8(void* p1, void* p2, BYTE size);
 // Internal core clock drives timer with 1:256 prescaler
 #define TICKS_PER_SECOND		(TICK_TYPE)((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
+#define TICKS_PER_MSECOND		(TICK_TYPE)(TICKS_PER_SECOND / 1000)
 #endif
 
 #include "hardware/tick.h"
