@@ -5,10 +5,12 @@
 
 // I2C status bytes
 static BYTE s_addr;
-static BYTE s_size;
+static BYTE* s_dest;
 static BYTE* s_buf;
-static I2C_DIRECTION s_direction;
-static BYTE s_ptr;
+typedef enum {
+    DIR_SEND = 0,
+    DIR_RECEIVE = 1,
+} I2C_DIRECTION;
 
 // I2C state machine
 static enum {
@@ -38,19 +40,18 @@ void i2c_init() {
     s_state = STATE_IDLE;
 }
 
-void i2c_sendReceive(BYTE addr, BYTE size, BYTE* buf, I2C_DIRECTION direction) {
+void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
     // Check if MSSP module is in use
-    if ((SSPCON2 & (SSPCON2bits_t.SEN | SSPCON2bits_t.RSEN | SSPCON2bits_t.PEN | SSPCON2bits_t.RCEN | SSPCON2bits_t.ACKEN)) || s_state != STATE_IDLE) {
+    BYTE mask = _SSPCON2_SEN_MASK | _SSPCON2_RSEN_MASK | _SSPCON2_PEN_MASK | _SSPCON2_RCEN_MASK | _SSPCON2_ACKEN_MASK;
+    if ((SSPCON2 & mask) || s_state != STATE_IDLE) {
         fatal("I2.U");
     }
     PIR1bits.SSP1IF = 0;
 
     // Store regs
     s_addr = addr;
-    s_size = size;
+    s_dest = s_addr + size;
     s_buf = buf;
-    s_direction = direction;
-    s_ptr = 0;
     
     // Start bit!
     // Start
@@ -58,11 +59,15 @@ void i2c_sendReceive(BYTE addr, BYTE size, BYTE* buf, I2C_DIRECTION direction) {
     s_state = STATE_START;
 }
 
-void i2c_poll() {
+BOOL i2c_poll() {
 loop:
+    if (s_state == STATE_IDLE) {
+        return TRUE; 
+    }
+
     // Something happened?
     if (!PIR1bits.SSPIF) {
-        return;
+        return FALSE;
     }
     
     PIR1bits.SSPIF = 0;
@@ -86,45 +91,50 @@ loop:
             }
             
             // Start send/receive
-            if (s_direction == DIR_RECEIVE) {
+            if ((s_addr & 0x1) == DIR_RECEIVE) {
                 SSPCON2bits.RCEN = 1;
                 s_state = STATE_RXDATA;
             } else {
-                SSPBUF = s_buf[s_ptr++];
+                SSPBUF = *s_buf;
+                s_buf++;
                 s_state = STATE_TXDATA;
             }
             break;
         case STATE_RXDATA:
-            s_buf[s_ptr++] = SSPBUF;
+            *s_buf = SSPBUF;
+            s_buf++;
             // Again?
-            if (s_ptr == s_size) {
-                // Send NACK
-                SSPCON2bits.ACKDT = 0;
-            } else {
-                // Send ACK
+            if (s_buf >= s_dest) {
+                // Finish: send NACK
                 SSPCON2bits.ACKDT = 1;
+            } else {
+                // Again: send ACK
+                SSPCON2bits.ACKDT = 0;
             }
             SSPCON2bits.ACKEN = 1;
             s_state = STATE_ACK;
             break;
         case STATE_TXDATA:
-            if (s_ptr == s_size) {
-                if (SSPCON2bits.ACKSTAT) {
+            if (s_buf >= s_dest) {
+                if (!SSPCON2bits.ACKSTAT) {
+                    // ACK received? Err.
                     fatal("I2.AF");
                 }
                 // Send STOP
                 SSPCON2bits.PEN = 1;
                 s_state = STATE_STOP;
             } else {
-                if (!SSPCON2bits.ACKSTAT) {
+                if (SSPCON2bits.ACKSTAT) {
+                    // ACK not received? Err.
                     fatal("I2.AI");
                 }
                 // TX again
-                SSPBUF = s_buf[s_ptr++];
+                SSPBUF = *s_buf;
+                s_buf++;
             }
             break;
         case STATE_ACK:
-            if (s_ptr == s_size) {
+            if (s_buf >= s_dest) {
                 // Send STOP
                 SSPCON2bits.PEN = 1;
                 s_state = STATE_STOP;

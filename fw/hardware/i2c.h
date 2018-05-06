@@ -4,14 +4,10 @@
 #ifdef HAS_I2C
 
 void i2c_init();
-void i2c_poll();
+// Returns TRUE if device is IDLE
+BOOL i2c_poll();
 
-typedef enum {
-    I2C_DIR_SEND,
-    I2C_DIR_RECEIVE,
-} I2C_DIRECTION;
-
-void i2c_sendReceive(BYTE addr, BYTE size, BYTE* buf, I2C_DIRECTION direction);
+void i2c_sendReceive7(BYTE addrRw, BYTE size, BYTE* buf);
 
 #endif
 #endif
