@@ -56,9 +56,9 @@ static struct {
     short md;
 } s_calibTable;
 // Uncompensate temp
-static short s_ut;
+static unsigned long s_ut;
 // Uncompensate pressure
-static short s_up;
+static unsigned long s_up;
 
 void bpm180_init() {
     s_state = STATE_IDLE;
@@ -67,6 +67,7 @@ void bpm180_init() {
 }
 
 void bpm180_poll() {
+    int oss = 3;
     BOOL i2cIdle = i2c_poll();
     if (!i2cIdle) {
         return; 
@@ -132,17 +133,17 @@ void bpm180_poll() {
             break;
         case STATE_RCV_TEMP:
             // invert temp
-            s_ut = (s_buffer[0] << 8) + s_buffer[1];
+            s_ut = ((unsigned long)s_buffer[0] << 8) | (unsigned long)s_buffer[1];
 
             // Ask pressure (min sampling)
             s_buffer[0] = ADDR_MSG_CONTROL;
-            s_buffer[1] = MESSAGE_READ_PRESS_OSS_0;
+            s_buffer[1] = MESSAGE_READ_PRESS_OSS_3;
             i2c_sendReceive7(REG_WRITE, 2, s_buffer);
             s_state = STATE_ASK_PRESS;
             s_lastTime = TickGet();
             break;
         case STATE_ASK_PRESS:   
-            if ((TickGet() - s_lastTime) > (TICKS_PER_MSECOND * 5)) {
+            if ((TickGet() - s_lastTime) > (TICKS_PER_MSECOND * 30)) {
                 s_buffer[0] = ADDR_MSB;
                 i2c_sendReceive7(REG_WRITE, 1, s_buffer);
                 s_state = STATE_ASK_PRESS_2;
@@ -150,45 +151,49 @@ void bpm180_poll() {
             break;
         case STATE_ASK_PRESS_2:
             // Read results
-            i2c_sendReceive7(REG_READ, 2, s_buffer);
+            i2c_sendReceive7(REG_READ, 3, s_buffer);
             s_state = STATE_RCV_PRESS;
             break;
         case STATE_RCV_PRESS:
             // invert temp
-            s_up = (s_buffer[0] << 8) + s_buffer[1];
+            s_up = (((unsigned long)s_buffer[0] << 16) | ((unsigned long)s_buffer[1] << 8) | (unsigned long)s_buffer[2]) >> (8 - oss);
 
             float temp, press;
             long b5;
             {
                 // Calc true temp
-                long x1 = ((long)s_ut - s_calibTable.ac6) * s_calibTable.ac5 / 0x8000l;
-                long x2 = (long)s_calibTable.mc * 2048l / (x1 + s_calibTable.md);
+                long x1 = (((long)s_ut - (long)s_calibTable.ac6) * (long)s_calibTable.ac5) >> 15;
+                if (x1 == 0 && s_calibTable.md == 0) {
+                    fatal("B.DIV");
+                }
+                long x2 = ((long)s_calibTable.mc << 11) / (x1 + s_calibTable.md);
                 b5 = x1 + x2;
-                long t = (b5 + 8l) / 16l;  // Temp in 0.1C
+                short t = (b5 + 8) >> 4;  // Temp in 0.1C
                 temp = t / 10.0;
             }
             {
-                int oss = 0;
                 long b6 = b5 - 4000;
-                long x1 = ((long)s_calibTable.b2 * (b6 * b6 / 4096l)) / 2048l;
-                long x2 = (long)s_calibTable.ac2 * b6 / 2048l;
+                long x1 = ((long)s_calibTable.b2 * ((b6 * b6) >> 12)) >> 11;
+                long x2 = ((long)s_calibTable.ac2 * b6) >> 11;
                 long x3 = x1 + x2;
-                long b3 = ((((long)s_calibTable.ac1 * 4 + x3) << oss) + 2) / 4l;
-                x1 = (long)s_calibTable.ac3 * b6 / 8192l;
-                x2 = ((long)s_calibTable.b1 * (b6 * b6 / 4096l)) / 65536l;
-                x3 = ((x1 + x2) + 2) / 4l;
-                unsigned long b4 = (long)s_calibTable.ac4 * (unsigned long)(x3 + 32768ul) / 32768l;
-                unsigned long b7 = ((unsigned long)s_up - b3) * (50000ul >> oss);
+                long b3 = ((((long)s_calibTable.ac1 * 4 + x3) << oss) + 2) >> 2;
+                x1 = ((long)s_calibTable.ac3 * b6) >> 13;
+                x2 = ((long)s_calibTable.b1 * ((b6 * b6) >> 12)) >> 16;
+                x3 = ((x1 + x2) + 2) >> 2;
+                unsigned long b4 = ((long)s_calibTable.ac4 * (unsigned long)(x3 + 32768)) >> 15;
+                unsigned long b7 = ((unsigned long)(s_up - b3) * (50000ul >> oss));
+                if (b4 == 0) {
+                    fatal("B.DIV2");
+                }
                 long p;
                 if (b7 < 0x80000000) {
-                   p = (b7 * 2) / b4; 
+                    p = (b7 << 1) / b4; 
                 } else {
-                    p = (b7 / b4) * 2;
+                    p = (b7 / b4) << 1;
                 }
-                x1 = (p / 256) * (p / 256);
-                x1 = (x1 * 3038) / 65536l;
-                x2 = (-7357l * p) / 65536l;                
-                p = p + (x1 + x2 + 3791l) / 16l; // in Pascal
+                x1 = (((p >> 8) * (p >> 8)) * 3038) >> 16;
+                x2 = (p * -7357) >> 16;                
+                p += (x1 + x2 + 3791) >> 4; // in Pascal
                 press = p / 100.0; // in hPa
             }
             
