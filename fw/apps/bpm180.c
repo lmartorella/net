@@ -1,7 +1,7 @@
 #include "../pch.h"
 #include "bpm180.h"
-#include "i2c.h"
-#include "./appio.h"
+#include "../hardware/i2c.h"
+#include "../appio.h"
 
 // BPM180 I2C module to read barometric data (air pressure)
 #ifdef HAS_BPM180
@@ -62,7 +62,6 @@ static unsigned long s_up;
 
 void bpm180_init() {
     s_state = STATE_IDLE;
-    i2c_init();
     s_lastTime = TickGet();
 }
 

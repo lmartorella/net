@@ -1,8 +1,6 @@
 #ifndef DIGIO_H
 #define	DIGIO_H
 
-#include "../protocol.h"
-
 #ifdef HAS_DIGIO
 
 #define DIGIO_IN_SINK_ID "DIAR"

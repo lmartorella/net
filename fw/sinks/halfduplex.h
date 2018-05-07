@@ -1,8 +1,6 @@
 #ifndef XC_HFD_TEMPLATE_H
 #define	XC_HFD_TEMPLATE_H
 
-#include "protocol.h"
-
 #if defined(HAS_BUS) && defined(HAS_MAX232_SOFTWARE)
 
 #define SINK_HALFDUPLEX_ID "SLIN"

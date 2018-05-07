@@ -46,35 +46,8 @@ bit memcmp8(void* p1, void* p2, BYTE size);
 
 #include "hardware/tick.h"
 
-#ifdef HAS_CM1602
-#include "hardware/cm1602.h"
-#include "displaySink.h"
-#endif
-#ifdef HAS_SPI_RAM
-#include "hardware/spiram.h"
-#endif
-#ifdef HAS_SPI
-#include "hardware/spi.h"
-#endif
-#ifdef HAS_VS1011
-#include "hardware/vs1011e.h"
-#include "audioSink.h"
-#endif
-#ifdef HAS_DHT11
-#include "hardware/dht11.h"
-#endif
-#ifdef HAS_MAX232_SOFTWARE
-#include "halfduplex.h"
-#include "hardware/max232.h"
-#endif
-#ifdef HAS_DCF77
-#include "dcf77.h"
-#endif
 #ifdef HAS_RS485
 #include "rs485.h"
-#endif
-#ifdef HAS_DIGIO
-#include "hardware/digio.h"
 #endif
 #ifdef HAS_LED
 #include "hardware/leds.h"

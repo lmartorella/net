@@ -1,20 +1,13 @@
 #include "pch.h"
 #include "sinks.h"
 #include "appio.h"
-#include "displaySink.h"
+#include "protocol.h"
+#include "sinks/displaySink.h"
+#include "sinks/digio.h"
+#include "sinks/dht11.h"
+#include "sinks/halfduplex.h"
 
 #ifdef HAS_BUS
-
-#ifdef HAS_DIGIO
-#include "hardware/digio.h"
-#endif
-#ifdef HAS_DHT11
-#include "hardware/dht11.h"
-#endif
-#ifdef HAS_MAX232_SOFTWARE
-#include "halfduplex.h"
-#endif
-
 
 #ifndef HAS_FIRMWARE
 

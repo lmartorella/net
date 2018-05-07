@@ -1,5 +1,5 @@
 #include "../pch.h"
-#include "spi.h"
+#include "../hardware/spi.h"
 #include "spiram.h"
 #include "../appio.h"
 

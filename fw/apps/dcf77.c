@@ -1,7 +1,7 @@
-#include "pch.h"
-#include "hardware/tick.h"
-#include "hardware/leds.h"
-#include "appio.h"
+#include "../pch.h"
+#include "../hardware/tick.h"
+#include "../hardware/leds.h"
+#include "../appio.h"
 
 #ifdef HAS_DCF77 
 

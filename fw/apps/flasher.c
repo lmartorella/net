@@ -1,9 +1,9 @@
-#include "hardware/fuses.h"
-#include "hardware/spiram.h"
-#include "protocol.h"
-#include "appio.h"
-#include <string.h>
-#include "TCPIPStack/TCPIP.h"
+#include "../pch.h"
+#include "spiram.h"
+#include "../protocol.h"
+#include "../appio.h"
+
+#ifdef FLASHER_APP
 
 static void createFlasherSink(void);
 static void destroyFlasherSink(void);
@@ -88,3 +88,5 @@ loop:
 		}
 	}
 }
+
+#endif

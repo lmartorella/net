@@ -4,18 +4,22 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f3" displayName="apps" projectFiles="true">
+        <itemPath>../apps/audioSink.h</itemPath>
+        <itemPath>../apps/bpm180.h</itemPath>
+        <itemPath>../apps/dcf77.h</itemPath>
+        <itemPath>../apps/spiram.h</itemPath>
+        <itemPath>../apps/apps.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f2" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/cm1602.h</itemPath>
         <itemPath>../hardware/eeprom.h</itemPath>
         <itemPath>../hardware/spi.h</itemPath>
-        <itemPath>../hardware/spiram.h</itemPath>
         <itemPath>../hardware/utilities.h</itemPath>
         <itemPath>../hardware/vs1011e.h</itemPath>
         <itemPath>../hardware/hw.h</itemPath>
         <itemPath>../hardware/tick.h</itemPath>
         <itemPath>../hardware/leds.h</itemPath>
-        <itemPath>../hardware/dht11.h</itemPath>
-        <itemPath>../hardware/digio.h</itemPath>
         <itemPath>../hardware/fuses_test_eth_card.h</itemPath>
         <itemPath>../hardware/fuses_eth_card.inc</itemPath>
         <itemPath>../hardware/fuses_mcu_card.h</itemPath>
@@ -27,8 +31,13 @@
         <itemPath>../hardware/fuses_micro_bean.h</itemPath>
         <itemPath>../hardware/fuses_pic16f1827.inc</itemPath>
         <itemPath>../hardware/uart.h</itemPath>
-        <itemPath>../hardware/bpm180.h</itemPath>
         <itemPath>../hardware/i2c.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f4" displayName="sinks" projectFiles="true">
+        <itemPath>../sinks/digio.h</itemPath>
+        <itemPath>../sinks/displaySink.h</itemPath>
+        <itemPath>../sinks/halfduplex.h</itemPath>
+        <itemPath>../sinks/dht11.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -65,15 +74,11 @@
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
       <itemPath>../persistence.h</itemPath>
-      <itemPath>../displaySink.h</itemPath>
-      <itemPath>../audioSink.h</itemPath>
       <itemPath>../pch.h</itemPath>
       <itemPath>../guid.h</itemPath>
       <itemPath>../protocol.h</itemPath>
       <itemPath>../ip_client.h</itemPath>
       <itemPath>../bus.h</itemPath>
-      <itemPath>../halfduplex.h</itemPath>
-      <itemPath>../dcf77.h</itemPath>
       <itemPath>../rs485.h</itemPath>
       <itemPath>../sinks.h</itemPath>
     </logicalFolder>
@@ -84,20 +89,30 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f3" displayName="apps" projectFiles="true">
+        <itemPath>../apps/apps.c</itemPath>
+        <itemPath>../apps/audioSink.c</itemPath>
+        <itemPath>../apps/bpm180.c</itemPath>
+        <itemPath>../apps/dcf77.c</itemPath>
+        <itemPath>../apps/spiram.c</itemPath>
+        <itemPath>../apps/flasher.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="f2" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/cm1602.c</itemPath>
         <itemPath>../hardware/eeprom.c</itemPath>
         <itemPath>../hardware/spi.c</itemPath>
-        <itemPath>../hardware/spiram.c</itemPath>
         <itemPath>../hardware/vs1011e.c</itemPath>
         <itemPath>../hardware/tick_pic18.c</itemPath>
         <itemPath>../hardware/tick_pic16.c</itemPath>
-        <itemPath>../hardware/dht11.c</itemPath>
-        <itemPath>../hardware/digio.c</itemPath>
         <itemPath>../hardware/hw.c</itemPath>
         <itemPath>../hardware/max232_sw.c</itemPath>
-        <itemPath>../hardware/bpm180.c</itemPath>
         <itemPath>../hardware/i2c.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f4" displayName="sinks" projectFiles="true">
+        <itemPath>../sinks/digio.c</itemPath>
+        <itemPath>../sinks/displaySink.c</itemPath>
+        <itemPath>../sinks/halfduplex.c</itemPath>
+        <itemPath>../sinks/dht11.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>
@@ -114,16 +129,12 @@
       </logicalFolder>
       <itemPath>../appio.c</itemPath>
       <itemPath>../persistence.c</itemPath>
-      <itemPath>../displaySink.c</itemPath>
-      <itemPath>../audioSink.c</itemPath>
       <itemPath>../sinks.c</itemPath>
       <itemPath>../protocol.c</itemPath>
       <itemPath>../ip_client.c</itemPath>
       <itemPath>../bus_server.c</itemPath>
       <itemPath>../bus_client.c</itemPath>
       <itemPath>../lib8.c</itemPath>
-      <itemPath>../halfduplex.c</itemPath>
-      <itemPath>../dcf77.c</itemPath>
       <itemPath>../rs485.c</itemPath>
       <itemPath>../main.c</itemPath>
     </logicalFolder>

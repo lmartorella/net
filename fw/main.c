@@ -4,7 +4,7 @@
 #include "persistence.h"
 #include "protocol.h"
 #include "hardware/tick.h"
-#include "hardware/bpm180.h"
+#include "apps/apps.h"
 
 #ifdef __XC8
 void interrupt PRIO_TYPE low_isr()
@@ -31,6 +31,10 @@ void main()
     appio_init();
 
     pers_init();
+
+#if defined(HAS_SPI) && defined(HAS_I2C)
+#error Cannot enable both SPI and I2C
+#endif
     
 #ifdef HAS_SPI
     println("Spi");
@@ -41,16 +45,14 @@ void main()
     // Output: data changed at clock falling.
     // Input: data sampled at clock rising.
     spi_init(SPI_SMP_END | SPI_CKE_IDLE | SPI_CKP_LOW | SPI_SSPM_CLK_F4);
+#elif defined(HAS_I2C)
+    i2c_init();
 #endif
     
 #ifdef HAS_SPI_RAM
     sram_init();
 #endif
     
-#ifdef HAS_VS1011
-    vs1011_init();
-#endif
-
 #ifdef HAS_DHT11
     dht11_init();
 #endif
@@ -59,14 +61,6 @@ void main()
     digio_init();
 #endif
 
-#ifdef HAS_DCF77
-    dcf77_init();
-#endif
-
-#ifdef HAS_BPM180
-    bpm180_init();
-#endif
-    
 #ifdef BUSPOWER_PORT
     // Enable bus power to slaves
     BUSPOWER_TRIS = 0;
@@ -102,18 +96,6 @@ void main()
         rs485_poll();
 #endif
         pers_poll();
-            
-#if HAS_VS1011
-        audio_pollMp3Player();
-#endif
-
-#ifdef HAS_DCF77
-        dcf77_poll();
-#endif
-
-#ifdef HAS_BPM180
-    bpm180_poll();
-#endif
     }
 }
 
