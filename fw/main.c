@@ -75,6 +75,8 @@ void main()
     prot_init();
 #endif
     
+    apps_init();
+    
     enableInterrupts();
 
     // I'm alive
@@ -96,6 +98,8 @@ void main()
         rs485_poll();
 #endif
         pers_poll();
+        
+        apps_poll();
     }
 }
 

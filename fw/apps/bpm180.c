@@ -66,6 +66,10 @@ void bpm180_init() {
 }
 
 void bpm180_poll() {
+    if ((TickGet() - s_lastTime) > (TICK_SECOND * 3)) {
+        fatal("I.LOCK");
+    }
+    
     int oss = 3;
     BOOL i2cIdle = i2c_poll();
     if (!i2cIdle) {

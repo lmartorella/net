@@ -24,6 +24,42 @@ static enum {
 } s_state;
 
 void i2c_init() {
+    // First remove any deadlock on receivers.
+    // To avoid I2C module to be stuck, send out 9 '1' bits manually
+    // See AN1028, Software Reset Sequence
+    
+    // Ports as outputs
+    PORTCbits.RC4 = 1;
+    TRISCbits.TRISC4 = 0;
+    PORTCbits.RC3 = 1;
+    TRISCbits.TRISC3 = 0;
+
+    wait2ms();
+
+    // Start bit
+    PORTCbits.RC4 = 0; // SDA low
+    wait40us();
+    PORTCbits.RC3 = 0; // SCL low
+    wait40us();
+     
+    PORTCbits.RC4 = 1; // SDA = 1 
+    // Produce 8 bits + 1 NACK
+    for (BYTE i = 0; i < 8; i++) {
+        wait40us();
+        PORTCbits.RC3 = 1;
+        wait40us();
+        PORTCbits.RC3 = 0;
+    }
+    wait40us();
+
+    // Stop bit
+    PORTCbits.RC4 = 0; // SDA low
+    wait40us();
+    PORTCbits.RC3 = 1; // SCL high
+    wait40us();
+    PORTCbits.RC4 = 1; // SDA high
+    wait2ms();
+    
     // Ports as inputs
     TRISCbits.TRISC3 = 1;
     TRISCbits.TRISC4 = 1;
@@ -37,6 +73,8 @@ void i2c_init() {
     SSPCON1bits.SSPM = 8; // I2C master
     SSPCON1bits.SSPEN = 1;  
 
+    wait2ms();
+    
     s_state = STATE_IDLE;
 }
 
