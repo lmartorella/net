@@ -4,17 +4,36 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <logicalFolder name="f3" displayName="apps" projectFiles="true">
+        <itemPath>../apps/apps.h</itemPath>
+        <itemPath>../apps/audioSink.h</itemPath>
+        <itemPath>../apps/bpm180.h</itemPath>
+        <itemPath>../apps/dcf77.h</itemPath>
+        <itemPath>../apps/spiram.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="hardware" projectFiles="true">
+        <itemPath>../hardware/cm1602.h</itemPath>
+        <itemPath>../hardware/eeprom.h</itemPath>
         <itemPath>../hardware/fuses_raspbian.h</itemPath>
         <itemPath>../hardware/hw.h</itemPath>
+        <itemPath>../hardware/i2c.h</itemPath>
         <itemPath>../hardware/ip_raspbian.h</itemPath>
+        <itemPath>../hardware/leds.h</itemPath>
+        <itemPath>../hardware/max232.h</itemPath>
+        <itemPath>../hardware/spi.h</itemPath>
         <itemPath>../hardware/tick.h</itemPath>
         <itemPath>../hardware/uart.h</itemPath>
         <itemPath>../hardware/utilities.h</itemPath>
+        <itemPath>../hardware/vs1011e.h</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f2" displayName="sinks" projectFiles="true">
+        <itemPath>../sinks/dht11.h</itemPath>
+        <itemPath>../sinks/digio.h</itemPath>
+        <itemPath>../sinks/displaySink.h</itemPath>
+        <itemPath>../sinks/halfduplex.h</itemPath>
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
       <itemPath>../bus.h</itemPath>
-      <itemPath>../displaySink.h</itemPath>
       <itemPath>../guid.h</itemPath>
       <itemPath>../ip_client.h</itemPath>
       <itemPath>../pch.h</itemPath>
@@ -30,15 +49,28 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f3" displayName="apps" projectFiles="true">
+        <itemPath>../apps/apps.c</itemPath>
+        <itemPath>../apps/audioSink.c</itemPath>
+        <itemPath>../apps/bpm180.c</itemPath>
+        <itemPath>../apps/dcf77.c</itemPath>
+        <itemPath>../apps/flasher.c</itemPath>
+        <itemPath>../apps/spiram.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="f1" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/hw_raspbian.c</itemPath>
         <itemPath>../hardware/ip_raspbian.c</itemPath>
         <itemPath>../hardware/tick_raspbian.c</itemPath>
         <itemPath>../hardware/uart_raspbian.c</itemPath>
       </logicalFolder>
+      <logicalFolder name="f2" displayName="sinks" projectFiles="true">
+        <itemPath>../sinks/dht11.c</itemPath>
+        <itemPath>../sinks/digio.c</itemPath>
+        <itemPath>../sinks/displaySink.c</itemPath>
+        <itemPath>../sinks/halfduplex.c</itemPath>
+      </logicalFolder>
       <itemPath>../appio.c</itemPath>
       <itemPath>../bus_server.c</itemPath>
-      <itemPath>../displaySink.c</itemPath>
       <itemPath>../ip_client.c</itemPath>
       <itemPath>../main.c</itemPath>
       <itemPath>../persistence.c</itemPath>
@@ -85,15 +117,37 @@
       </item>
       <item path="../appio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../apps/apps.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/apps.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/audioSink.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/audioSink.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/bpm180.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/bpm180.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/dcf77.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/dcf77.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/flasher.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/spiram.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/spiram.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../bus.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../bus_server.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="../displaySink.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../displaySink.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../guid.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/cm1602.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/eeprom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/fuses_raspbian.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -101,9 +155,17 @@
       </item>
       <item path="../hardware/hw_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="../hardware/i2c.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../hardware/ip_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/leds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/max232.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/spi.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/tick.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -114,6 +176,8 @@
       <item path="../hardware/uart_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/utilities.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/vs1011e.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../ip_client.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -138,6 +202,22 @@
       <item path="../sinks.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../sinks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/dht11.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/dht11.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/digio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/digio.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/displaySink.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/displaySink.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/halfduplex.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/halfduplex.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -175,15 +255,37 @@
       </item>
       <item path="../appio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../apps/apps.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/apps.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/audioSink.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/audioSink.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/bpm180.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/bpm180.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/dcf77.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/dcf77.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../apps/flasher.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/spiram.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../apps/spiram.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../bus.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../bus_server.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="../displaySink.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../displaySink.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../guid.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/cm1602.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/eeprom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/fuses_raspbian.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -191,9 +293,17 @@
       </item>
       <item path="../hardware/hw_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="../hardware/i2c.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../hardware/ip_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/ip_raspbian.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/leds.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/max232.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/spi.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../hardware/tick.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -204,6 +314,8 @@
       <item path="../hardware/uart_raspbian.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../hardware/utilities.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../hardware/vs1011e.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../ip_client.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -228,6 +340,22 @@
       <item path="../sinks.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../sinks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/dht11.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/dht11.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/digio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/digio.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/displaySink.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/displaySink.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/halfduplex.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/halfduplex.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

@@ -36,8 +36,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/appio.o \
+	${OBJECTDIR}/_ext/d2a1ad61/apps.o \
+	${OBJECTDIR}/_ext/d2a1ad61/audioSink.o \
+	${OBJECTDIR}/_ext/d2a1ad61/bpm180.o \
+	${OBJECTDIR}/_ext/d2a1ad61/dcf77.o \
+	${OBJECTDIR}/_ext/d2a1ad61/flasher.o \
+	${OBJECTDIR}/_ext/d2a1ad61/spiram.o \
 	${OBJECTDIR}/_ext/5c0/bus_server.o \
-	${OBJECTDIR}/_ext/5c0/displaySink.o \
 	${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/ip_raspbian.o \
 	${OBJECTDIR}/_ext/e5d2b957/tick_raspbian.o \
@@ -47,7 +52,11 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/persistence.o \
 	${OBJECTDIR}/_ext/5c0/protocol.o \
 	${OBJECTDIR}/_ext/5c0/rs485.o \
-	${OBJECTDIR}/_ext/5c0/sinks.o
+	${OBJECTDIR}/_ext/5c0/sinks.o \
+	${OBJECTDIR}/_ext/828e6f31/dht11.o \
+	${OBJECTDIR}/_ext/828e6f31/digio.o \
+	${OBJECTDIR}/_ext/828e6f31/displaySink.o \
+	${OBJECTDIR}/_ext/828e6f31/halfduplex.o
 
 
 # C Compiler Flags
@@ -79,15 +88,40 @@ ${OBJECTDIR}/_ext/5c0/appio.o: ../appio.c
 	${RM} "$@.d"
 	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/appio.o ../appio.c
 
+${OBJECTDIR}/_ext/d2a1ad61/apps.o: ../apps/apps.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/apps.o ../apps/apps.c
+
+${OBJECTDIR}/_ext/d2a1ad61/audioSink.o: ../apps/audioSink.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/audioSink.o ../apps/audioSink.c
+
+${OBJECTDIR}/_ext/d2a1ad61/bpm180.o: ../apps/bpm180.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/bpm180.o ../apps/bpm180.c
+
+${OBJECTDIR}/_ext/d2a1ad61/dcf77.o: ../apps/dcf77.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/dcf77.o ../apps/dcf77.c
+
+${OBJECTDIR}/_ext/d2a1ad61/flasher.o: ../apps/flasher.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/flasher.o ../apps/flasher.c
+
+${OBJECTDIR}/_ext/d2a1ad61/spiram.o: ../apps/spiram.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/spiram.o ../apps/spiram.c
+
 ${OBJECTDIR}/_ext/5c0/bus_server.o: ../bus_server.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
 	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/bus_server.o ../bus_server.c
-
-${OBJECTDIR}/_ext/5c0/displaySink.o: ../displaySink.c
-	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
-	${RM} "$@.d"
-	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/displaySink.o ../displaySink.c
 
 ${OBJECTDIR}/_ext/e5d2b957/hw_raspbian.o: ../hardware/hw_raspbian.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/e5d2b957
@@ -138,6 +172,26 @@ ${OBJECTDIR}/_ext/5c0/sinks.o: ../sinks.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
 	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/sinks.o ../sinks.c
+
+${OBJECTDIR}/_ext/828e6f31/dht11.o: ../sinks/dht11.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/828e6f31
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/828e6f31/dht11.o ../sinks/dht11.c
+
+${OBJECTDIR}/_ext/828e6f31/digio.o: ../sinks/digio.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/828e6f31
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/828e6f31/digio.o ../sinks/digio.c
+
+${OBJECTDIR}/_ext/828e6f31/displaySink.o: ../sinks/displaySink.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/828e6f31
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/828e6f31/displaySink.o ../sinks/displaySink.c
+
+${OBJECTDIR}/_ext/828e6f31/halfduplex.o: ../sinks/halfduplex.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/828e6f31
+	${RM} "$@.d"
+	$(COMPILE.c) -g -DDEBUG -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/828e6f31/halfduplex.o ../sinks/halfduplex.c
 
 # Subprojects
 .build-subprojects:
