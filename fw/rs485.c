@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "rs485.h"
-#include "hardware/tick.h"
-#include "hardware/uart.h"
 #include "appio.h"
 
 #ifdef HAS_RS485

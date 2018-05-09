@@ -1,7 +1,6 @@
 #include "../pch.h"
 #include "max232.h"
 #include "../bus.h"
-#include "leds.h"
 
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
 

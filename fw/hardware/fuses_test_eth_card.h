@@ -175,6 +175,7 @@ void fatal(const char* msg);
 
 #define HAS_I2C
 #define HAS_BPM180
+#define HAS_BPM180_APP
 
 #endif
 

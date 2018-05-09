@@ -6,7 +6,6 @@
 #if defined(HAS_BUS) && (defined(HAS_CM1602) || defined(_CONF_RASPBIAN))
 
 #ifdef HAS_CM1602
-#include "hardware/cm1602.h"
 #elif defined(_CONF_RASPBIAN)
 #define CM1602_COL_COUNT 80
 #define CM1602_LINE_COUNT 25

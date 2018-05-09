@@ -3,10 +3,10 @@
 
 // BPM180 I2C module to read barometric data (air pressure)
 
-#ifdef HAS_BPM180
+#ifdef HAS_BPM180_APP
 
-void bpm180_init();
-void bpm180_poll();
+void bpm180_app_init();
+void bpm180_app_poll();
 
 #endif
 

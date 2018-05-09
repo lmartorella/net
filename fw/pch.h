@@ -49,12 +49,6 @@ bit memcmp8(void* p1, void* p2, BYTE size);
 #ifdef HAS_RS485
 #include "rs485.h"
 #endif
-#ifdef HAS_LED
-#include "hardware/leds.h"
-#endif
-#ifdef HAS_EEPROM
-#include "hardware/eeprom.h"
-#endif
 
 #endif	/* PCH_H */
 

@@ -35,5 +35,14 @@
 
 void enableInterrupts();
 
+#include "./cm1602.h"
+#include "./eeprom.h"
+#include "./i2c.h"
+#include "./leds.h"
+#include "./max232.h"
+#include "./spi.h"
+#include "./uart.h"
+#include "./vs1011e.h"
+
 #endif	/* HW_H */
 

@@ -3,7 +3,6 @@
 #include "appio.h"
 #include "persistence.h"
 #include "protocol.h"
-#include "hardware/tick.h"
 #include "apps/apps.h"
 
 #ifdef __XC8

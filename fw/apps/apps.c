@@ -15,21 +15,21 @@ void apps_init()
 #endif
 
 #ifdef HAS_BPM180
-    bpm180_init();
+    bpm180_app_init();
 #endif      
 }
 
 void apps_poll() 
 {
 #if HAS_VS1011
-        audio_pollMp3Player();
+    audio_pollMp3Player();
 #endif
 
 #ifdef HAS_DCF77
-        dcf77_poll();
+    dcf77_poll();
 #endif
 
 #ifdef HAS_BPM180
-    bpm180_poll();
+    bpm180_app_poll();
 #endif
 }

@@ -1,6 +1,5 @@
 #include "vs1011e.h"
 #include "utilities.h"
-#include "spi.h"
 
 #ifdef HAS_VS1011
 

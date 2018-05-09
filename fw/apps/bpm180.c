@@ -1,43 +1,9 @@
 #include "../pch.h"
-#include "bpm180.h"
-#include "../hardware/i2c.h"
+#include "../sinks/bpm180.h"
 #include "../appio.h"
 
 // BPM180 I2C module to read barometric data (air pressure)
-#ifdef HAS_BPM180
-
-static TICK_TYPE s_lastTime;
-#define REG_READ 0xef
-#define REG_WRITE 0xee
-
-#define MESSAGE_READ_TEMP 0x2e
-#define MESSAGE_READ_PRESS_OSS_0 0x34
-#define MESSAGE_READ_PRESS_OSS_1 0x74
-#define MESSAGE_READ_PRESS_OSS_2 0xb4
-#define MESSAGE_READ_PRESS_OSS_3 0xf4
-
-#define ADDR_CALIB0 0xaa
-#define ADDR_CALIB21 0xbf
-#define ADDR_DEVICE_ID 0xd0
-#define ADDR_MSG_CONTROL 0xf4
-#define ADDR_MSB 0xf6
-#define ADDR_LSB 0xf7
-#define ADDR_XLSB 0xf8
-
-// BPM180 state machine
-static enum {
-    STATE_IDLE,
-    STATE_ASK_ID,
-    STATE_RCV_ID,
-    STATE_ASK_CALIB_TABLE,
-    STATE_RCV_CALIB_TABLE,
-    STATE_ASK_TEMP,
-    STATE_ASK_TEMP_2,
-    STATE_RCV_TEMP,
-    STATE_ASK_PRESS,
-    STATE_ASK_PRESS_2,
-    STATE_RCV_PRESS
-} s_state;
+#ifdef HAS_BPM180_APP
 
 static BYTE s_buffer[16];
 static int s_counter = 0;
@@ -60,18 +26,24 @@ static unsigned long s_ut;
 // Uncompensate pressure
 static unsigned long s_up;
 
-void bpm180_init() {
-    s_state = STATE_IDLE;
+// app state machine
+static enum {
+    STATE_IDLE,
+    STATE_CALIB_TABLE,
+    STATE_TEMP,
+    STATE_PRESS
+} s_state;
+
+static TICK_TYPE s_lastTime;
+
+void bpm180_app_init() {
+    bpm180_init();
     s_lastTime = TickGet();
 }
 
-void bpm180_poll() {
-    if ((TickGet() - s_lastTime) > (TICK_SECOND * 3)) {
-        fatal("I.LOCK");
-    }
-    
+void bpm180_app_poll() {
     int oss = 3;
-    BOOL i2cIdle = i2c_poll();
+    BOOL i2cIdle = bpm180_poll();
     if (!i2cIdle) {
         return; 
     }
@@ -80,34 +52,11 @@ void bpm180_poll() {
         case STATE_IDLE:
             // Start reading?
             if ((TickGet() - s_lastTime) > (TICK_SECOND * 2)) {
-                s_buffer[0] = ADDR_DEVICE_ID;
-                i2c_sendReceive7(REG_WRITE, 1, s_buffer);
-                s_state = STATE_ASK_ID;
+                bpm180_askIdCalib((void*)&s_calibTable);
+                s_state = STATE_CALIB_TABLE;
             }
             break;
-        case STATE_ASK_ID:
-            // Start read buffer
-            i2c_sendReceive7(REG_READ, 1, s_buffer);
-            s_state = STATE_RCV_ID;
-            break;
-        case STATE_RCV_ID:
-            if (s_buffer[0] != 0x55) {
-                fatal("B.ID");
-            }
-
-            // Ask table
-            s_buffer[0] = ADDR_CALIB0;
-            i2c_sendReceive7(REG_WRITE, 1, s_buffer);
-            s_state = STATE_ASK_CALIB_TABLE;
-            break;
-            
-        case STATE_ASK_CALIB_TABLE:
-            // Start read table
-            i2c_sendReceive7(REG_READ, 22, (void*)&s_calibTable);
-            s_state = STATE_RCV_CALIB_TABLE;
-            break;
-
-        case STATE_RCV_CALIB_TABLE:   
+        case STATE_CALIB_TABLE:   
             // Change endianness
             for (int i = 0; i < 11; i++) {
                 BYTE b1 = ((BYTE*)&s_calibTable)[i * 2];
@@ -115,50 +64,18 @@ void bpm180_poll() {
                 ((BYTE*)&s_calibTable)[i * 2 + 1] = b1;
             }
             
-            // Ask temp
-            s_buffer[0] = ADDR_MSG_CONTROL;
-            s_buffer[1] = MESSAGE_READ_TEMP;
-            i2c_sendReceive7(REG_WRITE, 2, s_buffer);
-            s_state = STATE_ASK_TEMP;
-            s_lastTime = TickGet();
+            bpm180_askTemp(s_buffer);
+            s_state = STATE_TEMP;
             break;
-        case STATE_ASK_TEMP:   
-            if ((TickGet() - s_lastTime) > (TICKS_PER_MSECOND * 5)) {
-                s_buffer[0] = ADDR_MSB;
-                i2c_sendReceive7(REG_WRITE, 1, s_buffer);
-                s_state = STATE_ASK_TEMP_2;
-            }
-            break;
-        case STATE_ASK_TEMP_2:
-            // Read results
-            i2c_sendReceive7(REG_READ, 2, s_buffer);
-            s_state = STATE_RCV_TEMP;
-            break;
-        case STATE_RCV_TEMP:
+        case STATE_TEMP:
             // invert temp
             s_ut = ((unsigned long)s_buffer[0] << 8) | (unsigned long)s_buffer[1];
 
-            // Ask pressure (min sampling)
-            s_buffer[0] = ADDR_MSG_CONTROL;
-            s_buffer[1] = MESSAGE_READ_PRESS_OSS_3;
-            i2c_sendReceive7(REG_WRITE, 2, s_buffer);
-            s_state = STATE_ASK_PRESS;
-            s_lastTime = TickGet();
+            bpm180_askPressure(s_buffer);
+            s_state = STATE_PRESS;
             break;
-        case STATE_ASK_PRESS:   
-            if ((TickGet() - s_lastTime) > (TICKS_PER_MSECOND * 30)) {
-                s_buffer[0] = ADDR_MSB;
-                i2c_sendReceive7(REG_WRITE, 1, s_buffer);
-                s_state = STATE_ASK_PRESS_2;
-            }
-            break;
-        case STATE_ASK_PRESS_2:
-            // Read results
-            i2c_sendReceive7(REG_READ, 3, s_buffer);
-            s_state = STATE_RCV_PRESS;
-            break;
-        case STATE_RCV_PRESS:
-            // invert temp
+        case STATE_PRESS:   
+            // invert press
             s_up = (((unsigned long)s_buffer[0] << 16) | ((unsigned long)s_buffer[1] << 8) | (unsigned long)s_buffer[2]) >> (8 - oss);
 
             float temp, press;

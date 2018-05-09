@@ -1,8 +1,6 @@
 #include "../pch.h"
 #include "audioSink.h"
 #include "../appio.h"
-#include "../hardware/vs1011e.h"
-#include "../hardware/spi.h"
 
 #ifdef HAS_VS1011
 

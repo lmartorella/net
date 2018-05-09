@@ -5,7 +5,6 @@
 #include "protocol.h"
 #include "persistence.h"
 #include "appio.h"
-#include "hardware/leds.h"
 
 #ifdef HAS_BUS_CLIENT
 
