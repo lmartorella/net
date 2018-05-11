@@ -174,8 +174,8 @@ void fatal(const char* msg);
 #undef HAS_FAKE_RS232
 
 #define HAS_I2C
-#define HAS_BPM180
-#define HAS_BPM180_APP
+#define HAS_BMP180
+#define HAS_BMP180_APP
 
 #endif
 

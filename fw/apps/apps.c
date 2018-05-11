@@ -1,6 +1,6 @@
 #include "../pch.h"
 #include "audioSink.h"
-#include "bpm180.h"
+#include "bmp180app.h"
 #include "dcf77.h"
 #include "spiram.h"
 
@@ -14,8 +14,8 @@ void apps_init()
     dcf77_init();
 #endif
 
-#ifdef HAS_BPM180
-    bpm180_app_init();
+#ifdef HAS_BMP180_APP
+    bmp180_app_init();
 #endif      
 }
 
@@ -29,7 +29,7 @@ void apps_poll()
     dcf77_poll();
 #endif
 
-#ifdef HAS_BPM180
-    bpm180_app_poll();
+#ifdef HAS_BMP180_APP
+    bmp180_app_poll();
 #endif
 }

@@ -5,11 +5,14 @@
 
 #ifdef HAS_BUS
 
+void sinks_init();
+
 #define SINK_SYS_ID "SYS "
 bit sys_read();
 bit sys_write();
 
 // Returns 1 if more data should follow, 0 if finished
+// The 'write' function sends data to master. The 'read' function receives data from master.
 typedef bit (*SinkFunction)();
 
 #ifdef HAS_FIRMWARE

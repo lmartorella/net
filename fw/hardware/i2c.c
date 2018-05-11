@@ -97,7 +97,7 @@ void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
     s_state = STATE_START;
 }
 
-BOOL i2c_poll() {
+bit i2c_poll() {
 loop:
     if (s_state == STATE_IDLE) {
         return TRUE; 

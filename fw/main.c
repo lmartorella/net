@@ -3,6 +3,7 @@
 #include "appio.h"
 #include "persistence.h"
 #include "protocol.h"
+#include "sinks.h"
 #include "apps/apps.h"
 
 #ifdef __XC8
@@ -74,6 +75,8 @@ void main()
     prot_init();
 #endif
     
+    sinks_init();
+    
     apps_init();
     
     enableInterrupts();
@@ -96,6 +99,7 @@ void main()
 #ifdef HAS_RS485
         rs485_poll();
 #endif
+        
         pers_poll();
         
         apps_poll();

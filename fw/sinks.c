@@ -6,6 +6,7 @@
 #include "sinks/digio.h"
 #include "sinks/dht11.h"
 #include "sinks/halfduplex.h"
+#include "sinks/bmp180.h"
 
 #ifdef HAS_BUS
 
@@ -32,6 +33,9 @@ const char* const SINK_IDS =
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
     SINK_HALFDUPLEX_ID 
 #endif
+#if defined(HAS_BMP180)
+    SINK_BMP180_ID 
+#endif
 #if defined(HAS_CUSTOM_SINK)
     SINK_CUSTOM_ID 
 #endif
@@ -49,6 +53,9 @@ const int SINK_IDS_COUNT =
     + 1
 #endif
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
+    + 1
+#endif
+#if defined(HAS_BMP180)
     + 1
 #endif
 #if defined(HAS_CUSTOM_SINK)
@@ -71,6 +78,9 @@ const SinkFunction const sink_readHandlers[] = {
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
     ,halfduplex_read 
 #endif
+#if defined(HAS_BMP180)
+    ,bmp180_sinkRead 
+#endif
 #if defined(HAS_CUSTOM_SINK)
     ,customsink_read 
 #endif
@@ -91,6 +101,9 @@ const SinkFunction const sink_writeHandlers[] = {
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
     ,halfduplex_write 
 #endif
+#if defined(HAS_BMP180)
+    ,bmp180_sinkWrite 
+#endif
 #if defined(HAS_CUSTOM_SINK)
     ,customsink_write 
 #endif
@@ -102,6 +115,12 @@ const FIRMWARE_HEADER e_header @ FW_SINK_VECTOR_PTR;
 const BYTE _e_filler[FW_SIZE] @ FW_SINK_VECTOR_PTR;
 
 #endif
+
+void sinks_init() {
+#ifdef HAS_BMP180
+    bmp180_init();
+#endif
+}
 
 const TWOCC ResetCode = { "RS" };
 const TWOCC ExceptionText = { "EX" };

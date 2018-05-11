@@ -5,7 +5,7 @@
 
 void i2c_init();
 // Returns TRUE if device is IDLE
-BOOL i2c_poll();
+ bit i2c_poll();
 
 void i2c_sendReceive7(BYTE addrRw, BYTE size, BYTE* buf);
 

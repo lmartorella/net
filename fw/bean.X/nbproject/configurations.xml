@@ -6,10 +6,10 @@
                    projectFiles="true">
       <logicalFolder name="f3" displayName="apps" projectFiles="true">
         <itemPath>../apps/audioSink.h</itemPath>
-        <itemPath>../apps/bpm180.h</itemPath>
         <itemPath>../apps/dcf77.h</itemPath>
         <itemPath>../apps/spiram.h</itemPath>
         <itemPath>../apps/apps.h</itemPath>
+        <itemPath>../apps/bmp180app.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/cm1602.h</itemPath>
@@ -38,7 +38,7 @@
         <itemPath>../sinks/displaySink.h</itemPath>
         <itemPath>../sinks/halfduplex.h</itemPath>
         <itemPath>../sinks/dht11.h</itemPath>
-        <itemPath>../sinks/bpm180.h</itemPath>
+        <itemPath>../sinks/bmp180.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -93,10 +93,10 @@
       <logicalFolder name="f3" displayName="apps" projectFiles="true">
         <itemPath>../apps/apps.c</itemPath>
         <itemPath>../apps/audioSink.c</itemPath>
-        <itemPath>../apps/bpm180.c</itemPath>
         <itemPath>../apps/dcf77.c</itemPath>
         <itemPath>../apps/spiram.c</itemPath>
         <itemPath>../apps/flasher.c</itemPath>
+        <itemPath>../apps/bmp180App.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="hardware" projectFiles="true">
         <itemPath>../hardware/cm1602.c</itemPath>
@@ -114,7 +114,7 @@
         <itemPath>../sinks/displaySink.c</itemPath>
         <itemPath>../sinks/halfduplex.c</itemPath>
         <itemPath>../sinks/dht11.c</itemPath>
-        <itemPath>../sinks/bpm180.c</itemPath>
+        <itemPath>../sinks/bmp180.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>
