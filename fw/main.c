@@ -35,7 +35,15 @@ void main()
 #if defined(HAS_SPI) && defined(HAS_I2C)
 #error Cannot enable both SPI and I2C
 #endif
-    
+
+#ifdef HAS_BUS
+    prot_init();
+#endif
+
+#ifdef HAS_RS485
+    rs485_init();
+#endif
+
 #ifdef HAS_SPI
     println("Spi");
     
@@ -66,15 +74,7 @@ void main()
     BUSPOWER_TRIS = 0;
     BUSPOWER_PORT = 1;
 #endif
-    
-#ifdef HAS_RS485
-    rs485_init();
-#endif
-
-#ifdef HAS_BUS
-    prot_init();
-#endif
-    
+        
     sinks_init();
     
     apps_init();

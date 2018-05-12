@@ -91,6 +91,11 @@ WORD prot_control_readAvail()
     return TCPIsGetReady(s_controlSocket);
 }
 
+WORD prot_control_writeAvail()
+{
+    return TCPIsPutReady(s_controlSocket);
+}
+
 void ip_prot_init()
 {
     println("IP/DHCP");

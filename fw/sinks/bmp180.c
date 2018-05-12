@@ -55,7 +55,6 @@ void bmp180_init() {
     s_state = STATE_IDLE;
     s_lastCommand = COMMAND_READ_DATA;
     s_sinkStateOrSize = SINK_STATE_IDLE;
-    s_lastTime = TickGet();
 }
 
 void bmp180_resetGetCalibData() {
