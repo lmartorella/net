@@ -30,6 +30,7 @@ static enum {
     STATE_ASK_CALIB_TABLE,
     STATE_ASK_TEMP,
     STATE_ASK_TEMP_2,
+    STATE_WAIT_TEMP,
     STATE_ASK_PRESS,
     STATE_ASK_PRESS_2,
 
@@ -43,10 +44,9 @@ static enum {
 } s_lastCommand;
 
 // Sink state
-static enum {
-    SINK_STATE_IDLE,
-    SINK_STATE_WAIT_DATA,
-} s_sinkState;
+#define SINK_STATE_IDLE (-1)
+static signed char s_sinkStateOrSize;
+static BYTE s_ptr;
 
 BMP180_BUFFER bmp180_buffer;
 static TICK_TYPE s_lastTime;
@@ -54,7 +54,7 @@ static TICK_TYPE s_lastTime;
 void bmp180_init() {
     s_state = STATE_IDLE;
     s_lastCommand = COMMAND_READ_DATA;
-    s_sinkState = SINK_STATE_IDLE;
+    s_sinkStateOrSize = SINK_STATE_IDLE;
     s_lastTime = TickGet();
 }
 
@@ -130,7 +130,9 @@ bit bmp180_poll() {
         case STATE_ASK_TEMP_2:
             // Read results
             i2c_sendReceive7(REG_READ, 2, &bmp180_buffer.tempData);
-
+            s_state = STATE_WAIT_TEMP;
+            break;
+        case STATE_WAIT_TEMP:
             // Ask pressure (max sampling)
             bmp180_buffer.sendBuffer[0] = ADDR_MSG_CONTROL;
             bmp180_buffer.sendBuffer[1] = MESSAGE_READ_PRESS_OSS_3;
@@ -169,26 +171,34 @@ bit bmp180_sinkWrite() {
     }
     
     // Do readings
-    switch (s_sinkState) {
-        case SINK_STATE_IDLE:
-            // Start acquisition
-            switch (s_lastCommand) {
-                case COMMAND_RESET_READ_CALIB:
-                    bmp180_resetGetCalibData();
-                    break;
-                case COMMAND_READ_DATA:
-                default:
-                    bmp180_readTempPressureData();
-                    break;
-            }
-            s_sinkState = SINK_STATE_WAIT_DATA;
-            return 1;
-
-        case SINK_STATE_WAIT_DATA:
-            // Done, return data.
-            TODO
-            // MAX between data to sent and space avail
-            return 0;
+    if (s_sinkStateOrSize == SINK_STATE_IDLE) {
+        // Start acquisition
+        switch (s_lastCommand) {
+            case COMMAND_RESET_READ_CALIB:
+                bmp180_resetGetCalibData();
+                s_sinkStateOrSize = sizeof(bmp180_buffer.calibData);
+                break;
+            case COMMAND_READ_DATA:
+            default:
+                bmp180_readTempPressureData();
+                s_sinkStateOrSize = sizeof(bmp180_buffer.pressureData);
+                break;
+        }
+        s_ptr = 0;
+        // Data will follow
+        return 1;
+    } else if (s_sinkStateOrSize > 0) {
+        BYTE l = prot_control_writeAvail();
+        if ((BYTE)s_sinkStateOrSize < l) {
+            l = (BYTE)s_sinkStateOrSize;
+        }
+        prot_control_write(((BYTE*)&bmp180_buffer) + s_ptr, l);
+        s_ptr += l;
+        s_sinkStateOrSize -= l;
+        return 1;
+    } else {
+        // Done
+        return 0;
     }
 }
 

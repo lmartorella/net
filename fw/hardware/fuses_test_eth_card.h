@@ -92,7 +92,7 @@ void fatal(const char* msg);
 // ******
 // IP: uses PORTA0,1 (leds)
 // ******
-#undef HAS_IP
+#define HAS_IP
 #define SERVER_CONTROL_UDP_PORT 17008
 #define CLIENT_TCP_PORT 20001
 

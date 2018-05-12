@@ -27,6 +27,7 @@ static enum {
 } s_state;
 
 static TICK_TYPE s_lastTime;
+static BYTE s_count;
 
 void bmp180_app_init() {
     bmp180_resetGetCalibData();
@@ -111,13 +112,14 @@ void bmp180_app_poll() {
                 }
             
                 BYTE buffer[16];
-                sprintf(buffer, "%4.1f'C %6.1fhPa", temp, press);
+                sprintf(buffer, "%4.1f'C%c%6.1fhPa", temp, (s_count % 2) ? '.' : ' ', press);
                 println(buffer);
             }
                         
             // DONE!
             s_state = STATE_IDLE;
             s_lastTime = TickGet();
+            s_count++;
             break;
     }
 }

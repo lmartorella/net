@@ -21,7 +21,7 @@ static enum {
     STATE_RXDATA,
     STATE_ACK,
     STATE_STOP
-} s_state;
+} s_istate;
 
 void i2c_init() {
     // First remove any deadlock on receivers.
@@ -75,13 +75,13 @@ void i2c_init() {
 
     wait2ms();
     
-    s_state = STATE_IDLE;
+    s_istate = STATE_IDLE;
 }
 
 void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
     // Check if MSSP module is in use
     BYTE mask = _SSPCON2_SEN_MASK | _SSPCON2_RSEN_MASK | _SSPCON2_PEN_MASK | _SSPCON2_RCEN_MASK | _SSPCON2_ACKEN_MASK;
-    if ((SSPCON2 & mask) || s_state != STATE_IDLE) {
+    if ((SSPCON2 & mask) || s_istate != STATE_IDLE) {
         fatal("I2.U");
     }
     PIR1bits.SSP1IF = 0;
@@ -94,12 +94,12 @@ void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
     // Start bit!
     // Start
     SSPCON2bits.SEN = 1; 
-    s_state = STATE_START;
+    s_istate = STATE_START;
 }
 
 bit i2c_poll() {
 loop:
-    if (s_state == STATE_IDLE) {
+    if (s_istate == STATE_IDLE) {
         return TRUE; 
     }
 
@@ -116,11 +116,11 @@ loop:
         fatal("I2.OV");
     }
     
-    switch (s_state) {
+    switch (s_istate) {
         case STATE_START:
             // Send address
             SSPBUF = s_addr;
-            s_state = STATE_ADDR;
+            s_istate = STATE_ADDR;
             break;
         case STATE_ADDR:
             if (SSPCON2bits.ACKSTAT) {
@@ -131,11 +131,11 @@ loop:
             // Start send/receive
             if ((s_addr & 0x1) == DIR_RECEIVE) {
                 SSPCON2bits.RCEN = 1;
-                s_state = STATE_RXDATA;
+                s_istate = STATE_RXDATA;
             } else {
                 SSPBUF = *s_buf;
                 s_buf++;
-                s_state = STATE_TXDATA;
+                s_istate = STATE_TXDATA;
             }
             break;
         case STATE_RXDATA:
@@ -153,7 +153,7 @@ loop:
                 SSPCON2bits.ACKDT = 0;
             }
             SSPCON2bits.ACKEN = 1;
-            s_state = STATE_ACK;
+            s_istate = STATE_ACK;
             break;
         case STATE_TXDATA:
             if (SSPCON2bits.ACKSTAT) {
@@ -163,7 +163,7 @@ loop:
             if (s_buf >= s_dest) {
                 // Send STOP
                 SSPCON2bits.PEN = 1;
-                s_state = STATE_STOP;
+                s_istate = STATE_STOP;
             } else {
                 // TX again
                 SSPBUF = *s_buf;
@@ -174,14 +174,14 @@ loop:
             if (s_buf >= s_dest) {
                 // Send STOP
                 SSPCON2bits.PEN = 1;
-                s_state = STATE_STOP;
+                s_istate = STATE_STOP;
             } else {
                 SSPCON2bits.RCEN = 1;
-                s_state = STATE_RXDATA;
+                s_istate = STATE_RXDATA;
             }
             break;
         case STATE_STOP:
-            s_state = STATE_IDLE;
+            s_istate = STATE_IDLE;
             break;
     }
     // It is possible that the IF flag is ready right now
