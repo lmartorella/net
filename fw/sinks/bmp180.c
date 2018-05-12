@@ -1,6 +1,5 @@
 #include "../pch.h"
 #include "bmp180.h"
-#include "protocol.h"
 
 // BPM180 I2C module to read barometric data (air pressure)
 #ifdef HAS_BMP180
