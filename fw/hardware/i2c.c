@@ -29,49 +29,49 @@ void i2c_init() {
     // See AN1028, Software Reset Sequence
     
     // Ports as outputs
-    PORTCbits.RC4 = 1;
-    TRISCbits.TRISC4 = 0;
-    PORTCbits.RC3 = 1;
-    TRISCbits.TRISC3 = 0;
+    I2C_PORT_SDA = 1;
+    I2C_TRIS_SDA = 0;
+    I2C_PORT_SCL = 1;
+    I2C_TRIS_SCL = 0;
 
     wait2ms();
 
     // Start bit
-    PORTCbits.RC4 = 0; // SDA low
+    I2C_PORT_SDA = 0; // SDA low
     wait40us();
-    PORTCbits.RC3 = 0; // SCL low
+    I2C_PORT_SCL = 0; // SCL low
     wait40us();
      
-    PORTCbits.RC4 = 1; // SDA = 1 
+    I2C_PORT_SDA = 1; // SDA = 1 
     // Produce 8 bits + 1 NACK
     for (BYTE i = 0; i < 8; i++) {
         wait40us();
-        PORTCbits.RC3 = 1;
+        I2C_PORT_SCL = 1;
         wait40us();
-        PORTCbits.RC3 = 0;
+        I2C_PORT_SCL = 0;
     }
     wait40us();
 
     // Stop bit
-    PORTCbits.RC4 = 0; // SDA low
+    I2C_PORT_SDA = 0; // SDA low
     wait40us();
-    PORTCbits.RC3 = 1; // SCL high
+    I2C_PORT_SCL = 1; // SCL high
     wait40us();
-    PORTCbits.RC4 = 1; // SDA high
+    I2C_PORT_SDA = 1; // SDA high
     wait2ms();
     
     // Ports as inputs
-    TRISCbits.TRISC3 = 1;
-    TRISCbits.TRISC4 = 1;
+    I2C_TRIS_SDA = 1;
+    I2C_TRIS_SCL = 1;
     
     // Baud generator
-    SSPADD = 62; // FOsc = 25Mkz -> 100kHz
+    I2C_SSPADD = 62; // FOsc = 25Mkz -> 100kHz
     
     // Setup I2C
-    SSPSTATbits.SMP = 0;
-    SSPSTATbits.CKE = 0;
-    SSPCON1bits.SSPM = 8; // I2C master
-    SSPCON1bits.SSPEN = 1;  
+    I2C_SSPSTAT_SMP = 0;
+    I2C_SSPSTAT_CKE = 0;
+    I2C_SSPCON1_SSPM = 8; // I2C master
+    I2C_SSPCON1_SSPEN = 1;  
 
     wait2ms();
     
@@ -80,11 +80,10 @@ void i2c_init() {
 
 void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
     // Check if MSSP module is in use
-    BYTE mask = _SSPCON2_SEN_MASK | _SSPCON2_RSEN_MASK | _SSPCON2_PEN_MASK | _SSPCON2_RCEN_MASK | _SSPCON2_ACKEN_MASK;
-    if ((SSPCON2 & mask) || s_istate != STATE_IDLE) {
+    if ((I2C_SSPCON2 & I2C_SSPCON2_BUSY_MASK) || s_istate != STATE_IDLE) {
         fatal("I2.U");
     }
-    PIR1bits.SSP1IF = 0;
+    I2C_PIR_SSP1IF = 0;
 
     // Store regs
     s_addr = addr;
@@ -93,7 +92,7 @@ void i2c_sendReceive7(BYTE addr, BYTE size, BYTE* buf) {
     
     // Start bit!
     // Start
-    SSPCON2bits.SEN = 1; 
+    I2C_SSPCON2_SEN = 1; 
     s_istate = STATE_START;
 }
 
@@ -104,79 +103,79 @@ loop:
     }
 
     // Something happened?
-    if (!PIR1bits.SSPIF) {
+    if (!I2C_PIR_SSP1IF) {
         return FALSE;
     }
     
-    PIR1bits.SSPIF = 0;
-    if (SSPCON1bits.WCOL) {
+    I2C_PIR_SSP1IF = 0;
+    if (I2C_SSPCON1_WCOL) {
         fatal("I2.CL");
     }
-    if (SSPCON1bits.SSPOV) {
+    if (I2C_SSPCON1_SSPOV) {
         fatal("I2.OV");
     }
     
     switch (s_istate) {
         case STATE_START:
             // Send address
-            SSPBUF = s_addr;
+            I2C_SSPBUF = s_addr;
             s_istate = STATE_ADDR;
             break;
         case STATE_ADDR:
-            if (SSPCON2bits.ACKSTAT) {
+            if (I2C_SSPCON2_ACKSTAT) {
                 // ACK not received. Err.
                 fatal("I2.AA");
             }
             
             // Start send/receive
             if ((s_addr & 0x1) == DIR_RECEIVE) {
-                SSPCON2bits.RCEN = 1;
+                I2C_SSPCON2_RCEN = 1;
                 s_istate = STATE_RXDATA;
             } else {
-                SSPBUF = *s_buf;
+                I2C_SSPBUF = *s_buf;
                 s_buf++;
                 s_istate = STATE_TXDATA;
             }
             break;
         case STATE_RXDATA:
-            if (!SSPSTATbits.BF) {
+            if (!I2C_SSPSTAT_BF) {
                 fatal("I.BF");
             }
-            *s_buf = SSPBUF;
+            *s_buf = I2C_SSPBUF;
             s_buf++;
             // Again?
             if (s_buf >= s_dest) {
                 // Finish: send NACK
-                SSPCON2bits.ACKDT = 1;
+                I2C_SSPCON2_ACKDT = 1;
             } else {
                 // Again: send ACK
-                SSPCON2bits.ACKDT = 0;
+                I2C_SSPCON2_ACKDT = 0;
             }
-            SSPCON2bits.ACKEN = 1;
+            I2C_SSPCON2_ACKEN = 1;
             s_istate = STATE_ACK;
             break;
         case STATE_TXDATA:
-            if (SSPCON2bits.ACKSTAT) {
+            if (I2C_SSPCON2_ACKSTAT) {
                 // ACK not received? Err. (even the last byte, see BPM180 specs)
                 fatal("I2.AI");
             }
             if (s_buf >= s_dest) {
                 // Send STOP
-                SSPCON2bits.PEN = 1;
+                I2C_SSPCON2_PEN = 1;
                 s_istate = STATE_STOP;
             } else {
                 // TX again
-                SSPBUF = *s_buf;
+                I2C_SSPBUF = *s_buf;
                 s_buf++;
             }
             break;
         case STATE_ACK:
             if (s_buf >= s_dest) {
                 // Send STOP
-                SSPCON2bits.PEN = 1;
+                I2C_SSPCON2_PEN = 1;
                 s_istate = STATE_STOP;
             } else {
-                SSPCON2bits.RCEN = 1;
+                I2C_SSPCON2_RCEN = 1;
                 s_istate = STATE_RXDATA;
             }
             break;

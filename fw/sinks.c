@@ -64,13 +64,13 @@ const int SINK_IDS_COUNT =
 ;
 
 const SinkFunction const sink_readHandlers[] = {
-    &sys_read
+    sys_read
 #ifdef HAS_DIGIO
     ,digio_out_read
     ,nil
 #endif
 #ifdef SINK_LINE_ID
-    ,&line_read
+    ,line_read
 #endif
 #ifdef HAS_DHT11
     ,nil

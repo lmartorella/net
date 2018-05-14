@@ -1,5 +1,6 @@
 #include "../pch.h"
 #include "bmp180.h"
+#include "../protocol.h"
 
 // BPM180 I2C module to read barometric data (air pressure)
 #ifdef HAS_BMP180
@@ -62,7 +63,7 @@ void bmp180_resetGetCalibData() {
     }
     // TODO: reset too
     bmp180_buffer.sendBuffer[0] = ADDR_DEVICE_ID;
-    i2c_sendReceive7(REG_WRITE, 1, &bmp180_buffer.sendBuffer);
+    i2c_sendReceive7(REG_WRITE, 1, bmp180_buffer.sendBuffer);
     s_state = STATE_ASK_ID;
     s_lastTime = TickGet();
 }
@@ -73,7 +74,7 @@ void bmp180_readTempPressureData() {
     }
     bmp180_buffer.sendBuffer[0] = ADDR_MSG_CONTROL;
     bmp180_buffer.sendBuffer[1] = MESSAGE_READ_TEMP;
-    i2c_sendReceive7(REG_WRITE, 2, &bmp180_buffer.sendBuffer);
+    i2c_sendReceive7(REG_WRITE, 2, bmp180_buffer.sendBuffer);
     s_state = STATE_ASK_TEMP;
     s_lastTime = TickGet();
 }
@@ -88,7 +89,7 @@ bit bmp180_poll() {
     }
 
     // Wait for I2C to finish previous operation
-    int oss = 3;
+    //int oss = 3;
     BOOL idle = i2c_poll();
     if (!idle) {
         return 0;
@@ -97,7 +98,7 @@ bit bmp180_poll() {
     switch (s_state) {
         case STATE_ASK_ID:
             // Start read buffer
-            i2c_sendReceive7(REG_READ, 1, &bmp180_buffer.sendBuffer);
+            i2c_sendReceive7(REG_READ, 1, bmp180_buffer.sendBuffer);
             s_state = STATE_RCV_ID;
             break;
         case STATE_RCV_ID:
@@ -107,13 +108,13 @@ bit bmp180_poll() {
 
             // Ask table
             bmp180_buffer.sendBuffer[0] = ADDR_CALIB0;
-            i2c_sendReceive7(REG_WRITE, 1, &bmp180_buffer.sendBuffer);
+            i2c_sendReceive7(REG_WRITE, 1, bmp180_buffer.sendBuffer);
             s_state = STATE_ASK_CALIB_TABLE;
             break;
             
         case STATE_ASK_CALIB_TABLE:
             // Start read table
-            i2c_sendReceive7(REG_READ, 22, &bmp180_buffer.calibData);
+            i2c_sendReceive7(REG_READ, 22, bmp180_buffer.calibData);
             s_state = STATE_WAIT_DATA;
             break;
 
@@ -121,20 +122,20 @@ bit bmp180_poll() {
             // Wait 4.5ms
             if ((TickGet() - s_lastTime) > (TICKS_PER_MSECOND * 5)) {
                 bmp180_buffer.sendBuffer[0] = ADDR_MSB;
-                i2c_sendReceive7(REG_WRITE, 1, &bmp180_buffer.sendBuffer);
+                i2c_sendReceive7(REG_WRITE, 1, bmp180_buffer.sendBuffer);
                 s_state = STATE_ASK_TEMP_2;
             }
             break;
         case STATE_ASK_TEMP_2:
             // Read results
-            i2c_sendReceive7(REG_READ, 2, &bmp180_buffer.tempData);
+            i2c_sendReceive7(REG_READ, 2, bmp180_buffer.tempData);
             s_state = STATE_WAIT_TEMP;
             break;
         case STATE_WAIT_TEMP:
             // Ask pressure (max sampling)
             bmp180_buffer.sendBuffer[0] = ADDR_MSG_CONTROL;
             bmp180_buffer.sendBuffer[1] = MESSAGE_READ_PRESS_OSS_3;
-            i2c_sendReceive7(REG_WRITE, 2, &bmp180_buffer.sendBuffer);
+            i2c_sendReceive7(REG_WRITE, 2, bmp180_buffer.sendBuffer);
             s_state = STATE_ASK_PRESS;
             s_lastTime = TickGet();
             break;
@@ -143,13 +144,13 @@ bit bmp180_poll() {
             // Wait 25ms (OSS = 3)
             if ((TickGet() - s_lastTime) > (TICKS_PER_MSECOND * 30)) {
                 bmp180_buffer.sendBuffer[0] = ADDR_MSB;
-                i2c_sendReceive7(REG_WRITE, 1, &bmp180_buffer.sendBuffer);
+                i2c_sendReceive7(REG_WRITE, 1, bmp180_buffer.sendBuffer);
                 s_state = STATE_ASK_PRESS_2;
             }
             break;
         case STATE_ASK_PRESS_2:
             // Read results
-            i2c_sendReceive7(REG_READ, 3, &bmp180_buffer.pressureData);
+            i2c_sendReceive7(REG_READ, 3, bmp180_buffer.pressureData);
             s_state = STATE_WAIT_DATA;
             break;
 
