@@ -26,10 +26,11 @@ namespace Lucky.Home.Protocol
 #endif
             //_address = address;
             _logger = Manager.GetService<ILoggerFactory>().Create("UdpControlPortListener");
-            _client = new UdpClient(new IPEndPoint(address, port));
+            var ep = new IPEndPoint(address, port);
+            _client = new UdpClient(ep);
             _client.BeginReceive(OnReceiveData, null);
 
-            _logger.Log("Listening", "port", port.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
+            _logger.Log("Listening", "address", ep.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
         }
 
         public void Dispose()

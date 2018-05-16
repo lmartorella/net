@@ -43,6 +43,7 @@
     <Compile Include="Application\ConfigurationService.cs" />
     <Compile Include="Application\HomeApp.cs" />
     <Compile Include="Db\FsTimeSeries.cs" />
+    <Compile Include="Devices\BarometricTesterDevice.cs" />
     <Compile Include="Devices\GardenDevice.cs" />
     <Compile Include="Devices\ClockDevice.cs" />
     <Compile Include="Devices\EchoLineTesterDevice.cs" />
@@ -60,6 +61,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Sinks\BarometricSink.cs" />
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />

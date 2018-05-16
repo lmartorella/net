@@ -173,7 +173,7 @@ void fatal(const char* msg);
 
 #undef HAS_FAKE_RS232
 
-#define HAS_I2C
+#undef HAS_I2C
 #define I2C_PORT_SDA PORTCbits.RC4
 #define I2C_TRIS_SDA TRISCbits.TRISC4
 #define I2C_PORT_SCL PORTCbits.RC3
@@ -197,8 +197,8 @@ void fatal(const char* msg);
 #define I2C_SSPCON2_ACKDT SSPCON2bits.ACKDT
 #define I2C_SSPCON2_BUSY_MASK (_SSPCON2_SEN_MASK | _SSPCON2_RSEN_MASK | _SSPCON2_PEN_MASK | _SSPCON2_RCEN_MASK | _SSPCON2_ACKEN_MASK)
 
-#define HAS_BMP180
-#define HAS_BMP180_APP
+#undef HAS_BMP180
+#undef HAS_BMP180_APP
 
 #endif
 

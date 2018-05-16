@@ -44,7 +44,7 @@ static enum {
 } s_lastCommand;
 
 // Sink state
-#define SINK_STATE_IDLE (-1)
+#define SINK_STATE_IDLE (0)
 static signed char s_sinkStateOrSize;
 static BYTE s_ptr;
 
@@ -180,7 +180,7 @@ bit bmp180_sinkWrite() {
             case COMMAND_READ_DATA:
             default:
                 bmp180_readTempPressureData();
-                s_sinkStateOrSize = sizeof(bmp180_buffer.pressureData);
+                s_sinkStateOrSize = sizeof(bmp180_buffer.pressureData) + sizeof(bmp180_buffer.tempData);
                 break;
         }
         s_ptr = 0;
@@ -194,7 +194,7 @@ bit bmp180_sinkWrite() {
         prot_control_write(((BYTE*)&bmp180_buffer) + s_ptr, l);
         s_ptr += l;
         s_sinkStateOrSize -= l;
-        return 1;
+        return s_sinkStateOrSize > 0;
     } else {
         // Done
         return 0;
@@ -210,6 +210,7 @@ bit bmp180_sinkRead() {
     if (s_lastCommand != COMMAND_RESET_READ_CALIB) {
         s_lastCommand = COMMAND_READ_DATA;
     }
+    s_sinkStateOrSize = SINK_STATE_IDLE;
     return 0;
 }
 
