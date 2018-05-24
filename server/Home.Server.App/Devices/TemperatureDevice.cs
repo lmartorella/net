@@ -16,11 +16,11 @@ namespace Lucky.Home.Devices
 
         public TemperatureDevice()
         {
-            _timer = new Timer(o =>
+            _timer = new Timer(async o =>
             {
                 if (IsFullOnline)
                 {
-                    byte[] reading = ((TemperatureSink)Sinks[0]).Read();
+                    byte[] reading = await ((TemperatureSink)Sinks[0]).Read();
                     if (reading == null || reading.Length != 6)
                     {
                         Logger.Error("ProtocolError", "Len", reading != null ? reading.Length : -1);

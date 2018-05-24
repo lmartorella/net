@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 using Lucky.Services;
 
@@ -28,9 +29,11 @@ namespace Lucky.Home.Protocol
             _logger = Manager.GetService<ILoggerFactory>().Create("UdpControlPortListener");
             var ep = new IPEndPoint(address, port);
             _client = new UdpClient(ep);
-            _client.BeginReceive(OnReceiveData, null);
+            _logger.Log("Listening", "port", port.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
 
-            _logger.Log("Listening", "address", ep.ToString() + (port == Constants.UdpControlPort ? " (release)" : (port == Constants.UdpControlPort_Debug ? " (debug)" : " (custom)")));
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            OnReceiveData();
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         public void Dispose()
@@ -38,59 +41,68 @@ namespace Lucky.Home.Protocol
             _client.Close();
         }
 
-        private void OnReceiveData(IAsyncResult result)
+        private async Task OnReceiveData()
         {
-            IPEndPoint remoteEndPoint = new IPEndPoint(0, 0);
-            byte[] bytes = _client.EndReceive(result, ref remoteEndPoint);
-            if (bytes.Length > 0)
+            while (true)
             {
-                using (BinaryReader reader = new BinaryReader(new MemoryStream(bytes)))
+                var result = await _client.ReceiveAsync();
+                byte[] bytes = result.Buffer;
+                if (bytes.Length > 0)
                 {
-                    HeloMessage msg;
-                    int[] childrenChanged;
-                    var msgType = DecodeHelloMessage(reader, out msg, out childrenChanged);
-                    var tcpNodeAddress = new TcpNodeAddress(remoteEndPoint.Address, msg.ControlPort, 0);
-                    if (msgType == PingMessageType.Unknown)
+                    using (var reader = new MemoryStream(bytes))
                     {
-                        _logger.Warning("WRONGMSG");
-                    }
-                    else
-                    {
-                        if (msgType != PingMessageType.Heartbeat)
+                        var message = await DecodeHelloMessage(reader);
+                        var tcpNodeAddress = new TcpNodeAddress(result.RemoteEndPoint.Address, message.HeloMessage.ControlPort, 0);
+                        if (message.PingMessageType == PingMessageType.Unknown)
                         {
-                            _logger.Log("NodeMessage", "ID", msg.NodeId, "messageType", msgType);
+                            _logger.Warning("WRONGMSG");
                         }
-                        NodeMessage?.Invoke(this, new NodeMessageEventArgs(msg.NodeId, tcpNodeAddress, msgType, childrenChanged));
+                        else
+                        {
+                            if (message.PingMessageType != PingMessageType.Heartbeat)
+                            {
+                                _logger.Log("NodeMessage", "ID", message.HeloMessage.NodeId, "messageType", message.PingMessageType);
+                            }
+                            NodeMessage?.Invoke(this, new NodeMessageEventArgs(message.HeloMessage.NodeId, tcpNodeAddress, message.PingMessageType, message.ChildrenChanged));
+                        }
                     }
                 }
             }
-
-            // Enqueue again
-            _client.BeginReceive(OnReceiveData, null);
         }
 
-
-        private PingMessageType DecodeHelloMessage(BinaryReader reader, out HeloMessage msg, out int[] childrenChanged)
+        private class DecodedHeloMessage
         {
-            childrenChanged = null;
-            msg = NetSerializer<HeloMessage>.Read(reader);
-            if (msg == null || msg.Preamble.Code != HeloMessage.PreambleValue)
+            public PingMessageType PingMessageType;
+            public HeloMessage HeloMessage;
+            public int[] ChildrenChanged;
+        }
+
+        private async Task<DecodedHeloMessage> DecodeHelloMessage(Stream stream)
+        {
+            var ret = new DecodedHeloMessage();
+            ret.PingMessageType = PingMessageType.Unknown;
+            var msg = ret.HeloMessage = await NetSerializer<HeloMessage>.Read(stream);
+            if (msg != null && msg.Preamble.Code == HeloMessage.PreambleValue)
             {
-                return PingMessageType.Unknown;
+                switch (msg.MessageCode.Code)
+                {
+                    case HeloMessage.HeartbeatMessageCode:
+                        ret.PingMessageType = PingMessageType.Heartbeat;
+                        break;
+                    case HeloMessage.HeloMessageCode:
+                        ret.PingMessageType = PingMessageType.Hello;
+                        break;
+                    case HeloMessage.SubNodeChanged:
+                        var mask = (await NetSerializer<HeloSubNodeChangedMessage>.Read(stream))?.Mask;
+                        if (mask != null)
+                        {
+                            ret.ChildrenChanged = TcpNode.DecodeRawMask(mask, i => i);
+                            ret.PingMessageType = PingMessageType.SubNodeChanged;
+                        }
+                        break;
+                }
             }
-            switch (msg.MessageCode.Code)
-            {
-                case HeloMessage.HeartbeatMessageCode:
-                    return PingMessageType.Heartbeat;
-                case HeloMessage.HeloMessageCode:
-                    return PingMessageType.Hello;
-                case HeloMessage.SubNodeChanged:
-                    var mask = NetSerializer<HeloSubNodeChangedMessage>.Read(reader)?.Mask;
-                    childrenChanged = TcpNode.DecodeRawMask(mask, i => i);
-                    return PingMessageType.SubNodeChanged;
-                default:
-                    return PingMessageType.Unknown;
-            }
+            return ret;
         }
 
         private class HeloSubNodeChangedMessage

@@ -91,7 +91,7 @@ namespace Lucky.Home.Protocol
         public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
         {
             // Ask for guid
-            var id = new TcpNode(new NodeId(), address).TryFetchGuid();
+            var id = await new TcpNode(new NodeId(), address).TryFetchGuid();
             if (id == null)
             {
                 // Error in fetching

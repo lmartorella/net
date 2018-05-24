@@ -2,6 +2,7 @@
 using Lucky.Home.Sinks;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Devices
 {
@@ -13,21 +14,21 @@ namespace Lucky.Home.Devices
 
         public ClockDevice()
         {
-            _timer = new Timer(o =>
+            _timer = new Timer(async o =>
             {
                 if (IsFullOnline)
                 {
                     var str = DateTime.Now.ToString("HH:mm:ss");
-                    Write(str);
+                    await Write(str);
                 }
             }, null, 0, 500);
         }
 
-        private void Write(string str)
+        private async Task Write(string str)
         {
             foreach (var sink in Sinks.OfType<DisplaySink>())
             {
-                sink.Write(str);
+                await sink.Write(str);
             }
         }
     }

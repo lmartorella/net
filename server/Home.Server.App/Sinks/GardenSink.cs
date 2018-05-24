@@ -1,6 +1,7 @@
 ﻿using Lucky.Home.Serialization;
 using Lucky.Services;
 using System.Linq;
+using System.Threading.Tasks;
 
 #pragma warning disable 649
 
@@ -41,12 +42,12 @@ namespace Lucky.Home.Sinks
             public byte[] ZoneTimes;
         }
 
-        public bool Read(bool log)
+        public async Task<bool> Read(bool log)
         {
             bool isAvail = false;
-            Read(reader =>
+            await Read(async reader =>
             {
-                var md = reader.Read<ReadStatusMessageResponse>();
+                var md = await reader.Read<ReadStatusMessageResponse>();
                 if (md != null)
                 {
                     if (log)
@@ -63,19 +64,19 @@ namespace Lucky.Home.Sinks
             return isAvail;
         }
 
-        public void WriteProgram(int[] zoneTimes)
+        public async Task WriteProgram(int[] zoneTimes)
         {
             if (zoneTimes.All(z => z <= 0))
             {
                 return;
             }
 
-            Write(writer =>
+            await Write(async writer =>
             {
-                writer.Write(new WriteStatusMessageRequest { ZoneTimes = zoneTimes.Select(t => (byte)t).ToArray() });
+                await writer.Write(new WriteStatusMessageRequest { ZoneTimes = zoneTimes.Select(t => (byte)t).ToArray() });
             });
             // Log aloud new state
-            Read(true);
+            await Read(true);
         }
     }
 }

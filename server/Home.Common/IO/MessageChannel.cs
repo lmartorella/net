@@ -16,12 +16,9 @@ namespace Lucky.IO
 
         public async Task WriteMessage(byte[] buffer)
         {
-            await Task.Run(() =>
-            {
-                _stream.Write(buffer, 0, buffer.Length);
-                // Message separator
-                _stream.WriteByte(0);
-            });
+            await _stream.WriteAsync(buffer, 0, buffer.Length);
+            // Message separator
+            _stream.WriteByte(0);
         }
 
         public async Task<byte[]> ReadMessage()

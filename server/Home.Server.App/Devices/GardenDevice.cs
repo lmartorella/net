@@ -105,7 +105,9 @@ namespace Lucky.Home.Devices
             // To receive commands from UI
             StartNamedPipe();
 
-            _pollTimer = new Timer(HandlePollTimer, null, 0, POLL_PERIOD);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            _pollTimer = new Timer(o => HandlePollTimer(), null, 0, POLL_PERIOD);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
 
         protected override void Dispose(bool disposing)
@@ -150,7 +152,7 @@ namespace Lucky.Home.Devices
         private async void StartNamedPipe()
         {
             var server = new PipeJsonServer<WebRequest, WebResponse>("NETGARDEN");
-            server.ManageRequest = async req => 
+            server.ManageRequest = req => 
             {
                 var resp = new WebResponse();
                 switch (req.Command)
@@ -177,7 +179,7 @@ namespace Lucky.Home.Devices
                         }
                         break;
                 }
-                return resp;
+                return Task.FromResult(resp);
             };
             await server.Start();
         }
@@ -267,16 +269,17 @@ namespace Lucky.Home.Devices
             }
         }
 
-        private void HandlePollTimer(object o)
+        private async Task HandlePollTimer()
         {
             if (IsFullOnline)
             {
                 var sink = Sinks.OfType<GardenSink>().First();
                 // Wait for a free garden device
                 // Write fancy logs
-                bool isAvail = sink.Read(false);
+                bool isAvail = await sink.Read(false);
                 if (isAvail)
                 {
+                    int[] zones = null;
                     lock (_cycleQueue)
                     {
                         if (_lastLogForStop != null)
@@ -288,10 +291,13 @@ namespace Lucky.Home.Devices
                         if (_cycleQueue.Count > 0)
                         {
                             var cycle = _cycleQueue.Dequeue();
-                            sink.WriteProgram(cycle.Zones);
-
+                            zones = cycle.Zones;
                             _lastLogForStop = LogStartProgram(cycle);
                         }
+                    }
+                    if (zones != null)
+                    {
+                        await sink.WriteProgram(zones);
                     }
                 }
             }

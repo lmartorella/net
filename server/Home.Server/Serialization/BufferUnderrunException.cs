@@ -8,7 +8,7 @@ namespace Lucky.Home.Serialization
             :base(string.Format("{1}: in type {0}", owner.Name, innerExc.Message))
         { }
 
-        public BufferUnderrunException(int requestedSize, byte[] actualData, string fieldName)
+        public BufferUnderrunException(int requestedSize, string fieldName)
             :base(string.Format("Buffer underrun in reading {0} bytes for field {1}", requestedSize, fieldName ?? "<null>"))
         { }
     }

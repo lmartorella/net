@@ -1,7 +1,8 @@
 ﻿using Lucky.Home.Serialization;
 using System;
+using System.Threading.Tasks;
 
-#pragma warning disable CS0649
+#pragma warning disable 649
 
 namespace Lucky.Home.Sinks
 {
@@ -26,7 +27,18 @@ namespace Lucky.Home.Sinks
             FrameError
         }
 
-        public byte[] SendReceive(byte[] txData, bool wantsResponse, bool echo, string opName, out Error error)
+        private class StateMessage
+        {
+            [SerializeAsDynArray]
+            [DynArrayCase(-1, "Error", Error.Overflow)]
+            [DynArrayCase(-2, "Error", Error.FrameError)]
+            public byte[] Data;
+
+            [NoSerialize]
+            public Error Error;
+        }
+
+        public async Task<Tuple<byte[], Error>> SendReceive(byte[] txData, bool wantsResponse, bool echo, string opName)
         {
             byte mode = 0;
             if (echo)
@@ -37,35 +49,22 @@ namespace Lucky.Home.Sinks
             {
                 mode = 0xfe;
             }
-            Write(writer =>
+            await Write(async writer =>
             {
-                writer.Write(new Message { TxData = txData, Mode = mode });
+                await writer.Write(new Message { TxData = txData, Mode = mode });
             }, opName + ":WR");
 
             byte[] data = null;
             Error err = Error.Ok;
             // The Read operation is actually sending the buffer first and then synchronously (blocking the bus)
             // reading the response (if mode is not 0xfe)
-            Read(reader =>
+            await Read(async reader =>
             {
-                int size = BitConverter.ToInt16(reader.ReadBytes(2), 0);
-                if (size == -1)
-                {
-                    data = new byte[0];
-                    err = Error.Overflow;
-                }
-                else if (size == -2)
-                {
-                    data = new byte[0];
-                    err = Error.FrameError;
-                }
-                else
-                {
-                    data = reader.ReadBytes(size);
-                }
+                var msg = await reader.Read<StateMessage>();
+                data = msg.Data ?? new byte[0];
+                err = msg.Error;
             }, opName + ":RD");
-            error = err;
-            return data;
+            return Tuple.Create(data, err);
         }
     }
 }

@@ -1,16 +1,25 @@
-﻿// ReSharper disable once UnusedMember.Global
+﻿using Lucky.Home.Serialization;
+using System.Threading.Tasks;
+
+#pragma warning disable 649
 
 namespace Lucky.Home.Sinks
 {
+    class TempMessage
+    {
+        [SerializeAsFixedArray(6)]
+        public byte[] Data;
+    }
+
     [SinkId("TEMP")]
     class TemperatureSink : SinkBase
     {
-        public byte[] Read()
+        public async Task<byte[]> Read()
         {
             byte[] data = null;
-            Read(reader =>
+            await Read(async reader =>
             {
-                data = reader.ReadBytes(6);
+                data = (await reader.Read<TempMessage>()).Data;
             });
             return data;
         }

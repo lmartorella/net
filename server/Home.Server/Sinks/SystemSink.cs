@@ -17,15 +17,15 @@ namespace Lucky.Home.Sinks
             Status = new NodeStatus { ResetReason = ResetReason.Waiting };
         }
 
-        protected override async void OnInitialize()
+        protected override async Task OnInitialize()
         {
-            base.OnInitialize();
+            await base.OnInitialize();
             await FetchStatus();
         }
 
         public async Task FetchStatus()
         { 
-            Status = GetBootStatus();
+            Status = await GetBootStatus();
             if (Status == null)
             {
                 // Schedule a retry
@@ -53,28 +53,28 @@ namespace Lucky.Home.Sinks
 #pragma warning restore CS0649 
         }
 
-        private NodeStatus GetBootStatus()
+        private async Task<NodeStatus> GetBootStatus()
         {
             NodeStatus status = new NodeStatus();
             BusMasterStats stats = null;
-            Read(reader =>
+            await Read(async reader =>
             {
                 while (true)
                 {
-                    var code = reader.Read<Twocc>()?.Code;
+                    var code = (await reader.Read<Twocc>())?.Code;
                     switch (code)
                     {
                         case null: // EOF
                             status = null;
                             return;
                         case ResetCode:
-                            status.ResetReason = (ResetReason) reader.Read<ushort>();
+                            status.ResetReason = (ResetReason) await reader.Read<ushort>();
                             break;
                         case ExceptionText:
-                            status.ExceptionMessage = reader.Read<DynamicString>().Str;
+                            status.ExceptionMessage = (await reader.Read<DynamicString>()).Str;
                             break;
                         case BusMasterStatitstics:
-                            stats = reader.Read<BusMasterStats>();
+                            stats = await reader.Read<BusMasterStats>();
                             break;
                         case EndOfMetadataText:
                             return;
@@ -100,9 +100,9 @@ namespace Lucky.Home.Sinks
 
             if (status.ResetReason != ResetReason.None)
             {
-                Write(writer =>
+                await Write(async writer =>
                 {
-                    writer.Write(SysCommand.ClearResetReason);
+                    await writer.Write(SysCommand.ClearResetReason);
                 });
             }
             return status;
@@ -111,11 +111,11 @@ namespace Lucky.Home.Sinks
         /// <summary>
         /// Reset the device
         /// </summary>
-        public void Reset()
+        public async Task Reset()
         {
-            Write(writer =>
+            await Write(async writer =>
             {
-                writer.Write(SysCommand.Reset);
+                await writer.Write(SysCommand.Reset);
             });
         }
     }

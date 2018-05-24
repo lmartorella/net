@@ -32,8 +32,10 @@ namespace Lucky.Home.Sinks
             OnInitialize();
         }
 
-        protected virtual void OnInitialize()
-        { }
+        protected virtual Task OnInitialize()
+        {
+            return Task.CompletedTask;
+        }
 
         public virtual void Dispose()
         { }
@@ -55,11 +57,19 @@ namespace Lucky.Home.Sinks
             }
         }
 
+        public bool IsOnline
+        {
+            get
+            {
+                return Node != null && !Node.IsZombie;
+            }
+        }
+
         internal ITcpNode Node { get; private set; }
 
         public string FourCc { get; private set; }
 
-        protected bool Read(Action<IConnectionReader> readHandler, [CallerMemberName] string context = "")
+        protected Task<bool> Read(Func<IConnectionReader, Task> readHandler, [CallerMemberName] string context = "")
         {
             if (Node != null)
             {
@@ -71,7 +81,7 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        protected bool Write(Action<IConnectionWriter> writeHandler, [CallerMemberName] string context = "")
+        protected Task<bool> Write(Func<IConnectionWriter, Task> writeHandler, [CallerMemberName] string context = "")
         {
             if (Node != null)
             {

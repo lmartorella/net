@@ -8,6 +8,7 @@ namespace Lucky.Home.Sinks
         SinkPath Path { get; }
         string FourCc { get; }
         int SubCount { get; }
+        bool IsOnline { get; }
     }
 
     internal interface ISinkInternal : ISink

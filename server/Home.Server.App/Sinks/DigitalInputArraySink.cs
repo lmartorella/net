@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 
 // ReSharper disable UnusedMember.Global
@@ -25,9 +26,9 @@ namespace Lucky.Home.Sinks
             PollPeriod = TimeSpan.FromSeconds(5);
         }
 
-        protected override void OnInitialize()
+        protected async override Task OnInitialize()
         {
-            base.OnInitialize();
+            await base.OnInitialize();
             _isInitialized = true;
             // Start timer
             PollPeriod = PollPeriod;
@@ -72,16 +73,18 @@ namespace Lucky.Home.Sinks
                     {
                         _timer.Dispose();
                     }
-                    _timer = new Timer(OnPoll, null, TimeSpan.Zero, _pollPeriod);
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                    _timer = new Timer(o => OnPoll(), null, TimeSpan.Zero, _pollPeriod);
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 }
             }
         }
 
-        private void OnPoll(object state)
+        private async Task OnPoll()
         {
-            Read(reader =>
+            await Read(async reader =>
             {
-                var resp = reader.Read<ReadStatusResponse>();
+                var resp = await reader.Read<ReadStatusResponse>();
                 if (resp == null || _lastData != null && resp.Data.SequenceEqual(_lastData))
                 {
                     // Same data. No event.

@@ -108,10 +108,6 @@ namespace Lucky.Home
 
         void ISerializable.Deserialize(byte[] data)
         {
-            if (data.Length != 16)
-            {
-                throw new InvalidOperationException("Cannot parse a NodeId");
-            }
             // Strip leading zeroes
             int pos = data.ToList().FindLastIndex(b => b != 0);
             string str = Encoding.ASCII.GetString(data, 0, pos + 1);

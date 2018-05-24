@@ -15,17 +15,17 @@ namespace Lucky.Home.Sinks
     [SinkId("LINE")]
     class DisplaySink : SinkBase
     {
-        protected override void OnInitialize()
+        protected async override Task OnInitialize()
         {
-            base.OnInitialize();
-            Init();
+            await base.OnInitialize();
+            await Init();
         }
 
-        private void Init()
+        private Task Init()
         { 
-            Read(reader =>
+            return Read(async reader =>
             {
-                var metadata = reader.Read<ReadCapMessageResponse>();
+                var metadata = await reader.Read<ReadCapMessageResponse>();
                 if (metadata != null)
                 {
                     LineCount = metadata.LineCount;
@@ -33,7 +33,8 @@ namespace Lucky.Home.Sinks
                 }
                 else
                 {
-                    Task.Delay(1000).ContinueWith(o => { Init(); });
+                    await Task.Delay(1000);
+                    await Init();
                 }
             });
         }
@@ -50,11 +51,11 @@ namespace Lucky.Home.Sinks
             public byte[] Data;
         }
 
-        public void Write(string line)
+        public Task Write(string line)
         {
-            Write(writer =>
+            return Write(async writer =>
             {
-                writer.Write(new LineMessage { Data = Encoding.ASCII.GetBytes(line)});
+                await writer.Write(new LineMessage { Data = Encoding.ASCII.GetBytes(line)});
             });
         }
 

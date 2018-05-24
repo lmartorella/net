@@ -49,7 +49,7 @@ namespace Lucky.Home.Admin
             }
         }
 
-        public Task ResetNode(NodeId id, string nodeAddress)
+        public async Task ResetNode(NodeId id, string nodeAddress)
         {
             ITcpNode node;
             if (!id.IsEmpty)
@@ -63,9 +63,8 @@ namespace Lucky.Home.Admin
 
             if (node != null)
             {
-                node.Sink<SystemSink>().Reset();
+                await node.Sink<SystemSink>().Reset();
             }
-            return Task.CompletedTask;
         }
 
         public Task<string> CreateDevice(DeviceDescriptor descriptor)
@@ -90,7 +89,7 @@ namespace Lucky.Home.Admin
         public Task DeleteDevice(Guid id)
         {
             Manager.GetService<DeviceManager>().DeleteDevice(id);
-            return Task.Run(() => { });
+            return Task.CompletedTask;
         }
 
         private Node BuildNode(ITcpNode tcpNode)

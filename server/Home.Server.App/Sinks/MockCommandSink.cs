@@ -6,21 +6,21 @@ namespace Lucky.Home.Sinks
     [SinkId("TCMD")]
     class MockCommandSink : SinkBase
     {
-        public string ReadCommand()
+        public async Task<string> ReadCommand()
         {
             string command = null;
-            Read(reader =>
+            await Read(async reader =>
             {
-                command = reader.Read<DynamicString>()?.Str;
+                command = (await reader.Read<DynamicString>())?.Str;
             });
             return command;
         }
 
-        public void WriteResponse(string response)
+        public Task WriteResponse(string response)
         {
-            Write(writer =>
+            return Write(writer =>
             {
-                writer.Write(new DynamicString() { Str = response });
+                return writer.Write(new DynamicString() { Str = response });
             });
         }
     }

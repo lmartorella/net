@@ -8,12 +8,7 @@ using Lucky.Services;
 using System.Runtime.CompilerServices;
 using Lucky.Home.Notification;
 
-#pragma warning disable 414
 #pragma warning disable 649
-#pragma warning disable 169
-// ReSharper disable ClassNeverInstantiated.Local
-// ReSharper disable MemberCanBePrivate.Local
-// ReSharper disable NotAccessedField.Local
 
 namespace Lucky.Home.Protocol
 {
@@ -33,6 +28,7 @@ namespace Lucky.Home.Protocol
         private bool _inFetchSinkData;
         private bool _inRename;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(5);
+        private TcpConnectionFactory _tcpConnectionFactory;
 
         /// <summary>
         /// Valid sinks
@@ -49,6 +45,7 @@ namespace Lucky.Home.Protocol
             NodeId = id;
             Address = address;
             Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + id);
+            _tcpConnectionFactory = Manager.GetService<TcpConnectionFactory>();
         }
 
         public TcpNodeAddress Address { get; private set; }
@@ -69,7 +66,7 @@ namespace Lucky.Home.Protocol
             if (lastKnownChildren.Any(n => n == null || n.IsZombie))
             {
                 // Re-fire the children request and de-zombie
-                var subNodes = GetChildrenIndexes();
+                var subNodes = await GetChildrenIndexes();
                 if (subNodes != null)
                 {
                     // If same children, simply de-zombie
@@ -152,11 +149,6 @@ namespace Lucky.Home.Protocol
             public string Cmd = "SL";
 
             public short Index;
-
-            public SelectNodeMessage(int index)
-            {
-                Index = (short)index;
-            }
         }
 
         private class GetSinksMessage
@@ -170,12 +162,7 @@ namespace Lucky.Home.Protocol
             [SerializeAsFixedString(2)]
             public string Cmd = "GU";
 
-            public readonly NodeId Id;
-
-            public NewGuidMessage(NodeId id)
-            {
-                Id = id;
-            }
+            public NodeId Id;
         }
 
         private class GetSinksMessageResponse
@@ -227,7 +214,7 @@ namespace Lucky.Home.Protocol
 
             Tuple<bool, TcpNodeAddress[]> ret;
             // Repeat until metadata are OK
-            while (!(ret = TryFetchMetadata()).Item1)
+            while (!(ret = await TryFetchMetadata()).Item1)
             {
                 await Task.Delay(RetryTime);
             }
@@ -246,45 +233,7 @@ namespace Lucky.Home.Protocol
             children.Select(c => _lastKnownChildren[c.Address.Index] = c);
         }
 
-        private static bool OpenNodeSession(ILogger logger, TcpNodeAddress address, Func<TcpConnection, TcpNodeAddress, bool> handler, [CallerMemberName] string context = null)
-        {
-            var tcpConnectionFactory = Manager.GetService<TcpConnectionFactory>();
-
-            // Init a METADATA fetch connection
-            try
-            {
-                using (var connection = tcpConnectionFactory.Create(address.IPEndPoint))
-                {
-                    // Connecion can be recycled
-                    connection.Write(new SelectNodeMessage(address.Index));
-                    DateTime dt = DateTime.Now;
-                    var ret = handler(connection, address);
-                    if (ret)
-                    {
-                        connection.Write(new CloseMessage());
-                        var ack = connection.Read<CloseMessageResponse>();
-                        if (ack == null || ack.Ack != 0x1e)
-                        {
-                            // Forbicly close the channel
-                            tcpConnectionFactory.Abort(address.IPEndPoint);
-                            logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
-                            return false;
-                        }
-                    }
-                    return ret;
-                }
-            }
-            catch (Exception exc)
-            {
-                // Forbicly close the channel
-                tcpConnectionFactory.Abort(address.IPEndPoint);
-                // Log exc
-                logger.Exception(exc);
-                return false;
-            }
-        }
-
-        private bool OpenNodeSession(Func<TcpConnection, TcpNodeAddress, bool> handler, [CallerMemberName] string context = null)
+        private async Task<bool> OpenNodeSession(Func<ITcpConnection, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
         {
             if (IsZombie)
             {
@@ -298,8 +247,42 @@ namespace Lucky.Home.Protocol
                 address = Address.Clone();
             }
 
-            var ret = OpenNodeSession(Logger, address, handler, context);
-            if (!ret)
+
+            bool ok;
+            var connection = _tcpConnectionFactory.Create(address.IPEndPoint);
+            try
+            {
+                // Connecion can be recycled
+                await connection.Write(new SelectNodeMessage { Index = (short)address.Index });
+                DateTime dt = DateTime.Now;
+                ok = await handler(connection, address);
+                if (ok)
+                {
+                    await connection.Write(new CloseMessage());
+                    var ack = await connection.Read<CloseMessageResponse>();
+                    if (ack == null || ack.Ack != 0x1e)
+                    {
+                        // Forbicly close the channel
+                        _tcpConnectionFactory.Abort(address.IPEndPoint);
+                        Logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
+                        ok = false;
+                    }
+                }
+            }
+            catch (Exception exc)
+            {
+                // Forbicly close the channel
+                _tcpConnectionFactory.Abort(address.IPEndPoint);
+                // Log exc
+                Logger.Exception(exc);
+                ok = false;
+            }
+            finally
+            {
+                connection.Dispose();
+            }
+
+            if (!ok)
             {
                 if (_firstFailTime.HasValue)
                 {
@@ -319,7 +302,8 @@ namespace Lucky.Home.Protocol
                 // Reset zombie time
                 _firstFailTime = null;
             }
-            return ret;
+
+            return ok;
         }
 
         private void Dezombie()
@@ -329,6 +313,7 @@ namespace Lucky.Home.Protocol
                 Logger.Log("Dezombie");
                 IsZombie = false;
                 Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Risolto: ristabilita connessione con " + NodeId);
+                UpdateSinks();
             }
         }
 
@@ -339,16 +324,23 @@ namespace Lucky.Home.Protocol
                 Logger.Log("IsZombie");
                 IsZombie = true;
                 Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Errore: persa connessione con " + NodeId);
+                UpdateSinks();
             }
         }
 
-        private int[] GetChildrenIndexes()
+        private void UpdateSinks()
+        {
+            var sinkManager = Manager.GetService<SinkManager>();
+            sinkManager.UpdateSinks();
+        }
+
+        private async Task<int[]> GetChildrenIndexes()
         {
             int[] ret = null;
-            OpenNodeSession((connection, addr) =>
+            await OpenNodeSession(async (connection, addr) =>
             {
-                connection.Write(new GetChildrenMessage());
-                var childNodes = connection.Read<GetChildrenMessageResponse>();
+                await connection.Write(new GetChildrenMessage());
+                var childNodes = await connection.Read<GetChildrenMessageResponse>();
                 if (childNodes != null)
                 {
                     ret = DecodeRawMask(childNodes.Mask, i => i);
@@ -362,16 +354,16 @@ namespace Lucky.Home.Protocol
             return ret;
         }
 
-        internal NodeId TryFetchGuid()
+        internal async Task<NodeId> TryFetchGuid()
         {
             // Init a METADATA fetch connection
             NodeId id = null;
 
-            if (!OpenNodeSession((connection, addr) =>
+            if (!await OpenNodeSession(async (connection, addr) =>
             {
                 // Ask for subnodes
-                connection.Write(new GetChildrenMessage());
-                var childNodes = connection.Read<GetChildrenMessageResponse>();
+                await connection.Write(new GetChildrenMessage());
+                var childNodes = await connection.Read<GetChildrenMessageResponse>();
                 if (childNodes == null)
                 {
                     // Channel already destroyed
@@ -388,20 +380,20 @@ namespace Lucky.Home.Protocol
             return id;
         }
 
-        private Tuple<bool, TcpNodeAddress[]> TryFetchMetadata()
+        private async Task<Tuple<bool, TcpNodeAddress[]>> TryFetchMetadata()
         {
             // Init a METADATA fetch connection
             string[] sinks = null;
             byte[] childMask = new byte[0];
             TcpNodeAddress address = null;
 
-            if (!OpenNodeSession((connection, addr) =>
+            if (!await OpenNodeSession(async (connection, addr) =>
             {
                 address = addr;
 
                 // Ask for subnodes
-                connection.Write(new GetChildrenMessage());
-                var childNodes = connection.Read<GetChildrenMessageResponse>();
+                await connection.Write(new GetChildrenMessage());
+                var childNodes = await connection.Read<GetChildrenMessageResponse>();
                 if (childNodes == null)
                 {
                     return false;
@@ -415,8 +407,8 @@ namespace Lucky.Home.Protocol
                 childMask = childNodes.Mask;
 
                 // Then ask for sinks
-                connection.Write(new GetSinksMessage());
-                var response = connection.Read<GetSinksMessageResponse>();
+                await connection.Write(new GetSinksMessage());
+                var response = await connection.Read<GetSinksMessageResponse>();
                 if (response == null)
                 {
                     return false;
@@ -497,7 +489,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Change the ID of the node
         /// </summary>
-        public bool Rename(NodeId newId)
+        public async Task<bool> Rename(NodeId newId)
         {
             if (newId.IsEmpty)
             {
@@ -523,9 +515,9 @@ namespace Lucky.Home.Protocol
                 // Notify the node registrar too
                 Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
 
-                OpenNodeSession((connection, address) =>
+                await OpenNodeSession(async (connection, address) =>
                 {
-                    connection.Write(new NewGuidMessage(newId));
+                    await connection.Write(new NewGuidMessage { Id = newId });
                     return true;
                 });
 
@@ -549,26 +541,27 @@ namespace Lucky.Home.Protocol
             return success;
         }
 
-        public bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler, [CallerMemberName] string context = "")
+        public async Task<bool> WriteToSink(int sinkId, Func<IConnectionWriter, Task> writeHandler, [CallerMemberName] string context = "")
         {
-            return OpenNodeSession((connection, address) =>
+            return await OpenNodeSession(async (connection, address) =>
             {
                 // Open stream
-                connection.Write(new WriteDataMessage { SinkIndex = (short) sinkId });
+                await connection.Write(new WriteDataMessage { SinkIndex = (short) sinkId });
                 // Now the channel is owned by the sink driver
                 // Returns when done, and the protocol should leave the channel clean
-                writeHandler(connection);
+                await writeHandler(connection);
                 return true;
             }, "WriteToSink:" + context);
         }
 
-        public bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler, [CallerMemberName] string context = "")
+        public async Task<bool> ReadFromSink(int sinkId, Func<IConnectionReader, Task> readHandler, [CallerMemberName] string context = "")
         {
-            return OpenNodeSession((connection, address) =>
+            return await OpenNodeSession(async (connection, address) =>
             {
                 // Open stream
-                connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
-                readHandler(connection);
+                await connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
+                // This is blocker call
+                await readHandler(connection);
                 return true;
             }, "ReadFromSink:" + context);
         }

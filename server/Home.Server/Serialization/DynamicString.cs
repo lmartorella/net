@@ -1,9 +1,12 @@
 ﻿
 namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Message with a single string in it
+    /// </summary>
     public class DynamicString
     {
-        [SerializeAsDynArray]
+        [SerializeAsDynString]
         public string Str;
     }
 }

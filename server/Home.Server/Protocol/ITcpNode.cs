@@ -35,13 +35,13 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Open sink communication for write
         /// </summary>
-        bool WriteToSink(int sinkId, Action<IConnectionWriter> writeHandler, [CallerMemberName] string context = "");
+        Task<bool> WriteToSink(int sinkId, Func<IConnectionWriter, Task> writeHandler, [CallerMemberName] string context = "");
 
         /// <summary>
         /// Open sink communication for read
         /// </summary>
         /// <returns>True if communication succeded</returns>
-        bool ReadFromSink(int sinkId, Action<IConnectionReader> readHandler, [CallerMemberName] string context = "");
+        Task<bool> ReadFromSink(int sinkId, Func<IConnectionReader, Task> readHandler, [CallerMemberName] string context = "");
 
         /// <summary>
         /// Get the sink with the given type
@@ -51,6 +51,6 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Change the ID of the node
         /// </summary>
-        bool Rename(NodeId newId);
+        Task<bool> Rename(NodeId newId);
     }
 }

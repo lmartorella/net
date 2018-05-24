@@ -72,10 +72,7 @@ namespace Lucky.Home.Sinks
             {
                 // Communicate new sink to API
                 _sinks.Add(sink);
-                if (CollectionChanged != null)
-                {
-                    CollectionChanged(this, new CollectionChangeEventArgs(CollectionChangeAction.Add, sink));
-                }
+                CollectionChanged?.Invoke(this, new CollectionChangeEventArgs(CollectionChangeAction.Add, sink));
             }
 
             return sink;
@@ -88,15 +85,20 @@ namespace Lucky.Home.Sinks
                 // Communicate new sink to API
                 if (_sinks.Remove(sink))
                 {
-                    if (CollectionChanged != null)
-                    {
-                        CollectionChanged(this, new CollectionChangeEventArgs(CollectionChangeAction.Remove, sink));
-                    }
+                    CollectionChanged?.Invoke(this, new CollectionChangeEventArgs(CollectionChangeAction.Remove, sink));
                 }
                 else
                 {
                     throw new InvalidOperationException("Unexpected sink remove");
                 }
+            }
+        }
+
+        internal void UpdateSinks()
+        {
+            lock (LockObject)
+            {
+                CollectionChanged?.Invoke(this, new CollectionChangeEventArgs(CollectionChangeAction.Refresh, null));
             }
         }
 
@@ -109,6 +111,9 @@ namespace Lucky.Home.Sinks
             }
         }
 
+        /// <summary>
+        /// Raised if a sink is added, removed or it changes state (e.g. zombie)
+        /// </summary>
         public event EventHandler<CollectionChangeEventArgs> CollectionChanged;
     }
 }

@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using Lucky.Home.Serialization;
 using Lucky.Services;
 using Lucky.Net;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Protocol
 {
@@ -23,8 +24,6 @@ namespace Lucky.Home.Protocol
             private readonly IPEndPoint _endPoint;
             private readonly TcpClientManager _owner;
             private Stream _stream;
-            private readonly BinaryReader _reader;
-            private readonly BinaryWriter _writer;
             private readonly TcpClient _tcpClient;
             private bool _disposed;
 
@@ -37,9 +36,7 @@ namespace Lucky.Home.Protocol
 
                 // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
                 _stream.ReadTimeout = 5000;
-
-                _reader = new BinaryReader(_stream);
-                _writer = new BinaryWriter(_stream);
+                _stream.WriteTimeout = 5000;
             }
 
             public bool IsDisposed
@@ -52,7 +49,6 @@ namespace Lucky.Home.Protocol
 
             private void Flush()
             {
-                _writer.Flush();
                 _stream.Flush();
             }
 
@@ -61,17 +57,17 @@ namespace Lucky.Home.Protocol
                 if (_stream != null)
                 {
                     Flush();
-                    _reader.Close();
+                    //_reader.Close();
                     _stream = null;
                     _disposed = true;
                 }
             }
 
-            public void Write<T>(T data)
+            public async Task Write<T>(T data)
             {
                 try
                 {
-                    NetSerializer<T>.Write(data, _writer);
+                    await NetSerializer<T>.Write(_stream, data);
                     Flush();
                 }
                 catch (Exception exc)
@@ -82,17 +78,11 @@ namespace Lucky.Home.Protocol
                 }
             }
 
-            public void WriteBytes(byte[] data)
-            {
-                _writer.Write(data, 0, data.Length);
-                Flush();
-            }
-
-            public T Read<T>()
+            public async Task<T> Read<T>()
             {
                 try
                 {
-                    return NetSerializer<T>.Read(_reader);
+                    return await NetSerializer<T>.Read(_stream);
                 }
                 catch (IOException)
                 {
@@ -107,11 +97,6 @@ namespace Lucky.Home.Protocol
                     _owner.Abort(_endPoint);
                     return default(T);
                 }
-            }
-
-            public byte[] ReadBytes(int byteCount)
-            {
-                return _reader.ReadBytes(byteCount);
             }
         }
 

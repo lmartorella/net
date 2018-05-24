@@ -43,8 +43,8 @@ namespace Lucky.Net
                     var resp = await ManageRequest(req);
                     _respSer.WriteObject(stream, resp);
                     // New line
-                    stream.Write(new byte[] { 10, 13 }, 0, 2);
-                    stream.Flush();
+                    await stream.WriteAsync(new byte[] { 10, 13 }, 0, 2);
+                    await stream.FlushAsync();
                     stream.WaitForPipeDrain();
                     stream.Disconnect();
                 }

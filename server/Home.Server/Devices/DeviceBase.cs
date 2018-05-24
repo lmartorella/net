@@ -125,7 +125,7 @@ namespace Lucky.Home.Devices
 
         private void OnSinkChanged()
         {
-            IsFullOnline = _requiredSinkTypes.All(t => Sinks.Any(s => t.IsInstanceOfType(s)));
+            IsFullOnline = _requiredSinkTypes.All(t => Sinks.Any(s => t.IsInstanceOfType(s) && s.IsOnline));
         }
 
         public bool IsFullOnline
