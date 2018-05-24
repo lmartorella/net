@@ -207,6 +207,7 @@ namespace Lucky.Home.Db
                 var targetFile = GetBackupPath(oldFileName);
                 try
                 {
+                    _logger.Log("Making backup", "src", oldFileName.FullName, "dst", targetFile.FullName);
                     oldFileName.CopyTo(targetFile.FullName);
                 }
                 catch (Exception exc)
@@ -214,6 +215,10 @@ namespace Lucky.Home.Db
                     _logger.Exception(exc);
                     Manager.GetService<INotificationService>().EnqueueStatusUpdate("File locked", "Cannot backup the db file: " + oldFileName.FullName + Environment.NewLine + "EXC: " + exc.Message);
                 }
+            }
+            else
+            {
+                _logger.Log("Cannot find file to backup", "src", oldFileName.FullName);
             }
         }
 
