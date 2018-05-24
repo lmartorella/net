@@ -110,7 +110,7 @@ namespace Lucky.Home.Devices
 
         public BarometricTesterDevice()
         {
-            _timer = new Timer(o =>
+            _timer = new Timer(async o =>
             {
                 if (IsFullOnline)
                 {
@@ -119,7 +119,7 @@ namespace Lucky.Home.Devices
                     {
                         if (_calibData == null)
                         {
-                            byte[] data = sink.ReadCalibrationData();
+                            byte[] data = await sink.ReadCalibrationData();
                             if (data != null && data.Length == 22)
                             {
                                 WriteData(sink.Path, data);
@@ -129,7 +129,7 @@ namespace Lucky.Home.Devices
                         else
                         {
                             // Read data
-                            byte[] data = sink.ReadUncompensatedData();
+                            byte[] data = await sink.ReadUncompensatedData();
                             if (data != null && data.Length == 5)
                             {
                                 float pressure;

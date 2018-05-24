@@ -1,32 +1,54 @@
-﻿namespace Lucky.Home.Sinks
+﻿using Lucky.Home.Serialization;
+using System.Threading.Tasks;
+
+#pragma warning disable 649
+
+namespace Lucky.Home.Sinks
 {
     [SinkId("BM18")]
     class BarometricSink : SinkBase
     {
-        public byte[] ReadCalibrationData()
+        private class ModeCommand
         {
-            Write(writer =>
+            public byte Command;
+        }
+
+        private class CalibrationMessage
+        {
+            [SerializeAsFixedArray(22)]
+            public byte[] Data;
+        }
+
+        private class RawData
+        {
+            [SerializeAsFixedArray(5)]
+            public byte[] Data;
+        }
+
+        public async Task<byte[]> ReadCalibrationData()
+        {
+            await Write(async writer =>
             {
-                writer.WriteBytes(new byte[] { 22 });
+                await writer.Write(new ModeCommand { Command = 22 });
             });
             byte[] data = null;
-            Read(reader =>
+            await Read(async reader =>
             {
-                data = reader.ReadBytes(22);
+                data = (await reader.Read<CalibrationMessage>())?.Data;
             });
             return data;
         }
 
-        public byte[] ReadUncompensatedData()
+        public async Task<byte[]> ReadUncompensatedData()
         {
-            Write(writer =>
+            await Write(async writer =>
             {
-                writer.WriteBytes(new byte[] { 5 });
+                await writer.Write(new ModeCommand { Command = 5 });
             });
             byte[] data = null;
-            Read(reader =>
+            await Read(async reader =>
             {
-                data = reader.ReadBytes(5);
+                data = (await reader.Read<RawData>())?.Data;
             });
             return data;
         }
