@@ -7,6 +7,7 @@ using Lucky.Home.Sinks;
 using Lucky.Services;
 using System.Runtime.CompilerServices;
 using Lucky.Home.Notification;
+using Lucky.Home.Services;
 
 #pragma warning disable 649
 
@@ -37,6 +38,7 @@ namespace Lucky.Home.Protocol
 
         private Dictionary<int, ITcpNode> _lastKnownChildren = new Dictionary<int, ITcpNode>();
         private DateTime? _firstFailTime;
+        private readonly E2EStatLogger _e2eStatLogger;
 
         private static readonly TimeSpan ZOMBIE_TIMEOUT = TimeSpan.FromSeconds(10);
 
@@ -46,6 +48,7 @@ namespace Lucky.Home.Protocol
             Address = address;
             Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + id);
             _tcpConnectionFactory = Manager.GetService<TcpConnectionFactory>();
+            _e2eStatLogger = new E2EStatLogger(id);
         }
 
         public TcpNodeAddress Address { get; private set; }
@@ -558,10 +561,16 @@ namespace Lucky.Home.Protocol
         {
             return await OpenNodeSession(async (connection, address) =>
             {
+                // statistics, e2e
+                DateTime start = DateTime.Now;
                 // Open stream
                 await connection.Write(new ReadDataMessage {SinkIndex = (short) sinkId});
-                // This is blocker call
                 await readHandler(connection);
+
+                // Take end time
+                DateTime end = DateTime.Now;
+                _e2eStatLogger.AddE2EReadSample(end - start);
+
                 return true;
             }, "ReadFromSink:" + context);
         }

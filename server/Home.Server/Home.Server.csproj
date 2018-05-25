@@ -65,6 +65,8 @@
     <Compile Include="Serialization\IpAddressSerializer.cs" />
     <Compile Include="Serialization\SerializableItemSerializer.cs" />
     <Compile Include="Serialization\TypeSerializer.cs" />
+    <Compile Include="Services\E2EStatLogger.cs" />
+    <Compile Include="Services\E2EStatService.cs" />
     <Compile Include="Sinks\SubSink.cs" />
     <Compile Include="Protocol\TcpClientManager.cs" />
     <Compile Include="Protocol\TcpConnectionFactory.cs" />

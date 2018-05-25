@@ -43,7 +43,11 @@ namespace Lucky.Db
 
         private static string ToCsv(T value)
         {
-            return string.Join(",", s_fields.Select(fi => fi.Item2 != null ? string.Format("{0:" + fi.Item2 + "}", fi.Item1.GetValue(value)) : fi.Item1.GetValue(value)));
+            return string.Join(",", s_fields.Select(fi =>
+            {
+                var format = fi.Item2 != null ? ("{0:" + fi.Item2 + "}") : "{0}";
+                return string.Format(CultureInfo.InvariantCulture, format, fi.Item1.GetValue(value));
+            }));
         }
 
         public static int[] ParseHeader(string line)
