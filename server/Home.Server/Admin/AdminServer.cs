@@ -88,8 +88,7 @@ namespace Lucky.Home.Admin
 
         public Task DeleteDevice(Guid id)
         {
-            Manager.GetService<DeviceManager>().DeleteDevice(id);
-            return Task.CompletedTask;
+            return Manager.GetService<DeviceManager>().DeleteDevice(id);
         }
 
         private Node BuildNode(ITcpNode tcpNode)

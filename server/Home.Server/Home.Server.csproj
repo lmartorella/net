@@ -51,7 +51,6 @@
     <Compile Include="AppService.cs" />
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
-    <Compile Include="Devices\IDeviceInternal.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Serialization\ArraySerializer.cs" />
     <Compile Include="Serialization\ISerializer.cs" />

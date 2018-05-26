@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using Lucky.Home.Sinks;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lucky.Home.Devices

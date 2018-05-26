@@ -4,12 +4,13 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    public abstract class DeviceBase : IDeviceInternal
+    public abstract class DeviceBase : IDevice
     {
         private readonly Type[] _requiredSinkTypes;
         private readonly ObservableCollection<SubSink> _sinks = new ObservableCollection<SubSink>();
@@ -80,12 +81,7 @@ namespace Lucky.Home.Devices
             OnSinkChanged();
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
+        protected internal virtual Task OnTerminate()
         {
             var sinkManager = Manager.GetService<SinkManager>();
             lock (sinkManager.LockObject)
@@ -98,6 +94,7 @@ namespace Lucky.Home.Devices
                 }
             }
             IsDisposed = true;
+            return Task.CompletedTask;
         }
 
         private void HandleSinkChanged(object sender, CollectionChangeEventArgs e)

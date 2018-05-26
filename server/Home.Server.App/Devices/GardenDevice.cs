@@ -116,13 +116,13 @@ namespace Lucky.Home.Devices
             }
         }
 
-        protected override void Dispose(bool disposing)
+        protected override Task OnTerminate()
         {
             lock (_timeProgramLock)
             {
                 _timeProgram.Dispose();
             }
-            base.Dispose(disposing);
+            return base.OnTerminate();
         }
 
         [DataContract]

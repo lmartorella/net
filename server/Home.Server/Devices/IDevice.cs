@@ -2,7 +2,7 @@ using System;
 
 namespace Lucky.Home.Devices
 {
-    public interface IDevice : IDisposable
+    public interface IDevice
     {
         /// <summary>
         /// Get the sink paths of involved sinks

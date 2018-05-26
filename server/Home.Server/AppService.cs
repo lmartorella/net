@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
-using Lucky.Services;
 using System.Threading.Tasks;
+using Lucky.Home.Devices;
+using Lucky.Services;
 
 namespace Lucky.Home.Application
 {
@@ -15,23 +16,21 @@ namespace Lucky.Home.Application
                 Logger.Exception((Exception)e.ExceptionObject);
             };
 
-            WaitBreak();
+            StartLoop().Wait();
         }
 
-        private static void WaitBreak()
+        private async Task StartLoop()
         {
-            object lockObject = new object();
+            var defer = new TaskCompletionSource<object>();
             Console.CancelKeyPress += (sender, args) =>
             {
-                lock (lockObject)
-                {
-                    Monitor.Pulse(lockObject);
-                }
+                Logger.Log("Detected CtrlBreak");
+                defer.SetResult(null);
             };
-            lock (lockObject)
-            {
-                Monitor.Wait(lockObject);
-            }
+            await defer.Task;
+
+            // Safely stop devices
+            await Manager.GetService<DeviceManager>().TerminateAll();
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Lucky.Home.Sinks;
 
 // ReSharper disable once UnusedMember.Global
@@ -78,13 +79,13 @@ namespace Lucky.Home.Devices
             Status = _inputs.Aggregate(false, (c, input) => c ^ (input.Sink.Status.Length > input.SubIndex && input.Sink.Status[input.SubIndex]));
         }
 
-        protected override void Dispose(bool disposing)
+        protected override Task OnTerminate()
         {
             foreach (var input in _inputs)
             {
                 input.Sink.StatusChanged -= HandleStatusChanged;
             }
-            base.Dispose(disposing);
+            return base.OnTerminate();
         }
 
         public bool Status

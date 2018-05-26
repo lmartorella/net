@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Lucky.Services;
 
 namespace Lucky.Home.Devices
@@ -13,7 +14,7 @@ namespace Lucky.Home.Devices
         /// From type name to device type
         /// </summary>
         private readonly Dictionary<string, DeviceTypeDescriptor> _deviceTypes = new Dictionary<string, DeviceTypeDescriptor>();
-        private readonly Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<IDevice, DeviceDescriptor>>();
+        private readonly Dictionary<Guid, Tuple<DeviceBase, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<DeviceBase, DeviceDescriptor>>();
         private List<Assembly> _assemblies = new List<Assembly>();
         public object DevicesLock { get; private set; }
 
@@ -27,6 +28,23 @@ namespace Lucky.Home.Devices
         {
             [DataMember]
             public DeviceDescriptor[] Descriptors { get; set; }
+        }
+
+        /// <summary>
+        /// Used at exit
+        /// </summary>
+        internal async Task TerminateAll()
+        {
+            List<DeviceBase> devices = new List<DeviceBase>();
+            lock (_devices)
+            {
+                devices = _devices.Values.Select(v => v.Item1).ToList();
+            }
+
+            foreach (var device in devices)
+            {
+                await device.OnTerminate();
+            }
         }
 
         public DeviceTypeDescriptor[] DeviceTypes
@@ -64,7 +82,7 @@ namespace Lucky.Home.Devices
             }
         }
 
-        private IDeviceInternal CreateDevice(DeviceDescriptor descriptor)
+        private DeviceBase CreateDevice(DeviceDescriptor descriptor)
         {
             DeviceTypeDescriptor desc;
             if (!_deviceTypes.TryGetValue(descriptor.DeviceTypeName, out desc))
@@ -81,12 +99,12 @@ namespace Lucky.Home.Devices
                 throw new InvalidOperationException("Devcice type not found: " + typeName);
             }
 
-            IDeviceInternal device = (IDeviceInternal)Activator.CreateInstance(type, descriptor.Arguments);
+            DeviceBase device = (DeviceBase)Activator.CreateInstance(type, descriptor.Arguments);
             device.OnInitialize(descriptor.SinkPaths);
             descriptor.Id = Guid.NewGuid();
             lock (_devices)
             {
-                _devices.Add(descriptor.Id, Tuple.Create((IDevice)device, descriptor));
+                _devices.Add(descriptor.Id, Tuple.Create(device, descriptor));
                 DevicesChanged?.Invoke(this, EventArgs.Empty);
             }
             Logger.Log("DeviceCreate", "Type", descriptor.DeviceTypeName);
@@ -131,20 +149,23 @@ namespace Lucky.Home.Devices
             LoadState(State.Descriptors);
         }
 
-        public void DeleteDevice(Guid id)
+        public async Task DeleteDevice(Guid id)
         {
+            Tuple<DeviceBase, DeviceDescriptor> tuple = null;
             lock (_devices)
             {
-                Tuple<IDevice, DeviceDescriptor> tuple;
                 if (_devices.TryGetValue(id, out tuple))
                 {
                     Logger.Log("Device Deleted", "Type", tuple.Item2.DeviceTypeName);
-                    tuple.Item1.Dispose();
                     _devices.Remove(id);
-                    DevicesChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            SaveState();
+            if (tuple != null)
+            {
+                SaveState();
+                DevicesChanged?.Invoke(this, EventArgs.Empty);
+                await tuple.Item1.OnTerminate();
+            }
         }
     }
 }
