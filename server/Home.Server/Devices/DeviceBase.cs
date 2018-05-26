@@ -97,6 +97,7 @@ namespace Lucky.Home.Devices
                     _sinks.Remove(sink);
                 }
             }
+            IsDisposed = true;
         }
 
         private void HandleSinkChanged(object sender, CollectionChangeEventArgs e)
@@ -146,5 +147,7 @@ namespace Lucky.Home.Devices
                 }
             }
         }
+
+        protected bool IsDisposed { get; private set; }
     }
 }

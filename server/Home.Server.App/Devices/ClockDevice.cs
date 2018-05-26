@@ -10,25 +10,24 @@ namespace Lucky.Home.Devices
     [RequiresArray(typeof(DisplaySink))]
     public class ClockDevice : DeviceBase
     {
-        private Timer _timer;
-
         public ClockDevice()
         {
-            _timer = new Timer(async o =>
+            StartLoop();
+        }
+
+        private async Task StartLoop()
+        {
+            while (!IsDisposed)
             {
                 if (IsFullOnline)
                 {
                     var str = DateTime.Now.ToString("HH:mm:ss");
-                    await Write(str);
+                    foreach (var sink in Sinks.OfType<DisplaySink>())
+                    {
+                        await sink.Write(str);
+                    }
                 }
-            }, null, 0, 500);
-        }
-
-        private async Task Write(string str)
-        {
-            foreach (var sink in Sinks.OfType<DisplaySink>())
-            {
-                await sink.Write(str);
+                await Task.Delay(500);
             }
         }
     }

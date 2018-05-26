@@ -36,7 +36,7 @@ namespace Lucky.Home.Application
             {
                 var db = new FsTimeSeries<PowerData, DayPowerData>(device.Name);
                 await db.Init(DateTime.Now);
-                device.Init(db);
+                device.StartLoop(db);
                 _dayRotation += () => db.Rotate(DateTime.Now);
             }
 

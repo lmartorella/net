@@ -41,7 +41,6 @@ namespace Lucky.Home.Devices
     public class GardenDevice : DeviceBase
     {
         private static int POLL_PERIOD = 3000;
-        private Timer _pollTimer;
         private FileInfo _cfgFile;
         private Timer _debounceTimer;
         private object _timeProgramLock = new object();
@@ -105,9 +104,16 @@ namespace Lucky.Home.Devices
             // To receive commands from UI
             StartNamedPipe();
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            _pollTimer = new Timer(o => HandlePollTimer(), null, 0, POLL_PERIOD);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            StartLoop();
+        }
+
+        private async Task StartLoop()
+        { 
+            while (!IsDisposed)
+            {
+                await HandlePollTimer();
+                await Task.Delay(POLL_PERIOD);
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -115,7 +121,6 @@ namespace Lucky.Home.Devices
             lock (_timeProgramLock)
             {
                 _timeProgram.Dispose();
-                _pollTimer.Dispose();
             }
             base.Dispose(disposing);
         }
