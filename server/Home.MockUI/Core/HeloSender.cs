@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using Lucky.Home;
 using Lucky.Services;
 
 namespace Lucky.HomeMock.Core
@@ -68,7 +69,7 @@ namespace Lucky.HomeMock.Core
 
             int port =
 #if DEBUG
-                17008;
+                Constants.UdpControlPort_Debug;
 #else
                 Constants.UdpControlPort;
 #endif
