@@ -78,7 +78,6 @@
     </Compile>
     <Compile Include="Core\Data.cs" />
     <Compile Include="Core\HeloSender.cs" />
-    <Compile Include="Core\Task.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

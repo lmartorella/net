@@ -8,7 +8,7 @@ using Lucky.Services;
 
 namespace Lucky.HomeMock.Core
 {
-    class HeloSender : Task
+    class HeloSender : IDisposable
     {
         private readonly ushort _rcvPort;
         private readonly bool _localhostMode;
@@ -25,7 +25,7 @@ namespace Lucky.HomeMock.Core
             _timer = new Timer(HandleTick, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
         }
 
-        public override void Dispose()
+        public void Dispose()
         {
             _timer.Dispose();
         }
