@@ -4,6 +4,10 @@ namespace Lucky.Services
     {
         private T _state;
 
+        protected ServiceBaseWithData(bool verboseLog = false)
+            :base(verboseLog)
+        { }
+
         /// <summary>
         /// Serializable state
         /// </summary>

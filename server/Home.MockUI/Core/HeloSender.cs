@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using Lucky.Home;
 using Lucky.Services;
 
 namespace Lucky.HomeMock.Core
@@ -19,7 +18,7 @@ namespace Lucky.HomeMock.Core
 
         public HeloSender(ushort rcvPort, bool localhostMode)
         {
-            _logger = Manager.GetService<ILoggerFactory>().Create("HeloSender");
+            _logger = Manager.GetService<ILoggerFactory>().Create("HeloSender", true);
             _rcvPort = rcvPort;
             _localhostMode = localhostMode;
             // Install an auto-repeat timer until closed

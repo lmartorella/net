@@ -27,13 +27,18 @@
             <TabItem Header="Display/Log">
                 <Grid> 
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
                         <RowDefinition />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
-                    <TextBox  Grid.Row="0" x:Name="LogBox" Margin="4" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
-                    <TextBlock Grid.Row="1" Text="Display" Margin="4"/>
-                    <TextBox  Grid.Row="2" MaxLines="2" MinLines="2" x:Name="DisplayBox" Margin="4" />
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <CheckBox Margin="4" IsChecked="{Binding VerboseLog}">Verbose</CheckBox>
+                        <Button Command="{Binding ClearLogCommand}">Clear</Button>
+                    </StackPanel>
+                    <TextBox  Grid.Row="1" x:Name="LogBox" Margin="4" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                    <TextBlock Grid.Row="2" Text="Display" Margin="4"/>
+                    <TextBox  Grid.Row="3" MaxLines="2" MinLines="2" x:Name="DisplayBox" Margin="4" />
                 </Grid>
             </TabItem>
 

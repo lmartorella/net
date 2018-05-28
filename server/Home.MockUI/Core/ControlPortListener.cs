@@ -20,6 +20,7 @@ namespace Lucky.HomeMock.Core
         private HeloSender _heloSender;
 
         public ControlPortListener()
+            :base(true)
         {
             Port = (ushort)new Random().Next(17000, 18000);
 

@@ -24,7 +24,10 @@ namespace Lucky
             }
         }
 
-        public ILogger Create(string name)
+        /// <summary>
+        /// Verbose not supported yet
+        /// </summary>
+        public ILogger Create(string name, bool verbose = false)
         {
             return new ConsoleLogger(name);
         }

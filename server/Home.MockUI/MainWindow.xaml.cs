@@ -13,7 +13,7 @@ namespace Lucky.HomeMock
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : ILogger
+    public partial class MainWindow
     {
         private HeloSender _heloSender;
         private DisplaySink _displaySink;
@@ -21,6 +21,7 @@ namespace Lucky.HomeMock
         private readonly GardenSink _gardenSink;
         private readonly DigitalInputArraySink _digitalInputsSink;
         private readonly DigitalOutputArraySink _digitalOutputsSink;
+        private SystemSink _childSystemSink;
         private SamilPanelMock _solarSink;
         private CommandMockSink _commandSink;
         private CancellationTokenSource _cancellationTokenSrc = new CancellationTokenSource();
@@ -47,8 +48,12 @@ namespace Lucky.HomeMock
             };
             _gardenSink.LogLine += (sender, args) =>
             {
-                LogLine(args.Item);
+                LogLine(args.Item, false);
             };
+            ClearLogCommand = new UiCommand(() =>
+            {
+                LogBox.Clear();
+            });
 
             SwitchesCount = 8;
             _digitalInputsSink = new DigitalInputArraySink(this);
@@ -56,6 +61,10 @@ namespace Lucky.HomeMock
 
             _solarSink = new SamilPanelMock();
             _commandSink = new CommandMockSink(this);
+            _solarSink.LogLine += (sender, args) =>
+            {
+                LogLine(args.Item, false);
+            };
 
             var controlPort = Manager.GetService<ControlPortListener>();
             controlPort.StartServer(_cancellationTokenSrc.Token);
@@ -87,14 +96,20 @@ namespace Lucky.HomeMock
             }
         }
 
-        private void LogLine(string line)
+        private void LogLine(string line, bool verbose)
         {
-            Dispatcher.Invoke(() => LogBox.AppendText(line + Environment.NewLine));
+            Dispatcher.Invoke(() =>
+            {
+                if (!verbose || VerboseLog)
+                {
+                    LogBox.AppendText(line + Environment.NewLine);
+                }
+            });
         }
 
-        public void LogFormat(string type, string message, params object[] args)
+        public void LogFormat(bool verbose, string type, string message, params object[] args)
         {
-            LogLine(string.Format(message, args));
+            LogLine(string.Format(message, args), verbose);
         }
 
         public static readonly DependencyProperty ResetReasonsProperty = DependencyProperty.Register(
@@ -197,14 +212,31 @@ namespace Lucky.HomeMock
             set { SetValue(SendCommandCommandProperty, value); }
         }
 
+        public static readonly DependencyProperty ClearLogCommandProperty = DependencyProperty.Register(
+            "ClearLogCommand", typeof(UiCommand), typeof(MainWindow), new PropertyMetadata(default(UiCommand)));
+
+        public UiCommand ClearLogCommand
+        {
+            get { return (UiCommand)GetValue(ClearLogCommandProperty); }
+            set { SetValue(ClearLogCommandProperty, value); }
+        }
+
         public static readonly DependencyProperty BindSlaveProperty = DependencyProperty.Register(
             "BindSlave", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
-        private SystemSink _childSystemSink;
 
         public bool BindSlave
         {
             get { return (bool)GetValue(BindSlaveProperty); }
             set { SetValue(BindSlaveProperty, value); }
+        }
+
+        public static readonly DependencyProperty VerboseLogProperty = DependencyProperty.Register(
+            "VerboseLog", typeof(bool), typeof(MainWindow), new PropertyMetadata(false));
+
+        public bool VerboseLog
+        {
+            get { return (bool)GetValue(VerboseLogProperty); }
+            set { SetValue(VerboseLogProperty, value); }
         }
     }
 }

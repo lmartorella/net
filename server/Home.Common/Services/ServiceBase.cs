@@ -6,7 +6,7 @@ namespace Lucky.Services
     {
         protected readonly string LogName;
 
-        protected ServiceBase()
+        protected ServiceBase(bool verboseLog = false)
         {
             if (!GetType().GetInterfaces().Any(t => t == typeof(ILoggerFactory)))
             {
@@ -15,7 +15,7 @@ namespace Lucky.Services
                 {
                     LogName = LogName.Substring(0, LogName.Length - "Service".Length);
                 }
-                Logger = Manager.GetService<ILoggerFactory>().Create(LogName);
+                Logger = Manager.GetService<ILoggerFactory>().Create(LogName, verboseLog);
             }
         }
 
