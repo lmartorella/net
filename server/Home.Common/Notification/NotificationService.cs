@@ -159,7 +159,15 @@ namespace Lucky.Home.Notification
             message.Subject = title;
             message.Body = body;
 
-            await SendMail(message, () => SendMail(title, body));
+            bool sent = false;
+            while (!sent)
+            {
+                sent = await TrySendMail(message);
+                if (!sent)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30));
+                }
+            }
         }
 
         /// <summary>
@@ -192,7 +200,7 @@ namespace Lucky.Home.Notification
             await SendMail(message, () => SendHtmlMail(title, htmlBody, attachments));
         }
 
-        private async Task SendMail(MailMessage message, Func<Task> retry)
+        private async Task<bool> TrySendMail(MailMessage message)
         {
             // Command line argument must the the SMTP host.
             SmtpClient client = new SmtpClient();
@@ -207,6 +215,7 @@ namespace Lucky.Home.Notification
                 await client.SendMailAsync(message);
                 Logger.Log("Mail sent to: " + _dest);
                 client.Dispose();
+                return true;
             }
             catch (Exception exc)
             {
@@ -215,10 +224,10 @@ namespace Lucky.Home.Notification
                     client.Dispose();
                 }
                 catch { }
-                Logger.Exception(exc);
+                Logger.Exception(exc, false);
                 Logger.Log("Retrying in 30 seconds...");
                 // Retry
-                await Task.Delay(TimeSpan.FromSeconds(30)).ContinueWith(t => retry());
+                return false;
             }
         }
 

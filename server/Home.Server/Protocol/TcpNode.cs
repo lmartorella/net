@@ -62,7 +62,7 @@ namespace Lucky.Home.Protocol
             {
                 Address = address;
             }
-            Dezombie();
+            Dezombie("hbeat");
 
             // Check for zombied children and try to de-zombie it
             var lastKnownChildren = _lastKnownChildren.Values.ToArray();
@@ -114,7 +114,7 @@ namespace Lucky.Home.Protocol
             {
                 Address = address;
             }
-            Dezombie();
+            Dezombie("relogin");
 
             // Start data fetch asynchrously
             // This resets also the dirty children state
@@ -309,11 +309,11 @@ namespace Lucky.Home.Protocol
             return ok;
         }
 
-        private void Dezombie()
+        private void Dezombie(string reason)
         {
             if (IsZombie)
             {
-                Logger.Log("Dezombie");
+                Logger.Log("Dezombie", "reason", reason);
                 IsZombie = false;
                 Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Risolto: ristabilita connessione con " + NodeId);
                 UpdateSinks();

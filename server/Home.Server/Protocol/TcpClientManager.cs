@@ -108,6 +108,7 @@ namespace Lucky.Home.Protocol
                 if (!_clients.TryGetValue(endPoint, out client))
                 {
                     // Destroy the channel
+                    DateTime start = DateTime.Now;
                     try
                     {
                         client = new Client(endPoint, this);
@@ -115,16 +116,10 @@ namespace Lucky.Home.Protocol
                     }
                     catch (SocketException exc)
                     {
-                        if (exc.ErrorCode == 10061)
-                        {
-                            // Cannot connect
-                            Logger.Log("Cannot Connect", "EP", endPoint);
-                            return null;
-                        }
-                        else
-                        {
-                            throw;
-                        }
+                        TimeSpan elapsed = DateTime.Now - start;
+                        // Cannot connect
+                        Logger.Log("Cannot Connect", "EP", endPoint, "code:exc", exc.ErrorCode + ":" + exc.Message, "elapsed(ms)", elapsed.TotalMilliseconds);
+                        client = null;
                     }
                 }
                 return client;

@@ -31,6 +31,7 @@ namespace Lucky.Home.Protocol
 
         private async Task<ITcpNode> RegisterNamedNode(NodeId id, TcpNodeAddress address)
         {
+            Logger.Log("RegisterNamedNode", "nodeID", id, "address", address);
             TcpNode node;
             bool relogin;
             lock (_nodeLock)
@@ -63,6 +64,7 @@ namespace Lucky.Home.Protocol
 
         private async Task<ITcpNode> RegisterNewNode(TcpNodeAddress address)
         {
+            Logger.Log("RegisterNewNode", "address", address);
             TcpNode newNode;
             lock (_nodeLock)
             {
@@ -90,6 +92,7 @@ namespace Lucky.Home.Protocol
 
         public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
         {
+            Logger.Log("RegisterUnknownNode", "address", address);
             // Ask for guid
             var id = await new TcpNode(new NodeId(), address).TryFetchGuid();
             if (id == null)

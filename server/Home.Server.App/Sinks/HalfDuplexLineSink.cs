@@ -24,7 +24,10 @@ namespace Lucky.Home.Sinks
         {
             Ok,
             Overflow,
-            FrameError
+            FrameError,
+
+            // ClientError
+            ClientNoData = 32
         }
 
         private class StateMessage
@@ -61,8 +64,16 @@ namespace Lucky.Home.Sinks
             await Read(async reader =>
             {
                 var msg = await reader.Read<StateMessage>();
-                data = msg.Data ?? new byte[0];
-                err = msg.Error;
+                if (msg == null)
+                {
+                    data = new byte[0];
+                    err = Error.ClientNoData;
+                }
+                else
+                {
+                    data = msg.Data ?? new byte[0];
+                    err = msg.Error;
+                }
             }, opName + ":RD");
             return Tuple.Create(data, err);
         }

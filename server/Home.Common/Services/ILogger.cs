@@ -29,6 +29,11 @@ namespace Lucky.Services
             logger.LogFormat(INFO, "{0} [{1}]: {2} [{3}]: {4}", message, param1, value1, param2, value2);
         }
 
+        public static void Log(this ILogger logger, string message, string param1, object value1, string param2, object value2, string param3, object value3)
+        {
+            logger.LogFormat(INFO, "{0} [{1}]: {2} [{3}]: {4} [{5}]: {6}", message, param1, value1, param2, value2, param3, value3);
+        }
+
         public static void Warning(this ILogger logger, string message)
         {
             logger.LogFormat(WARN, message);
@@ -64,9 +69,9 @@ namespace Lucky.Services
             logger.LogFormat(ERROR, "{0} [{1}]: {2}", message, param1, value1);
         }
 
-        public static void Exception(this ILogger logger, Exception exc)
+        public static void Exception(this ILogger logger, Exception exc, bool fullStack = true)
         {
-            logger.LogFormat(EXC, "{0}: Stack: {1}", exc.Message, UnrollStack(exc));
+            logger.LogFormat(EXC, "{2}: {0}: Stack: {1}", exc.Message, fullStack ? UnrollStack(exc) : "", exc.GetType().Name);
         }
 
         private static string UnrollStack(Exception exc)
