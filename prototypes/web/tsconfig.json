@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "moduleResolution": "node",
-        "sourceMap": true
+        "sourceMap": true,
+        "module": "es2015"
     },
     "files": [
         "server.ts"
