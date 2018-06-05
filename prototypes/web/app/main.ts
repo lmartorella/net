@@ -1,9 +1,19 @@
-class SolarController {
-    constructor($http, $q) {
-        this.$http = $http;
-        this.$q = $q;
+interface IPvData { 
+    error?: string;
+    mode: number;
+    currentW: number;
+    fault: number;
+}
 
-        this.$http.get('/r/imm').then(resp => {
+class SolarController {
+
+    public firstLineClass: string;
+    public firstLine: string;
+    private pvData: IPvData;
+
+    constructor(private $http: ng.IHttpService, private $q: ng.IQService) {
+
+        this.$http.get<IPvData>('/r/imm').then(resp => {
             if (resp.status == 200) {
                 this.pvData = resp.data;
                 if (this.pvData.error) {
@@ -89,7 +99,7 @@ angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarControl
     var service = this;
     service.responseError = function(response) {
         if (response.status === 401) {
-            window.location = "/login";
+            window.location.pathname = "/login";
         }
         return $q.reject(response);
     };
