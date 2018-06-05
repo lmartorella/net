@@ -2,7 +2,7 @@
     "compilerOptions": {
         "moduleResolution": "node",
         "sourceMap": true,
-        "module": "es2015"
+        "module": "commonjs"
     },
     "files": [
         "server.ts"

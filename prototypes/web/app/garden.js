@@ -51,4 +51,17 @@ class GardenController {
     }
 }
 
-angular.module('solar', []).controller('gardenCtrl', ['$http', '$q', GardenController]);
+angular.module('solar', []).controller('gardenCtrl', ['$http', '$q', GardenController])
+
+.service('authInterceptor', ['$q', function($q) {
+    var service = this;
+    service.responseError = function(response) {
+        if (response.status === 401) {
+            window.location = "/login";
+        }
+        return $q.reject(response);
+    };
+}])
+.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.interceptors.push('authInterceptor');
+}])
