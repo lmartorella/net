@@ -19,4 +19,6 @@ if (!fs.existsSync(gardenCfgPath) || !(gardenCfg = fs.readFileSync(gardenCfgPath
     throw new Error('Garden configuration file not accessible: ' + gardenCfgPath);
 }
 
-export { csvFolder, gardenCfg };
+let logsFolder = homeFolder;
+
+export { csvFolder, gardenCfg, logsFolder };

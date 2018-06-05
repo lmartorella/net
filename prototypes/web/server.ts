@@ -1,9 +1,12 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as express from 'express';
 import * as passport from 'passport';
+import * as compression from 'compression';
 import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
-import { gardenCfg } from './settings';
+import { gardenCfg, logsFolder } from './settings';
 import { sendToServer } from './garden';
 
 passport.use(new passportLocal.Strategy((username: string, password: string, done: (error: any, user?: any) => void) => { 
@@ -12,7 +15,6 @@ passport.use(new passportLocal.Strategy((username: string, password: string, don
     }
     return done(null, username);
 }));
-
 
 function validateUser(user) {
     return (user === 'USER');
@@ -50,6 +52,7 @@ function ensureLoggedIn() {
 
 var app = express();
 app.use((express as any).json());
+app.use(compression());
 app.use(require('cookie-parser')());
 app.use(require('body-parser').urlencoded({ extended: true }));
 app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
@@ -99,6 +102,13 @@ app.post('/r/gardenStop', ensureLoggedIn(), (req, res) => {
     sendToServer(JSON.stringify({ command: "stop" }) + '\r\n', resp => {
         res.send(resp);
     })
+});
+
+app.get('/r/logs', ensureLoggedIn(), (req, res) => {
+    // Stream log file
+    res.setHeader("Content-Type", "text/plain");
+    console.log("Log");
+    fs.createReadStream(path.join(logsFolder, "log.txt")).pipe(res);
 });
 
 app.use('/app', express.static('app'));

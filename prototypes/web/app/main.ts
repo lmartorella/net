@@ -93,13 +93,17 @@ class SolarController {
     }
 }
 
+function onAuthError() {
+    window.location.pathname = "/login";
+}
+
 angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarController])
 
 .service('authInterceptor', ['$q', function($q) {
     var service = this;
     service.responseError = function(response) {
         if (response.status === 401) {
-            window.location.pathname = "/login";
+            onAuthError();
         }
         return $q.reject(response);
     };
@@ -107,3 +111,4 @@ angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarControl
 .config(['$httpProvider', function($httpProvider) {
     $httpProvider.interceptors.push('authInterceptor');
 }])
+
