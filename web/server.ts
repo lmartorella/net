@@ -8,6 +8,9 @@ import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
 import { gardenCfg, logsFolder } from './settings';
 import { sendToServer } from './garden';
+import ProcessManager from './procMan';
+
+let pm = new ProcessManager(path.join(__dirname, 'bin'), path.join(__dirname, 'etc'), 'Home.Server.App.exe');
 
 passport.use(new passportLocal.Strategy((username: string, password: string, done: (error: any, user?: any) => void) => { 
     if (username !== 'USER' || password != 'PASSWORD') {
@@ -114,6 +117,11 @@ app.get('/r/logs', ensureLoggedIn(), (req, res) => {
     }
 });
 
+app.get('/r/kill', ensureLoggedIn(), async (req, res) => {
+    await pm.kill();
+    res.send("Killed");
+});
+
 app.use('/app', express.static('app'));
 app.use('/lib/angular', express.static('node_modules/angular'));
 
@@ -130,3 +138,5 @@ app.get('/logout', (req, res) => {
 app.listen(80, () => {
   console.log('Webserver started at port 80');
 })
+
+pm.start();

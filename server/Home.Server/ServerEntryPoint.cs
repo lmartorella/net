@@ -17,6 +17,8 @@ namespace Lucky.Home
             Manager.Register<ConfigurationService, IConfigurationService>();
             Manager.GetService<ConfigurationService>().Init(arguments);
 
+            LoggerFactory.Init(Manager.GetService<PersistenceService>());
+
             Manager.GetService<IIsolatedStorageService>().InitAppRoot("Server");
 
             Manager.Register<Server, IServer>();

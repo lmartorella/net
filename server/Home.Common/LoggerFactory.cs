@@ -39,6 +39,7 @@ namespace Lucky
         public static void Init(PersistenceService service)
         {
             s_logFile = Path.Combine(service.GetAppFolderPath(), "log.txt");
+            Console.WriteLine("LOG: " + s_logFile);
         }
 
         /// <summary>

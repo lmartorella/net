@@ -12,8 +12,6 @@ namespace Lucky.Home.Lib
         {
             ServerEntryPoint.Load(() =>
             {
-                LoggerFactory.Init(Manager.GetService<PersistenceService>());
-
                 // Register app sinks
                 Manager.GetService<ISinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
                 // Register devices
