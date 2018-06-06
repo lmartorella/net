@@ -258,7 +258,6 @@ namespace Lucky.Home.Db
             foreach (var tuple in files)
             {
                 // Parse CSV
-                //Console.WriteLine(tuple.Item1.Name);
                 var aggrData = CsvAggregate<T, Taggr>.ParseCsv(tuple.Item1, tuple.Item2.Value);
                 if (aggrData != null)
                 {

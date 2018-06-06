@@ -1,7 +1,7 @@
-﻿using System;
+﻿
 using Lucky.Services;
 
-namespace Lucky.Home.Application
+namespace Lucky.Home.Services
 {
     class ConfigurationService : ServiceBase, IConfigurationService
     {

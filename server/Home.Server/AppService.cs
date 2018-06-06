@@ -24,7 +24,7 @@ namespace Lucky.Home.Application
             var defer = new TaskCompletionSource<object>();
             Console.CancelKeyPress += (sender, args) =>
             {
-                Console.Error.WriteLine("Detected CtrlBreak. Stopping devices...");
+                Logger.LogStderr("Detected CtrlBreak. Stopping devices...");
                 defer.SetResult(null);
                 args.Cancel = true;
             };
@@ -32,7 +32,7 @@ namespace Lucky.Home.Application
 
             // Safely stop devices
             await Manager.GetService<DeviceManager>().TerminateAll();
-            Console.Error.WriteLine("Exiting.");
+            Logger.LogStderr("Exiting.");
         }
     }
 }

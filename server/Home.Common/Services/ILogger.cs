@@ -19,6 +19,12 @@ namespace Lucky.Services
             logger.LogFormat(INFO, message);
         }
 
+        public static void LogStderr(this ILogger logger, string message)
+        {
+            logger.LogFormat(INFO, message);
+            Console.Error.WriteLine(message);
+        }
+
         public static void Log(this ILogger logger, string message, string param1, object value1)
         {
             logger.LogFormat(INFO, "{0} [{1}]: {2}", message, param1, value1);

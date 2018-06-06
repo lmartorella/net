@@ -197,7 +197,15 @@ namespace Lucky.Home.Notification
             message.AlternateViews.Add(alternateView);
             message.IsBodyHtml = true;
 
-            await SendMail(message, () => SendHtmlMail(title, htmlBody, attachments));
+            bool sent = false;
+            while (!sent)
+            {
+                sent = await TrySendMail(message);
+                if (!sent)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30));
+                }
+            }
         }
 
         private async Task<bool> TrySendMail(MailMessage message)

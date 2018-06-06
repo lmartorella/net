@@ -12,14 +12,13 @@ namespace Lucky.Home.Lib
         {
             ServerEntryPoint.Load(() =>
             {
-                Manager.Register<ConfigurationService, IConfigurationService>();
-                Manager.GetService<ConfigurationService>().Init(arguments);
+                LoggerFactory.Init(Manager.GetService<PersistenceService>());
 
                 // Register app sinks
                 Manager.GetService<ISinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
                 // Register devices
                 Manager.GetService<IDeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
-            });
+            }, arguments);
 
             _ = Manager.GetService<HomeApp>().Start();
             Manager.GetService<HomeApp>().Run();

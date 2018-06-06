@@ -5,15 +5,24 @@ namespace Lucky.Services
 {
     public class PersistenceService : ServiceBase
     {
-        public string GetAppFolderPath(string root)
+        public string GetAppFolderPath(string root = null)
         {
-            var ret = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            ret = Path.Combine(ret, "Home/" + root);
-            if (!Directory.Exists(ret))
+            string wrkDir = Manager.GetService<IConfigurationService>().GetConfig("wrk");
+            if (wrkDir == null)
             {
-                Directory.CreateDirectory(ret);
+                wrkDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                wrkDir = Path.Combine(wrkDir, "Home");
             }
-            return ret;
+            if (!string.IsNullOrEmpty(root))
+            {
+                wrkDir = Path.Combine(wrkDir, root);
+            }
+
+            if (!Directory.Exists(wrkDir))
+            {
+                Directory.CreateDirectory(wrkDir);
+            }
+            return wrkDir;
         }
     }
 }

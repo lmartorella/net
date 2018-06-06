@@ -3,6 +3,7 @@ using Lucky.Home.Admin;
 using Lucky.Home.Application;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
+using Lucky.Home.Services;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 
@@ -10,9 +11,12 @@ namespace Lucky.Home
 {
     public static class ServerEntryPoint
     {
-        public static void Load(Action registerHandler)
+        public static void Load(Action registerHandler, string[] arguments)
         {
             Manager.Register<LoggerFactory, ILoggerFactory>();
+            Manager.Register<ConfigurationService, IConfigurationService>();
+            Manager.GetService<ConfigurationService>().Init(arguments);
+
             Manager.GetService<IIsolatedStorageService>().InitAppRoot("Server");
 
             Manager.Register<Server, IServer>();
@@ -29,7 +33,6 @@ namespace Lucky.Home
 
             // Start server
             Manager.GetService<IServer>();
-            Console.WriteLine("Server started. Ctrl+C to quit.");
 
             // Start Admin connection
             Manager.GetService<AdminListener>();
