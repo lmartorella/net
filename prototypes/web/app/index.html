@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Solar &#9728</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solar &#9728;</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
   <script src="/lib/angular/angular.min.js"></script>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <script src="main.js"></script>
-  <link href="style.css" rel="stylesheet"></script>
+  <link href="style.css" rel="stylesheet"/>
 
 </head>
 <body ng-app="solar" ng-controller="solarCtrl as ctrl" ng-cloak>
@@ -28,11 +28,9 @@
 
     <div id="chart"></div>
 
-    <p class="bot" ng-show="ctrl.pvData.currentTsTime"> 
-      Aggiornato alle {{ctrl.pvData.currentTsTime}} del {{ctrl.pvData.currentTsDate}}. 
-    </p>
-    <p>
-      <a href="/r/logs" download onerror="onAuthError()">Logs</a>
+    <p class="bot"> 
+      <span ng-show="ctrl.pvData.currentTsTime">Aggiornato alle {{ctrl.pvData.currentTsTime}} del {{ctrl.pvData.currentTsDate}}.</span> 
+      <a href="/r/logs" download onerror="onAuthError()"> Logs</a>
     </p>
   </div>
 </body>

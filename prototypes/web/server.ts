@@ -107,8 +107,11 @@ app.post('/r/gardenStop', ensureLoggedIn(), (req, res) => {
 app.get('/r/logs', ensureLoggedIn(), (req, res) => {
     // Stream log file
     res.setHeader("Content-Type", "text/plain");
-    console.log("Log");
-    fs.createReadStream(path.join(logsFolder, "log.txt")).pipe(res);
+    if (fs.existsSync(path.join(logsFolder, "log.txt"))) {
+        fs.createReadStream(path.join(logsFolder, "log.txt")).pipe(res);
+    } else {
+        res.sendStatus(404);
+    }
 });
 
 app.use('/app', express.static('app'));
