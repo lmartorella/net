@@ -7,7 +7,6 @@ import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
 import { gardenCfg, logsFolder } from './settings';
-import { sendToServer } from './garden';
 import ProcessManager from './procMan';
 
 let pm = new ProcessManager(path.join(__dirname, 'bin'), path.join(__dirname, 'etc'), 'Home.Server.App.exe');
@@ -86,7 +85,7 @@ app.get('/r/gardenCfg', ensureLoggedIn(), (req, res) => {
     res.send(gardenCfg);
 });
 
-app.post('/r/gardenStart', ensureLoggedIn(), (req, res) => {
+app.post('/r/gardenStart', ensureLoggedIn(), async (req, res) => {
     let immediate = req.body;
     if (!Array.isArray(immediate) || !immediate.every(v => typeof v === "number") || immediate.every(v => v <= 0)) {
         // Do nothing
@@ -96,15 +95,13 @@ app.post('/r/gardenStart', ensureLoggedIn(), (req, res) => {
         return;
     }
 
-    sendToServer(JSON.stringify({ command: "setImmediate", immediate }) + '\r\n', resp => {
-        res.send(resp);
-    })
+    let resp = await pm.sendMessage({ command: "garden.setImmediate", immediate });
+    res.send(resp);
 });
 
-app.post('/r/gardenStop', ensureLoggedIn(), (req, res) => {
-    sendToServer(JSON.stringify({ command: "stop" }) + '\r\n', resp => {
-        res.send(resp);
-    })
+app.post('/r/gardenStop', ensureLoggedIn(), async (req, res) => {
+    let resp = await pm.sendMessage({ command: "garden.stop" });
+    res.send(resp);
 });
 
 app.get('/r/logs', ensureLoggedIn(), (req, res) => {

@@ -60,6 +60,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\PipeServer.cs" />
     <Compile Include="Sinks\BarometricSink.cs" />
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />

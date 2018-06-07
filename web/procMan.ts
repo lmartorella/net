@@ -1,6 +1,7 @@
 import * as child_process from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as net from 'net';
 
 /**
  * Manages home server health
@@ -46,5 +47,36 @@ export default class ProcessManager {
         });
         this.process.kill('SIGINT');
         return p;
+    }
+
+    public sendMessage(data: any): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            // Make request to server
+            let pipe = net.connect('\\\\.\\pipe\\NETHOME', () => {
+                // Connected
+                pipe.setNoDelay(true);
+                pipe.setDefaultEncoding('utf8');
+                
+                let resp = '';
+        
+                let respond = () => {
+                    pipe.destroy();
+                    resolve(JSON.parse(resp));
+                };
+        
+                pipe.on('data', data => {
+                    resp += data.toString();
+                    if (resp.charCodeAt(resp.length - 1) === 13) {
+                        respond();
+                    }
+                });
+                pipe.once('end', data => {
+                    respond();
+                });
+                
+                // Send request
+                pipe.write(JSON.stringify(data) + '\r\n');
+            });
+        });
     }
 }

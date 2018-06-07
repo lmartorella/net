@@ -6,12 +6,12 @@ using Lucky.Services;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
-using Lucky.Net;
 using System.Threading.Tasks;
 using Lucky.Home.Model;
 using System.Collections.Generic;
 using Lucky.Db;
 using Lucky.Home.Notification;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Devices
 {
@@ -102,7 +102,33 @@ namespace Lucky.Home.Devices
             cfgFIleObserver.EnableRaisingEvents = true;
 
             // To receive commands from UI
-            StartNamedPipe();
+            Manager.GetService<PipeServer>().Message += (o, e) =>
+            {
+                switch (e.Request.Command)
+                {
+                    case "garden.getProgram":
+                        lock (_timeProgramLock)
+                        {
+                            e.Response.Program = _timeProgram.Program;
+                        }
+                        break;
+                    case "garden.setImmediate":
+                        e.Response.Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" });
+                        break;
+                    case "garden.stop":
+                        bool stopped = false;
+                        foreach (var sink in Sinks.OfType<GardenSink>())
+                        {
+                            sink.ResetNode();
+                            stopped = true;
+                        }
+                        if (!stopped)
+                        {
+                            e.Response.Error = "Cannot stop, no sink";
+                        }
+                        break;
+                }
+            };
 
             StartLoop();
         }
@@ -123,70 +149,6 @@ namespace Lucky.Home.Devices
                 _timeProgram.Dispose();
             }
             return base.OnTerminate();
-        }
-
-        [DataContract]
-        public class WebRequest
-        {
-            /// <summary>
-            /// Can be getProgram, setImmediate
-            /// </summary>
-            [DataMember(Name = "command")]
-            public string Command { get; set; }
-
-            [DataMember(Name = "immediate")]
-            public int[] ImmediateZones { get; set; }
-        }
-
-        [DataContract]
-        public class WebResponse
-        {
-            /// <summary>
-            /// Result/error
-            /// </summary>
-            [DataMember(Name = "error")]
-            public string Error { get; set; }
-
-            /// <summary>
-            /// List of programs (if requested)
-            /// </summary>
-            [DataMember(Name = "program")]
-            public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
-        }
-
-        private async void StartNamedPipe()
-        {
-            var server = new PipeJsonServer<WebRequest, WebResponse>("NETGARDEN");
-            server.ManageRequest = req => 
-            {
-                var resp = new WebResponse();
-                switch (req.Command)
-                {
-                    case "getProgram":
-                        lock (_timeProgramLock)
-                        {
-                            resp.Program = _timeProgram.Program;
-                        }
-                        break;
-                    case "setImmediate":
-                        resp.Error = ScheduleCycle(new ImmediateProgram { Zones = req.ImmediateZones, Name = "Immediate" });
-                        break;
-                    case "stop":
-                        bool stopped = false;
-                        foreach (var sink in Sinks.OfType<GardenSink>())
-                        {
-                            sink.ResetNode();
-                            stopped = true;
-                        }
-                        if (!stopped)
-                        {
-                            resp.Error = "Cannot stop, no sink";
-                        }
-                        break;
-                }
-                return Task.FromResult(resp);
-            };
-            await server.Start();
         }
 
         /// <summary>
