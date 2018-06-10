@@ -236,7 +236,7 @@ namespace Lucky.Home.Protocol
             children.Select(c => _lastKnownChildren[c.Address.Index] = c);
         }
 
-        private async Task<bool> OpenNodeSession(Func<ITcpConnection, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
+        private async Task<bool> OpenNodeSession(Func<ITcpConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
         {
             if (IsZombie)
             {
@@ -250,12 +250,11 @@ namespace Lucky.Home.Protocol
                 address = Address.Clone();
             }
 
-
             bool ok;
-            var connection = await _tcpConnectionFactory.Create(address.IPEndPoint);
+            var connection = await _tcpConnectionFactory.GetConnection(address.IPEndPoint);
             try
             {
-                // Connecion can be recycled
+                // Connecion can be recycled, do selection
                 await connection.Write(new SelectNodeMessage { Index = (short)address.Index });
                 DateTime dt = DateTime.Now;
                 ok = await handler(connection, address);
@@ -266,7 +265,7 @@ namespace Lucky.Home.Protocol
                     if (ack == null || ack.Ack != 0x1e)
                     {
                         // Forbicly close the channel
-                        _tcpConnectionFactory.Abort(address.IPEndPoint);
+                        connection.Close("noclose");
                         Logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
                         ok = false;
                     }
@@ -277,7 +276,7 @@ namespace Lucky.Home.Protocol
                 // Log exc
                 Logger.Exception(exc);
                 // Forbicly close the channel
-                _tcpConnectionFactory.Abort(address.IPEndPoint);
+                connection.Close("exc");
                 ok = false;
             }
             finally

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -10,23 +9,41 @@ using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
+    /// <summary>
+    /// Used for reader only
+    /// </summary>
     public interface IConnectionReader
     {
         Task<T> Read<T>();
     }
 
+    /// <summary>
+    /// Used for writer only
+    /// </summary>
     public interface IConnectionWriter
     {
         Task Write<T>(T data);
     }
 
-    internal interface ITcpConnection : IConnectionReader, IConnectionWriter, IDisposable
+    /// <summary>
+    /// Interface of a tcp client wrapper. Dispose after each connection session.
+    /// </summary>
+    internal interface ITcpConnectionSession : IConnectionReader, IConnectionWriter, IDisposable
     {
+        /// <summary>
+        /// Call this when the underneath tcp client socket should be closed instead of being reused for other connections (e.g. after errors)
+        /// </summary>
+        /// <param name="reason">For logging purpose</param>
+        void Close(string reason);
     }
 
+    /// <summary>
+    /// Manager for <see cref="ITcpConnectionSession"/>
+    /// </summary>
     internal class TcpConnectionFactory : ServiceBase
     {
         private readonly object _lockObject = new object();
+
         /// <summary>
         /// TCP clients (Cached when not used)
         /// </summary>
@@ -41,11 +58,11 @@ namespace Lucky.Home.Protocol
 
         private class ClientMutex
         {
-            private Action _abortFunction;
+            private Action<string> _abortFunction;
             private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
             private CancellationTokenSource _cancellationToken;
 
-            public ClientMutex(Action abortFunction)
+            public ClientMutex(Action<string> abortFunction)
             {
                 _abortFunction = abortFunction;
             }
@@ -75,7 +92,7 @@ namespace Lucky.Home.Protocol
                 {
                     if (!t.IsCanceled)
                     {
-                        _abortFunction();
+                        _abortFunction("grace");
                     }
                 });
 
@@ -93,7 +110,7 @@ namespace Lucky.Home.Protocol
         /// <summary>
         /// Can last less than a TcpService.IClient instance, but not more, spanning across multiple clients.
         /// </summary>
-        private class TcpConnection : ITcpConnection
+        private class TcpConnection : ITcpConnectionSession
         {
             private readonly ClientMutex _mutex;
             private readonly IPEndPoint _endPoint;
@@ -155,14 +172,19 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public async Task<ITcpConnection> Create(IPEndPoint endPoint)
+        public Task<ITcpConnectionSession> GetConnection(IPEndPoint endPoint)
+        {
+            return Create(endPoint);
+        }
+
+        private async Task<ITcpConnectionSession> Create(IPEndPoint endPoint)
         {
             ClientMutex mutex;
             lock (_lockObject)
             {
                 if (!_mutexes.TryGetValue(endPoint, out mutex))
                 {
-                    mutex = new ClientMutex(() => Abort(endPoint));
+                    mutex = new ClientMutex(reason => Abort(endPoint, "mutex+" + reason));
                     _mutexes[endPoint] = mutex;
                 }
             }
@@ -182,8 +204,10 @@ namespace Lucky.Home.Protocol
                     DateTime start = DateTime.Now;
                     try
                     {
-                        client = Manager.GetService<TcpService>().CreateClient(endPoint, () => Abort(endPoint));
+                        client = Manager.GetService<TcpService>().CreateClient(endPoint, reason => Abort(endPoint, "createcl+" + reason));
                         _clients[endPoint] = client;
+
+                        Logger.Log("DEBUG:NewClient", "EP", endPoint);
                     }
                     catch (SocketException exc)
                     {
@@ -197,7 +221,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public void Abort(IPEndPoint endPoint)
+        private void AbortToRemove(IPEndPoint endPoint, string reason)
         {
             IClient client = null;
             lock (_lockObject)
@@ -206,6 +230,8 @@ namespace Lucky.Home.Protocol
                 {
                     // Destroy the channel
                     _clients.Remove(endPoint);
+
+                    Logger.Log("DEBUG:DelClient", "EP", endPoint, "reason", reason);
                 }
                 ClientMutex mutex = null;
                 if (_mutexes.TryGetValue(endPoint, out mutex))

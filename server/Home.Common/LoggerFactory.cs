@@ -28,6 +28,15 @@ namespace Lucky
 
                 if (s_logFile != null)
                 {
+                    AppendLogFile(line);
+                }
+            }
+
+            private void AppendLogFile(string line)
+            {
+                // Don't crash if another thread is locking the file
+                lock (s_logFile)
+                {
                     using (StreamWriter logger = new StreamWriter(s_logFile, true))
                     {
                         logger.WriteLine(line);

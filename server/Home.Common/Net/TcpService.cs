@@ -21,6 +21,8 @@ namespace Lucky.Net
     /// </summary>
     public class TcpService : ServiceBase
     {
+        private static readonly TimeSpan NET_STREAM_TIMEOUT = TimeSpan.FromSeconds(5);
+
         private TcpListener TryCreateListener(IPAddress address, ref int startPort)
         {
             do
@@ -72,10 +74,9 @@ namespace Lucky.Net
             private NetworkStream _stream;
             private readonly ILogger _logger;
             private readonly TcpClient _tcpClient;
-            private readonly Action _abort;
-            private bool _disposed;
+            private readonly Action<string> _abort;
 
-            public Client(TcpClient tcpClient, TcpService owner, Action abort)
+            public Client(TcpClient tcpClient, TcpService owner, Action<string> abort)
             {
                 _logger = owner.Logger;
                 _tcpClient = tcpClient;
@@ -83,8 +84,7 @@ namespace Lucky.Net
                 _stream = _tcpClient.GetStream();
 
                 // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
-                _stream.ReadTimeout = 5000;
-                _stream.WriteTimeout = 5000;
+                _stream.ReadTimeout = _stream.WriteTimeout = (int)NET_STREAM_TIMEOUT.TotalMilliseconds;
             }
 
             public bool IsClosed
@@ -95,11 +95,10 @@ namespace Lucky.Net
                     {
                         if (!_tcpClient.Connected)
                         {
-                            _disposed = true;
                             Close();
                         }
                     }
-                    return _disposed;
+                    return _stream == null;
                 }
             }
 
@@ -117,7 +116,6 @@ namespace Lucky.Net
                         });
                         _stream = null;
                     }
-                    _disposed = true;
                 }
             }
 
@@ -131,23 +129,19 @@ namespace Lucky.Net
                         await _stream.FlushAsync();
                     }
                 }
-                catch (SocketException exc)
-                {
-                    _logger.Log("SocketExc", "exc", exc.Message, "write", typeof(T).Name);
-                    // Destroy the channel
-                    _abort();
-                }
-                catch (IOException exc)
-                {
-                    _logger.Log("IOException", "exc", exc.Message, "write", typeof(T).Name);
-                    // Destroy the channel
-                    _abort();
-                }
                 catch (Exception exc)
                 {
-                    _logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
+                    Exception src = exc.GetBaseException();
+                    if (src is SocketException || src is IOException)
+                    {
+                        _logger.Log(src.GetType().Name, "exc", exc.Message, "write", typeof(T).Name);
+                    }
+                    else
+                    {
+                        _logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
+                    }
                     // Destroy the channel
-                    _abort();
+                    _abort("writeexc");
                 }
             }
 
@@ -157,35 +151,28 @@ namespace Lucky.Net
                 {
                     return await NetSerializer<T>.Read(_stream);
                 }
-                catch (SocketException exc)
-                {
-                    _logger.Log("SocketExc", "exc", exc.Message, "read", typeof(T).Name);
-                    // Destroy the channel
-                    _abort();
-                    return default(T);
-                }
-                catch (IOException exc)
-                {
-                    _logger.Log("IOException", "exc", exc.Message, "read", typeof(T).Name);
-                    // Destroy the channel
-                    _abort();
-                    return default(T);
-                }
                 catch (Exception exc)
                 {
-                    _logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
+                    Exception src = exc.GetBaseException();
+                    if (src is SocketException || src is IOException)
+                    {
+                        _logger.Log(src.GetType().Name, "exc", exc.Message, "read", typeof(T).Name);
+                    }
+                    else
+                    {
+                        _logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
+                    }
                     // Destroy the channel
-                    _abort();
+                    _abort("readexc");
                     return default(T);
                 }
             }
         }
 
-        public IClient CreateClient(IPEndPoint endPoint, Action abortHandler)
+        public IClient CreateClient(IPEndPoint endPoint, Action<string> abortHandler)
         {
             var tcpClient = new TcpClient();
             tcpClient.Connect(endPoint);
-            //_tcpClient.NoDelay = true;  // Setting this to true will send single chars in Serializer loops...
             tcpClient.SendTimeout = 1;
             tcpClient.ReceiveTimeout = 1;
 
