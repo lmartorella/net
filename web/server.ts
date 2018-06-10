@@ -6,10 +6,10 @@ import * as compression from 'compression';
 import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
-import { gardenCfg, logsFolder } from './settings';
+import { gardenCfg, binDir, etcDir } from './settings';
 import ProcessManager from './procMan';
 
-let pm = new ProcessManager(path.join(__dirname, 'bin'), path.join(__dirname, 'etc'), 'Home.Server.App.exe');
+let pm = new ProcessManager(binDir, etcDir, 'Home.Server.App.exe');
 
 passport.use(new passportLocal.Strategy((username: string, password: string, done: (error: any, user?: any) => void) => { 
     if (username !== 'USER' || password != 'PASSWORD') {
@@ -107,8 +107,8 @@ app.post('/r/gardenStop', ensureLoggedIn(), async (req, res) => {
 app.get('/r/logs', ensureLoggedIn(), (req, res) => {
     // Stream log file
     res.setHeader("Content-Type", "text/plain");
-    if (fs.existsSync(path.join(logsFolder, "log.txt"))) {
-        fs.createReadStream(path.join(logsFolder, "log.txt")).pipe(res);
+    if (fs.existsSync(path.join(etcDir, "log.txt"))) {
+        fs.createReadStream(path.join(etcDir, "log.txt")).pipe(res);
     } else {
         res.sendStatus(404);
     }
