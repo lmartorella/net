@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     /// <summary>
     /// Skip serialization of this field

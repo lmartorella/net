@@ -1,23 +1,22 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.Serialization;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     [DataContract]
-    public class Fourcc
+    public class Twocc
     {
-        public Fourcc()
+        public Twocc()
         { }
 
-        public Fourcc(string code)
+        public Twocc(string code)
         {
-            Debug.Assert(code.Length == 4);
+            Debug.Assert(code.Length == 2);
             Code = code;
         }
 
         [DataMember]
-        [SerializeAsFixedString(4)]
+        [SerializeAsFixedString(2)]
         public string Code;
 
         public override bool Equals(object obj)

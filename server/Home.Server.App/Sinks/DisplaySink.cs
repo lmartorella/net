@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Lucky.Home.Serialization;
+using Lucky.Serialization;
 using System.Threading.Tasks;
 
 #pragma warning disable CS0649 

@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     class ArraySerializer<T> : ISerializer
     {

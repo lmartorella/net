@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     class StringSerializer : ISerializer
     {

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     class ByteArraySerializer : ISerializer
     {

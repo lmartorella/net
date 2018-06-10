@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     /// <summary>
     /// Class to serialize/deserialize a complex type

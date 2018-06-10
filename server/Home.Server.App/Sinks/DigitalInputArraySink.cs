@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Lucky.Home.Serialization;
+using Lucky.Serialization;
 
 // ReSharper disable UnusedMember.Global
 #pragma warning disable 649

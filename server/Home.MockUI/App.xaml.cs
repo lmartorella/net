@@ -25,6 +25,7 @@ namespace Lucky.HomeMock
             base.OnStartup(e);
 
             Manager.Register<GuiLoggerFactory, ILoggerFactory>();
+            Manager.Register<GuiConfigurationService, IConfigurationService>();
             // Get the instance name, accessing the other process names and assigning a progressive number
             _instanceIndex = GetInstanceIndex("Home_WpfMock");
 
@@ -46,6 +47,18 @@ namespace Lucky.HomeMock
             // When in error, it is free
             _semaphore = new Semaphore(0, 1, @"Global\" + prefix + index);
             return index;
+        }
+
+        private class GuiConfigurationService : IConfigurationService
+        {
+            public void Dispose()
+            {
+            }
+
+            public string GetConfig(string key)
+            {
+                return null;
+            }
         }
     }
 }

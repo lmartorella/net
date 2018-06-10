@@ -1,5 +1,5 @@
 ﻿using System;
-using Lucky.Home.Serialization;
+using Lucky.Serialization;
 using Lucky.Services;
 using System.Threading.Tasks;
 

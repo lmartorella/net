@@ -1,4 +1,4 @@
-﻿using Lucky.Home.Serialization;
+﻿using Lucky.Serialization;
 using System.Threading.Tasks;
 
 namespace Lucky.Home.Sinks

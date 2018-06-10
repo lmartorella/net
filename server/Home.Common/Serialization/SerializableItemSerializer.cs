@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 // ReSharper disable StaticMemberInGenericType
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     /// <summary>
     /// Serializes a ISerializable class 

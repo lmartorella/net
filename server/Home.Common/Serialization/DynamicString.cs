@@ -1,5 +1,5 @@
 ﻿
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     /// <summary>
     /// Message with a single string in it

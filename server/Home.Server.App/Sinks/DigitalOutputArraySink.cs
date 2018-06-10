@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Lucky.Home.Serialization;
+using Lucky.Serialization;
 
 // ReSharper disable NotAccessedField.Local
 // ReSharper disable UnusedMember.Global

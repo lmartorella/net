@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     /// <summary>
     /// Array with UINT16 lenght at head

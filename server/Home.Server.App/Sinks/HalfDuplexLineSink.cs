@@ -1,4 +1,4 @@
-﻿using Lucky.Home.Serialization;
+﻿using Lucky.Serialization;
 using System;
 using System.Threading.Tasks;
 

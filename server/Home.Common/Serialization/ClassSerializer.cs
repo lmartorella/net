@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     class ClassSerializer<T> : ISerializer where T : class, new()
     {

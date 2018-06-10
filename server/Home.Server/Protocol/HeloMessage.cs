@@ -1,5 +1,4 @@
-﻿using System;
-using Lucky.Home.Serialization;
+﻿using Lucky.Serialization;
 
 // ReSharper disable UnassignedField.Global
 

@@ -52,26 +52,11 @@
     <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Devices\IDeviceManager.cs" />
-    <Compile Include="Serialization\ArraySerializer.cs" />
-    <Compile Include="Serialization\ISerializer.cs" />
-    <Compile Include="Serialization\NoSerializeAttribute.cs" />
-    <Compile Include="Serialization\StringSerializer.cs" />
-    <Compile Include="Serialization\BitConverterSerializer.cs" />
-    <Compile Include="Serialization\BufferUnderrunException.cs" />
-    <Compile Include="Serialization\ByteArraySerializer.cs" />
-    <Compile Include="Serialization\ClassSerializer.cs" />
-    <Compile Include="Serialization\GuidSerializer.cs" />
-    <Compile Include="Serialization\IpAddressSerializer.cs" />
-    <Compile Include="Serialization\SerializableItemSerializer.cs" />
-    <Compile Include="Serialization\TypeSerializer.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\E2EStatLogger.cs" />
     <Compile Include="Services\E2EStatService.cs" />
     <Compile Include="Sinks\SubSink.cs" />
-    <Compile Include="Protocol\TcpClientManager.cs" />
     <Compile Include="Protocol\TcpConnectionFactory.cs" />
-    <Compile Include="Serialization\Twocc.cs" />
-    <Compile Include="Serialization\DynamicString.cs" />
     <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Protocol\INodeManager.cs" />
     <Compile Include="Protocol\NodeManager.cs" />
@@ -82,9 +67,6 @@
     <Compile Include="Protocol\TcpNode.cs" />
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Protocol\HeloMessage.cs" />
-    <Compile Include="Serialization\NetSerializer.cs" />
-    <Compile Include="Serialization\SerializeAsFixedAttribute.cs" />
-    <Compile Include="Serialization\SerializeAsDynAttribute.cs" />
     <Compile Include="Protocol\Server.cs" />
     <Compile Include="Sinks\ISink.cs" />
     <Compile Include="Sinks\SinkBase.cs" />
@@ -93,7 +75,6 @@
     <Compile Include="Protocol\TcpNodeAddress.cs" />
     <Compile Include="ServerEntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\Fourcc.cs" />
     <Compile Include="Sinks\ISystemSink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
   </ItemGroup>

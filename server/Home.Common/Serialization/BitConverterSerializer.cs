@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 // ReSharper disable StaticMemberInGenericType
 
-namespace Lucky.Home.Serialization
+namespace Lucky.Serialization
 {
     class BitConverterSerializer<T> : ByteArraySerializer where T : struct
     {

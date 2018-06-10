@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Lucky.Home.Serialization;
+using Lucky.Serialization;
 using Lucky.Home.Sinks;
 using Lucky.Services;
 using System.Runtime.CompilerServices;
@@ -252,7 +252,7 @@ namespace Lucky.Home.Protocol
 
 
             bool ok;
-            var connection = _tcpConnectionFactory.Create(address.IPEndPoint);
+            var connection = await _tcpConnectionFactory.Create(address.IPEndPoint);
             try
             {
                 // Connecion can be recycled
@@ -274,10 +274,10 @@ namespace Lucky.Home.Protocol
             }
             catch (Exception exc)
             {
-                // Forbicly close the channel
-                _tcpConnectionFactory.Abort(address.IPEndPoint);
                 // Log exc
                 Logger.Exception(exc);
+                // Forbicly close the channel
+                _tcpConnectionFactory.Abort(address.IPEndPoint);
                 ok = false;
             }
             finally
