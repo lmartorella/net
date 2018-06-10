@@ -9,30 +9,36 @@ namespace Lucky.Home.Application
     // ReSharper disable once ClassNeverInstantiated.Global
     public class AppService : ServiceBase
     {
+        private readonly TaskCompletionSource<object> _killDefer = new TaskCompletionSource<object>();
+
         public void Run()
         {
             AppDomain.CurrentDomain.UnhandledException += (o, e) =>
             {
                 Logger.Exception((Exception)e.ExceptionObject);
             };
-
             StartLoop().Wait();
         }
 
         private async Task StartLoop()
         {
-            var defer = new TaskCompletionSource<object>();
             Console.CancelKeyPress += (sender, args) =>
             {
-                Logger.LogStderr("Detected CtrlBreak. Stopping devices...");
-                defer.SetResult(null);
+                Kill("detected CtrlBreak");
                 args.Cancel = true;
             };
-            await defer.Task;
+            await _killDefer.Task;
 
             // Safely stop devices
             await Manager.GetService<DeviceManager>().TerminateAll();
+            //await Manager.GetService<PipeServer>().Close();
             Logger.LogStderr("Exiting.");
+        }
+
+        public void Kill(string reason)
+        {
+            Logger.LogStderr("Server killing: + " + reason + ". Stopping devices...");
+            _killDefer.TrySetResult(null);
         }
     }
 }

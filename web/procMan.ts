@@ -20,11 +20,11 @@ export default class ProcessManager {
             stdio: 'ignore'
         });
 
-        process.on('exit', (code: number, signal: string) => {
+        this.process.once('exit', (code: number, signal: string) => {
             this.log('Server process closed with code ' + code + ", signal " + signal);
         });
 
-        process.on('err', (err) => {
+        this.process.on('err', (err) => {
             this.log('Server process FAIL TO START: ' + err.message);
         });
 
@@ -35,18 +35,20 @@ export default class ProcessManager {
         fs.appendFileSync(this.logPath, msg + '\n');
     }
 
-    public async kill(): Promise<void> {
-        // Send Ctrl+break
-        let deferred;
-        let p = new Promise<void>((resolve, reject) => {
-            deferred = resolve;
+    private async kill(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.process.once('exit', () => {
+                resolve();
+            });
+            //this.process.kill('SIGINT');
+            this.sendMessage({ command: "kill" });
         });
-        this.process.on('exit', () => {
-            deferred();
-            console.log('Home server killed.');
-        });
-        this.process.kill('SIGINT');
-        return p;
+    }
+
+    public async restart(): Promise<void> {
+        await this.kill();
+        console.log('Home server killed. Restarting...');
+        this.start();
     }
 
     public sendMessage(data: any): Promise<string> {

@@ -114,9 +114,9 @@ app.get('/r/logs', ensureLoggedIn(), (req, res) => {
     }
 });
 
-app.get('/r/kill', ensureLoggedIn(), async (req, res) => {
-    await pm.kill();
-    res.send("Killed");
+app.get('/r/restart', ensureLoggedIn(), async (req, res) => {
+    await pm.restart();
+    res.send("Restarted");
 });
 
 app.use('/app', express.static('app'));
