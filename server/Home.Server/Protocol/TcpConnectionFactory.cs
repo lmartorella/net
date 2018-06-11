@@ -44,6 +44,8 @@ namespace Lucky.Home.Protocol
     internal class TcpConnectionFactory : ServiceBase
     {
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(10);
+
         private readonly object _lockObject = new object();
         private Dictionary<IPEndPoint, Connection> _connections = new Dictionary<IPEndPoint, Connection>();
 
@@ -56,11 +58,13 @@ namespace Lucky.Home.Protocol
             private CancellationTokenSource _cancellationToken;
             public IClient Client { get; private set; }
             private readonly ILogger _logger;
+            private readonly DateTime _openTime;
 
             public Connection(IClient client, ILogger logger)
             {
                 Client = client;
                 _logger = logger;
+                _openTime = DateTime.Now;
             }
 
             public void Close()
@@ -94,6 +98,12 @@ namespace Lucky.Home.Protocol
                     }
                 });
 
+                if (DateTime.Now > (_openTime + MAX_LIFE_TIME))
+                {
+                    // Close session
+                    _logger.Log("DEBUG:MaxLive", "EP", Client.EndPoint);
+                    Close();
+                }
                 _semaphore.Release();
             }
         }
@@ -175,13 +185,20 @@ namespace Lucky.Home.Protocol
                             // Connection cannot be made
                             return null;
                         }
+                        // Ok connection working
                         _connections[endPoint] = connection;
                     }
                 }
 
-                // Acquire it
+                // Acquire it outside the lock
                 connection.Acquire();
-            } while (connection.Client.IsClosed);
+                // The recycled connection in the map can be closed. In that case remove it
+                if (connection.Client.IsClosed)
+                {
+                    _connections.Remove(endPoint);
+                    connection = null;
+                }
+            } while (connection == null);
 
             // Ok the connection is free to use
             return new ConnectionSession(connection.Client, closeReason =>
