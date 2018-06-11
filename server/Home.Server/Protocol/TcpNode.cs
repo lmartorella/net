@@ -236,7 +236,7 @@ namespace Lucky.Home.Protocol
             children.Select(c => _lastKnownChildren[c.Address.Index] = c);
         }
 
-        private async Task<bool> OpenNodeSession(Func<ITcpConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
+        private async Task<bool> OpenNodeSession(Func<IConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
         {
             if (IsZombie)
             {
@@ -250,38 +250,42 @@ namespace Lucky.Home.Protocol
                 address = Address.Clone();
             }
 
-            bool ok;
-            var connection = await _tcpConnectionFactory.GetConnection(address.IPEndPoint);
-            try
+            bool ok = false;
+            var connection = _tcpConnectionFactory.GetConnection(address.IPEndPoint);
+            // Connection can be made?
+            if (connection != null)
             {
-                // Connecion can be recycled, do selection
-                await connection.Write(new SelectNodeMessage { Index = (short)address.Index });
-                DateTime dt = DateTime.Now;
-                ok = await handler(connection, address);
-                if (ok)
+                try
                 {
-                    await connection.Write(new CloseMessage());
-                    var ack = await connection.Read<CloseMessageResponse>();
-                    if (ack == null || ack.Ack != 0x1e)
+                    // Connecion can be recycled, do selection
+                    await connection.Write(new SelectNodeMessage { Index = (short)address.Index });
+                    DateTime dt = DateTime.Now;
+                    ok = await handler(connection, address);
+                    if (ok)
                     {
-                        // Forbicly close the channel
-                        connection.Close("noclose");
-                        Logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
-                        ok = false;
+                        await connection.Write(new CloseMessage());
+                        var ack = await connection.Read<CloseMessageResponse>();
+                        if (ack == null || ack.Ack != 0x1e)
+                        {
+                            // Forbicly close the channel
+                            connection.Close("noclose");
+                            Logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
+                            ok = false;
+                        }
                     }
                 }
-            }
-            catch (Exception exc)
-            {
-                // Log exc
-                Logger.Exception(exc);
-                // Forbicly close the channel
-                connection.Close("exc");
-                ok = false;
-            }
-            finally
-            {
-                connection.Dispose();
+                catch (Exception exc)
+                {
+                    // Log exc
+                    Logger.Exception(exc);
+                    // Forbicly close the channel
+                    connection.Close("exc");
+                    ok = false;
+                }
+                finally
+                {
+                    connection.Dispose();
+                }
             }
 
             if (!ok)

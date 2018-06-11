@@ -26,9 +26,10 @@ namespace Lucky.Home.Protocol
     }
 
     /// <summary>
-    /// Interface of a tcp client wrapper. Dispose after each connection session.
+    /// Interface of a tcp client wrapper. To dispose after each connection session.
+    /// The underlying TCP session can be recycled.
     /// </summary>
-    internal interface ITcpConnectionSession : IConnectionReader, IConnectionWriter, IDisposable
+    internal interface IConnectionSession : IConnectionReader, IConnectionWriter, IDisposable
     {
         /// <summary>
         /// Call this when the underneath tcp client socket should be closed instead of being reused for other connections (e.g. after errors)
@@ -38,43 +39,38 @@ namespace Lucky.Home.Protocol
     }
 
     /// <summary>
-    /// Manager for <see cref="ITcpConnectionSession"/>
+    /// Manager for <see cref="IConnectionSession"/>
     /// </summary>
     internal class TcpConnectionFactory : ServiceBase
     {
-        private readonly object _lockObject = new object();
-
-        /// <summary>
-        /// TCP clients (Cached when not used)
-        /// </summary>
-        private readonly Dictionary<IPEndPoint, IClient> _clients = new Dictionary<IPEndPoint, IClient>();
-
-        /// <summary>
-        /// Active client connections
-        /// </summary>
-        private readonly Dictionary<IPEndPoint, ClientMutex> _mutexes = new Dictionary<IPEndPoint, ClientMutex>();
-
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
+        private readonly object _lockObject = new object();
+        private Dictionary<IPEndPoint, Connection> _connections = new Dictionary<IPEndPoint, Connection>();
 
-        private class ClientMutex
+        /// <summary>
+        /// Alive TCP connection
+        /// </summary>
+        private class Connection
         {
-            private Action<string> _abortFunction;
             private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
             private CancellationTokenSource _cancellationToken;
+            public IClient Client { get; private set; }
+            private readonly ILogger _logger;
 
-            public ClientMutex(Action<string> abortFunction)
+            public Connection(IClient client, ILogger logger)
             {
-                _abortFunction = abortFunction;
+                Client = client;
+                _logger = logger;
             }
 
-            public void Dispose()
+            public void Close()
             {
-                //_semaphore.Dispose();
+                Client.Close();
             }
 
-            public async Task AcquireAsync()
+            public void Acquire()
             {
-                await _semaphore.WaitAsync();
+                _semaphore.Wait();
                 // Ok, the client is alive
                 if (_cancellationToken != null)
                 {
@@ -85,6 +81,7 @@ namespace Lucky.Home.Protocol
 
             public void Release()
             {
+                // Create new cancellation token
                 _cancellationToken = new CancellationTokenSource();
 
                 // Start timeout auto-disposal timer                {
@@ -92,37 +89,26 @@ namespace Lucky.Home.Protocol
                 {
                     if (!t.IsCanceled)
                     {
-                        _abortFunction("grace");
+                        _logger.Log("DEBUG:GraceTime", "EP", Client.EndPoint);
+                        Close();
                     }
                 });
 
-                try
-                {
-                    _semaphore.Release();
-                }
-                catch (ObjectDisposedException)
-                {
-
-                }
+                _semaphore.Release();
             }
         }
 
-        /// <summary>
-        /// Can last less than a TcpService.IClient instance, but not more, spanning across multiple clients.
-        /// </summary>
-        private class TcpConnection : ITcpConnectionSession
+        private class ConnectionSession : IConnectionSession
         {
-            private readonly ClientMutex _mutex;
-            private readonly IPEndPoint _endPoint;
-            private readonly TcpConnectionFactory _owner;
-            private IClient _client;
             private bool _disposed;
+            private IClient _client;
+            private readonly Action<string> _release;
+            private string _closedReason;
 
-            public TcpConnection(IPEndPoint endPoint, ClientMutex mutex, TcpConnectionFactory clientManager)
+            public ConnectionSession(IClient client, Action<string> release)
             {
-                _endPoint = endPoint;
-                _mutex = mutex;
-                _owner = clientManager;
+                _client = client;
+                _release = release;
             }
 
             /// <summary>
@@ -133,117 +119,106 @@ namespace Lucky.Home.Protocol
                 if (!_disposed)
                 {
                     _disposed = true;
-                    _mutex.Release();
-                    _client = null;
+                    _release(_closedReason);
                 }
             }
 
-            private IClient GetClient()
+            private bool IsClosed()
             {
-                if (_disposed)
-                {
-                    return null;
-                }
-                // Lazy creation
-                if (_client == null)
-                {
-                    _client = _owner.GetClient(_endPoint);
-                    if (_client == null || _client.IsClosed)
-                    {
-                        Dispose();
-                    }
-                }
-                else if (_client.IsClosed)
-                {
-                    Dispose();
-                    _client = null;
-                }
-                return _client;
+                return _disposed || _client.IsClosed;
             }
 
             public Task Write<T>(T data)
             {
-                return (GetClient()?.Write(data, true)) ?? Task.CompletedTask;
+                if (IsClosed())
+                {
+                    return Task.CompletedTask;
+                }
+                else
+                {
+                    return _client.Write(data, true);
+                }
             }
 
             public Task<T> Read<T>()
             {
-                return (GetClient()?.Read<T>()) ?? Task.FromResult(default(T));
-            }
-        }
-
-        public Task<ITcpConnectionSession> GetConnection(IPEndPoint endPoint)
-        {
-            return Create(endPoint);
-        }
-
-        private async Task<ITcpConnectionSession> Create(IPEndPoint endPoint)
-        {
-            ClientMutex mutex;
-            lock (_lockObject)
-            {
-                if (!_mutexes.TryGetValue(endPoint, out mutex))
+                if (IsClosed())
                 {
-                    mutex = new ClientMutex(reason => Abort(endPoint, "mutex+" + reason));
-                    _mutexes[endPoint] = mutex;
+                    return Task.FromResult(default(T));
+                }
+                else
+                {
+                    return _client.Read<T>();
                 }
             }
-            // Acquire mutex
-            await mutex.AcquireAsync();
-            return new TcpConnection(endPoint, mutex, this);
+
+            public void Close(string reason)
+            {
+                _closedReason = reason;
+            }
         }
 
-        private IClient GetClient(IPEndPoint endPoint)
+        public IConnectionSession GetConnection(IPEndPoint endPoint)
         {
-            lock (_lockObject)
+            Connection connection;
+            // Spin, possible to receive a closed session when in queue
+            do
             {
-                IClient client;
-                if (!_clients.TryGetValue(endPoint, out client))
+                // Check for existing connection
+                lock (_lockObject)
                 {
-                    // Destroy the channel
-                    DateTime start = DateTime.Now;
-                    try
+                    if (!_connections.TryGetValue(endPoint, out connection))
                     {
-                        client = Manager.GetService<TcpService>().CreateClient(endPoint, reason => Abort(endPoint, "createcl+" + reason));
-                        _clients[endPoint] = client;
-
-                        Logger.Log("DEBUG:NewClient", "EP", endPoint);
-                    }
-                    catch (SocketException exc)
-                    {
-                        TimeSpan elapsed = DateTime.Now - start;
-                        // Cannot connect
-                        Logger.Log("Cannot Connect", "EP", endPoint, "code:exc", exc.ErrorCode + ":" + exc.Message, "elapsed(ms)", elapsed.TotalMilliseconds);
-                        client = null;
+                        connection = CreateConnection(endPoint);
+                        if (connection == null)
+                        {
+                            // Connection cannot be made
+                            return null;
+                        }
+                        _connections[endPoint] = connection;
                     }
                 }
-                return client;
-            }
+
+                // Acquire it
+                connection.Acquire();
+            } while (connection.Client.IsClosed);
+
+            // Ok the connection is free to use
+            return new ConnectionSession(connection.Client, closeReason =>
+            {
+                lock (_lockObject)
+                {
+                    connection.Release();
+                    if (closeReason != null)
+                    {
+                        Logger.Log("Close", "reason", closeReason);
+                        connection.Close();
+                        _connections.Remove(endPoint);
+                    }
+                }
+            });
         }
 
-        private void AbortToRemove(IPEndPoint endPoint, string reason)
+        /// <summary>
+        /// Can return null if connection cannot be established
+        /// </summary>
+        private Connection CreateConnection(IPEndPoint endPoint)
         {
-            IClient client = null;
-            lock (_lockObject)
+            IClient client;
+            // Destroy the channel
+            DateTime start = DateTime.Now;
+            try
             {
-                if (_clients.TryGetValue(endPoint, out client))
-                {
-                    // Destroy the channel
-                    _clients.Remove(endPoint);
-
-                    Logger.Log("DEBUG:DelClient", "EP", endPoint, "reason", reason);
-                }
-                ClientMutex mutex = null;
-                if (_mutexes.TryGetValue(endPoint, out mutex))
-                {
-                    // Remove the mutex
-                    _mutexes.Remove(endPoint);
-                    mutex.Dispose();
-                }
+                client = Manager.GetService<TcpService>().CreateClient(endPoint);
+                Logger.Log("DEBUG:NewClient", "EP", endPoint);
+                return new Connection(client, Logger);
             }
-            if (client != null)
+            catch (SocketException exc)
             {
-                client.Close();
+                TimeSpan elapsed = DateTime.Now - start;
+                // Cannot connect
+                Logger.Log("Cannot Connect", "EP", endPoint, "code:exc", exc.ErrorCode + ":" + exc.Message, "elapsed(ms)", elapsed.TotalMilliseconds);
+                return null;
             }
         }
     }

@@ -12,6 +12,8 @@ namespace Lucky.Net
     {
         void Close();
         bool IsClosed { get; }
+        IPEndPoint EndPoint { get; }
+
         Task Write<T>(T data, bool flush);
         Task<T> Read<T>();
     }
@@ -73,14 +75,15 @@ namespace Lucky.Net
         {
             private NetworkStream _stream;
             private readonly ILogger _logger;
-            private readonly TcpClient _tcpClient;
-            private readonly Action<string> _abort;
+            private TcpClient _tcpClient;
+            private readonly object _lockObject = new object();
+            public IPEndPoint EndPoint { get; private set; }
 
-            public Client(TcpClient tcpClient, TcpService owner, Action<string> abort)
+            public Client(TcpClient tcpClient, IPEndPoint endPoint, ILogger logger)
             {
-                _logger = owner.Logger;
+                _logger = logger;
                 _tcpClient = tcpClient;
-                _abort = abort;
+                EndPoint = endPoint;
                 _stream = _tcpClient.GetStream();
 
                 // Make client to terminate if read stalls for more than 5 seconds (e.g. sink dead)
@@ -91,20 +94,24 @@ namespace Lucky.Net
             {
                 get
                 {
-                    lock (_tcpClient)
+                    lock (_lockObject)
                     {
+                        if (_tcpClient == null)
+                        {
+                            return true;
+                        }
                         if (!_tcpClient.Connected)
                         {
                             Close();
                         }
+                        return _stream == null;
                     }
-                    return _stream == null;
                 }
             }
 
             public void Close()
             {
-                lock (_tcpClient)
+                lock (_lockObject)
                 {
                     if (_stream != null)
                     {
@@ -115,6 +122,11 @@ namespace Lucky.Net
                             stream.Dispose();
                         });
                         _stream = null;
+                    }
+                    if (_tcpClient != null)
+                    {
+                        _tcpClient.Dispose();
+                        _tcpClient = null;
                     }
                 }
             }
@@ -134,14 +146,14 @@ namespace Lucky.Net
                     Exception src = exc.GetBaseException();
                     if (src is SocketException || src is IOException)
                     {
-                        _logger.Log(src.GetType().Name, "exc", exc.Message, "write", typeof(T).Name);
+                        _logger.Log("Close:" + src.GetType().Name, "exc", exc.Message, "write", typeof(T).Name);
                     }
                     else
                     {
                         _logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
                     }
                     // Destroy the channel
-                    _abort("writeexc");
+                    Close();
                 }
             }
 
@@ -156,27 +168,27 @@ namespace Lucky.Net
                     Exception src = exc.GetBaseException();
                     if (src is SocketException || src is IOException)
                     {
-                        _logger.Log(src.GetType().Name, "exc", exc.Message, "read", typeof(T).Name);
+                        _logger.Log("Close:" + src.GetType().Name, "exc", exc.Message, "read", typeof(T).Name);
                     }
                     else
                     {
                         _logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
                     }
                     // Destroy the channel
-                    _abort("readexc");
+                    Close();
                     return default(T);
                 }
             }
         }
 
-        public IClient CreateClient(IPEndPoint endPoint, Action<string> abortHandler)
+        public IClient CreateClient(IPEndPoint endPoint)
         {
             var tcpClient = new TcpClient();
             tcpClient.Connect(endPoint);
             tcpClient.SendTimeout = 1;
             tcpClient.ReceiveTimeout = 1;
 
-            return new Client(tcpClient, this, abortHandler);
+            return new Client(tcpClient, endPoint, Logger);
         }
     }
 }
