@@ -6,7 +6,7 @@ import * as compression from 'compression';
 import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
-import { gardenCfg, binDir, etcDir } from './settings';
+import { binDir, etcDir } from './settings';
 import ProcessManager from './procMan';
 
 let pm = new ProcessManager(binDir, etcDir, 'Home.Server.App.exe');
@@ -81,8 +81,9 @@ app.get('/r/powToday', (req, res) => {
     }, 1000);
 });
 
-app.get('/r/gardenCfg', ensureLoggedIn(), (req, res) => {
-    res.send(gardenCfg);
+app.get('/r/gardenStatus', ensureLoggedIn(), async (req, res) => {
+    let resp = await pm.sendMessage({ command: "garden.getStatus" });
+    res.send(resp);
 });
 
 app.post('/r/gardenStart', ensureLoggedIn(), async (req, res) => {

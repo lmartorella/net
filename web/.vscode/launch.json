@@ -10,7 +10,7 @@
             "request": "launch",
             "name": "Avvia programma",
             "program": "${workspaceFolder}/server.js",
-            "args": [
+            "#args": [
                 "C:\\Users\\lucia\\AppData\\Roaming\\Home"
             ]
         }

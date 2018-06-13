@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "sourceMap": true,
-        "module": "amd"
+        "module": "amd",
+        "target": "es6"
     },
     "files": [
         "garden.ts",

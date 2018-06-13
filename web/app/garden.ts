@@ -1,5 +1,8 @@
-interface IGardenCfgResponse {
-    zones: string[];
+interface IGardenStatusResponse {
+    config: {
+        zones: string[];
+    };
+    status: string;
 }
 
 interface IGardenStartStopResponse {
@@ -11,15 +14,17 @@ class GardenController {
     public message: string;
     public error: string;
     private zones: { name: string, time: number }[];
+    private status: string;
     
     constructor(private $http: ng.IHttpService, private $q: ng.IQService) {
         this.zones = [];
         //document.title = "Garden " + String.fromCharCode(0x1F33B);
 
         // Fetch zones
-        this.$http.get<IGardenCfgResponse>("/r/gardenCfg").then(resp => {
-            if (resp.status == 200) {
-                this.zones = resp.data.zones.map(zone => ({ name: zone, time: 0 }));
+        this.$http.get<IGardenStatusResponse>("/r/gardenStatus").then(resp => {
+            if (resp.status == 200 && resp.data) {
+                this.zones = resp.data.config && resp.data.config.zones.map(zone => ({ name: zone, time: 0 }));
+                this.status = resp.data.status || 'NOT CONFIGURED';
             } else {
                 this.error = "Cannot fetch cfg";
             }

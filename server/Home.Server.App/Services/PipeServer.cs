@@ -33,10 +33,16 @@ namespace Lucky.Home.Services
             public string Error { get; set; }
 
             /// <summary>
-            /// List of programs (if requested)
+            /// Configuration
             /// </summary>
-            [DataMember(Name = "program")]
-            public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
+            [DataMember(Name = "config")]
+            public Configuration Configuration { get; set; }
+
+            /// <summary>
+            /// Status
+            /// </summary>
+            [DataMember(Name = "status")]
+            public string Status{ get; set; }
         }
 
         public class MessageEventArgs : EventArgs

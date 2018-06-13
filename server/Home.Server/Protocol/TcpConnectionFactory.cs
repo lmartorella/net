@@ -44,7 +44,7 @@ namespace Lucky.Home.Protocol
     internal class TcpConnectionFactory : ServiceBase
     {
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(10);
+        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(15);
 
         private readonly object _lockObject = new object();
         private Dictionary<IPEndPoint, Connection> _connections = new Dictionary<IPEndPoint, Connection>();
@@ -101,7 +101,7 @@ namespace Lucky.Home.Protocol
                 if (DateTime.Now > (_openTime + MAX_LIFE_TIME))
                 {
                     // Close session
-                    _logger.Log("DEBUG:MaxLive", "EP", Client.EndPoint);
+                    //_logger.Log("DEBUG:MaxLive", "EP", Client.EndPoint);
                     Close();
                 }
                 _semaphore.Release();
@@ -227,7 +227,7 @@ namespace Lucky.Home.Protocol
             try
             {
                 client = Manager.GetService<TcpService>().CreateClient(endPoint);
-                Logger.Log("DEBUG:NewClient", "EP", endPoint);
+                //Logger.Log("DEBUG:NewClient", "EP", endPoint);
                 return new Connection(client, Logger);
             }
             catch (SocketException exc)

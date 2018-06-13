@@ -2,7 +2,7 @@
   "name": "home.web",
   "version": "1.0.0",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && cd app && tsc"
   },
   "dependencies": {
     "@types/angular": "^1.6.45",
