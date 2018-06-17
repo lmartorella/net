@@ -1,5 +1,4 @@
-﻿using Lucky.Home.Model;
-using Lucky.Net;
+﻿using Lucky.Net;
 using Lucky.Services;
 using System;
 using System.Runtime.Serialization;
@@ -49,6 +48,7 @@ namespace Lucky.Home.Services
         {
             public WebRequest Request;
             public WebResponse Response;
+            public bool CloseServer;
         }
 
         public event EventHandler<MessageEventArgs> Message;
@@ -60,7 +60,7 @@ namespace Lucky.Home.Services
             {
                 var args = new MessageEventArgs() { Request = req, Response = new WebResponse() };
                 Message?.Invoke(this, args);
-                return Task.FromResult(args.Response);
+                return Task.FromResult(Tuple.Create(args.Response, args.CloseServer));
             };
             server.Start();
         }

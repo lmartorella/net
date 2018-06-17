@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lucky.Net
@@ -20,11 +21,12 @@ namespace Lucky.Net
             _respSer = new DataContractJsonSerializer(typeof(TResp));
         }
 
-        public Func<TReq, Task<TResp>> ManageRequest { get; set; }
+        public Func<TReq, Task<Tuple<TResp, bool>>> ManageRequest { get; set; }
 
         public async Task Start()
         {
-            while (true)
+            bool quitLoop = false;
+            while (!quitLoop)
             {
                 NamedPipeServerStream stream = null;
                 try
@@ -41,12 +43,14 @@ namespace Lucky.Net
                     }
 
                     var resp = await ManageRequest(req);
-                    _respSer.WriteObject(stream, resp);
+                    _respSer.WriteObject(stream, resp.Item1);
                     // New line
                     await stream.WriteAsync(new byte[] { 10, 13 }, 0, 2);
                     await stream.FlushAsync();
                     stream.WaitForPipeDrain();
                     stream.Disconnect();
+
+                    quitLoop = resp.Item2;
                 }
                 finally
                 {

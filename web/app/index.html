@@ -10,7 +10,7 @@
   <link href="style.css" rel="stylesheet"/>
 
 </head>
-<body ng-app="solar" ng-controller="solarCtrl as ctrl" ng-cloak>
+<body ng-app="solar" ng-controller="solarCtrl as ctrl" ng-cloak class="solar-body" >
   <div class="container">
     <p><span class="header" ng-class="ctrl.firstLineClass"> {{ctrl.firstLine}} </span> 
        <a ng-click="ctrl.drawDays(1)" href="#">andamento oggi</a>
@@ -30,7 +30,6 @@
 
     <p class="bot"> 
       <span ng-show="ctrl.pvData.currentTsTime">Aggiornato alle {{ctrl.pvData.currentTsTime}} del {{ctrl.pvData.currentTsDate}}.</span> 
-      <a href="/r/logs" download onerror="onAuthError()"> Logs</a>
     </p>
   </div>
 </body>

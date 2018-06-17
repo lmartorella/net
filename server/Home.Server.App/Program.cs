@@ -4,6 +4,7 @@ using Lucky.Home.Sinks;
 using System.Reflection;
 using Lucky.Home.Application;
 using Lucky.Home.Services;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Lib
 {
@@ -26,7 +27,13 @@ namespace Lucky.Home.Lib
             {
                 if (e.Request.Command == "kill")
                 {
-                    Manager.GetService<HomeApp>().Kill("killed by parent process");
+                    e.CloseServer = true;
+                    e.Response.Status= "Closed";
+
+                    Task.Delay(1500).ContinueWith(t =>
+                    {
+                        Manager.GetService<HomeApp>().Kill("killed by parent process");
+                    });
                 }
             };
 

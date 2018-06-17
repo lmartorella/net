@@ -115,8 +115,33 @@ app.get('/r/logs', ensureLoggedIn(), (req, res) => {
     }
 });
 
+app.get('/r/halt', ensureLoggedIn(), async (req, res) => {
+    try {
+        await pm.halt();
+    } catch (err) {
+        res.send("ERR: " + err.message);
+        return;
+    }
+    res.send("Halted");
+});
+
+app.get('/r/start', ensureLoggedIn(), async (req, res) => {
+    try {
+        await pm.start();
+    } catch (err) {
+        res.send("ERR: " + err.message);
+        return;
+    }
+    res.send("Starterd");
+});
+
 app.get('/r/restart', ensureLoggedIn(), async (req, res) => {
-    await pm.restart();
+    try {
+        await pm.restart();
+    } catch (err) {
+        res.send("ERR: " + err.message);
+        return;
+    }
     res.send("Restarted");
 });
 
