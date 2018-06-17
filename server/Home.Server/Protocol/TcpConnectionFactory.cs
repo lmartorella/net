@@ -91,7 +91,7 @@ namespace Lucky.Home.Protocol
                 // Start timeout auto-disposal timer                {
                 Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(t =>
                 {
-                    if (!t.IsCanceled)
+                    if (!t.IsCanceled && !Client.IsClosed)
                     {
                         _logger.Log("DEBUG:GraceTime", "EP", Client.EndPoint);
                         Close();
@@ -192,11 +192,14 @@ namespace Lucky.Home.Protocol
 
                 // Acquire it outside the lock
                 connection.Acquire();
-                // The recycled connection in the map can be closed. In that case remove it
-                if (connection.Client.IsClosed)
+                lock (_lockObject)
                 {
-                    _connections.Remove(endPoint);
-                    connection = null;
+                    // The recycled connection in the map can be closed. In that case remove it
+                    if (connection.Client.IsClosed)
+                    {
+                        _connections.Remove(endPoint);
+                        connection = null;
+                    }
                 }
             } while (connection == null);
 
@@ -210,6 +213,9 @@ namespace Lucky.Home.Protocol
                     {
                         Logger.Log("Close", "reason", closeReason);
                         connection.Close();
+                    }
+                    if (connection.Client.IsClosed)
+                    {
                         _connections.Remove(endPoint);
                     }
                 }
