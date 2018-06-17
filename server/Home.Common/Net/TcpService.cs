@@ -10,7 +10,7 @@ namespace Lucky.Net
 {
     public interface IClient
     {
-        void Close();
+        void Close(bool flush);
         bool IsClosed { get; }
         IPEndPoint EndPoint { get; }
 
@@ -102,30 +102,36 @@ namespace Lucky.Net
                         }
                         if (!_tcpClient.Connected)
                         {
-                            Close();
+                            Close(false);
                         }
                         return _stream == null;
                     }
                 }
             }
 
-            public void Close()
+            public void Close(bool flush)
             {
                 lock (_lockObject)
                 {
                     if (_stream != null)
                     {
                         var stream = _stream;
-                        _stream.FlushAsync().ContinueWith(t1 =>
+                        var tcpClient = _tcpClient;
+                        if (flush)
                         {
-                            stream.Close();
+                            _stream.FlushAsync().ContinueWith(t1 =>
+                            {
+                                stream.Close();
+                                stream.Dispose();
+                                tcpClient?.Dispose();
+                            });
+                        }
+                        else
+                        {
                             stream.Dispose();
-                        });
+                            tcpClient.Dispose();
+                        }
                         _stream = null;
-                    }
-                    if (_tcpClient != null)
-                    {
-                        _tcpClient.Dispose();
                         _tcpClient = null;
                     }
                 }
@@ -153,7 +159,7 @@ namespace Lucky.Net
                         _logger.Exception(new InvalidDataException("Exception writing object of type " + typeof(T).Name, exc));
                     }
                     // Destroy the channel
-                    Close();
+                    Close(false);
                 }
             }
 
@@ -175,7 +181,7 @@ namespace Lucky.Net
                         _logger.Exception(new InvalidDataException("Exception reading object of type " + typeof(T).Name, exc));
                     }
                     // Destroy the channel
-                    Close();
+                    Close(false);
                     return default(T);
                 }
             }

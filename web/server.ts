@@ -132,7 +132,7 @@ app.get('/r/start', ensureLoggedIn(), async (req, res) => {
         res.send("ERR: " + err.message);
         return;
     }
-    res.send("Starterd");
+    res.send("Started");
 });
 
 app.get('/r/restart', ensureLoggedIn(), async (req, res) => {

@@ -146,6 +146,7 @@ namespace Lucky.Home.Devices
 
         public void Load()
         {
+            Logger.Log("==== START ====");
             LoadState(State.Descriptors);
         }
 

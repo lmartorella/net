@@ -268,7 +268,7 @@ namespace Lucky.Home.Protocol
                         if (ack == null || ack.Ack != 0x1e)
                         {
                             // Forbicly close the channel
-                            connection.Close("noclose");
+                            connection.Abort("noclose");
                             Logger.Log("Missing CLOS response, elapsed: " + (DateTime.Now - dt).TotalMilliseconds.ToString("0.00") + "ms, in " + context);
                             ok = false;
                         }
@@ -279,7 +279,7 @@ namespace Lucky.Home.Protocol
                     // Log exc
                     Logger.Exception(exc);
                     // Forbicly close the channel
-                    connection.Close("exc");
+                    connection.Abort("exc");
                     ok = false;
                 }
                 finally

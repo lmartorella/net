@@ -35,7 +35,7 @@ namespace Lucky.Home.Protocol
         /// Call this when the underneath tcp client socket should be closed instead of being reused for other connections (e.g. after errors)
         /// </summary>
         /// <param name="reason">For logging purpose</param>
-        void Close(string reason);
+        void Abort(string reason);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace Lucky.Home.Protocol
     internal class TcpConnectionFactory : ServiceBase
     {
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(15);
+        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(20);
 
         private readonly object _lockObject = new object();
         private Dictionary<IPEndPoint, Connection> _connections = new Dictionary<IPEndPoint, Connection>();
@@ -67,9 +67,9 @@ namespace Lucky.Home.Protocol
                 _openTime = DateTime.Now;
             }
 
-            public void Close()
+            public void Close(bool flush)
             {
-                Client.Close();
+                Client.Close(flush);
             }
 
             public void Acquire()
@@ -93,16 +93,16 @@ namespace Lucky.Home.Protocol
                 {
                     if (!t.IsCanceled && !Client.IsClosed)
                     {
-                        _logger.Log("DEBUG:GraceTime", "EP", Client.EndPoint);
-                        Close();
+                        _logger.Log("GraceTime", "EP", Client.EndPoint);
+                        Close(false);
                     }
                 });
 
                 if (DateTime.Now > (_openTime + MAX_LIFE_TIME))
                 {
                     // Close session
-                    //_logger.Log("DEBUG:MaxLive", "EP", Client.EndPoint);
-                    Close();
+                    _logger.Log("DEBUG:MaxLive", "EP", Client.EndPoint);
+                    Close(true);
                 }
                 _semaphore.Release();
             }
@@ -112,13 +112,13 @@ namespace Lucky.Home.Protocol
         {
             private bool _disposed;
             private IClient _client;
-            private readonly Action<string> _release;
-            private string _closedReason;
+            private readonly Action<string> _abort;
+            private string _abortReason;
 
-            public ConnectionSession(IClient client, Action<string> release)
+            public ConnectionSession(IClient client, Action<string> abort)
             {
                 _client = client;
-                _release = release;
+                _abort = abort;
             }
 
             /// <summary>
@@ -129,7 +129,7 @@ namespace Lucky.Home.Protocol
                 if (!_disposed)
                 {
                     _disposed = true;
-                    _release(_closedReason);
+                    _abort(_abortReason);
                 }
             }
 
@@ -162,20 +162,20 @@ namespace Lucky.Home.Protocol
                 }
             }
 
-            public void Close(string reason)
+            public void Abort(string reason)
             {
-                _closedReason = reason;
+                _abortReason = reason;
             }
         }
 
         public IConnectionSession GetConnection(IPEndPoint endPoint)
         {
             Connection connection;
-            // Spin, possible to receive a closed session when in queue
-            do
+            // Check for existing connection
+            lock (_lockObject)
             {
-                // Check for existing connection
-                lock (_lockObject)
+                // Spin, possible to receive a closed session when in queue
+                do
                 {
                     if (!_connections.TryGetValue(endPoint, out connection))
                     {
@@ -188,31 +188,29 @@ namespace Lucky.Home.Protocol
                         // Ok connection working
                         _connections[endPoint] = connection;
                     }
-                }
 
-                // Acquire it outside the lock
-                connection.Acquire();
-                lock (_lockObject)
-                {
                     // The recycled connection in the map can be closed. In that case remove it
                     if (connection.Client.IsClosed)
                     {
                         _connections.Remove(endPoint);
                         connection = null;
                     }
-                }
-            } while (connection == null);
+                } while (connection == null);
+            }
+
+            // Acquire it outside the lock
+            connection.Acquire();
 
             // Ok the connection is free to use
-            return new ConnectionSession(connection.Client, closeReason =>
+            return new ConnectionSession(connection.Client, abortReason =>
             {
                 lock (_lockObject)
                 {
                     connection.Release();
-                    if (closeReason != null)
+                    if (abortReason != null)
                     {
-                        Logger.Log("Close", "reason", closeReason);
-                        connection.Close();
+                        Logger.Log("Close", "reason", abortReason);
+                        connection.Close(false);
                     }
                     if (connection.Client.IsClosed)
                     {
@@ -233,7 +231,7 @@ namespace Lucky.Home.Protocol
             try
             {
                 client = Manager.GetService<TcpService>().CreateClient(endPoint);
-                //Logger.Log("DEBUG:NewClient", "EP", endPoint);
+                Logger.Log("DEBUG:NewClient", "EP", endPoint);
                 return new Connection(client, Logger);
             }
             catch (SocketException exc)
