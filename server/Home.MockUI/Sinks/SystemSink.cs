@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Lucky.Home;
 using Lucky.Services;
 
@@ -78,9 +77,19 @@ namespace Lucky.HomeMock.Sinks
 
         public override void Read(BinaryReader reader)
         {
-            // Reset EXC reason
-            ResetReason = ResetReason.None;
-            ExcMsg = null;
+            byte command = reader.ReadByte();
+            switch (command)
+            {
+                case 1:
+                    // Reset
+                    Log("Reset!");
+                    break;
+                case 2:
+                    // Reset EXC reason
+                    ResetReason = ResetReason.None;
+                    ExcMsg = null;
+                    break;
+            }
         }
 
         public override void Write(BinaryWriter writer)

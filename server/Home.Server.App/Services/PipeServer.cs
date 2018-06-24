@@ -42,6 +42,12 @@ namespace Lucky.Home.Services
             /// </summary>
             [DataMember(Name = "status")]
             public string Status{ get; set; }
+
+            /// <summary>
+            /// For gardem
+            /// </summary>
+            [DataMember(Name = "online")]
+            public bool Online { get; set; }
         }
 
         public class MessageEventArgs : EventArgs

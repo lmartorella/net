@@ -2,7 +2,8 @@ interface IGardenStatusResponse {
     config: {
         zones: string[];
     };
-    status: string;
+    online: boolean;
+    configured: boolean;
 }
 
 interface IGardenStartStopResponse {
@@ -15,16 +16,17 @@ class GardenController {
     public error: string;
     private zones: { name: string, time: number }[];
     private status: string;
-    
+    public disableButton = true;
+
     constructor(private $http: ng.IHttpService, private $q: ng.IQService) {
         this.zones = [];
-        //document.title = "Garden " + String.fromCharCode(0x1F33B);
-
+    
         // Fetch zones
         this.$http.get<IGardenStatusResponse>("/r/gardenStatus").then(resp => {
             if (resp.status == 200 && resp.data) {
                 this.zones = resp.data.config && resp.data.config.zones.map(zone => ({ name: zone, time: 0 }));
-                this.status = resp.data.status || 'NOT CONFIGURED';
+                this.status =  resp.data.online ? 'Online' : (resp.data.config ? 'OFFLINE' : 'NOT CONFIGURED');
+                this.disableButton = false;
             } else {
                 this.error = "Cannot fetch cfg";
             }
@@ -34,6 +36,7 @@ class GardenController {
     }
 
     stop() {
+        this.disableButton = true;
         this.$http.post<IGardenStartStopResponse>("/r/gardenStop", "").then(resp => {
             if (resp.status == 200) {
                 if (resp.data.error) {
@@ -50,6 +53,7 @@ class GardenController {
     }
 
     start() {
+        this.disableButton = true;
         var body = this.zones.map(zone => new Number(zone.time));
         this.$http.post<IGardenStartStopResponse>("/r/gardenStart", JSON.stringify(body)).then(resp => {
             if (resp.status == 200) {

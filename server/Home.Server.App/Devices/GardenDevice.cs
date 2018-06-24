@@ -107,10 +107,11 @@ namespace Lucky.Home.Devices
                 switch (e.Request.Command)
                 {
                     case "garden.getStatus":
-                        e.Response.Status = IsFullOnline ? "Online" : "OFFLINE";
+                        e.Response.Online = IsFullOnline;
                         e.Response.Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames };
                         break;
                     case "garden.setImmediate":
+                        Logger.Log("setImmediate", "zones", e.Request.ImmediateZones);
                         e.Response.Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" });
                         break;
                     case "garden.stop":

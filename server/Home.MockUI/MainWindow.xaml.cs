@@ -46,10 +46,6 @@ namespace Lucky.HomeMock
                     DisplayBox.Text = args.Item;
                 });
             };
-            _gardenSink.LogLine += (sender, args) =>
-            {
-                LogLine(args.Item, false);
-            };
             ClearLogCommand = new UiCommand(() =>
             {
                 LogBox.Clear();
@@ -70,7 +66,17 @@ namespace Lucky.HomeMock
             controlPort.StartServer(_cancellationTokenSrc.Token);
             _childSystemSink = new SystemSink(true);
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
-            controlPort.InitSinks(new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink, _gardenSink }, new[] { _childSystemSink }, HeloSender);
+
+            var sinks = new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink, _gardenSink };
+            controlPort.InitSinks(sinks, new[] { _childSystemSink }, HeloSender);
+
+            foreach (var sink in sinks)
+            {
+                sink.LogLine += (sender, args) =>
+                {
+                    LogLine(args.Item, false);
+                };
+            }
 
             Manager.GetService<GuiLoggerFactory>().Register(this);
 

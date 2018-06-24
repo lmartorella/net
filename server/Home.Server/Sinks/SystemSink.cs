@@ -111,9 +111,9 @@ namespace Lucky.Home.Sinks
         /// <summary>
         /// Reset the device
         /// </summary>
-        public async Task Reset()
+        public Task Reset()
         {
-            await Write(async writer =>
+            return Write(async writer =>
             {
                 await writer.Write(SysCommand.Reset);
             });

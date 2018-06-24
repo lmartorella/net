@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.HomeMock.Core;
+using System;
 using System.IO;
 using System.Text;
 
@@ -41,6 +42,16 @@ namespace Lucky.HomeMock.Sinks
             var buffer = Encoding.ASCII.GetBytes(str);
             writer.Write((ushort)buffer.Length);
             writer.Write(buffer);
+        }
+
+        /// <summary>
+        /// For logging
+        /// </summary>
+        public event EventHandler<ItemEventArgs<string>> LogLine;
+
+        protected void Log(string str)
+        {
+            LogLine?.Invoke(this, new ItemEventArgs<string>(str));
         }
     }
 }

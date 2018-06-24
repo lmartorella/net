@@ -1,5 +1,4 @@
 ﻿using Lucky.HomeMock.Core;
-using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -43,12 +42,12 @@ namespace Lucky.HomeMock.Sinks
                 if (_state == DeviceState.Off)
                 {
                     _times = times;
-                    LogLine?.Invoke(this, new ItemEventArgs<string>(string.Format("Garden timer: {0}", string.Join(", ", _times.Select(t => t.ToString())))));
+                    Log(string.Format("Garden timer: {0}", string.Join(", ", _times.Select(t => t.ToString()))));
                     StartProgram();
                 }
                 else
                 {
-                    LogLine?.Invoke(this, new ItemEventArgs<string>("Program ignored: " + _state));
+                    Log("Program ignored: " + _state);
                 }
             }
         }
@@ -83,11 +82,6 @@ namespace Lucky.HomeMock.Sinks
                 }, null, 3000, 3000);
             }
         }
-
-        /// <summary>
-        /// For logging
-        /// </summary>
-        public event EventHandler<ItemEventArgs<string>> LogLine;
 
         public override void Write(BinaryWriter writer)
         {
