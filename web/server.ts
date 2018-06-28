@@ -6,7 +6,7 @@ import * as compression from 'compression';
 import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
-import { binDir, etcDir } from './settings';
+import { binDir, etcDir, logsFile, gardenCfgFile } from './settings';
 import ProcessManager from './procMan';
 
 let pm = new ProcessManager(binDir, etcDir, 'Home.Server.App.exe');
@@ -57,6 +57,7 @@ app.use((express as any).json());
 app.use(compression());
 app.use(require('cookie-parser')());
 app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(require('body-parser').raw({ type: "application/octect-stream" }));
 app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
 
 app.set("view engine", "ejs");
@@ -105,11 +106,36 @@ app.post('/r/gardenStop', ensureLoggedIn(), async (req, res) => {
     res.send(resp);
 });
 
+app.get('/r/gardenCfg', ensureLoggedIn(), async (req, res) => {
+    // Stream config file
+    res.setHeader("Content-Type", "application/json");
+    if (fs.existsSync(gardenCfgFile)) {
+        fs.createReadStream(gardenCfgFile).pipe(res);
+    } else {
+        res.sendStatus(404);
+    }
+});
+
+app.put('/r/gardenCfg', ensureLoggedIn(), async (req, res) => {
+    if (req.headers["content-type"] === "application/octect-stream") {
+        // Stream back config file
+        var content = req.body;
+        fs.writeFileSync(gardenCfgFile, content);
+        res.sendStatus(200);
+
+        // req.pipe(fs.createWriteStream(gardenCfgFile)).end(() => {
+        //     res.sendStatus(200);
+        // });
+    } else {
+        res.sendStatus(500);
+    }
+});
+
 app.get('/r/logs', ensureLoggedIn(), (req, res) => {
     // Stream log file
     res.setHeader("Content-Type", "text/plain");
-    if (fs.existsSync(path.join(etcDir, "log.txt"))) {
-        fs.createReadStream(path.join(etcDir, "log.txt")).pipe(res);
+    if (fs.existsSync(logsFile)) {
+        fs.createReadStream(logsFile).pipe(res);
     } else {
         res.sendStatus(404);
     }
@@ -152,7 +178,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get(loginPagePath, (req, res) => res.render('login'));
-app.post('/login', passport.authenticate('local', { successRedirect: '/', failureRedirect: loginPagePath }));
+app.post('/login', (req, res, next) => {
+    let successRedirect = req.body.redirect || '/';
+    passport.authenticate('local', { successRedirect, failureRedirect: loginPagePath })(req, res, next);
+});
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect(loginPagePath);

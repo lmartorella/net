@@ -7,7 +7,15 @@
         <label>Password:</label>
         <input type="password" name="password"/>
 	</div>
+	<input type="hidden" name="redirect" id="redirect"/>
 	<div>
         <input type="submit" value="Submit"/>
 	</div>
 </form>	
+
+<script>
+	window.onload = () => {
+		var redirect = new URLSearchParams(location.search).get('redirect');
+		document.getElementById('redirect').value = redirect;
+	}
+</script>

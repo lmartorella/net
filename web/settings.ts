@@ -9,5 +9,8 @@ if (!fs.existsSync(csvFolder) || !fs.readdirSync(csvFolder)) {
     throw new Error('CSV folder not accessible: ' + csvFolder);
 }
 
-export { csvFolder, binDir, etcDir };
+let logsFile = path.join(etcDir, 'log.txt');
+let gardenCfgFile = path.join(etcDir, 'Server', 'gardenCfg.json');
+
+export { csvFolder, binDir, etcDir, logsFile, gardenCfgFile };
 

@@ -8,9 +8,29 @@
 
 </head>
 <body>
+    <p><a href="/login?redirect=/app/admin.html">Login</a></p>
     <p><a href="/r/logs" download>Logs</a></p>
     <p><a href="/r/halt">Halt server</a></p>
     <p><a href="/r/start">Start server</a></p>
     <p><a href="/r/restart">Restart server</a></p>
+    <p><a href="/r/gardenCfg" download>Download garden config</a></p>
+    <div>
+      <label for="file">Upload garden config</label>
+      <input type="file" id="file"/>
+      <button onclick="sendButton()">Upload garden config</button>
+    </div>
+
+    <script>
+    function sendButton() {
+      var fileEl = document.getElementById('file');
+      var req = new XMLHttpRequest();
+      req.open("PUT", "/r/gardenCfg");
+      req.setRequestHeader("Content-type", "application/octect-stream");
+      req.onload = event => {
+        console.log(JSON.stringify(event));
+      };
+      req.send(fileEl.files[0]);
+    }
+    </script>
 </body>
 </html>

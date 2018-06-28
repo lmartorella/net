@@ -5,4 +5,5 @@
 etc
 bin/*.pdb
 bin/*.xml
+bin/*.config
 *.tgz
