@@ -102,6 +102,7 @@ namespace Lucky.Net
                         }
                         if (!_tcpClient.Connected)
                         {
+                            _logger.Log("DEBUG:FoundNotConnected");
                             Close(false);
                         }
                         return _stream == null;
@@ -150,7 +151,7 @@ namespace Lucky.Net
                 catch (Exception exc)
                 {
                     Exception src = exc.GetBaseException();
-                    if (src is SocketException || src is IOException)
+                    if (src is SocketException || src is IOException || src is ObjectDisposedException)
                     {
                         _logger.Log("Close:" + src.GetType().Name, "exc", exc.Message, "write", typeof(T).Name);
                     }

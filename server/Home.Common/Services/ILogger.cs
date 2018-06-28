@@ -82,7 +82,7 @@ namespace Lucky.Services
 
         private static string UnrollStack(Exception exc)
         {
-            return exc.StackTrace + ((exc.InnerException != null) ? (Environment.NewLine + "Inner exc: " + exc.InnerException.Message + UnrollStack(exc.InnerException)) : String.Empty);
+            return exc.StackTrace + ((exc.InnerException != null) ? (Environment.NewLine + exc.InnerException.GetType().Name + ": Inner exc: " + exc.InnerException.Message + UnrollStack(exc.InnerException)) : String.Empty);
         }
     }
 }

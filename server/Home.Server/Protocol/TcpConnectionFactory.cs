@@ -56,6 +56,8 @@ namespace Lucky.Home.Protocol
         {
             private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
             private CancellationTokenSource _cancellationToken;
+            private bool _timedOut;
+
             public IClient Client { get; private set; }
             private readonly ILogger _logger;
             private readonly DateTime _openTime;
@@ -85,15 +87,22 @@ namespace Lucky.Home.Protocol
 
             public void Release()
             {
+                if (_timedOut)
+                {
+                    // Print the stack to understand why GraceTime triggered
+                    _logger.Exception(new InvalidOperationException("TimedOut (noexc)"));
+                }
+
                 // Create new cancellation token
                 _cancellationToken = new CancellationTokenSource();
 
-                // Start timeout auto-disposal timer                {
+                // Start timeout auto-disposal timer
                 Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(t =>
                 {
                     if (!t.IsCanceled && !Client.IsClosed)
                     {
                         _logger.Log("GraceTime", "EP", Client.EndPoint);
+                        _timedOut = true;
                         Close(false);
                     }
                 });
