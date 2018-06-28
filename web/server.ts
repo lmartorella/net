@@ -39,7 +39,7 @@ passport.deserializeUser(function(id, cb) {
     cb(null, id);
 });
 
-const loginPagePath = '/login';
+const loginPagePath = '/app/login.html';
 function ensureLoggedIn() {
     return function(req, res, next) {
       if (!validateUser(req.session && req.session.passport && req.session.passport.user)) {
@@ -177,7 +177,6 @@ app.use('/lib/angular', express.static('node_modules/angular'));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get(loginPagePath, (req, res) => res.render('login'));
 app.post('/login', (req, res, next) => {
     let successRedirect = req.body.redirect || '/';
     passport.authenticate('local', { successRedirect, failureRedirect: loginPagePath })(req, res, next);

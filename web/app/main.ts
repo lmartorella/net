@@ -99,7 +99,7 @@ angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarControl
     var service = this;
     service.responseError = function(response) {
         if (response.status === 401) {
-            window.location.pathname = "/login";
+            window.location.replace("/app/login");
         }
         return $q.reject(response);
     };
