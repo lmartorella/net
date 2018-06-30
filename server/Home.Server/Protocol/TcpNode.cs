@@ -312,7 +312,7 @@ namespace Lucky.Home.Protocol
             return ok;
         }
 
-        private void Dezombie(string reason)
+        internal void Dezombie(string reason)
         {
             if (IsZombie)
             {

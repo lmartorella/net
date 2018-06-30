@@ -71,14 +71,7 @@ namespace Lucky.Home.Protocol
                 // Ignore consecutive messages
                 if (_unnamedNodes.TryGetValue(address, out newNode))
                 {
-                    if (!newNode.IsZombie)
-                    {
-                        return newNode;
-                    }
-                    else
-                    {
-                        newNode.IsZombie = false;
-                    }
+                    newNode.Dezombie("hello");
                 }
                 else
                 {
