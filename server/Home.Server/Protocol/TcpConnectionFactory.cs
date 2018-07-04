@@ -9,6 +9,15 @@ using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
+    public class DeadlockException : ApplicationException
+    {
+        public DeadlockException(string message)
+            :base(message)
+        {
+
+        }
+    }
+
     /// <summary>
     /// Used for reader only
     /// </summary>
@@ -56,6 +65,7 @@ namespace Lucky.Home.Protocol
         {
             private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
             private CancellationTokenSource _cancellationToken;
+            private CancellationTokenSource _lockCancellationToken;
             private bool _timedOut;
 
             public IClient Client { get; private set; }
@@ -76,17 +86,35 @@ namespace Lucky.Home.Protocol
 
             public void Acquire()
             {
-                _semaphore.Wait();
+                // If 30 seconds elapses, a deadlock occurred somewhere...
+                if (!_semaphore.Wait(30000))
+                {
+                    Close(false);
+                    throw new DeadlockException("Acquire locked");
+                }
+
                 // Ok, the client is alive
                 if (_cancellationToken != null)
                 {
                     _cancellationToken.Cancel();
                     _cancellationToken = null;
                 }
+
+                // Start a deadlock timer
+                _lockCancellationToken = new CancellationTokenSource();
+                Task.Delay(25000, _lockCancellationToken.Token).ContinueWith(t =>
+                {
+                    if (!t.IsCanceled)
+                    {
+                        _logger.Log("MissingRelease", "EP", Client.EndPoint);
+                        Close(false);
+                    }
+                });
             }
 
             public void Release()
             {
+                _lockCancellationToken.Cancel();
                 if (_timedOut)
                 {
                     // Print the stack to understand why GraceTime triggered
