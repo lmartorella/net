@@ -32,6 +32,7 @@
         <itemPath>../hardware/fuses_pic16f1827.inc</itemPath>
         <itemPath>../hardware/uart.h</itemPath>
         <itemPath>../hardware/i2c.h</itemPath>
+        <itemPath>../hardware/counter.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f4" displayName="sinks" projectFiles="true">
         <itemPath>../sinks/digio.h</itemPath>
@@ -108,6 +109,7 @@
         <itemPath>../hardware/hw.c</itemPath>
         <itemPath>../hardware/max232_sw.c</itemPath>
         <itemPath>../hardware/i2c.c</itemPath>
+        <itemPath>../hardware/counter.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f4" displayName="sinks" projectFiles="true">
         <itemPath>../sinks/digio.c</itemPath>

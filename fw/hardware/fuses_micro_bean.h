@@ -69,7 +69,7 @@
 //RXDTSEL:1  RX/DT function is on RB2
 //TXCKSEL:1  TX/CK function is on RB5
 
-#define HAS_I2C
+#undef HAS_I2C
 #define I2C_PORT_SDA PORTBbits.RB1
 #define I2C_TRIS_SDA TRISBbits.TRISB1
 #define I2C_PORT_SCL PORTBbits.RB4
@@ -93,7 +93,9 @@
 #define I2C_SSPCON2_ACKDT SSP1CON2bits.ACKDT
 #define I2C_SSPCON2_BUSY_MASK (_SSPCON2_SEN_MASK | _SSPCON2_RSEN_MASK | _SSPCON2_PEN_MASK | _SSPCON2_RCEN_MASK | _SSPCON2_ACKEN_MASK)
 
-#define HAS_BMP180
+#undef HAS_BMP180
+
+#define HAS_DIGITAL_COUNTER
 
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;

@@ -17,21 +17,18 @@ typedef struct
   	// GUID:  application instance ID (used by user code)
 	GUID deviceId;
     
-    // Used by PIC16 / bus_client
+    // Used by bus_client
 #ifdef HAS_BUS_CLIENT
     BYTE address;
     BYTE filler;
 #endif
+
+    // Used by counter
+#ifdef HAS_DIGITAL_COUNTER
+    DWORD dcnt_counter;
+#endif
     
 } PersistentData;
-
-#ifdef HAS_BUS_CLIENT
-#define DEFAULT_PERS_DATA { { 0, 0, 0, 0, 0 }, UNASSIGNED_SUB_ADDRESS, 0xff }
-#define PERSISTENT_SIZE 0x12
-#else
-#define DEFAULT_PERS_DATA { { 0, 0, 0, 0, 0 } }
-#define PERSISTENT_SIZE 0x10
-#endif
 
 // The cached copy of the EEPROM data, read at startup/init
 // and then saved explicitly

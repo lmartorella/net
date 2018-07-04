@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "sinks.h"
 #include "apps/apps.h"
+#include "hardware/counter.h"
 
 #ifdef __XC8
 void interrupt PRIO_TYPE low_isr()
@@ -13,6 +14,9 @@ void interrupt PRIO_TYPE low_isr()
     TickUpdate();
 #ifdef HAS_RS485
     rs485_interrupt();
+#endif
+#ifdef HAS_DIGITAL_COUNTER
+    dcnt_interrupt();
 #endif
 }
 #endif
@@ -74,7 +78,11 @@ void main()
     BUSPOWER_TRIS = 0;
     BUSPOWER_PORT = 1;
 #endif
-        
+
+#ifdef HAS_DIGITAL_COUNTER
+    dcnt_init();
+#endif
+
     sinks_init();
     
     apps_init();
@@ -98,6 +106,10 @@ void main()
 #endif
 #ifdef HAS_RS485
         rs485_poll();
+#endif
+
+#ifdef HAS_DIGITAL_COUNTER
+        dcnt_poll();
 #endif
         
         pers_poll();

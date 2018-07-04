@@ -45,11 +45,6 @@ static void bus_reinit_quick()
     rs485_skipData = TRUE;
 }
 
-bit bus_isIdle() 
-{
-    return s_state == STATE_HEADER_0;
-}
-
 void bus_init()
 {
     // Prepare address
