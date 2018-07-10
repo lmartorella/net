@@ -38,6 +38,7 @@ namespace Lucky.Home.Devices
 
     [Device("Garden")]
     [Requires(typeof(GardenSink))]
+    [Requires(typeof(FlowSink))]
     public class GardenDevice : DeviceBase
     {
         private static int POLL_PERIOD = 3000;
@@ -102,17 +103,25 @@ namespace Lucky.Home.Devices
             cfgFIleObserver.EnableRaisingEvents = true;
 
             // To receive commands from UI
-            Manager.GetService<PipeServer>().Message += (o, e) =>
+            Manager.GetService<PipeServer>().Message += async (o, e) =>
             {
                 switch (e.Request.Command)
                 {
                     case "garden.getStatus":
-                        e.Response.Online = IsFullOnline;
-                        e.Response.Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames };
+                        e.Response = Task.Run(async () =>
+                        {
+                            var flowSink = Sinks.OfType<FlowSink>().FirstOrDefault(s => s.IsOnline);
+                            FlowData flowData = null;
+                            if (flowSink != null)
+                            {
+                                flowData = await flowSink.ReadData(5.5);
+                            }
+                            return new WebResponse { Online = IsFullOnline, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
+                        });
                         break;
                     case "garden.setImmediate":
                         Logger.Log("setImmediate", "zones", e.Request.ImmediateZones);
-                        e.Response.Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" });
+                        e.Response = Task.FromResult(new WebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" } ) });
                         break;
                     case "garden.stop":
                         bool stopped = false;
@@ -121,10 +130,12 @@ namespace Lucky.Home.Devices
                             sink.ResetNode();
                             stopped = true;
                         }
+                        string error = null;
                         if (!stopped)
                         {
-                            e.Response.Error = "Cannot stop, no sink";
+                            error = "Cannot stop, no sink";
                         }
+                        e.Response = Task.FromResult(new WebResponse { Error = error });
                         break;
                 }
             };

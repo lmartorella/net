@@ -65,6 +65,7 @@
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
+    <Compile Include="Sinks\FlowSink.cs" />
     <Compile Include="Sinks\GardenSink.cs" />
     <Compile Include="Sinks\HalfDuplexLineSink.cs" />
     <Compile Include="Sinks\MockCommandSink.cs" />

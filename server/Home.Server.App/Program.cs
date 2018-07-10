@@ -27,8 +27,7 @@ namespace Lucky.Home.Lib
             {
                 if (e.Request.Command == "kill")
                 {
-                    e.CloseServer = true;
-                    e.Response.Status= "Closed";
+                    e.Response = Task.FromResult(new WebResponse { CloseServer = true, Status = "Closed" });
 
                     Task.Delay(1500).ContinueWith(t =>
                     {

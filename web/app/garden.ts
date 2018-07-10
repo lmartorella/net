@@ -4,6 +4,10 @@ interface IGardenStatusResponse {
     };
     online: boolean;
     configured: boolean;
+    flowData: { 
+        totalMc: number;
+        flowLMin: number;
+    }
 }
 
 interface IGardenStartStopResponse {
@@ -17,6 +21,10 @@ class GardenController {
     private zones: { name: string, time: number }[];
     private status: string;
     public disableButton = true;
+    public flow: { 
+        totalMc: number;
+        flowLMin: number;
+    };
 
     constructor(private $http: ng.IHttpService, private $q: ng.IQService) {
         this.zones = [];
@@ -26,6 +34,7 @@ class GardenController {
             if (resp.status == 200 && resp.data) {
                 this.zones = resp.data.config && resp.data.config.zones.map(zone => ({ name: zone, time: 0 }));
                 this.status =  resp.data.online ? 'Online' : (resp.data.config ? 'OFFLINE' : 'NOT CONFIGURED');
+                this.flow = resp.data.flowData;
                 this.disableButton = false;
             } else {
                 this.error = "Cannot fetch cfg";

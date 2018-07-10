@@ -59,6 +59,7 @@
     <Compile Include="Sinks\CommandMockSink.cs" />
     <Compile Include="Sinks\DigitalOutputArraySink.cs" />
     <Compile Include="Sinks\DisplaySink.cs" />
+    <Compile Include="Sinks\FlowSinkMock.cs" />
     <Compile Include="Sinks\GardenSink.cs" />
     <Compile Include="Sinks\SamilPanelMock.cs" />
     <Compile Include="Core\ControlPortListener.cs" />
