@@ -9,9 +9,10 @@
 
 #ifdef HAS_IP
 #include "ip_client.h"
+#endif
 
 static TICK_TYPE s_slowTimer;
-#endif
+bit prot_slowTimer;
 
 static signed char s_inReadSink;
 static signed char s_inWriteSink;
@@ -31,11 +32,11 @@ bit prot_registered;
 
 void prot_init()
 {
-#ifdef HAS_IP
-    ip_prot_init();
-
     // Align 1sec to now()
     s_slowTimer = TickGet();
+
+#ifdef HAS_IP
+    ip_prot_init();
 #else
     println("No IP");
 #endif
@@ -183,20 +184,26 @@ static bit memcmp2(char c1, char c2, char d1, char d2) {
 	Manage POLLs (read buffers)
 */
 void prot_poll()
-{  
+{
+    prot_slowTimer = 0;
     CLRWDT();
 #ifdef HAS_IP
     // Do ETH stuff
     StackTask();
     // This tasks invokes each of the core stack application tasks
     StackApplications();
+#endif
 
     TICK_TYPE now = TickGet();
     if (now - s_slowTimer >= TICKS_PER_SECOND)
     {
         s_slowTimer = now;
+        prot_slowTimer = 1;
+#ifdef HAS_IP
         ip_prot_slowTimer();
+#endif
     }
+#ifdef HAS_IP
     ip_poll();
 #endif
     

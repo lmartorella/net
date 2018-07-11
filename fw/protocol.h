@@ -36,6 +36,8 @@ bit prot_control_isConnected();
 
 void prot_init();
 void prot_poll();
+// Has the slow timer ticked?
+extern bit prot_slowTimer;
 
 #endif
 

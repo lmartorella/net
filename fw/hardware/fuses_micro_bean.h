@@ -96,6 +96,8 @@
 #undef HAS_BMP180
 
 #define HAS_DIGITAL_COUNTER
+#define DCNT_IF INTCONbits.INTF
+#define DCNT_IE INTCONbits.INTE
 
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;

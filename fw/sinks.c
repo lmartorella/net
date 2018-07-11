@@ -7,6 +7,7 @@
 #include "sinks/dht11.h"
 #include "sinks/halfduplex.h"
 #include "sinks/bmp180.h"
+#include "sinks/flowCounter.h"
 
 #ifdef HAS_BUS
 
@@ -36,6 +37,9 @@ const char* const SINK_IDS =
 #if defined(HAS_BMP180)
     SINK_BMP180_ID 
 #endif
+#if defined(HAS_DIGITAL_COUNTER)
+    SINK_FLOW_COUNTER
+#endif
 #if defined(HAS_CUSTOM_SINK)
     SINK_CUSTOM_ID 
 #endif
@@ -56,6 +60,9 @@ const int SINK_IDS_COUNT =
     + 1
 #endif
 #if defined(HAS_BMP180)
+    + 1
+#endif
+#if defined(HAS_DIGITAL_COUNTER)
     + 1
 #endif
 #if defined(HAS_CUSTOM_SINK)
@@ -81,6 +88,9 @@ const SinkFunction const sink_readHandlers[] = {
 #if defined(HAS_BMP180)
     ,bmp180_sinkRead 
 #endif
+#if defined(HAS_DIGITAL_COUNTER)
+    ,nil
+#endif
 #if defined(HAS_CUSTOM_SINK)
     ,customsink_read 
 #endif
@@ -103,6 +113,9 @@ const SinkFunction const sink_writeHandlers[] = {
 #endif
 #if defined(HAS_BMP180)
     ,bmp180_sinkWrite 
+#endif
+#if defined(HAS_DIGITAL_COUNTER)
+    ,flow_write
 #endif
 #if defined(HAS_CUSTOM_SINK)
     ,customsink_write 

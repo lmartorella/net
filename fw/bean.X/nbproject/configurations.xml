@@ -40,6 +40,7 @@
         <itemPath>../sinks/halfduplex.h</itemPath>
         <itemPath>../sinks/dht11.h</itemPath>
         <itemPath>../sinks/bmp180.h</itemPath>
+        <itemPath>../sinks/flowCounter.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/HardwareProfile.h</itemPath>
@@ -117,6 +118,7 @@
         <itemPath>../sinks/halfduplex.c</itemPath>
         <itemPath>../sinks/dht11.c</itemPath>
         <itemPath>../sinks/bmp180.c</itemPath>
+        <itemPath>../sinks/flowCounter.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="tcpip" projectFiles="true">
         <itemPath>../tcpipstack/TCPIPStack/ARP.c</itemPath>

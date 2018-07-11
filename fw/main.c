@@ -109,7 +109,9 @@ void main()
 #endif
 
 #ifdef HAS_DIGITAL_COUNTER
-        dcnt_poll();
+        if (prot_slowTimer) {
+            dcnt_poll();
+        }
 #endif
         
         pers_poll();
