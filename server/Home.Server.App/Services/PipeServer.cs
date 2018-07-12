@@ -22,8 +22,21 @@ namespace Lucky.Home.Services
     }
 
     [DataContract]
+    [KnownType(typeof(GardenWebResponse))]
     public class WebResponse
     {
+        public bool CloseServer;
+    }
+
+    [DataContract]
+    public class GardenWebResponse : WebResponse
+    {
+        /// <summary>
+        /// Status
+        /// </summary>
+        [DataMember(Name = "status")]
+        public string Status { get; set; }
+
         /// <summary>
         /// Result/error
         /// </summary>
@@ -37,12 +50,6 @@ namespace Lucky.Home.Services
         public Configuration Configuration { get; set; }
 
         /// <summary>
-        /// Status
-        /// </summary>
-        [DataMember(Name = "status")]
-        public string Status { get; set; }
-
-        /// <summary>
         /// For gardem
         /// </summary>
         [DataMember(Name = "online")]
@@ -53,8 +60,6 @@ namespace Lucky.Home.Services
         /// </summary>
         [DataMember(Name = "flowData")]
         public FlowData FlowData { get; set; }
-
-        public bool CloseServer;
     }
 
     public class PipeServer : ServiceBase

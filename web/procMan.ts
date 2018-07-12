@@ -81,7 +81,14 @@ export default class ProcessManager {
         
                 let respond = () => {
                     pipe.destroy();
-                    resolve(JSON.parse(resp));
+                    let obj;
+                    try {
+                        obj = JSON.parse(resp);
+                    }
+                    catch (err) {
+                        obj = { exc: err.message };
+                    }
+                    resolve(obj);
                 };
         
                 pipe.on('data', data => {

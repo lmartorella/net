@@ -119,12 +119,12 @@ namespace Lucky.Home.Devices
                             {
                                 flowData = await flowSink.ReadData(_counterFq);
                             }
-                            return new WebResponse { Online = IsFullOnline, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
+                            return (WebResponse) new GardenWebResponse { Online = IsFullOnline, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
                         });
                         break;
                     case "garden.setImmediate":
                         Logger.Log("setImmediate", "zones", e.Request.ImmediateZones);
-                        e.Response = Task.FromResult(new WebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" } ) });
+                        e.Response = Task.FromResult((WebResponse) new GardenWebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" } ) });
                         break;
                     case "garden.stop":
                         bool stopped = false;
@@ -138,7 +138,7 @@ namespace Lucky.Home.Devices
                         {
                             error = "Cannot stop, no sink";
                         }
-                        e.Response = Task.FromResult(new WebResponse { Error = error });
+                        e.Response = Task.FromResult((WebResponse) new GardenWebResponse { Error = error });
                         break;
                 }
             };
