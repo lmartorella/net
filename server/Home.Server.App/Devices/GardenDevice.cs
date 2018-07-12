@@ -50,6 +50,7 @@ namespace Lucky.Home.Devices
         private readonly FileInfo _csvFile;
         private Action _lastLogForStop;
         private string[] _zoneNames = new string[0];
+        private readonly double _counterFq;
 
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
@@ -72,8 +73,10 @@ namespace Lucky.Home.Devices
             }
         }
 
-        public GardenDevice()
+        public GardenDevice(double counterFq = 5.5)
         {
+            _counterFq = counterFq;
+
             var cfgColder = Manager.GetService<PersistenceService>().GetAppFolderPath("Server");
             _cfgFile = new FileInfo(Path.Combine(cfgColder, "gardenCfg.json"));
             if (!_cfgFile.Exists)
@@ -114,7 +117,7 @@ namespace Lucky.Home.Devices
                             FlowData flowData = null;
                             if (flowSink != null)
                             {
-                                flowData = await flowSink.ReadData(5.5);
+                                flowData = await flowSink.ReadData(_counterFq);
                             }
                             return new WebResponse { Online = IsFullOnline, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
                         });

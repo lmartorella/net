@@ -99,7 +99,7 @@ namespace Lucky.Home.Devices
                 throw new InvalidOperationException("Devcice type not found: " + typeName);
             }
 
-            DeviceBase device = (DeviceBase)Activator.CreateInstance(type, descriptor.Arguments);
+            DeviceBase device = (DeviceBase)Activator.CreateInstance(type, FillDefaultArguments(descriptor.Arguments, type));
             device.OnInitialize(descriptor.SinkPaths);
             descriptor.Id = Guid.NewGuid();
             lock (_devices)
@@ -109,6 +109,29 @@ namespace Lucky.Home.Devices
             }
             Logger.Log("DeviceCreate", "Type", descriptor.DeviceTypeName);
             return device;
+        }
+
+        private static object[] FillDefaultArguments(object[] arguments, Type deviceType)
+        {
+            ConstructorInfo[] constructorInfos = deviceType.GetConstructors();
+            // Uses the first constructor
+            if (constructorInfos.Length != 1)
+            {
+                throw new InvalidOperationException("The device type " + deviceType.Name + " has too many or no public constructors");
+            }
+            var constructorInfo = constructorInfos[0];
+            return constructorInfo.GetParameters().Select((arg, i) =>
+            {
+                if (i < arguments.Length)
+                {
+                    return arguments[i];
+                }
+                if (arg.DefaultValue != null)
+                {
+                    return arg.DefaultValue;
+                }
+                throw new InvalidOperationException("The device type " + deviceType.Name + " wants more mandatory arguments than registered");
+            }).ToArray();
         }
 
         private void SaveState()
