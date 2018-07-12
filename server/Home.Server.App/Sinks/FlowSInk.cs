@@ -39,7 +39,7 @@ namespace Lucky.Home.Sinks
             /// <summary>
             /// Count in the time unit (count/seconds)
             /// </summary>
-            public UInt32 Frequency;
+            public UInt16 Frequency;
         }
 
         /// <summary>

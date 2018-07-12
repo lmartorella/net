@@ -43,6 +43,7 @@
     <Compile Include="Application\HomeApp.cs" />
     <Compile Include="Db\FsTimeSeries.cs" />
     <Compile Include="Devices\BarometricTesterDevice.cs" />
+    <Compile Include="Devices\FlowTesterDevice.cs" />
     <Compile Include="Devices\GardenDevice.cs" />
     <Compile Include="Devices\ClockDevice.cs" />
     <Compile Include="Devices\EchoLineTesterDevice.cs" />

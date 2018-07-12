@@ -38,7 +38,7 @@ namespace Lucky.Home.Devices
 
     [Device("Garden")]
     [Requires(typeof(GardenSink))]
-    [Requires(typeof(FlowSink))]
+    //[Requires(typeof(FlowSink))]
     public class GardenDevice : DeviceBase
     {
         private static int POLL_PERIOD = 3000;

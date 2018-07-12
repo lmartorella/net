@@ -134,7 +134,7 @@ void rs485_interrupt()
     else if (!uart_rx_fifo_empty() && uart_rx_fifo_empty_get_mask()) {
         // Data received
         do {
-            CLRWDT();
+¾            CLRWDT();
             
             BYTE data;
             UART_RX_MD md;

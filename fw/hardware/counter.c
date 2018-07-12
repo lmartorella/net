@@ -8,10 +8,9 @@ static DCNT_DATA s_data;
 static bit s_counterDirty;
 static DWORD s_lastCounter;
 
+// Only save once every 255 seconds (4 minutes), a good balance between EEPROM data endurance and potential data 
+// loss due to reset. Obviously no flow -> no write
 static BYTE s_persTimer;
-// Only save once every 30 minutes, a good balance between EEPROM data endurance and potential data loss due to reset
-// 10 seconds in debug
-#define PERS_TIMER_SECS (10 /*60 * 30*/)
 
 void dcnt_interrupt() {
     if (DCNT_IF) {
@@ -52,12 +51,10 @@ void dcnt_poll() {
         s_data.flow = currCounter - s_lastCounter;
         s_lastCounter = currCounter;
         
-        if ((s_persTimer++) >= PERS_TIMER_SECS) {
-            s_persTimer = 0;
-            s_counterDirty = 0;
-            
+        if ((++s_persTimer) == 0) {          
             pers_data.dcnt_counter = s_lastCounter;
             pers_save();
+            s_counterDirty = 0;
         }
     } else {
         s_data.flow = 0;
