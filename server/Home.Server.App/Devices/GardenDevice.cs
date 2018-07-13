@@ -32,13 +32,19 @@ namespace Lucky.Home.Devices
         [Csv]
         public string Zones;
 
+        /// <summary>
+        /// Start = 0: stoped. 1 = started. 2 = flowing
+        /// </summary>
         [Csv]
         public int Start;
+
+        [Csv]
+        public double Flow;
     }
 
     [Device("Garden")]
     [Requires(typeof(GardenSink))]
-    //[Requires(typeof(FlowSink))]
+    [Requires(typeof(FlowSink))]
     public class GardenDevice : DeviceBase
     {
         private static int POLL_PERIOD = 3000;
@@ -48,7 +54,7 @@ namespace Lucky.Home.Devices
         private readonly TimeProgram<GardenCycle> _timeProgram = new TimeProgram<GardenCycle>();
         private readonly Queue<ImmediateProgram> _cycleQueue = new Queue<ImmediateProgram>();
         private readonly FileInfo _csvFile;
-        private Action _lastLogForStop;
+        private StepActions _lastStepActions;
         private string[] _zoneNames = new string[0];
         private readonly double _counterFq;
 
@@ -113,13 +119,8 @@ namespace Lucky.Home.Devices
                     case "garden.getStatus":
                         e.Response = Task.Run(async () =>
                         {
-                            var flowSink = Sinks.OfType<FlowSink>().FirstOrDefault(s => s.IsOnline);
-                            FlowData flowData = null;
-                            if (flowSink != null)
-                            {
-                                flowData = await flowSink.ReadData(_counterFq);
-                            }
-                            return (WebResponse) new GardenWebResponse { Online = IsFullOnline, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
+                            FlowData flowData = await ReadFlow();
+                            return (WebResponse) new GardenWebResponse { Online = GetFirstOnlineSink<GardenSink>() != null, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
                         });
                         break;
                     case "garden.setImmediate":
@@ -144,6 +145,27 @@ namespace Lucky.Home.Devices
             };
 
             StartLoop();
+        }
+
+        private async Task<FlowData> ReadFlow()
+        {
+            var flowSink = GetFirstOnlineSink<FlowSink>();
+            if (flowSink != null)
+            {
+                try
+                {
+                    return await flowSink.ReadData(_counterFq);
+                }
+                catch (Exception exc)
+                {
+                    Logger.Exception(exc);
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private async Task StartLoop()
@@ -251,39 +273,50 @@ namespace Lucky.Home.Devices
 
         private async Task HandlePollTimer()
         {
-            if (IsFullOnline)
+            var gardenSink = GetFirstOnlineSink<GardenSink>();
+            if (gardenSink != null)
             {
-                var sink = Sinks.OfType<GardenSink>().First();
                 // Wait for a free garden device
                 // Write fancy logs
-                bool isAvail = await sink.Read(false);
-                if (isAvail)
+                var state = await gardenSink.Read(false);
+                if (state.IsAvailable)
                 {
                     int[] zones = null;
                     lock (_cycleQueue)
                     {
-                        if (_lastLogForStop != null)
+                        if (_lastStepActions != null)
                         {
-                            _lastLogForStop();
-                            _lastLogForStop = null;
+                            _lastStepActions.StopAction();
+                            _lastStepActions = null;
                         }
 
                         if (_cycleQueue.Count > 0)
                         {
                             var cycle = _cycleQueue.Dequeue();
                             zones = cycle.Zones;
-                            _lastLogForStop = LogStartProgram(cycle);
+                            _lastStepActions = LogStartProgram(cycle);
                         }
                     }
                     if (zones != null)
                     {
-                        await sink.WriteProgram(zones);
+                        await gardenSink.WriteProgram(zones);
                     }
+                }
+                else
+                {
+                    // The program is running? Log flow
+                    _lastStepActions?.StepAction(state);
                 }
             }
         }
 
-        private Action LogStartProgram(ImmediateProgram cycle)
+        private class StepActions
+        {
+            public Action StopAction;
+            public Func<GardenSink.TimerState, Task> StepAction;
+        }
+
+        private StepActions LogStartProgram(ImmediateProgram cycle)
         {
             Logger.Log("Garden", "cycle start", cycle.Name);
 
@@ -302,7 +335,7 @@ namespace Lucky.Home.Devices
             }
 
             // Return the action to log the stop program
-            return () =>
+            Action stopAction = () =>
             {
                 Logger.Log("Garden", "cycle end", cycle.Name);
                 data.Start = 0;
@@ -318,6 +351,24 @@ namespace Lucky.Home.Devices
                 }));
                 Manager.GetService<INotificationService>().SendMail("Giardino innaffiato", body);
             };
+
+            // Log a flow info
+            Func<GardenSink.TimerState, Task> stepAction = async (state) =>
+            {
+                var flow = (await ReadFlow())?.FlowLMin;
+                if (flow.HasValue)
+                {
+                    data.Start = 2;
+                    data.Flow = flow.Value;
+                    data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => t.ToString()));
+                    lock (_csvFile)
+                    {
+                        CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
+                    }
+                }
+            };
+
+            return new StepActions { StopAction = stopAction, StepAction = stepAction };
         }
 
         private string GetZoneName(int index)

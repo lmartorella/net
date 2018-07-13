@@ -42,9 +42,15 @@ namespace Lucky.Home.Sinks
             public byte[] ZoneTimes;
         }
 
-        public async Task<bool> Read(bool log)
+        public class TimerState
         {
-            bool isAvail = false;
+            public bool IsAvailable;
+            public int[] ZoneRemTimes;
+        }
+
+        public async Task<TimerState> Read(bool log)
+        {
+            TimerState state = null;
             await Read(async reader =>
             {
                 var md = await reader.Read<ReadStatusMessageResponse>();
@@ -54,14 +60,14 @@ namespace Lucky.Home.Sinks
                     {
                         Logger.Log("GardenMd", "State", md.State, "Times", string.Join(", ", md.ZoneTimes.Select(t => t.ToString())));
                     }
-                    isAvail = md.State == DeviceState.Off;
+                    state = new TimerState { IsAvailable = md.State == DeviceState.Off, ZoneRemTimes = md.ZoneTimes.Select(t => (int)t).ToArray() };
                 }
                 else
                 {
                     Logger.Log("GardenMd NO DATA");
                 }
             });
-            return isAvail;
+            return state;
         }
 
         public async Task WriteProgram(int[] zoneTimes)

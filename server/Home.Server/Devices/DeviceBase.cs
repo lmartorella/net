@@ -126,6 +126,11 @@ namespace Lucky.Home.Devices
             IsFullOnline = _requiredSinkTypes.All(t => Sinks.Any(s => t.IsInstanceOfType(s) && s.IsOnline));
         }
 
+        protected T GetFirstOnlineSink<T>() where T : SinkBase
+        {
+            return Sinks.OfType<T>().FirstOrDefault(s => s.IsOnline);
+        }
+
         public bool IsFullOnline
         {
             get
