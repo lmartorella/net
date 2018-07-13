@@ -456,7 +456,7 @@ namespace Lucky.Home.Protocol
 
         private void RegisterSinks(string[] sinks)
         {
-            Logger.Log("Registering sinks");
+            Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks));
             var sinkManager = Manager.GetService<SinkManager>();
 
             // Identity of sink is due to its position in the sink array.

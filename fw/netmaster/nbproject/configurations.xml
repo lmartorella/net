@@ -7,7 +7,7 @@
       <logicalFolder name="f3" displayName="apps" projectFiles="true">
         <itemPath>../apps/apps.h</itemPath>
         <itemPath>../apps/audioSink.h</itemPath>
-        <itemPath>../apps/bpm180.h</itemPath>
+        <itemPath>../apps/bmp180app.h</itemPath>
         <itemPath>../apps/dcf77.h</itemPath>
         <itemPath>../apps/spiram.h</itemPath>
       </logicalFolder>
@@ -27,9 +27,11 @@
         <itemPath>../hardware/vs1011e.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="sinks" projectFiles="true">
+        <itemPath>../sinks/bmp180.h</itemPath>
         <itemPath>../sinks/dht11.h</itemPath>
         <itemPath>../sinks/digio.h</itemPath>
         <itemPath>../sinks/displaySink.h</itemPath>
+        <itemPath>../sinks/flowCounter.h</itemPath>
         <itemPath>../sinks/halfduplex.h</itemPath>
       </logicalFolder>
       <itemPath>../appio.h</itemPath>
@@ -52,7 +54,7 @@
       <logicalFolder name="f3" displayName="apps" projectFiles="true">
         <itemPath>../apps/apps.c</itemPath>
         <itemPath>../apps/audioSink.c</itemPath>
-        <itemPath>../apps/bpm180.c</itemPath>
+        <itemPath>../apps/bmp180App.c</itemPath>
         <itemPath>../apps/dcf77.c</itemPath>
         <itemPath>../apps/flasher.c</itemPath>
         <itemPath>../apps/spiram.c</itemPath>
@@ -64,6 +66,7 @@
         <itemPath>../hardware/uart_raspbian.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="sinks" projectFiles="true">
+        <itemPath>../sinks/bmp180.c</itemPath>
         <itemPath>../sinks/dht11.c</itemPath>
         <itemPath>../sinks/digio.c</itemPath>
         <itemPath>../sinks/displaySink.c</itemPath>
@@ -125,9 +128,9 @@
       </item>
       <item path="../apps/audioSink.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../apps/bpm180.c" ex="false" tool="0" flavor2="0">
+      <item path="../apps/bmp180App.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="../apps/bpm180.h" ex="false" tool="3" flavor2="0">
+      <item path="../apps/bmp180app.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../apps/dcf77.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -203,6 +206,10 @@
       </item>
       <item path="../sinks.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../sinks/bmp180.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/bmp180.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../sinks/dht11.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../sinks/dht11.h" ex="false" tool="3" flavor2="0">
@@ -214,6 +221,8 @@
       <item path="../sinks/displaySink.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../sinks/displaySink.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/flowCounter.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../sinks/halfduplex.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -263,9 +272,9 @@
       </item>
       <item path="../apps/audioSink.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../apps/bpm180.c" ex="false" tool="0" flavor2="0">
+      <item path="../apps/bmp180App.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="../apps/bpm180.h" ex="false" tool="3" flavor2="0">
+      <item path="../apps/bmp180app.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../apps/dcf77.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -341,6 +350,10 @@
       </item>
       <item path="../sinks.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../sinks/bmp180.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../sinks/bmp180.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../sinks/dht11.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../sinks/dht11.h" ex="false" tool="3" flavor2="0">
@@ -352,6 +365,8 @@
       <item path="../sinks/displaySink.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../sinks/displaySink.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../sinks/flowCounter.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../sinks/halfduplex.c" ex="false" tool="0" flavor2="0">
       </item>

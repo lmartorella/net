@@ -176,12 +176,13 @@ static void WRIT_command()
     s_inReadSink = sinkId;
 }
 
+// Optimized for XC8
 static bit memcmp2(char c1, char c2, char d1, char d2) {
     return d1 == c1 && d2 == c2;
 }
 
 /*
-	Manage POLLs (read buffers)
+    Manage POLLs (read buffers)
 */
 void prot_poll()
 {

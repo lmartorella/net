@@ -38,7 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/appio.o \
 	${OBJECTDIR}/_ext/d2a1ad61/apps.o \
 	${OBJECTDIR}/_ext/d2a1ad61/audioSink.o \
-	${OBJECTDIR}/_ext/d2a1ad61/bpm180.o \
+	${OBJECTDIR}/_ext/d2a1ad61/bmp180App.o \
 	${OBJECTDIR}/_ext/d2a1ad61/dcf77.o \
 	${OBJECTDIR}/_ext/d2a1ad61/flasher.o \
 	${OBJECTDIR}/_ext/d2a1ad61/spiram.o \
@@ -53,6 +53,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/_ext/5c0/protocol.o \
 	${OBJECTDIR}/_ext/5c0/rs485.o \
 	${OBJECTDIR}/_ext/5c0/sinks.o \
+	${OBJECTDIR}/_ext/828e6f31/bmp180.o \
 	${OBJECTDIR}/_ext/828e6f31/dht11.o \
 	${OBJECTDIR}/_ext/828e6f31/digio.o \
 	${OBJECTDIR}/_ext/828e6f31/displaySink.o \
@@ -98,10 +99,10 @@ ${OBJECTDIR}/_ext/d2a1ad61/audioSink.o: ../apps/audioSink.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/audioSink.o ../apps/audioSink.c
 
-${OBJECTDIR}/_ext/d2a1ad61/bpm180.o: ../apps/bpm180.c
+${OBJECTDIR}/_ext/d2a1ad61/bmp180App.o: ../apps/bmp180App.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/bpm180.o ../apps/bpm180.c
+	$(COMPILE.c) -O2 -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/d2a1ad61/bmp180App.o ../apps/bmp180App.c
 
 ${OBJECTDIR}/_ext/d2a1ad61/dcf77.o: ../apps/dcf77.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/d2a1ad61
@@ -172,6 +173,11 @@ ${OBJECTDIR}/_ext/5c0/sinks.o: ../sinks.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/5c0
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/5c0/sinks.o ../sinks.c
+
+${OBJECTDIR}/_ext/828e6f31/bmp180.o: ../sinks/bmp180.c
+	${MKDIR} -p ${OBJECTDIR}/_ext/828e6f31
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -D_CONF_RASPBIAN -D__USE_BSD -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/828e6f31/bmp180.o ../sinks/bmp180.c
 
 ${OBJECTDIR}/_ext/828e6f31/dht11.o: ../sinks/dht11.c
 	${MKDIR} -p ${OBJECTDIR}/_ext/828e6f31

@@ -146,5 +146,7 @@ void flog(const char* format, ...) {
     va_start(args, format);
 
     vprintf(format, args);
+    printf("\n");
+    fflush(stdout);
 }
 #endif

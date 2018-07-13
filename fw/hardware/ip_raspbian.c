@@ -112,6 +112,10 @@ WORD TCPIsGetReady(TCP_SOCKET socket) {
     return 0;
 }
 
+WORD TCPIsPutReady(TCP_SOCKET socket) {
+    return 0x7fff;
+}
+
 BOOL TCPIsConnected(TCP_SOCKET socket) {
     return (listen_socket >= 0);
 }

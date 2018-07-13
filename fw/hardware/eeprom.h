@@ -24,5 +24,9 @@ void rom_write(BYTE destinationAddr, const BYTE* source, BYTE length);
 
 void rom_poll();
 
+#else
+
+#define EEPROM_MODIFIER
+
 #endif
 #endif

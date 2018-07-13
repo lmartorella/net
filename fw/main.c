@@ -5,7 +5,10 @@
 #include "protocol.h"
 #include "sinks.h"
 #include "apps/apps.h"
+
+#ifdef HAS_DIGITAL_COUNTER
 #include "hardware/counter.h"
+#endif
 
 #ifdef __XC8
 void interrupt PRIO_TYPE low_isr()

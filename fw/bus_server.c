@@ -63,6 +63,7 @@ static BYTE countChildren()
 
 static void setDirtyChild(signed char i)
 {
+    flog("setDirtyChild: %d", i);
     bus_dirtyChildren[i / 8] |= (1 << (i % 8));
 }
 
@@ -70,6 +71,8 @@ static void setChildKnown(signed char i)
 {
     setDirtyChild(i);
     s_childKnown[i / 8] |= (1 << (i % 8));
+
+    flog("setChildKnown: %d", i);
     
     char msg[16];
     sprintf(msg, "%u nodes", countChildren());
@@ -125,6 +128,8 @@ static void bus_scanNext()
 }
 
 static void bus_registerNewNode() {
+    flog("Registering new children");
+    
     // Find a free slot
     s_scanIndex = 0;
     // Check for valid node
@@ -143,7 +148,8 @@ static void bus_registerNewNode() {
     
     // Have the good address
     // Do not store it now, store it after the ack
-    
+    flog("Found index %d", s_scanIndex);
+
     // Send it
     BYTE buffer[4] = { 0x55, 0xaa };
     buffer[2] = s_scanIndex;
