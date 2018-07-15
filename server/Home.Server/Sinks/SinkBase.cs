@@ -69,11 +69,11 @@ namespace Lucky.Home.Sinks
 
         public string FourCc { get; private set; }
 
-        protected Task<bool> Read(Func<IConnectionReader, Task> readHandler, [CallerMemberName] string context = "")
+        protected Task<bool> Read(Func<IConnectionReader, Task> readHandler, int timeout = 0, [CallerMemberName] string context = "")
         {
             if (Node != null)
             {
-                return Node.ReadFromSink(_index, readHandler, context);
+                return Node.ReadFromSink(_index, readHandler, timeout, context);
             }
             else
             {

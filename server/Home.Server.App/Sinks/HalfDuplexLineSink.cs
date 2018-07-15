@@ -74,7 +74,7 @@ namespace Lucky.Home.Sinks
                     data = msg.Data ?? new byte[0];
                     err = msg.Error;
                 }
-            }, opName + ":RD");
+            }, 0, opName + ":RD");
             return Tuple.Create(data, err);
         }
     }

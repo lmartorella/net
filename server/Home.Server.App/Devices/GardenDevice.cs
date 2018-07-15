@@ -71,6 +71,14 @@ namespace Lucky.Home.Devices
         private readonly FileInfo _csvFile;
         private string[] _zoneNames = new string[0];
         private readonly double _counterFq;
+        private List<MailData> _mailData = new List<MailData>();
+
+        private class MailData
+        {
+            public string Name;
+            public Tuple<string, int>[] ZoneData;
+        }
+
 
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
@@ -169,7 +177,7 @@ namespace Lucky.Home.Devices
             {
                 try
                 {
-                    return await flowSink.ReadData(_counterFq);
+                    return await flowSink.ReadData(_counterFq, POLL_PERIOD);
                 }
                 catch (Exception exc)
                 {
@@ -195,6 +203,8 @@ namespace Lucky.Home.Devices
 
             while (!IsDisposed)
             {
+                await Task.Delay(POLL_PERIOD);
+
                 // Program in progress?
                 bool cycleIsWaiting = false;
                 // Check for new program to run
@@ -209,10 +219,19 @@ namespace Lucky.Home.Devices
                     var gardenSink = GetFirstOnlineSink<GardenSink>();
                     if (gardenSink != null)
                     {
-                        errors = 0;
-
                         // Wait for a free garden device
-                        var state = await gardenSink.Read(false);
+                        var state = await gardenSink.Read(false, POLL_PERIOD);
+                        if (state == null)
+                        {
+                            // Lost connection with garden programmer!
+                            if (errors++ < 5)
+                            {
+                                Logger.Log("Cannot contact garden (2)", "cycleIsWaiting", cycleIsWaiting, "inProgress", inProgress);
+                                continue;
+                            }
+                        }
+
+                        errors = 0;
                         DateTime now = DateTime.Now;
                         if (state.IsAvailable)
                         {
@@ -244,7 +263,7 @@ namespace Lucky.Home.Devices
                             if (inProgress)
                             {
                                 // The program is running? Log flow
-                                await lastStepActions.StepAction(now, state);
+                                lastStepActions.StepAction(now, state);
                             }
                         }
                     }
@@ -257,8 +276,6 @@ namespace Lucky.Home.Devices
                         }
                     }
                 }
-
-                await Task.Delay(POLL_PERIOD);
             }
         }
 
@@ -440,13 +457,6 @@ namespace Lucky.Home.Devices
             };
 
             return new StepActions { StopAction = stopAction, StepAction = stepAction };
-        }
-
-        private List<MailData> _mailData = new List<MailData>();
-        private class MailData
-        {
-            public string Name;
-            public Tuple<string, int>[] ZoneData;
         }
 
         private void ScheduleMail(DateTime now, ImmediateProgram cycle)

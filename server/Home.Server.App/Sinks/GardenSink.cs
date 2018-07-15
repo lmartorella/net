@@ -48,7 +48,7 @@ namespace Lucky.Home.Sinks
             public int[] ZoneRemTimes;
         }
 
-        public async Task<TimerState> Read(bool log)
+        public async Task<TimerState> Read(bool log, int timeout = 0)
         {
             TimerState state = null;
             await Read(async reader =>
@@ -66,7 +66,7 @@ namespace Lucky.Home.Sinks
                 {
                     Logger.Log("GardenMd NO DATA");
                 }
-            });
+            }, timeout);
             return state;
         }
 

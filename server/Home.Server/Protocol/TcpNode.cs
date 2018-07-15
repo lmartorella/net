@@ -560,9 +560,9 @@ namespace Lucky.Home.Protocol
             }, "WriteToSink:" + context);
         }
 
-        public async Task<bool> ReadFromSink(int sinkId, Func<IConnectionReader, Task> readHandler, [CallerMemberName] string context = "")
+        public async Task<bool> ReadFromSink(int sinkId, Func<IConnectionReader, Task> readHandler, int timeout = 0, [CallerMemberName] string context = "")
         {
-            return await OpenNodeSession(async (connection, address) =>
+            var task = OpenNodeSession(async (connection, address) =>
             {
                 // statistics, e2e
                 DateTime start = DateTime.Now;
@@ -576,6 +576,23 @@ namespace Lucky.Home.Protocol
 
                 return true;
             }, "ReadFromSink:" + context);
+
+            if (timeout > 0)
+            {
+                var t = await Task.WhenAny(task, Task.Delay(timeout));
+                if (t == task)
+                {
+                    return task.Result;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return await task;
+            }
         }
 
         public T Sink<T>() where T : ISink
