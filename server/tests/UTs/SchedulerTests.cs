@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Lucky.Home.Model;
+using System.Linq;
 
 namespace UTs
 {
@@ -16,7 +17,7 @@ namespace UTs
         {
             var cycle = new C { DayPeriod = 3, Start = new DateTime(2010, 5, 5), StartTime = new TimeSpan(12, 0, 0) };
             // Exactly equal to now
-            Assert.AreEqual(new DateTime(2010, 5, 5, 12, 0, 0), TimeProgram<C>.GetNextTick(cycle, new DateTime(2010, 5, 5, 12, 0 ,0)));
+            Assert.AreEqual(new DateTime(2010, 5, 5, 12, 0, 0), TimeProgram<C>.GetNextTick(cycle, new DateTime(2010, 5, 5, 12, 0, 0)));
             // some min before
             Assert.AreEqual(new DateTime(2010, 5, 5, 12, 0, 0), TimeProgram<C>.GetNextTick(cycle, new DateTime(2010, 5, 5, 11, 0, 0)));
             // some min after
@@ -50,6 +51,24 @@ namespace UTs
             Assert.AreEqual(new DateTime(2017, 10, 29, 2, 59, 59, DateTimeKind.Local), TimeProgram<C>.GetNextTick(cycle, new DateTime(2017, 10, 29, 2, 59, 50, DateTimeKind.Local)));
             // some min after
             Assert.AreEqual(new DateTime(2017, 11, 1, 2, 59, 59, DateTimeKind.Local), TimeProgram<C>.GetNextTick(cycle, new DateTime(2017, 10, 29, 3, 00, 02, DateTimeKind.Local)));
+
+            // Ticks
+            cycle = new C { DayPeriod = 3, Start = new DateTime(2010, 5, 5), StartTime = new TimeSpan(12, 0, 0) };
+            CollectionAssert.AreEqual(new[] { new DateTime(2010, 5, 8, 12, 0, 0), new DateTime(2010, 5, 11, 12, 0, 0) }, TimeProgram<C>.GetNextTicks(cycle, new DateTime(2010, 5, 5, 13, 0, 0), 2).ToArray());
+
+            var cycles = new C[] {
+                new C { DayPeriod = 3, Start = new DateTime(2010, 1, 1), StartTime = new TimeSpan(12, 0, 0) },
+                new C { DayPeriod = 1, Start = new DateTime(2010, 1, 2), StartTime = new TimeSpan(14, 0, 0) },
+            };
+
+            CollectionAssert.AreEqual(new[] {
+                new DateTime(2010, 1, 1, 12, 0, 0),
+                new DateTime(2010, 1, 2, 14, 0, 0),
+                new DateTime(2010, 1, 3, 14, 0, 0),
+                new DateTime(2010, 1, 4, 12, 0, 0),
+                new DateTime(2010, 1, 4, 14, 0, 0),
+                new DateTime(2010, 1, 5, 14, 0, 0)
+            }, TimeProgram<C>.GetNextCycles(cycles, new DateTime(2010, 1, 1, 11, 0, 0), 6).ToArray());
         }
     }
 }

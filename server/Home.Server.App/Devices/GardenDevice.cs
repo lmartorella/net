@@ -41,8 +41,20 @@ namespace Lucky.Home.Devices
         /// <summary>
         /// In liter/seconds
         /// </summary>
-        [Csv]
-        public double Flow;
+        [Csv("0.0")]
+        public double FlowLMin;
+
+        /// <summary>
+        /// Liter used for cycle
+        /// </summary>
+        [Csv("0.0")]
+        public double QtyL;
+
+        /// <summary>
+        /// Total MC
+        /// </summary>
+        [Csv("0.000")]
+        public double TotalQtyMc;
     }
 
     [Device("Garden")]
@@ -54,7 +66,7 @@ namespace Lucky.Home.Devices
         private FileInfo _cfgFile;
         private Timer _debounceTimer;
         private object _timeProgramLock = new object();
-        private readonly TimeProgram<GardenCycle> _timeProgram = new TimeProgram<GardenCycle>();
+        private readonly TimeProgram<GardenCycle> _timeProgram;
         private readonly Queue<ImmediateProgram> _cycleQueue = new Queue<ImmediateProgram>();
         private readonly FileInfo _csvFile;
         private string[] _zoneNames = new string[0];
@@ -84,6 +96,7 @@ namespace Lucky.Home.Devices
         public GardenDevice(double counterFq = 5.5)
         {
             _counterFq = counterFq;
+            _timeProgram = new TimeProgram<GardenCycle>(Logger);
 
             var cfgColder = Manager.GetService<PersistenceService>().GetAppFolderPath("Server");
             _cfgFile = new FileInfo(Path.Combine(cfgColder, "gardenCfg.json"));
@@ -222,7 +235,8 @@ namespace Lucky.Home.Devices
                                     zones = (int[])cycle.Zones.Clone();
                                 }
                                 await gardenSink.WriteProgram(zones);
-                                lastStepActions = LogStartProgram(now, cycle);
+                                inProgress = true;
+                                lastStepActions = await LogStartProgram(now, cycle);
                             }
                         }
                         else
@@ -323,6 +337,7 @@ namespace Lucky.Home.Devices
 
         private void HandleProgramCycle(object sender, TimeProgram<GardenCycle>.CycleTriggeredEventArgs e)
         {
+            Logger.Log("ScheduleProgram", "name", e.Cycle.Name);
             ScheduleCycle(new ImmediateProgram { Zones = e.Cycle.Zones, Name = e.Cycle.Name } );
         }
 
@@ -348,7 +363,7 @@ namespace Lucky.Home.Devices
             public Func<DateTime, GardenSink.TimerState, Task> StepAction;
         }
 
-        private StepActions LogStartProgram(DateTime now, ImmediateProgram cycle)
+        private async Task<StepActions> LogStartProgram(DateTime now, ImmediateProgram cycle)
         {
             Logger.Log("Garden", "cycle start", cycle.Name);
 
@@ -358,17 +373,38 @@ namespace Lucky.Home.Devices
                 Time = now.TimeOfDay,
                 Cycle = cycle.Name,
                 Zones = string.Join(";", cycle.Zones.Select(t => t.ToString())),
-                State = 1
+                State = 1,
             };
+
+            double startQty = 0;
+
+            var flowData = (await ReadFlow());
+            if (flowData != null)
+            {
+                startQty = data.TotalQtyMc = flowData.TotalMc;
+            }
+
             lock (_csvFile)
             {
                 CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
             }
 
             // Return the action to log the stop program
-            Action<DateTime> stopAction = now1 =>
+            Action<DateTime> stopAction = async now1 =>
             {
                 Logger.Log("Garden", "cycle end", cycle.Name);
+
+                if (startQty > 0)
+                {
+                    var flowData1 = (await ReadFlow());
+                    if (flowData1 != null)
+                    {
+                        data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
+                        data.TotalQtyMc = flowData1.TotalMc;
+                        data.FlowLMin = flowData1.FlowLMin;
+                    }
+                }
+
                 data.State = 0;
                 data.Date = now1.Date;
                 data.Time = now1.TimeOfDay;
@@ -377,33 +413,76 @@ namespace Lucky.Home.Devices
                     CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
                 }
 
-                // Send mail
-                string body = "Zone irrigate:" + Environment.NewLine + string.Join(Environment.NewLine, cycle.Zones.Select((z, i) => Tuple.Create(z, i)).Where(t => t.Item1 > 0).Select(t =>
-                {
-                    return string.Format("{0}: {1} minuti", GetZoneName(t.Item2), t.Item1);
-                }));
-                Manager.GetService<INotificationService>().SendMail("Giardino innaffiato", body);
+                ScheduleMail(now, cycle);
             };
 
             // Log a flow info
             Func<DateTime, GardenSink.TimerState, Task> stepAction = async (now1, state) =>
             {
-                var flow = (await ReadFlow())?.FlowLMin;
-                if (flow.HasValue)
+                if (startQty > 0)
                 {
-                    data.State = 2;
-                    data.Flow = flow.Value;
-                    data.Date = now1.Date;
-                    data.Time = now1.TimeOfDay;
-                    data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => t.ToString()));
-                    lock (_csvFile)
+                    var flowData1 = (await ReadFlow());
+                    if (flowData1 != null)
                     {
-                        CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
+                        data.State = 2;
+                        data.Date = now1.Date;
+                        data.Time = now1.TimeOfDay;
+                        data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
+                        data.TotalQtyMc = flowData1.TotalMc;
+                        data.FlowLMin = flowData1.FlowLMin;
+                        data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => t.ToString()));
+                        lock (_csvFile)
+                        {
+                            CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
+                        }
                     }
                 }
             };
 
             return new StepActions { StopAction = stopAction, StepAction = stepAction };
+        }
+
+        private List<MailData> _mailData = new List<MailData>();
+        private class MailData
+        {
+            public string Name;
+            public Tuple<string, int>[] ZoneData;
+        }
+
+        private void ScheduleMail(DateTime now, ImmediateProgram cycle)
+        {
+            _mailData.Add(new MailData
+            {
+                Name = cycle.Name,
+                ZoneData = cycle.Zones.Select((time, i) => Tuple.Create(time, i)).Where(t => t.Item1 > 0).Select(tuple =>
+                {
+                    return Tuple.Create(GetZoneName(tuple.Item2), tuple.Item1);
+                }).ToArray()
+            });
+
+            bool sendNow = true;
+            // If more programs will follow, don't send the mail now
+            lock (_timeProgramLock)
+            {
+                var nextCycle = _timeProgram.GetNextCycles(now, 1);
+                if (nextCycle.Length > 0 && nextCycle[0] < now + TimeSpan.FromMinutes(5))
+                {
+                    // Don't send
+                    sendNow = false;
+                }
+            }
+
+            if (sendNow)
+            {
+                // Schedule mail
+                string body = "Programmi:" + Environment.NewLine;
+                body += string.Join(Environment.NewLine, _mailData.Select(data => data.Name + Environment.NewLine + string.Join(Environment.NewLine, data.ZoneData.Select(t =>
+                {
+                    return string.Format("{0}: {1} minuti", t.Item1, t.Item2);
+                }))));
+
+                Manager.GetService<INotificationService>().SendMail("Giardino irrigato", body);
+            }
         }
 
         private string GetZoneName(int index)

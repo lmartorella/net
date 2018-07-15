@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Lucky.Services;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -12,6 +14,10 @@ namespace Lucky.Home.Model
 
         private ProgramData _program;
         private Timer _refreshTimer;
+        private Timer[] _intermediateTimers;
+        private ILogger _logger;
+        // Make sure that we don't lose ticks in between poll calc
+        private DateTime _lastRefreshTime;
 
         public static ProgramData DefaultProgram
         {
@@ -21,8 +27,9 @@ namespace Lucky.Home.Model
             }
         }
 
-        public TimeProgram()
+        public TimeProgram(ILogger logger)
         {
+            _logger = logger;
             SetProgram(DefaultProgram);
         }
 
@@ -226,16 +233,18 @@ namespace Lucky.Home.Model
                 _refreshTimer.Dispose();
             }
 
-            // Make sure that we don't lose ticks in between poll calc
-            var lastRefreshTime = DateTime.Now;
+            _lastRefreshTime = DateTime.Now;
+            CheckRefresh();
+        }
+
+        private void CheckRefresh()
+        {
+            _logger.Log("RefreshTimer");
+            _intermediateTimers = PollTimers(_lastRefreshTime, RefreshTimerPeriod);
+            _lastRefreshTime += RefreshTimerPeriod;
+
             // To avoid GC
-            Timer[] intermediateTimers;
-            _refreshTimer = new Timer(o =>
-            {
-                intermediateTimers = PollTimers(lastRefreshTime, RefreshTimerPeriod);
-                lastRefreshTime += RefreshTimerPeriod;
-            }
-            , null, TimeSpan.Zero, RefreshTimerPeriod);
+            _refreshTimer = new Timer(o => CheckRefresh(), null, (_lastRefreshTime - DateTime.Now), Timeout.InfiniteTimeSpan);
         }
 
         /// <summary>
@@ -260,6 +269,24 @@ namespace Lucky.Home.Model
             }).ToArray();
         }
 
+        public DateTime[] GetNextCycles(DateTime now, int count)
+        {
+            return GetNextCycles(_program.Cycles, now, count);
+        }
+
+        public static DateTime[] GetNextCycles(TCycle[] cycles, DateTime now, int count)
+        {
+            // Get count items for each cycles
+            var x = cycles.SelectMany(c =>
+            {
+                var y = GetNextTicks(c, now, count).ToArray();
+                return y;
+            }).ToArray();
+
+            return x.OrderBy(d => d).Take(count).ToArray();
+        }
+
+
         private void RaiseEvent(TCycle cycle)
         {
             CycleTriggered?.Invoke(this, new CycleTriggeredEventArgs { Cycle = cycle });
@@ -276,9 +303,9 @@ namespace Lucky.Home.Model
             }
 
             // Check begin / end
-            if (cycle.Start.HasValue && now < cycle.Start)
+            if (cycle.Start.HasValue && now < cycle.Start.Value)
             {
-                return null;
+                now = cycle.Start.Value;
             }
             if (cycle.End.HasValue && now > cycle.End)
             {
@@ -299,6 +326,23 @@ namespace Lucky.Home.Model
             }
 
             return nextDay + cycle.StartTime;
+        }
+
+        public static IEnumerable<DateTime> GetNextTicks(Cycle cycle, DateTime now, int count)
+        {
+            for (; count > 0; count--)
+            {
+                DateTime? next = GetNextTick(cycle, now);
+                if (!next.HasValue)
+                {
+                    yield break;
+                }
+                else
+                {
+                    yield return next.Value;
+                    now = next.Value + TimeSpan.FromSeconds(1);
+                }
+            }
         }
 
         private static DateTime GetNextValidPeriodicDay(int dayPeriod, DateTime today, DateTime startDate)
