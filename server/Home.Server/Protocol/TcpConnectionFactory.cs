@@ -53,7 +53,7 @@ namespace Lucky.Home.Protocol
     internal class TcpConnectionFactory : ServiceBase
     {
         private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(20);
+        private static readonly TimeSpan MAX_LIFE_TIME = TimeSpan.FromMinutes(30);
 
         private readonly object _lockObject = new object();
         private Dictionary<IPEndPoint, Connection> _connections = new Dictionary<IPEndPoint, Connection>();
@@ -246,7 +246,7 @@ namespace Lucky.Home.Protocol
                     connection.Release();
                     if (abortReason != null)
                     {
-                        Logger.Log("Close", "reason", abortReason);
+                        Logger.Log("Close", "reason", abortReason, "EP", endPoint);
                         connection.Close(false);
                     }
                     if (connection.Client.IsClosed)

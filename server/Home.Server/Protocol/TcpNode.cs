@@ -219,6 +219,7 @@ namespace Lucky.Home.Protocol
             // Repeat until metadata are OK
             while (!(ret = await TryFetchMetadata()).Item1)
             {
+                Logger.Log("RetryMD");
                 await Task.Delay(RetryTime);
             }
 
@@ -233,7 +234,10 @@ namespace Lucky.Home.Protocol
             // Register subnodes, asking for identity
             var children = await Task.WhenAll(ret.Item2.Select(async address => await nodeManager.RegisterUnknownNode(address)));
             _lastKnownChildren.Clear();
-            children.Select(c => _lastKnownChildren[c.Address.Index] = c);
+            foreach (var child in children)
+            {
+                _lastKnownChildren[child.Address.Index] = child;
+            }
         }
 
         private async Task<bool> OpenNodeSession(Func<IConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
