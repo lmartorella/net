@@ -33,11 +33,14 @@ namespace Lucky.Home.Devices
         public string Zones;
 
         /// <summary>
-        /// Start = 0: stoped. 1 = started. 2 = flowing
+        /// 0: stoped (final). 1 = just started. 2 = flowing
         /// </summary>
         [Csv]
-        public int Start;
+        public int State;
 
+        /// <summary>
+        /// In liter/seconds
+        /// </summary>
         [Csv]
         public double Flow;
     }
@@ -54,7 +57,6 @@ namespace Lucky.Home.Devices
         private readonly TimeProgram<GardenCycle> _timeProgram = new TimeProgram<GardenCycle>();
         private readonly Queue<ImmediateProgram> _cycleQueue = new Queue<ImmediateProgram>();
         private readonly FileInfo _csvFile;
-        private StepActions _lastStepActions;
         private string[] _zoneNames = new string[0];
         private readonly double _counterFq;
 
@@ -106,10 +108,10 @@ namespace Lucky.Home.Devices
             }
 
             // Subscribe changes
-            var cfgFIleObserver = new FileSystemWatcher(cfgColder, "gardenCfg.json");
-            cfgFIleObserver.Changed += (o, e) => Debounce(() => ReadConfig());
-            cfgFIleObserver.NotifyFilter = NotifyFilters.LastWrite;
-            cfgFIleObserver.EnableRaisingEvents = true;
+            var cfgFileObserver = new FileSystemWatcher(cfgColder, "gardenCfg.json");
+            cfgFileObserver.Changed += (o, e) => Debounce(() => ReadConfig());
+            cfgFileObserver.NotifyFilter = NotifyFilters.LastWrite;
+            cfgFileObserver.EnableRaisingEvents = true;
 
             // To receive commands from UI
             Manager.GetService<PipeServer>().Message += async (o, e) =>
@@ -124,7 +126,7 @@ namespace Lucky.Home.Devices
                         });
                         break;
                     case "garden.setImmediate":
-                        Logger.Log("setImmediate", "zones", e.Request.ImmediateZones);
+                        Logger.Log("setImmediate", "zones", string.Join(",", e.Request.ImmediateZones));
                         e.Response = Task.FromResult((WebResponse) new GardenWebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" } ) });
                         break;
                     case "garden.stop":
@@ -168,11 +170,80 @@ namespace Lucky.Home.Devices
             }
         }
 
+        /// <summary>
+        /// Persistent loop
+        /// </summary>
+        /// <returns></returns>
         private async Task StartLoop()
-        { 
+        {
+            StepActions lastStepActions = null;
+            bool inProgress = false;
+            int errors = 0;
+
             while (!IsDisposed)
             {
-                await HandlePollTimer();
+                // Program in progress?
+                bool cycleIsWaiting = false;
+                // Check for new program to run
+                lock (_cycleQueue)
+                {
+                    cycleIsWaiting = _cycleQueue.Count > 0;
+                }
+
+                // Do I need to contact the garden sink?
+                if (inProgress || cycleIsWaiting)
+                {
+                    var gardenSink = GetFirstOnlineSink<GardenSink>();
+                    if (gardenSink != null)
+                    {
+                        errors = 0;
+
+                        // Wait for a free garden device
+                        var state = await gardenSink.Read(false);
+                        DateTime now = DateTime.Now;
+                        if (state.IsAvailable)
+                        {
+                            // Finished?
+                            if (lastStepActions != null)
+                            {
+                                lastStepActions.StopAction(now);
+                                lastStepActions = null;
+                                inProgress = false;
+                            }
+
+                            // New program to load?
+                            if (cycleIsWaiting)
+                            {
+                                ImmediateProgram cycle;
+                                int[] zones = null;
+                                lock (_cycleQueue)
+                                {
+                                    cycle = _cycleQueue.Dequeue();
+                                    zones = (int[])cycle.Zones.Clone();
+                                }
+                                await gardenSink.WriteProgram(zones);
+                                lastStepActions = LogStartProgram(now, cycle);
+                            }
+                        }
+                        else
+                        {
+                            if (inProgress)
+                            {
+                                // The program is running? Log flow
+                                await lastStepActions.StepAction(now, state);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Lost connection with garden programmer!
+                        if (errors++ < 5)
+                        {
+                            Logger.Log("Cannot contact garden", "cycleIsWaiting", cycleIsWaiting, "inProgress", inProgress);
+                        }
+                    }
+                }
+
                 await Task.Delay(POLL_PERIOD);
             }
         }
@@ -271,63 +342,23 @@ namespace Lucky.Home.Devices
             }
         }
 
-        private async Task HandlePollTimer()
-        {
-            var gardenSink = GetFirstOnlineSink<GardenSink>();
-            if (gardenSink != null)
-            {
-                // Wait for a free garden device
-                // Write fancy logs
-                var state = await gardenSink.Read(false);
-                if (state.IsAvailable)
-                {
-                    int[] zones = null;
-                    lock (_cycleQueue)
-                    {
-                        if (_lastStepActions != null)
-                        {
-                            _lastStepActions.StopAction();
-                            _lastStepActions = null;
-                        }
-
-                        if (_cycleQueue.Count > 0)
-                        {
-                            var cycle = _cycleQueue.Dequeue();
-                            zones = cycle.Zones;
-                            _lastStepActions = LogStartProgram(cycle);
-                        }
-                    }
-                    if (zones != null)
-                    {
-                        await gardenSink.WriteProgram(zones);
-                    }
-                }
-                else
-                {
-                    // The program is running? Log flow
-                    _lastStepActions?.StepAction(state);
-                }
-            }
-        }
-
         private class StepActions
         {
-            public Action StopAction;
-            public Func<GardenSink.TimerState, Task> StepAction;
+            public Action<DateTime> StopAction;
+            public Func<DateTime, GardenSink.TimerState, Task> StepAction;
         }
 
-        private StepActions LogStartProgram(ImmediateProgram cycle)
+        private StepActions LogStartProgram(DateTime now, ImmediateProgram cycle)
         {
             Logger.Log("Garden", "cycle start", cycle.Name);
 
-            var now = DateTime.Now;
             GardenCsvRecord data = new GardenCsvRecord
             {
                 Date = now.Date,
                 Time = now.TimeOfDay,
                 Cycle = cycle.Name,
                 Zones = string.Join(";", cycle.Zones.Select(t => t.ToString())),
-                Start = 1
+                State = 1
             };
             lock (_csvFile)
             {
@@ -335,10 +366,12 @@ namespace Lucky.Home.Devices
             }
 
             // Return the action to log the stop program
-            Action stopAction = () =>
+            Action<DateTime> stopAction = now1 =>
             {
                 Logger.Log("Garden", "cycle end", cycle.Name);
-                data.Start = 0;
+                data.State = 0;
+                data.Date = now1.Date;
+                data.Time = now1.TimeOfDay;
                 lock (_csvFile)
                 {
                     CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
@@ -353,13 +386,15 @@ namespace Lucky.Home.Devices
             };
 
             // Log a flow info
-            Func<GardenSink.TimerState, Task> stepAction = async (state) =>
+            Func<DateTime, GardenSink.TimerState, Task> stepAction = async (now1, state) =>
             {
                 var flow = (await ReadFlow())?.FlowLMin;
                 if (flow.HasValue)
                 {
-                    data.Start = 2;
+                    data.State = 2;
                     data.Flow = flow.Value;
+                    data.Date = now1.Date;
+                    data.Time = now1.TimeOfDay;
                     data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => t.ToString()));
                     lock (_csvFile)
                     {
