@@ -54,7 +54,7 @@ namespace UTs
 
             // Ticks
             cycle = new C { DayPeriod = 3, Start = new DateTime(2010, 5, 5), StartTime = new TimeSpan(12, 0, 0) };
-            CollectionAssert.AreEqual(new[] { new DateTime(2010, 5, 8, 12, 0, 0), new DateTime(2010, 5, 11, 12, 0, 0) }, TimeProgram<C>.GetNextTicks(cycle, new DateTime(2010, 5, 5, 13, 0, 0), 2).ToArray());
+            CollectionAssert.AreEqual(new[] { new DateTime(2010, 5, 8, 12, 0, 0), new DateTime(2010, 5, 11, 12, 0, 0) }, TimeProgram<C>.GetNextTicks(cycle, new DateTime(2010, 5, 5, 13, 0, 0)).Take(2).ToArray(), "Test 1");
 
             var cycles = new C[] {
                 new C { DayPeriod = 3, Start = new DateTime(2010, 1, 1), StartTime = new TimeSpan(12, 0, 0) },
@@ -68,7 +68,7 @@ namespace UTs
                 new DateTime(2010, 1, 4, 12, 0, 0),
                 new DateTime(2010, 1, 4, 14, 0, 0),
                 new DateTime(2010, 1, 5, 14, 0, 0)
-            }, TimeProgram<C>.GetNextCycles(cycles, new DateTime(2010, 1, 1, 11, 0, 0), 6).ToArray());
+            }, TimeProgram<C>.GetNextCycles(cycles, new DateTime(2010, 1, 1, 11, 0, 0), 6).Select(c => c.Item2).ToArray(), "Test 2");
         }
     }
 }

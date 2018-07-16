@@ -12,9 +12,73 @@ using System.Collections.Generic;
 using Lucky.Db;
 using Lucky.Home.Notification;
 using Lucky.Home.Services;
+using static Lucky.Home.Devices.GardenDevice;
 
 namespace Lucky.Home.Devices
 {
+    [DataContract]
+    public class GardenWebResponse : WebResponse
+    {
+        /// <summary>
+        /// Status
+        /// </summary>
+        [DataMember(Name = "status")]
+        public string Status { get; set; }
+
+        /// <summary>
+        /// Result/error
+        /// </summary>
+        [DataMember(Name = "error")]
+        public string Error { get; set; }
+
+        /// <summary>
+        /// Configuration
+        /// </summary>
+        [DataMember(Name = "config")]
+        public Configuration Configuration { get; set; }
+
+        /// <summary>
+        /// For gardem
+        /// </summary>
+        [DataMember(Name = "online")]
+        public bool Online { get; set; }
+
+        /// <summary>
+        /// For gardem
+        /// </summary>
+        [DataMember(Name = "flowData")]
+        public FlowData FlowData { get; set; }
+
+        /// <summary>
+        /// For gardem
+        /// </summary>
+        [DataMember(Name = "nextCycles")]
+        public NextCycle[] NextCycles { get; set; }
+    }
+
+    /// <summary>
+    /// JSON for configuration serialization
+    /// </summary>
+    [DataContract]
+    public class Configuration
+    {
+        [DataMember(Name = "program")]
+        public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
+
+        [DataMember(Name = "zones")]
+        public string[] ZoneNames { get; set; }
+    }
+
+    [DataContract]
+    public class NextCycle
+    {
+        [DataMember(Name = "name")]
+        public string Name { get; set; }
+
+        [DataMember(Name = "scheduledTime")]
+        public DateTime ScheduledTime { get; set; }
+    }
+
     class GardenCsvRecord
     {
         [Csv("yyyy-MM-dd")]
@@ -135,7 +199,7 @@ namespace Lucky.Home.Devices
             cfgFileObserver.EnableRaisingEvents = true;
 
             // To receive commands from UI
-            Manager.GetService<PipeServer>().Message += async (o, e) =>
+            Manager.GetService<PipeServer>().Message += (o, e) =>
             {
                 switch (e.Request.Command)
                 {
@@ -143,12 +207,19 @@ namespace Lucky.Home.Devices
                         e.Response = Task.Run(async () =>
                         {
                             FlowData flowData = await ReadFlow();
-                            return (WebResponse) new GardenWebResponse { Online = GetFirstOnlineSink<GardenSink>() != null, Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames }, FlowData = flowData };
+                            var nextCycles = _timeProgram?.GetNextCycles(DateTime.Now, 4);
+
+                            return (WebResponse) new GardenWebResponse {
+                                Online = GetFirstOnlineSink<GardenSink>() != null,
+                                Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames },
+                                FlowData = flowData,
+                                NextCycles = nextCycles.Select(t => new NextCycle { Name = t.Item1.Name, ScheduledTime = t.Item2 }).ToArray()
+                            };
                         });
                         break;
                     case "garden.setImmediate":
                         Logger.Log("setImmediate", "zones", string.Join(",", e.Request.ImmediateZones));
-                        e.Response = Task.FromResult((WebResponse) new GardenWebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediate" } ) });
+                        e.Response = Task.FromResult((WebResponse) new GardenWebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediato" } ) });
                         break;
                     case "garden.stop":
                         bool stopped = false;
@@ -263,7 +334,7 @@ namespace Lucky.Home.Devices
                             if (inProgress)
                             {
                                 // The program is running? Log flow
-                                lastStepActions.StepAction(now, state);
+                                await lastStepActions.StepAction(now, state);
                             }
                         }
                     }
@@ -302,19 +373,6 @@ namespace Lucky.Home.Devices
                     handler();
                 }, null, 1000, Timeout.Infinite);
             }
-        }
-
-        /// <summary>
-        /// JSON for configuration serialization
-        /// </summary>
-        [DataContract]
-        public class Configuration
-        {
-            [DataMember(Name = "program")]
-            public TimeProgram<GardenCycle>.ProgramData Program { get; set; }
-
-            [DataMember(Name = "zones")]
-            public string[] ZoneNames { get; set; }
         }
 
         private void ReadConfig()
@@ -475,7 +533,7 @@ namespace Lucky.Home.Devices
             lock (_timeProgramLock)
             {
                 var nextCycle = _timeProgram.GetNextCycles(now, 1);
-                if (nextCycle.Length > 0 && nextCycle[0] < now + TimeSpan.FromMinutes(5))
+                if (nextCycle.Length > 0 && nextCycle[0].Item2 < (now + TimeSpan.FromMinutes(5)))
                 {
                     // Don't send
                     sendNow = false;
@@ -492,6 +550,7 @@ namespace Lucky.Home.Devices
                 }))));
 
                 Manager.GetService<INotificationService>().SendMail("Giardino irrigato", body);
+                _mailData.Clear();
             }
         }
 

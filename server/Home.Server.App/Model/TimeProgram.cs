@@ -269,21 +269,23 @@ namespace Lucky.Home.Model
             }).ToArray();
         }
 
-        public DateTime[] GetNextCycles(DateTime now, int count)
+        public Tuple<TCycle, DateTime>[] GetNextCycles(DateTime now, int count)
         {
-            return GetNextCycles(_program.Cycles, now, count);
+            if (_program != null && _program.Cycles != null && _program.Cycles.Length > 0)
+            {
+                return GetNextCycles(_program.Cycles, now, count);
+            }
+            else
+            {
+                return new Tuple<TCycle, DateTime>[0];
+            }
         }
 
-        public static DateTime[] GetNextCycles(TCycle[] cycles, DateTime now, int count)
+        public static Tuple<TCycle, DateTime>[] GetNextCycles(TCycle[] cycles, DateTime now, int count)
         {
             // Get count items for each cycles
-            var x = cycles.SelectMany(c =>
-            {
-                var y = GetNextTicks(c, now, count).ToArray();
-                return y;
-            }).ToArray();
-
-            return x.OrderBy(d => d).Take(count).ToArray();
+            var x = cycles.SelectMany(cycle => GetNextTicks(cycle, now).Take(count).Select(ts => Tuple.Create(cycle, ts)));
+            return x.OrderBy(d => d.Item2).Take(count).ToArray();
         }
 
 
@@ -328,9 +330,9 @@ namespace Lucky.Home.Model
             return nextDay + cycle.StartTime;
         }
 
-        public static IEnumerable<DateTime> GetNextTicks(Cycle cycle, DateTime now, int count)
+        public static IEnumerable<DateTime> GetNextTicks(Cycle cycle, DateTime now)
         {
-            for (; count > 0; count--)
+            while (true)
             {
                 DateTime? next = GetNextTick(cycle, now);
                 if (!next.HasValue)

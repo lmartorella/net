@@ -1,10 +1,10 @@
-﻿using Lucky.Home.Sinks;
+﻿using Lucky.Home.Devices;
+using Lucky.Home.Sinks;
 using Lucky.Net;
 using Lucky.Services;
 using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using static Lucky.Home.Devices.GardenDevice;
 
 namespace Lucky.Home.Services
 {
@@ -28,40 +28,6 @@ namespace Lucky.Home.Services
         public bool CloseServer;
     }
 
-    [DataContract]
-    public class GardenWebResponse : WebResponse
-    {
-        /// <summary>
-        /// Status
-        /// </summary>
-        [DataMember(Name = "status")]
-        public string Status { get; set; }
-
-        /// <summary>
-        /// Result/error
-        /// </summary>
-        [DataMember(Name = "error")]
-        public string Error { get; set; }
-
-        /// <summary>
-        /// Configuration
-        /// </summary>
-        [DataMember(Name = "config")]
-        public Configuration Configuration { get; set; }
-
-        /// <summary>
-        /// For gardem
-        /// </summary>
-        [DataMember(Name = "online")]
-        public bool Online { get; set; }
-
-        /// <summary>
-        /// For gardem
-        /// </summary>
-        [DataMember(Name = "flowData")]
-        public FlowData FlowData { get; set; }
-    }
-
     public class PipeServer : ServiceBase
     {
         public class MessageEventArgs : EventArgs
@@ -74,7 +40,7 @@ namespace Lucky.Home.Services
 
         public PipeServer()
         {
-            var server = new PipeJsonServer<WebRequest, WebResponse>("NETHOME");
+            var server = new PipeJsonServer<WebRequest, WebResponse>("NETHOME", new[] { typeof(GardenWebResponse) });
             server.ManageRequest = async req =>
             {
                 var args = new MessageEventArgs() { Request = req, Response = Task.FromResult(new WebResponse()) };

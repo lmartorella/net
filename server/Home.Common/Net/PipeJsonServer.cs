@@ -14,11 +14,11 @@ namespace Lucky.Net
         private DataContractJsonSerializer _reqSer;
         private DataContractJsonSerializer _respSer;
 
-        public PipeJsonServer(string path)
+        public PipeJsonServer(string path, Type[] additionalTypes)
         {
             _path = path;
-            _reqSer = new DataContractJsonSerializer(typeof(TReq));
-            _respSer = new DataContractJsonSerializer(typeof(TResp));
+            _reqSer = new DataContractJsonSerializer(typeof(TReq), additionalTypes);
+            _respSer = new DataContractJsonSerializer(typeof(TResp), additionalTypes);
         }
 
         public Func<TReq, Task<Tuple<TResp, bool>>> ManageRequest { get; set; }
