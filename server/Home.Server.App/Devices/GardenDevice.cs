@@ -143,6 +143,7 @@ namespace Lucky.Home.Devices
         {
             public string Name;
             public Tuple<string, int>[] ZoneData;
+            public int Quantity;
         }
 
 
@@ -472,7 +473,7 @@ namespace Lucky.Home.Devices
             Action<DateTime> stopAction = async now1 =>
             {
                 Logger.Log("Garden", "cycle end", cycle.Name);
-
+                int qtyL = -1;
                 if (startQty > 0)
                 {
                     var flowData1 = (await ReadFlow());
@@ -481,6 +482,7 @@ namespace Lucky.Home.Devices
                         data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
                         data.TotalQtyMc = flowData1.TotalMc;
                         data.FlowLMin = flowData1.FlowLMin;
+                        qtyL = (int)data.QtyL;
                     }
                 }
 
@@ -492,7 +494,7 @@ namespace Lucky.Home.Devices
                     CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
                 }
 
-                ScheduleMail(now1, cycle);
+                ScheduleMail(now1, cycle, qtyL);
             };
 
             // Log a flow info
@@ -521,7 +523,7 @@ namespace Lucky.Home.Devices
             return new StepActions { StopAction = stopAction, StepAction = stepAction };
         }
 
-        private void ScheduleMail(DateTime now, ImmediateProgram cycle)
+        private void ScheduleMail(DateTime now, ImmediateProgram cycle, int qtyL)
         {
             _mailData.Add(new MailData
             {
@@ -529,7 +531,8 @@ namespace Lucky.Home.Devices
                 ZoneData = cycle.Zones.Select((time, i) => Tuple.Create(time, i)).Where(t => t.Item1 > 0).Select(tuple =>
                 {
                     return Tuple.Create(GetZoneName(tuple.Item2), tuple.Item1);
-                }).ToArray()
+                }).ToArray(),
+                Quantity = qtyL
             });
 
             bool sendNow = true;
@@ -547,11 +550,22 @@ namespace Lucky.Home.Devices
             if (sendNow)
             {
                 // Schedule mail
-                string body = "Programmi:" + Environment.NewLine;
-                body += string.Join(Environment.NewLine, _mailData.Select(data => data.Name + Environment.NewLine + string.Join(Environment.NewLine, data.ZoneData.Select(t =>
-                {
-                    return string.Format("{0}: {1} minuti", t.Item1, t.Item2);
-                }))));
+                string body = "Cicli effettuati:" + Environment.NewLine;
+                body += string.Join(
+                    Environment.NewLine, 
+                    _mailData.Select(data => 
+                        string.Format("{0} ({2} litri)\r\n{1}", 
+                            data.Name, 
+                            string.Join(Environment.NewLine, 
+                                data.ZoneData.Select(t =>
+                                {
+                                    return string.Format("  {0}: {1} minuti", t.Item1, t.Item2);
+                                })
+                            ),
+                            data.Quantity
+                        )
+                    )
+                );
 
                 Manager.GetService<INotificationService>().SendMail("Giardino irrigato", body);
                 _mailData.Clear();
