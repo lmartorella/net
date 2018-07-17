@@ -75,20 +75,10 @@ namespace Lucky.Home.Devices
         [DataMember(Name = "name")]
         public string Name { get; set; }
 
-        public DateTime? ScheduledTime { get; set; }
-
         [DataMember(Name = "scheduledTime")]
-        public string ScheduledTimeStr
-        {
-            get
-            {
-                return ScheduledTime?.ToString("o");
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public string ScheduledTimeStr { get { return ScheduledTime.ToIso(); } set { ScheduledTime = value.FromIso(); } }
+        [IgnoreDataMember]
+        public DateTime? ScheduledTime { get; set; }
     }
 
     class GardenCsvRecord

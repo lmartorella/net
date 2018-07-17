@@ -30,7 +30,7 @@
         <span ng-if="cycle.scheduledTime">Programma "{{cycle.name}}" schedulato {{cycle.scheduledTime}}</span>
         <span ng-if="!cycle.scheduledTime">Programma "{{cycle.name}}" in coda</span>
       </p>
-    <p> Flusso: {{ctrl.flow.flowLMin}} <small><sup>Lit</sup>/<sub>min</sub></small>, {{ctrl.flow.totalMc}} <small>M<sup>3</sup></small> </p>
+    <p> Flusso: {{ctrl.flow.flowLMin | number : 1 }} <small><sup>Lit</sup>/<sub>min</sub></small>, {{ctrl.flow.totalMc | number : 3 }} <small>M<sup>3</sup></small> </p>
   </div>
 </body>
 </html>

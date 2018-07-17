@@ -104,6 +104,14 @@ namespace Lucky.Home.Model
             /// </summary>
             [DataMember(Name = "cycles")]
             public TCycle[] Cycles { get; set; }
+
+            /// <summary>
+            /// Temporary Disabled?
+            /// </summary>
+            [DataMember(Name = "disabledUntil")]
+            public string DisabledUntilStr { get { return DisabledUntil.ToIso(); } set { DisabledUntil = value.FromIso(); } }
+            [IgnoreDataMember]
+            public DateTime? DisabledUntil { get; set; }
         }
 
         /// <summary>
@@ -128,7 +136,7 @@ namespace Lucky.Home.Model
             /// Start date-time
             /// </summary>
             [DataMember(Name = "start")]
-            public string StartStr { get { return ToIso(Start);  } set { Start = FromIso(value);  } }
+            public string StartStr { get { return Start.ToIso();  } set { Start = value.FromIso();  } }
 
             /// <summary>
             /// Start date-time
@@ -140,7 +148,7 @@ namespace Lucky.Home.Model
             /// End date-time
             /// </summary>
             [DataMember(Name = "end")]
-            public string EndStr { get { return ToIso(End); } set { End = FromIso(value); } }
+            public string EndStr { get { return End.ToIso(); } set { End = value.FromIso(); } }
 
             /// <summary>
             /// End date-time
@@ -171,30 +179,6 @@ namespace Lucky.Home.Model
             /// </summary>
             [IgnoreDataMember]
             public TimeSpan StartTime { get; set; }
-        }
-
-        private static string ToIso(DateTime? start)
-        {
-            if (start.HasValue)
-            {
-                return start.Value.ToString("o");
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        private static DateTime? FromIso(string str)
-        {
-            if (str != null)
-            {
-                return DateTime.ParseExact(str, "o", null);
-            }
-            else
-            {
-                return null;
-            }
         }
 
         private static string ToIso(TimeSpan? timeOfDay)
@@ -260,7 +244,7 @@ namespace Lucky.Home.Model
             return _program.Cycles.Select(cycle =>
             {
                 // Calc the next event for each cycle. If exceeding the refresh timer, let's wait for the next poll cycle
-                var nextTick = GetNextTick(cycle, now);
+                var nextTick = GetNextTick(_program, cycle, now);
                 if (nextTick < DateTime.MaxValue)
                 {
                     var period = nextTick - now;
@@ -276,9 +260,9 @@ namespace Lucky.Home.Model
 
         public IEnumerable<Tuple<TCycle, DateTime>> GetNextCycles(DateTime now)
         {
-            if (_program != null && _program.Cycles != null && _program.Cycles.Length > 0)
+            if (_program != null)
             {
-                return GetNextCycles(_program.Cycles, now);
+                return GetNextCycles(_program, now);
             }
             else
             {
@@ -286,10 +270,15 @@ namespace Lucky.Home.Model
             }
         }
 
-        public static IEnumerable<Tuple<TCycle, DateTime>> GetNextCycles(TCycle[] cycles, DateTime now)
+        public static IEnumerable<Tuple<TCycle, DateTime>> GetNextCycles(ProgramData program, DateTime now)
         {
+            if (program.Cycles == null || program.Cycles.Length == 0)
+            {
+                yield break;
+            }
+
             // Next times
-            Tuple<DateTime, int>[] nextTimes = cycles.Select((cycle, i) => Tuple.Create(GetNextTick(cycle, now), i)).ToArray();
+            Tuple<DateTime, int>[] nextTimes = program.Cycles.Select((cycle, i) => Tuple.Create(GetNextTick(program, cycle, now), i)).ToArray();
 
             // Take the closer one
             while (true)
@@ -301,15 +290,14 @@ namespace Lucky.Home.Model
                     yield break;
                 }
                 var index = closer.Item2;
-                var cycle = cycles[index];
+                var cycle = program.Cycles[index];
                 var nextTime = closer.Item1;
                 yield return Tuple.Create(cycle, nextTime);
 
                 // Replace with next
-                nextTimes[index] = Tuple.Create(GetNextTick(cycle, nextTime + TimeSpan.FromSeconds(1)), index);
+                nextTimes[index] = Tuple.Create(GetNextTick(program, cycle, nextTime + TimeSpan.FromSeconds(1)), index);
             }
         }
-
 
         private void RaiseEvent(TCycle cycle)
         {
@@ -319,7 +307,7 @@ namespace Lucky.Home.Model
         /// <summary>
         /// Get the next event timestamp for that cycle starting from now
         /// </summary>
-        public static DateTime GetNextTick(Cycle cycle, DateTime now)
+        public static DateTime GetNextTick(ProgramData program, Cycle cycle, DateTime now)
         {
             if (cycle.Disabled)
             {
@@ -330,6 +318,10 @@ namespace Lucky.Home.Model
             if (cycle.Start.HasValue && now < cycle.Start.Value)
             {
                 now = cycle.Start.Value;
+            }
+            if (program.DisabledUntil.HasValue && now < program.DisabledUntil.Value)
+            {
+                now = program.DisabledUntil.Value;
             }
             if (cycle.End.HasValue && now > cycle.End)
             {
