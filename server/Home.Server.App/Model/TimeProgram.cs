@@ -14,7 +14,7 @@ namespace Lucky.Home.Model
 
         private ProgramData _program;
         private Timer _refreshTimer;
-        private Timer[] _intermediateTimers;
+        private Timer[] _intermediateTimers = new Timer[0];
         private ILogger _logger;
         // Make sure that we don't lose ticks in between poll calc
         private DateTime _lastRefreshTime;
@@ -232,6 +232,11 @@ namespace Lucky.Home.Model
             {
                 _refreshTimer.Dispose();
             }
+            foreach (var timer in _intermediateTimers)
+            {
+                timer?.Dispose();
+            }
+            _intermediateTimers = new Timer[0];
 
             _lastRefreshTime = DateTime.Now;
             CheckRefresh();

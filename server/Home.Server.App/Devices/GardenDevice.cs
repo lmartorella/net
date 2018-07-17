@@ -75,8 +75,20 @@ namespace Lucky.Home.Devices
         [DataMember(Name = "name")]
         public string Name { get; set; }
 
-        [DataMember(Name = "scheduledTime")]
         public DateTime ScheduledTime { get; set; }
+
+        [DataMember(Name = "scheduledTime")]
+        public string ScheduledTimeStr
+        {
+            get
+            {
+                return ScheduledTime.ToString("o");
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 
     class GardenCsvRecord
@@ -488,7 +500,7 @@ namespace Lucky.Home.Devices
                     CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
                 }
 
-                ScheduleMail(now, cycle);
+                ScheduleMail(now1, cycle);
             };
 
             // Log a flow info

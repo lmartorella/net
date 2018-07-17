@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
 
   <script src="/lib/angular/angular.min.js"></script>
+  <script src="/lib/moment/moment-with-locales.min.js"></script>
   <script src="garden.js"></script>
   <link href="style.css" rel="stylesheet"></link>
 
@@ -22,6 +23,13 @@
   <br/>
   <button ng-click="ctrl.stop()">STOP</button>
   <br/>
-  <span class="message"> {{ctrl.flow.flowLMin}} <sup>Lit</sup>/<sub>min</sub>, {{ctrl.flow.totalMc}} M<sup>3</sup> </span>
+
+  <div class="bot"> 
+    <h3>Prossime irrigazioni:</h3>
+      <p ng-repeat="cycle in ctrl.nextCycles">
+        Programma "{{cycle.name}}" schedulato {{cycle.scheduledTime}}
+      </p>
+    <p> Flusso: {{ctrl.flow.flowLMin}} <small><sup>Lit</sup>/<sub>min</sub></small>, {{ctrl.flow.totalMc}} <small>M<sup>3</sup></small> </p>
+  </div>
 </body>
 </html>

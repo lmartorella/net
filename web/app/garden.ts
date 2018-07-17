@@ -1,3 +1,7 @@
+
+declare var moment: any;
+moment.locale("it-IT");
+
 interface IGardenStatusResponse {
     config: {
         zones: string[];
@@ -7,7 +11,8 @@ interface IGardenStatusResponse {
     flowData: { 
         totalMc: number;
         flowLMin: number;
-    }
+    };
+    nextCycles: { name: string, scheduledTime: string }[];
 }
 
 interface IGardenStartStopResponse {
@@ -25,6 +30,7 @@ class GardenController {
         totalMc: number;
         flowLMin: number;
     };
+    public nextCycles: { name: string, scheduledTime: string }[];
 
     constructor(private $http: ng.IHttpService, private $q: ng.IQService) {
         this.zones = [];
@@ -36,6 +42,13 @@ class GardenController {
                 this.status =  resp.data.online ? 'Online' : (resp.data.config ? 'OFFLINE' : 'NOT CONFIGURED');
                 this.flow = resp.data.flowData;
                 this.disableButton = false;
+
+                let now = moment.now();
+                if (resp.data.nextCycles) {
+                    this.nextCycles = resp.data.nextCycles.map(({ name, scheduledTime }) => {
+                        return { name, scheduledTime: moment.duration(moment(scheduledTime).diff(now)).humanize(true) };
+                    });
+                }
             } else {
                 this.error = "Cannot fetch cfg";
             }

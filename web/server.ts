@@ -173,6 +173,7 @@ app.get('/r/restart', ensureLoggedIn(), async (req, res) => {
 
 app.use('/app', express.static('app'));
 app.use('/lib/angular', express.static('node_modules/angular'));
+app.use('/lib/moment', express.static('node_modules/moment/min'));
 
 app.use(passport.initialize());
 app.use(passport.session());
