@@ -75,14 +75,14 @@ namespace Lucky.Home.Devices
         [DataMember(Name = "name")]
         public string Name { get; set; }
 
-        public DateTime ScheduledTime { get; set; }
+        public DateTime? ScheduledTime { get; set; }
 
         [DataMember(Name = "scheduledTime")]
         public string ScheduledTimeStr
         {
             get
             {
-                return ScheduledTime.ToString("o");
+                return ScheduledTime?.ToString("o");
             }
             set
             {
@@ -219,13 +219,15 @@ namespace Lucky.Home.Devices
                         e.Response = Task.Run(async () =>
                         {
                             FlowData flowData = await ReadFlow();
-                            var nextCycles = _timeProgram?.GetNextCycles(DateTime.Now, 4);
+                            var nextCycles = _cycleQueue.Select(q => Tuple.Create(q.Name, (DateTime?)null))
+                                            .Concat(_timeProgram?.GetNextCycles(DateTime.Now).Select(c => Tuple.Create(c.Item1.Name, (DateTime?)c.Item2)))
+                                            .Take(4);
 
                             return (WebResponse) new GardenWebResponse {
                                 Online = GetFirstOnlineSink<GardenSink>() != null,
                                 Configuration = new Configuration { Program = _timeProgram.Program, ZoneNames = _zoneNames },
                                 FlowData = flowData,
-                                NextCycles = nextCycles.Select(t => new NextCycle { Name = t.Item1.Name, ScheduledTime = t.Item2 }).ToArray()
+                                NextCycles = nextCycles.Select(t => new NextCycle { Name = t.Item1, ScheduledTime = t.Item2 }).ToArray()
                             };
                         });
                         break;
@@ -544,8 +546,8 @@ namespace Lucky.Home.Devices
             // If more programs will follow, don't send the mail now
             lock (_timeProgramLock)
             {
-                var nextCycle = _timeProgram.GetNextCycles(now, 1);
-                if (nextCycle.Length > 0 && nextCycle[0].Item2 < (now + TimeSpan.FromMinutes(5)))
+                var nextCycle = _timeProgram.GetNextCycles(now).FirstOrDefault();
+                if (nextCycle != null && nextCycle.Item2 < (now + TimeSpan.FromMinutes(5)))
                 {
                     // Don't send
                     sendNow = false;

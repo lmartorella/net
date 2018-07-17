@@ -261,9 +261,9 @@ namespace Lucky.Home.Model
             {
                 // Calc the next event for each cycle. If exceeding the refresh timer, let's wait for the next poll cycle
                 var nextTick = GetNextTick(cycle, now);
-                if (nextTick.HasValue)
+                if (nextTick < DateTime.MaxValue)
                 {
-                    var period = nextTick.Value - now;
+                    var period = nextTick - now;
                     if (period <= pollPeriod)
                     {
                         // Ok, schedule the timer for this period
@@ -274,11 +274,11 @@ namespace Lucky.Home.Model
             }).ToArray();
         }
 
-        public Tuple<TCycle, DateTime>[] GetNextCycles(DateTime now, int count)
+        public IEnumerable<Tuple<TCycle, DateTime>> GetNextCycles(DateTime now)
         {
             if (_program != null && _program.Cycles != null && _program.Cycles.Length > 0)
             {
-                return GetNextCycles(_program.Cycles, now, count);
+                return GetNextCycles(_program.Cycles, now);
             }
             else
             {
@@ -286,11 +286,28 @@ namespace Lucky.Home.Model
             }
         }
 
-        public static Tuple<TCycle, DateTime>[] GetNextCycles(TCycle[] cycles, DateTime now, int count)
+        public static IEnumerable<Tuple<TCycle, DateTime>> GetNextCycles(TCycle[] cycles, DateTime now)
         {
-            // Get count items for each cycles
-            var x = cycles.SelectMany(cycle => GetNextTicks(cycle, now).Take(count).Select(ts => Tuple.Create(cycle, ts)));
-            return x.OrderBy(d => d.Item2).Take(count).ToArray();
+            // Next times
+            Tuple<DateTime, int>[] nextTimes = cycles.Select((cycle, i) => Tuple.Create(GetNextTick(cycle, now), i)).ToArray();
+
+            // Take the closer one
+            while (true)
+            {
+                Tuple<DateTime, int> closer = nextTimes.OrderBy(tuple => tuple.Item1).First();
+
+                if (closer.Item1 == DateTime.MaxValue)
+                {
+                    yield break;
+                }
+                var index = closer.Item2;
+                var cycle = cycles[index];
+                var nextTime = closer.Item1;
+                yield return Tuple.Create(cycle, nextTime);
+
+                // Replace with next
+                nextTimes[index] = Tuple.Create(GetNextTick(cycle, nextTime + TimeSpan.FromSeconds(1)), index);
+            }
         }
 
 
@@ -302,11 +319,11 @@ namespace Lucky.Home.Model
         /// <summary>
         /// Get the next event timestamp for that cycle starting from now
         /// </summary>
-        public static DateTime? GetNextTick(Cycle cycle, DateTime now)
+        public static DateTime GetNextTick(Cycle cycle, DateTime now)
         {
             if (cycle.Disabled)
             {
-                return null;
+                return DateTime.MaxValue;
             }
 
             // Check begin / end
@@ -316,7 +333,7 @@ namespace Lucky.Home.Model
             }
             if (cycle.End.HasValue && now > cycle.End)
             {
-                return null;
+                return DateTime.MaxValue;
             }
 
             // Calc the next valid starting day 
@@ -333,23 +350,6 @@ namespace Lucky.Home.Model
             }
 
             return nextDay + cycle.StartTime;
-        }
-
-        public static IEnumerable<DateTime> GetNextTicks(Cycle cycle, DateTime now)
-        {
-            while (true)
-            {
-                DateTime? next = GetNextTick(cycle, now);
-                if (!next.HasValue)
-                {
-                    yield break;
-                }
-                else
-                {
-                    yield return next.Value;
-                    now = next.Value + TimeSpan.FromSeconds(1);
-                }
-            }
         }
 
         private static DateTime GetNextValidPeriodicDay(int dayPeriod, DateTime today, DateTime startDate)

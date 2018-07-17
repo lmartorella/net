@@ -27,7 +27,8 @@
   <div class="bot"> 
     <h3>Prossime irrigazioni:</h3>
       <p ng-repeat="cycle in ctrl.nextCycles">
-        Programma "{{cycle.name}}" schedulato {{cycle.scheduledTime}}
+        <span ng-if="cycle.scheduledTime">Programma "{{cycle.name}}" schedulato {{cycle.scheduledTime}}</span>
+        <span ng-if="!cycle.scheduledTime">Programma "{{cycle.name}}" in coda</span>
       </p>
     <p> Flusso: {{ctrl.flow.flowLMin}} <small><sup>Lit</sup>/<sub>min</sub></small>, {{ctrl.flow.totalMc}} <small>M<sup>3</sup></small> </p>
   </div>

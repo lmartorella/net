@@ -46,7 +46,7 @@ class GardenController {
                 let now = moment.now();
                 if (resp.data.nextCycles) {
                     this.nextCycles = resp.data.nextCycles.map(({ name, scheduledTime }) => {
-                        return { name, scheduledTime: moment.duration(moment(scheduledTime).diff(now)).humanize(true) };
+                        return { name, scheduledTime: scheduledTime && moment.duration(moment(scheduledTime).diff(now)).humanize(true) };
                     });
                 }
             } else {
