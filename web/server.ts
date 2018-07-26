@@ -6,7 +6,7 @@ import * as compression from 'compression';
 import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
-import { binDir, etcDir, logsFile, gardenCfgFile } from './settings';
+import { binDir, etcDir, logsFile, gardenCfgFile, gardenCsvFile } from './settings';
 import ProcessManager from './procMan';
 
 let pm = new ProcessManager(binDir, etcDir, 'Home.Server.App.exe');
@@ -108,9 +108,19 @@ app.post('/r/gardenStop', ensureLoggedIn(), async (req, res) => {
 
 app.get('/r/gardenCfg', ensureLoggedIn(), async (req, res) => {
     // Stream config file
-    res.setHeader("Content-Type", "application/json");
     if (fs.existsSync(gardenCfgFile)) {
+        res.setHeader("Content-Type", "application/json");
         fs.createReadStream(gardenCfgFile).pipe(res);
+    } else {
+        res.sendStatus(404);
+    }
+});
+
+app.get('/r/gardenCsv', ensureLoggedIn(), async (req, res) => {
+    // Stream csv file
+    if (fs.existsSync(gardenCsvFile)) {
+        res.setHeader("Content-Type", "text/csv");
+        fs.createReadStream(gardenCsvFile).pipe(res);
     } else {
         res.sendStatus(404);
     }
@@ -122,10 +132,6 @@ app.put('/r/gardenCfg', ensureLoggedIn(), async (req, res) => {
         var content = req.body;
         fs.writeFileSync(gardenCfgFile, content);
         res.sendStatus(200);
-
-        // req.pipe(fs.createWriteStream(gardenCfgFile)).end(() => {
-        //     res.sendStatus(200);
-        // });
     } else {
         res.sendStatus(500);
     }
