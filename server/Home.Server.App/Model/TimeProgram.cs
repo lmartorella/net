@@ -82,9 +82,9 @@ namespace Lucky.Home.Model
                 {
                     throw new ArgumentOutOfRangeException("cycle " + name, "No day period nor week days specified");
                 }
-                if (t.cycle.DayPeriod > 0 && !t.cycle.Start.HasValue)
+                if (t.cycle.DayPeriod > 0 && (!t.cycle.Start.HasValue && !program.Start.HasValue))
                 {
-                    throw new ArgumentOutOfRangeException("cycle " + name, "No start day for periodic table");
+                    throw new ArgumentOutOfRangeException("cycle " + name, "No start date for periodic table, and no global start date");
                 }
                 if (t.cycle.StartTime < TimeSpan.Zero || t.cycle.StartTime > TimeSpan.FromDays(1))
                 {
@@ -106,12 +106,12 @@ namespace Lucky.Home.Model
             public TCycle[] Cycles { get; set; }
 
             /// <summary>
-            /// Temporary Disabled?
+            /// Global start date (e.g. for rain-disabling)?
             /// </summary>
-            [DataMember(Name = "disabledUntil")]
-            public string DisabledUntilStr { get { return DisabledUntil.ToIso(); } set { DisabledUntil = value.FromIso(); } }
+            [DataMember(Name = "start")]
+            public string StartStr { get { return Start.ToIso(); } set { Start = value.FromIso(); } }
             [IgnoreDataMember]
-            public DateTime? DisabledUntil { get; set; }
+            public DateTime? Start { get; set; }
         }
 
         /// <summary>
@@ -228,9 +228,10 @@ namespace Lucky.Home.Model
 
         private void CheckRefresh()
         {
-            _logger.Log("RefreshTimer");
-            _intermediateTimers = PollTimers(_lastRefreshTime, RefreshTimerPeriod);
-            _lastRefreshTime += RefreshTimerPeriod;
+            //_logger.Log("RefreshTimer");
+            var nextTimestamp = _lastRefreshTime + RefreshTimerPeriod;
+            _intermediateTimers = CreateIntermediateTimers(_lastRefreshTime, nextTimestamp);
+            _lastRefreshTime = nextTimestamp;
 
             // To avoid GC
             _refreshTimer = new Timer(o => CheckRefresh(), null, (_lastRefreshTime - DateTime.Now), Timeout.InfiniteTimeSpan);
@@ -239,22 +240,12 @@ namespace Lucky.Home.Model
         /// <summary>
         /// Create shorter C# timers for each cycle that triggers between now and pollPeriod
         /// </summary>
-        private Timer[] PollTimers(DateTime now, TimeSpan pollPeriod)
+        private Timer[] CreateIntermediateTimers(DateTime begin, DateTime end)
         {
-            return _program.Cycles.Select(cycle =>
+            return GetNextCycles(begin).TakeWhile(c => c.Item2 < end).Select(tuple =>
             {
-                // Calc the next event for each cycle. If exceeding the refresh timer, let's wait for the next poll cycle
-                var nextTick = GetNextTick(_program, cycle, now);
-                if (nextTick < DateTime.MaxValue)
-                {
-                    var period = nextTick - now;
-                    if (period <= pollPeriod)
-                    {
-                        // Ok, schedule the timer for this period
-                        return new Timer(o => RaiseEvent(cycle), null, (int)period.TotalMilliseconds, Timeout.Infinite);
-                    }
-                }
-                return null;
+                // Ok, schedule the timer for this period
+                return new Timer(o => RaiseEvent(tuple.Item1), null, tuple.Item2 - DateTime.Now, Timeout.InfiniteTimeSpan);
             }).ToArray();
         }
 
@@ -319,9 +310,9 @@ namespace Lucky.Home.Model
             {
                 now = cycle.Start.Value;
             }
-            if (program.DisabledUntil.HasValue && now < program.DisabledUntil.Value)
+            if (program.Start.HasValue && now < program.Start.Value)
             {
-                now = program.DisabledUntil.Value;
+                now = program.Start.Value;
             }
             if (cycle.End.HasValue && now > cycle.End)
             {
@@ -329,7 +320,7 @@ namespace Lucky.Home.Model
             }
 
             // Calc the next valid starting day 
-            var nextDay = (now.TimeOfDay > cycle.StartTime) ? (now.Date + TimeSpan.FromDays(1)) : now.Date;
+            var nextDay = (now.TimeOfDay >= cycle.StartTime) ? (now.Date + TimeSpan.FromDays(1)) : now.Date;
             if (cycle.WeekDays != null)
             {
                 // Get the next weekday
@@ -338,7 +329,7 @@ namespace Lucky.Home.Model
             else
             {
                 // Get the next periodic day
-                nextDay = GetNextValidPeriodicDay(cycle.DayPeriod, nextDay, cycle.Start.Value.Date);
+                nextDay = GetNextValidPeriodicDay(cycle.DayPeriod, nextDay, cycle.Start.HasValue ? cycle.Start.Value : program.Start.Value);
             }
 
             return nextDay + cycle.StartTime;

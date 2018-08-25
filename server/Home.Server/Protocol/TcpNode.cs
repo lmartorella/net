@@ -114,7 +114,7 @@ namespace Lucky.Home.Protocol
             {
                 Address = address;
             }
-            Dezombie("relogin");
+            Dezombie("relogin: " + address.ToString() + ", childrenChanged: " + ((childrenChanged != null) ? string.Join(";", childrenChanged.Select(c => c.ToString())) : "<null>"));
 
             // Start data fetch asynchrously
             // This resets also the dirty children state
