@@ -31,7 +31,7 @@ namespace Lucky.Db
         /// <summary>
         /// Change day
         /// </summary>
-        void Rotate(DateTime start);
+        Task Rotate(DateTime start);
     }
 
     public interface ITimeSeries<T, Taggr> : ITimeSeries where T : TimeSample where Taggr : DayTimeSample<T>

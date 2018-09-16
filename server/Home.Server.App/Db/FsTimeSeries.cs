@@ -121,24 +121,22 @@ namespace Lucky.Home.Db
             }
         }
 
-        public Task Init(DateTime start)
+        public async Task Init(DateTime start)
         {
-            return Task.Run(() =>
-            {
-                SetupCurrentDb(start, true);
-                AggregateData(_logger, _folder, start);
-            });
+            await SetupCurrentDb(start, true);
+            AggregateData(_logger, _folder, start);
         }
 
-        public void Rotate(DateTime start)
+        public async Task Rotate(DateTime start)
         {
-            SetupCurrentDb(start, false);
+            await SetupCurrentDb(start, false);
             _logger.Log("Rotated", "date", start.Date);
         }
 
-        private void SetupCurrentDb(DateTime start, bool init)
+        private async Task SetupCurrentDb(DateTime start, bool init)
         { 
             var fileName = CalcDayCvsName(start);
+            Task copy = null;
             lock (_lockDb)
             {
                 var oldFileName = _dayFile;
@@ -162,7 +160,7 @@ namespace Lucky.Home.Db
                 // Now the old file is free to be copied in backup
                 if (!init)
                 {
-                    CopyToBackup(oldFileName);
+                    copy = CopyToBackup(oldFileName);
 
                     // Generate aggregated data and log it in a separate DB
                     var aggrData = oldPeriod.GetAggregatedData();
@@ -177,6 +175,11 @@ namespace Lucky.Home.Db
                         CsvHelper<Taggr>.WriteCsvLine(_aggrFile, aggrData);
                     }
                 }
+            }
+
+            if (copy != null)
+            {
+                await copy;
             }
         }
 
@@ -200,25 +203,29 @@ namespace Lucky.Home.Db
             }
         }
 
-        private void CopyToBackup(FileInfo oldFileName)
+        private async Task CopyToBackup(FileInfo oldFileName)
         {
-            if (oldFileName.Exists)
+            int retry = 0;
+            while (!oldFileName.Exists)
             {
-                var targetFile = GetBackupPath(oldFileName);
-                try
+                await Task.Delay(2000);
+                if (retry++ == 5)
                 {
-                    _logger.Log("Making backup", "src", oldFileName.FullName, "dst", targetFile.FullName);
-                    oldFileName.CopyTo(targetFile.FullName);
-                }
-                catch (Exception exc)
-                {
-                    _logger.Exception(exc);
-                    Manager.GetService<INotificationService>().EnqueueStatusUpdate("File locked", "Cannot backup the db file: " + oldFileName.FullName + Environment.NewLine + "EXC: " + exc.Message);
+                    _logger.Log("Cannot find file to backup after 5 retries", "src", oldFileName.FullName);
+                    return;
                 }
             }
-            else
+
+            var targetFile = GetBackupPath(oldFileName);
+            try
             {
-                _logger.Log("Cannot find file to backup", "src", oldFileName.FullName);
+                _logger.Log("Making backup", "src", oldFileName.FullName, "dst", targetFile.FullName);
+                oldFileName.CopyTo(targetFile.FullName);
+            }
+            catch (Exception exc)
+            {
+                _logger.Exception(exc);
+                Manager.GetService<INotificationService>().EnqueueStatusUpdate("File locked", "Cannot backup the db file: " + oldFileName.FullName + Environment.NewLine + "EXC: " + exc.Message);
             }
         }
 

@@ -37,7 +37,7 @@ namespace Lucky.Home.Application
                 var db = new FsTimeSeries<PowerData, DayPowerData>(device.Name);
                 await db.Init(DateTime.Now);
                 device.StartLoop(db);
-                _dayRotation += () => db.Rotate(DateTime.Now);
+                _dayRotation += async () => await db.Rotate(DateTime.Now);
             }
 
             // Rotate solar db at midnight 
