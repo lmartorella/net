@@ -9,7 +9,7 @@ namespace Lucky.HomeMock.Sinks
     {
         private Timer _timer;
         private uint _counter;
-        private uint _flow;
+        private ushort _flow;
 
         public FlowSinkMock()
             : base("FLOW")

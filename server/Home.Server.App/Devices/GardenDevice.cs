@@ -142,8 +142,7 @@ namespace Lucky.Home.Devices
         private class MailData
         {
             public string Name;
-            public Tuple<string, int>[] ZoneData;
-            public int Quantity;
+            public ZoneTimeWithQuantity[] ZoneData;
         }
 
         [DataContract]
@@ -164,6 +163,11 @@ namespace Lucky.Home.Devices
 
             [DataMember(Name = "zones")]
             public int[] Zones;
+        }
+
+        private class ZoneTimeWithQuantity : ZoneTime
+        {
+            public int QuantityL;
         }
 
         private class ImmediateProgram
@@ -480,7 +484,7 @@ namespace Lucky.Home.Devices
                 Date = now.Date,
                 Time = now.TimeOfDay,
                 Cycle = cycle.Name,
-                Zones = string.Join(";", cycle.ZoneTimes.Select(t => ZoneDetailsToString(ToZoneMask(t.Zones), t.Minutes))),
+                Zones = string.Join(";", cycle.ZoneTimes.Where(t => t.Minutes > 0).Select(t => ZoneDetailsToString(ToZoneMask(t.Zones), t.Minutes))),
                 State = 1,
             };
 
@@ -497,11 +501,16 @@ namespace Lucky.Home.Devices
                 CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
             }
 
+            List<ZoneTimeWithQuantity> results = new List<ZoneTimeWithQuantity>();
+            // Liters when cycle changes
+            double partialQty = 0;
+            // Time when cycle changes
+            DateTime partialTime = DateTime.Now;
+
             // Return the action to log the stop program
             Action<DateTime> stopAction = async now1 =>
             {
                 Logger.Log("Garden", "cycle end", cycle.Name);
-                int qtyL = -1;
                 if (startQty > 0)
                 {
                     var flowData1 = (await ReadFlow());
@@ -510,7 +519,6 @@ namespace Lucky.Home.Devices
                         data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
                         data.TotalQtyMc = flowData1.TotalMc;
                         data.FlowLMin = flowData1.FlowLMin;
-                        qtyL = (int)data.QtyL;
                     }
                 }
 
@@ -522,21 +530,30 @@ namespace Lucky.Home.Devices
                     CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
                 }
 
-                ScheduleMail(now1, cycle, qtyL);
+                ScheduleMail(now1, cycle.Name, results.Where(t => t != null).ToArray());
             };
 
             // Log a flow info
             Func<DateTime, GardenSink.TimerState, Task> stepAction = async (now1, state) =>
             {
+                // Skip leading zeroes to understand which is the current operative zone
+                // Can be cycle count + 1
+                var currentCycle = state.ZoneRemTimes
+                        .Concat(new GardenSink.ImmediateZoneTime[1] { null })
+                        .Select((t, i) => Tuple.Create(t, i))
+                        .First(t => t.Item1 == null || t.Item1.Time > 0).Item2;
+
+                // Calc CSV line with total quantity
+                double currentQtyL = -1.0;
                 if (startQty > 0)
                 {
-                    var flowData1 = (await ReadFlow());
+                    var flowData1 = await ReadFlow();
                     if (flowData1 != null)
                     {
                         data.State = 2;
                         data.Date = now1.Date;
                         data.Time = now1.TimeOfDay;
-                        data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
+                        currentQtyL = data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
                         data.TotalQtyMc = flowData1.TotalMc;
                         data.FlowLMin = flowData1.FlowLMin;
                         data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => ZoneDetailsToString(t.ZoneMask, t.Time)));
@@ -544,6 +561,39 @@ namespace Lucky.Home.Devices
                         {
                             CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
                         }
+                    }
+                }
+
+                double qtyL = currentQtyL;
+                if (qtyL > 0)
+                {
+                    qtyL -= partialQty;
+                }
+
+                lock (results)
+                {
+                    while (currentCycle > results.Count && results.Count < cycle.ZoneTimes.Length)
+                    {
+                        DateTime now2 = DateTime.Now;
+                        var inputData = cycle.ZoneTimes[results.Count];
+                        // Ok calc results of previous cycle
+                        if (inputData.Minutes > 0)
+                        {
+                            results.Add(new ZoneTimeWithQuantity
+                            {
+                                Zones = inputData.Zones,
+                                Minutes = (int)Math.Round((now2 - partialTime).TotalMinutes),
+                                QuantityL = (int)Math.Round(qtyL)
+                            });
+                        }
+                        else
+                        {
+                            // It was not programmed
+                            results.Add(null);
+                        }
+
+                        partialQty = currentQtyL;
+                        partialTime = now2;
                     }
                 }
             };
@@ -561,16 +611,12 @@ namespace Lucky.Home.Devices
             return ret;
         }
 
-        private void ScheduleMail(DateTime now, ImmediateProgram cycle, int qtyL)
+        private void ScheduleMail(DateTime now, string name, ZoneTimeWithQuantity[] results)
         {
             _mailData.Add(new MailData
             {
-                Name = cycle.Name,
-                ZoneData = cycle.ZoneTimes.Where(t => t.Minutes > 0).Select(zoneTime =>
-                {
-                    return Tuple.Create(GetZoneNames(zoneTime.Zones), zoneTime.Minutes);
-                }).ToArray(),
-                Quantity = qtyL
+                Name = name,
+                ZoneData = results
             });
 
             bool sendNow = true;
@@ -592,15 +638,14 @@ namespace Lucky.Home.Devices
                 body += string.Join(
                     Environment.NewLine, 
                     _mailData.Select(data => 
-                        string.Format("{0} ({2} litri)\r\n{1}", 
+                        string.Format("{0} \r\n{1}", 
                             data.Name, 
                             string.Join(Environment.NewLine, 
                                 data.ZoneData.Select(t =>
                                 {
-                                    return string.Format("  {0}: {1} minuti", t.Item1, t.Item2);
+                                    return string.Format("  {0}: {1} minuti ({2} litri)", GetZoneNames(t.Zones), t.Minutes, t.QuantityL);
                                 })
-                            ),
-                            data.Quantity
+                            )
                         )
                     )
                 );
