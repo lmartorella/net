@@ -22,27 +22,42 @@ namespace Lucky.HomeMock.Sinks
             WaitForImmediate
         }
 
-        private byte[] _times = new byte[] { 0, 0, 0, 0, 0 };
+        private class Cycles
+        {
+            public int Zones;
+            public int Minutes;
+
+            public override string ToString()
+            {
+                return "Z:0x" + Zones.ToString("X2") + ":" + Minutes + "min";
+            }
+        }
+
+        private Cycles[] _cycles;
         private DeviceState _state = DeviceState.Off;
         private Timer _timer;
         private readonly object _lockObject = new object();
 
         public GardenSink() : base("GARD")
         {
+            _cycles = Enumerable.Range(0, 5).Select(i => new Cycles { Zones = 0, Minutes = 0 }).ToArray();
         }
 
         public override void Read(BinaryReader reader)
         {
             // Read new program
             short count = reader.ReadInt16();
-            var times = reader.ReadBytes(count);
+            var times = reader.ReadBytes(count * 2);
 
             lock (_lockObject)
             {
                 if (_state == DeviceState.Off)
                 {
-                    _times = times;
-                    Log(string.Format("Garden timer: {0}", string.Join(", ", _times.Select(t => t.ToString()))));
+                    for (int i = 0; i < count; i++)
+                    {
+                        _cycles[i] = new Cycles { Minutes = times[i * 2], Zones = times[i * 2 + 1] };
+                    }
+                    Log(string.Format("Garden timer: {0}", string.Join(", ", _cycles.Select(t => t.ToString()))));
                     StartProgram();
                 }
                 else
@@ -61,7 +76,7 @@ namespace Lucky.HomeMock.Sinks
                 {
                     lock (_lockObject)
                     {
-                        if (_times.All(t => t == 0))
+                        if (_cycles.All(t => t.Minutes == 0))
                         {
                             _state = DeviceState.Off;
                             _timer.Dispose();
@@ -69,11 +84,11 @@ namespace Lucky.HomeMock.Sinks
                         }
                         else
                         {
-                            for (int i = 0; i < _times.Length; i++)
+                            for (int i = 0; i < _cycles.Length; i++)
                             {
-                                if (_times[i] > 0)
+                                if (_cycles[i].Minutes > 0)
                                 {
-                                    _times[i]--;
+                                    _cycles[i].Minutes--;
                                     break;
                                 }
                             }
@@ -88,8 +103,8 @@ namespace Lucky.HomeMock.Sinks
             lock (_lockObject)
             {
                 writer.Write((byte)_state);
-                writer.Write((short)_times.Length);
-                writer.Write(_times);
+                writer.Write((short)_cycles.Length);
+                writer.Write(_cycles.Select(z => new byte[] { (byte)z.Minutes, (byte)z.Zones }).SelectMany(b => b).ToArray());
             }
         }
     }

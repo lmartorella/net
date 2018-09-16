@@ -1,6 +1,8 @@
 #ifndef PROGRAM_H
 #define	PROGRAM_H
 
+#include "outputs.h"
+
 #ifdef __DEBUG
 #define DEBUG_PINS
 #endif
@@ -13,8 +15,17 @@ static const int SECONDS_PER_MINUTE = 60;
 static const int SECONDS_PER_MINUTE = 3;
 #endif
 
-// The current program ready to start or in use. During activity, each numbers decreases to zero
-extern char imm_times[SUPPORTED_ZONES];
+typedef unsigned char TIME_MINUTE_T;
+
+typedef struct { 
+    TIME_MINUTE_T time;
+    // Override: which zone is associated to each time?
+    ZONE_MASK zones;
+} IMM_TIMER;
+
+// The current program ready to start or in use. During activity, each times decreases to zero
+extern IMM_TIMER imm_timers[SUPPORTED_ZONES];
+
 
 // Load program to immediate memory
 void program_load();

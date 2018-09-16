@@ -21,19 +21,17 @@ void output_clear() {
    RELAIS_3 = 0;
 }
 
-void output_set(int zone, char state) { 
-    switch (zone) {
-        case 0:
-            RELAIS_0 = state;
-            break;
-        case 1:
-            RELAIS_1 = state;
-            break;
-        case 2:
-            RELAIS_2 = state;
-            break;
-        case 3:
-            RELAIS_3 = state;
-            break;
+void output_set(ZONE_MASK zones) { 
+    if (zones & 1) {
+        RELAIS_0 = 1;
+    }
+    if (zones & 2) {
+        RELAIS_1 = 1;
+    }
+    if (zones & 4) {
+        RELAIS_2 = 1;
+    }
+    if (zones & 8) {
+        RELAIS_3 = 1;
     }
 }

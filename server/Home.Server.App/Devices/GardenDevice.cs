@@ -146,24 +146,36 @@ namespace Lucky.Home.Devices
             public int Quantity;
         }
 
-
         [DataContract]
         public class GardenCycle : TimeProgram<GardenCycle>.Cycle
         {
+            /// <summary>
+            /// 1 up to 4 "cycles" zone program. Extended: multiple concurrent zone at the same time
+            /// </summary>
+            [DataMember(Name = "zoneTimes")]
+            public ZoneTime[] ZoneTimes;
+        }
+
+        [DataContract]
+        public class ZoneTime
+        {
+            [DataMember(Name = "minutes")]
+            public int Minutes;
+
             [DataMember(Name = "zones")]
             public int[] Zones;
         }
 
         private class ImmediateProgram
         {
-            public int[] Zones;
+            public ZoneTime[] ZoneTimes;
             public string Name;
 
             public bool IsEmpty
             {
                 get
                 {
-                    return Zones.All(z => z <= 0);
+                    return ZoneTimes == null || ZoneTimes.All(z => z.Minutes <= 0);
                 }
             }
         }
@@ -224,7 +236,18 @@ namespace Lucky.Home.Devices
                         break;
                     case "garden.setImmediate":
                         Logger.Log("setImmediate", "zones", string.Join(",", e.Request.ImmediateZones));
-                        e.Response = Task.FromResult((WebResponse) new GardenWebResponse { Error = ScheduleCycle(new ImmediateProgram { Zones = e.Request.ImmediateZones, Name = "Immediato" } ) });
+                        e.Response = Task.FromResult((WebResponse) new GardenWebResponse
+                        {
+                            Error = ScheduleCycle(new ImmediateProgram
+                            {
+                                ZoneTimes = e.Request.ImmediateZones.Select((t, i) => new ZoneTime
+                                {
+                                    Minutes = t,
+                                    Zones = new[] { i }
+                                }).ToArray(),
+                                Name = "Immediato"
+                            })
+                        });
                         break;
                     case "garden.stop":
                         bool stopped = false;
@@ -323,13 +346,13 @@ namespace Lucky.Home.Devices
                             if (cycleIsWaiting)
                             {
                                 ImmediateProgram cycle;
-                                int[] zones = null;
+                                GardenSink.ImmediateZoneTime[] zoneTimes = null;
                                 lock (_cycleQueue)
                                 {
                                     cycle = _cycleQueue.Dequeue();
-                                    zones = (int[])cycle.Zones.Clone();
+                                    zoneTimes = cycle.ZoneTimes.Select(t => new GardenSink.ImmediateZoneTime { Time = (byte)t.Minutes, ZoneMask = ToZoneMask(t.Zones) }).ToArray();
                                 }
-                                await gardenSink.WriteProgram(zones);
+                                await gardenSink.WriteProgram(zoneTimes);
                                 inProgress = true;
                                 lastStepActions = await LogStartProgram(now, cycle);
                             }
@@ -418,7 +441,7 @@ namespace Lucky.Home.Devices
         private void HandleProgramCycle(object sender, TimeProgram<GardenCycle>.CycleTriggeredEventArgs e)
         {
             Logger.Log("ScheduleProgram", "name", e.Cycle.Name);
-            ScheduleCycle(new ImmediateProgram { Zones = e.Cycle.Zones, Name = e.Cycle.Name } );
+            ScheduleCycle(new ImmediateProgram { ZoneTimes = e.Cycle.ZoneTimes, Name = e.Cycle.Name } );
         }
 
         private string ScheduleCycle(ImmediateProgram program)
@@ -447,12 +470,17 @@ namespace Lucky.Home.Devices
         {
             Logger.Log("Garden", "cycle start", cycle.Name);
 
+            Func<byte, int, string> ZoneDetailsToString = (zoneMask, minutes) =>
+            {
+                return string.Format("0x{0:X2}={1}", zoneMask, minutes);
+            };
+
             GardenCsvRecord data = new GardenCsvRecord
             {
                 Date = now.Date,
                 Time = now.TimeOfDay,
                 Cycle = cycle.Name,
-                Zones = string.Join(";", cycle.Zones.Select(t => t.ToString())),
+                Zones = string.Join(";", cycle.ZoneTimes.Select(t => ZoneDetailsToString(ToZoneMask(t.Zones), t.Minutes))),
                 State = 1,
             };
 
@@ -511,7 +539,7 @@ namespace Lucky.Home.Devices
                         data.QtyL = (flowData1.TotalMc - startQty) * 1000.0;
                         data.TotalQtyMc = flowData1.TotalMc;
                         data.FlowLMin = flowData1.FlowLMin;
-                        data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => t.ToString()));
+                        data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => ZoneDetailsToString(t.ZoneMask, t.Time)));
                         lock (_csvFile)
                         {
                             CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, data);
@@ -523,14 +551,24 @@ namespace Lucky.Home.Devices
             return new StepActions { StopAction = stopAction, StepAction = stepAction };
         }
 
+        private static byte ToZoneMask(int[] zones)
+        {
+            byte ret = 0;
+            foreach (int zone in zones)
+            {
+                ret = (byte)(ret | (1 << zone));
+            }
+            return ret;
+        }
+
         private void ScheduleMail(DateTime now, ImmediateProgram cycle, int qtyL)
         {
             _mailData.Add(new MailData
             {
                 Name = cycle.Name,
-                ZoneData = cycle.Zones.Select((time, i) => Tuple.Create(time, i)).Where(t => t.Item1 > 0).Select(tuple =>
+                ZoneData = cycle.ZoneTimes.Where(t => t.Minutes > 0).Select(zoneTime =>
                 {
-                    return Tuple.Create(GetZoneName(tuple.Item2), tuple.Item1);
+                    return Tuple.Create(GetZoneNames(zoneTime.Zones), zoneTime.Minutes);
                 }).ToArray(),
                 Quantity = qtyL
             });
@@ -570,6 +608,11 @@ namespace Lucky.Home.Devices
                 Manager.GetService<INotificationService>().SendMail("Giardino irrigato", body);
                 _mailData.Clear();
             }
+        }
+
+        private string GetZoneNames(int[] index)
+        {
+            return string.Join(", ", index.Select(i => GetZoneName(i)));
         }
 
         private string GetZoneName(int index)

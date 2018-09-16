@@ -8,7 +8,7 @@ static enum {
     RS_READZONES
 } s_readState;
 static WORD s_readZoneCount;
-static BYTE s_zoneTimes[SUPPORTED_ZONES];
+static IMM_TIMER s_zoneTimers[SUPPORTED_ZONES];
 
 bit gsink_start;
 
@@ -32,19 +32,19 @@ bit gardenSink_read() {
         s_readState = RS_READZONES;
     }
     if (s_readState == RS_READZONES) {
-        memset(s_zoneTimes, 0, SUPPORTED_ZONES);
+        memset(s_zoneTimers, 0, SUPPORTED_ZONES * sizeof(IMM_TIMER));
         // Read zone count
-        if (prot_control_readAvail() < s_readZoneCount) {
+        if (prot_control_readAvail() < s_readZoneCount * sizeof(IMM_TIMER)) {
             // Poll again
             return 1;
         }
-        prot_control_read(s_zoneTimes, s_readZoneCount);
+        prot_control_read(s_zoneTimers, s_readZoneCount * sizeof(IMM_TIMER));
         
         // Only accept new program when in idle mode
         // Can program?
         if (g_state == OFF) {
             // Store program in memory
-            memcpy(imm_times, s_zoneTimes, SUPPORTED_ZONES);
+            memcpy(imm_timers, s_zoneTimers, SUPPORTED_ZONES * sizeof(IMM_TIMER));
             // Start!
             gsink_start = 1;
         }
@@ -57,8 +57,8 @@ bit gardenSink_read() {
 
 // The server asks for status/configuration
 bit gardenSink_write() {
-    // 2 header bytes + 1 byte for each zone (remaining time in minutes)
-    if (prot_control_writeAvail() < (3 + SUPPORTED_ZONES)) {
+    // 1 status byte + 2 header bytes + IMM_TIMER for each zone (remaining time in minutes + zones)
+    if (prot_control_writeAvail() < (3 + SUPPORTED_ZONES * sizeof(IMM_TIMER))) {
         return 1;
     }
 
@@ -70,7 +70,7 @@ bit gardenSink_write() {
     // Send zone count
     data = SUPPORTED_ZONES;
     prot_control_write(&data, 2);    
-    prot_control_write(imm_times, SUPPORTED_ZONES);
+    prot_control_write(imm_timers, SUPPORTED_ZONES * sizeof(IMM_TIMER));
 
     // Done, no more data
     return 0;

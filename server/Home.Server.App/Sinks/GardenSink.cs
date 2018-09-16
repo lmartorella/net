@@ -33,19 +33,25 @@ namespace Lucky.Home.Sinks
             public DeviceState State;
 
             [SerializeAsDynArray]
-            public byte[] ZoneTimes;
+            public ImmediateZoneTime[] ZoneTimes;
+        }
+
+        public class ImmediateZoneTime
+        {
+            public byte Time;
+            public byte ZoneMask;
         }
 
         private class WriteStatusMessageRequest
         {
             [SerializeAsDynArray]
-            public byte[] ZoneTimes;
+            public ImmediateZoneTime[] ZoneTimes;
         }
 
         public class TimerState
         {
             public bool IsAvailable;
-            public int[] ZoneRemTimes;
+            public ImmediateZoneTime[] ZoneRemTimes;
         }
 
         public async Task<TimerState> Read(bool log, int timeout = 0)
@@ -60,7 +66,7 @@ namespace Lucky.Home.Sinks
                     {
                         Logger.Log("GardenMd", "State", md.State, "Times", string.Join(", ", md.ZoneTimes.Select(t => t.ToString())));
                     }
-                    state = new TimerState { IsAvailable = md.State == DeviceState.Off, ZoneRemTimes = md.ZoneTimes.Select(t => (int)t).ToArray() };
+                    state = new TimerState { IsAvailable = md.State == DeviceState.Off, ZoneRemTimes = md.ZoneTimes };
                 }
                 else
                 {
@@ -70,16 +76,19 @@ namespace Lucky.Home.Sinks
             return state;
         }
 
-        public async Task WriteProgram(int[] zoneTimes)
+        public async Task WriteProgram(ImmediateZoneTime[] zoneTimes)
         {
-            if (zoneTimes.All(z => z <= 0))
+            if (zoneTimes.All(z => z.Time <= 0))
             {
                 return;
             }
 
             await Write(async writer =>
             {
-                await writer.Write(new WriteStatusMessageRequest { ZoneTimes = zoneTimes.Select(t => (byte)t).ToArray() });
+                await writer.Write(new WriteStatusMessageRequest
+                {
+                    ZoneTimes = zoneTimes
+                });
             });
             // Log aloud new state
             await Read(true);
