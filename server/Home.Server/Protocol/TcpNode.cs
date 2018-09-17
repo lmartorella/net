@@ -40,7 +40,8 @@ namespace Lucky.Home.Protocol
         private DateTime? _firstFailTime;
         private readonly E2EStatLogger _e2eStatLogger;
 
-        private static readonly TimeSpan ZOMBIE_TIMEOUT = TimeSpan.FromSeconds(10);
+        // 20 seconds is the default TCP timeout time. Let's wait for some more before sending notifications about zombification...
+        private static readonly TimeSpan ZOMBIE_TIMEOUT = TimeSpan.FromSeconds(30);
 
         internal TcpNode(NodeId id, TcpNodeAddress address)
         {

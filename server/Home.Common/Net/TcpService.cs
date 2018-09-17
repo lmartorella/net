@@ -191,6 +191,7 @@ namespace Lucky.Net
         public IClient CreateClient(IPEndPoint endPoint)
         {
             var tcpClient = new TcpClient();
+            // This can fail after 20 seconds in case of missing endpoint
             tcpClient.Connect(endPoint);
             tcpClient.SendTimeout = 1;
             tcpClient.ReceiveTimeout = 1;
