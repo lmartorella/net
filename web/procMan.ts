@@ -9,6 +9,8 @@ import * as net from 'net';
 export default class ProcessManager {
     process: child_process.ChildProcess;
     logPath: string;
+    killing: boolean;
+    restartMailText: string;
 
     constructor(private binPath: string, private etcPath: string, private processName: string) {
         this.logPath = path.join(this.etcPath, 'log.txt');
@@ -21,13 +23,26 @@ export default class ProcessManager {
         }
 
         // Launch process
-        this.process = child_process.spawn(path.join(this.binPath, this.processName), ['', '-wrk', this.etcPath], {
+        let args = ['', '-wrk', this.etcPath];
+        if (this.restartMailText) {
+            args.push('-sendMail');
+            args.push(this.restartMailText);
+        }
+        this.process = child_process.spawn(path.join(this.binPath, this.processName), args, {
             stdio: 'ignore'
         });
+        this.restartMailText = null;
 
-        this.process.once('exit', (code: number, signal: string) => {
+        this.process.once('exit', async (code: number, signal: string) => {
             this.log('Server process closed with code ' + code + ", signal " + signal);
             this.process = null;
+            if (!this.killing) {
+                // Store fail reason to send mail after restart
+                this.restartMailText = 'Server process closed with code ' + code + ", signal " + signal + '. Restarting';
+
+                await new Promise(resolve => setTimeout(resolve, 3500))
+                this.start();
+            }
         });
 
         this.process.on('err', (err) => {
@@ -48,6 +63,7 @@ export default class ProcessManager {
             if (!this.process || !this.process.pid) {
                 reject(new Error("Already killed"));
             }
+            this.killing = true;
 
             this.process.once('exit', () => {
                 this.process = null;

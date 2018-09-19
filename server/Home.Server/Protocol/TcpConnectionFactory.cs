@@ -87,10 +87,16 @@ namespace Lucky.Home.Protocol
             public void Acquire()
             {
                 // If 30 seconds elapses, a deadlock occurred somewhere...
+                DateTime ts = DateTime.Now;
                 if (!_semaphore.Wait(30000))
                 {
                     Close(false);
                     throw new DeadlockException("Acquire locked");
+                }
+                var elapsed = (DateTime.Now - ts).TotalSeconds;
+                if (elapsed > 5)
+                {
+                    _logger.Log("WARN", "slowAcquire", elapsed + "s", "IP", Client.EndPoint);
                 }
 
                 // Ok, the client is alive

@@ -6,6 +6,7 @@ using Lucky.Home.Db;
 using System.Threading;
 using Lucky.Home.Power;
 using System.Threading.Tasks;
+using Lucky.Home.Notification;
 
 namespace Lucky.Home.Application
 {
@@ -57,6 +58,12 @@ namespace Lucky.Home.Application
                     _dayRotation?.Invoke();
                 }
             }, null, 0, 30 * 1000);
+
+            var mail = Manager.GetService<IConfigurationService>().GetConfig("sendMail");
+            if (!string.IsNullOrEmpty(mail))
+            {
+                await Manager.GetService<INotificationService>().SendMail("Messaggio", mail);
+            }
         }
     }
 }
