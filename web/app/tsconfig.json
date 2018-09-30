@@ -2,10 +2,10 @@
     "compilerOptions": {
         "sourceMap": true,
         "module": "amd",
-        "target": "es6"
+        "target": "es6",
+        "outFile": "index.js"
     },
     "files": [
-        "garden.ts",
-        "main.ts"
+        "index.ts"
     ]
 }

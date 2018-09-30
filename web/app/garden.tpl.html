@@ -1,24 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Garden &#9752;</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-
-  <script src="/lib/angular/angular.min.js"></script>
-  <script src="/lib/moment/moment-with-locales.min.js"></script>
-  <script src="garden.js"></script>
-  <link href="style.css" rel="stylesheet"></link>
-
-</head>
-<body ng-app="solar" ng-controller="gardenCtrl as ctrl" ng-cloak class="solar-body">
+  <!-- <title>Garden &#9752;</title> -->
+<div ng-controller="gardenCtrl as ctrl">
   <span class="error" ng-if="ctrl.error"> {{ctrl.error}} </span>
   <span class="message" ng-if="ctrl.message"> {{ctrl.message}} </span>
   <span class="message" ng-if="ctrl.status"> {{ctrl.status}} </span>
+
   <div ng-repeat="zone in ctrl.zones">
     <label>{{zone.name}}</label>
     <input type="text" ng-model="zone.time" />
   </div>
-  <button ng-click="ctrl.start()" ng-disabled="ctrl.disableButton">Vai!</button>
+  <button ng-click="ctrl.start()" ng-disabled="ctrl.isDisableButton()">Vai!</button>
   <br/>
   <br/>
   <button ng-click="ctrl.stop()">STOP</button>
@@ -32,5 +22,4 @@
       </p>
     <p> Flusso: {{ctrl.flow.flowLMin | number : 1 }} <small><sup>Lit</sup>/<sub>min</sub></small>, {{ctrl.flow.totalMc | number : 3 }} <small>M<sup>3</sup></small> </p>
   </div>
-</body>
-</html>
+</div>

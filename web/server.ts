@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as express from 'express';
 import * as passport from 'passport';
 import * as compression from 'compression';
@@ -39,14 +38,13 @@ passport.deserializeUser(function(id, cb) {
     cb(null, id);
 });
 
-const loginPagePath = '/app/login.html';
 function ensureLoggedIn() {
     return function(req, res, next) {
       if (!validateUser(req.session && req.session.passport && req.session.passport.user)) {
         if (req.session) {
           req.session.returnTo = req.originalUrl || req.url;
         }
-        return res.redirect(401, loginPagePath); // Unauth
+        return res.send(401); // Unauth
       }
       next();
     }
@@ -82,7 +80,7 @@ app.get('/r/powToday', (req, res) => {
     }, 1000);
 });
 
-app.get('/r/gardenStatus', ensureLoggedIn(), async (req, res) => {
+app.get('/r/gardenStatus', async (req, res) => {
     let resp = await pm.sendMessage({ command: "garden.getStatus" });
     res.send(resp);
 });
@@ -184,13 +182,12 @@ app.use('/lib/moment', express.static('node_modules/moment/min'));
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.post('/login', (req, res, next) => {
-    let successRedirect = req.body.redirect || '/';
-    passport.authenticate('local', { successRedirect, failureRedirect: loginPagePath })(req, res, next);
+app.post('/login', passport.authenticate('local'), (req, res) => {
+    res.send(200);
 });
 app.get('/logout', (req, res) => {
     req.logout();
-    res.redirect(loginPagePath);
+    res.send(401);
 });
 
 app.listen(80, () => {

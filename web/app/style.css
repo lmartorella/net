@@ -29,18 +29,13 @@
     font-size: x-large;
 }
 
-.container { 
-    width: 75%;
-}
-
-.solar-body {
+.home-body {
     background: url(solar.svg) no-repeat center center fixed;
     background-size: cover;
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.garden-body {
-    background: url(garden.svg) no-repeat center center fixed;
-    background-size: cover;
-    font-family: Arial, Helvetica, sans-serif;
+.home-body > div { 
+    width: 75%;
 }
+

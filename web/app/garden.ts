@@ -1,4 +1,3 @@
-
 declare var moment: any;
 moment.locale("it-IT");
 
@@ -19,12 +18,12 @@ interface IGardenStartStopResponse {
     error: string;
 }
 
-class GardenController {
+export class GardenController {
     
     public message: string;
     public error: string;
     private zones: { name: string, time: number }[];
-    private status: string;
+    public status: string;
     public disableButton = true;
     public flow: { 
         totalMc: number;
@@ -32,7 +31,12 @@ class GardenController {
     };
     public nextCycles: { name: string, scheduledTime: string }[];
 
-    constructor(private $http: ng.IHttpService, private $q: ng.IQService) {
+    public isDisableButton() {
+        return this.disableButton || this.zones.every(z => z.time <= 0);
+    }
+
+    static $inject = ['$http', '$scope'];
+    constructor(private $http: ng.IHttpService) {
         this.zones = [];
     
         // Fetch zones
@@ -92,18 +96,3 @@ class GardenController {
         });
     }
 }
-
-angular.module('solar', []).controller('gardenCtrl', ['$http', '$q', GardenController])
-
-.service('authInterceptor', ['$q', function($q) {
-    var service = this;
-    service.responseError = function(response) {
-        if (response.status === 401) {
-            window.location.replace("/app/login.html?redirect=/app/garden.html");
-        }
-        return $q.reject(response);
-    };
-}])
-.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.interceptors.push('authInterceptor');
-}])
