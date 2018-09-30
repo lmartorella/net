@@ -29,13 +29,18 @@
     font-size: x-large;
 }
 
-.net-body {
+.container { 
+    width: 75%;
+}
+
+.solar-body {
     background: url(solar.svg) no-repeat center center fixed;
     background-size: cover;
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.net-body > div { 
-    width: 75%;
+.garden-body {
+    background: url(garden.svg) no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, Helvetica, sans-serif;
 }
-

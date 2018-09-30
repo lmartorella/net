@@ -1,5 +1,3 @@
-import * as Plotly from "plotly.js";
-
 interface IPvData { 
     error?: string;
     mode: number;
@@ -7,7 +5,7 @@ interface IPvData {
     fault: number;
 }
 
-export class SolarController {
+class SolarController {
 
     public firstLineClass: string;
     public firstLine: string;
@@ -94,4 +92,19 @@ export class SolarController {
         window.location.pathname = "/app/garden.html";
     }
 }
+
+angular.module('solar', []).controller('solarCtrl', ['$http', '$q', SolarController])
+
+.service('authInterceptor', ['$q', function($q) {
+    var service = this;
+    service.responseError = function(response) {
+        if (response.status === 401) {
+            window.location.replace("/app/login");
+        }
+        return $q.reject(response);
+    };
+}])
+.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.interceptors.push('authInterceptor');
+}])
 
