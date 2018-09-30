@@ -19,7 +19,7 @@ interface IGardenStartStopResponse {
     error: string;
 }
 
-class GardenController {
+export class GardenController {
     
     public message: string;
     public error: string;
@@ -92,18 +92,3 @@ class GardenController {
         });
     }
 }
-
-angular.module('solar', []).controller('gardenCtrl', ['$http', '$q', GardenController])
-
-.service('authInterceptor', ['$q', function($q) {
-    var service = this;
-    service.responseError = function(response) {
-        if (response.status === 401) {
-            window.location.replace("/app/login.html?redirect=/app/garden.html");
-        }
-        return $q.reject(response);
-    };
-}])
-.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.interceptors.push('authInterceptor');
-}])
