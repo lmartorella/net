@@ -29,7 +29,7 @@ const char* const SINK_IDS =
     SINK_LINE_ID
 #endif
 #ifdef HAS_DHT11
-    DHT11_SINK_ID
+    SINK_DHT11_ID
 #endif
 #if defined(HAS_MAX232_SOFTWARE) || defined(HAS_FAKE_RS232)
     SINK_HALFDUPLEX_ID 
@@ -132,6 +132,9 @@ const BYTE _e_filler[FW_SIZE] @ FW_SINK_VECTOR_PTR;
 void sinks_init() {
 #ifdef HAS_BMP180
     bmp180_init();
+#endif
+#ifdef HAS_DHT11
+    dht11_init();
 #endif
 }
 

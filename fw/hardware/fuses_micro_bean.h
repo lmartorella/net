@@ -99,6 +99,14 @@
 #define DCNT_IF INTCONbits.INTF
 #define DCNT_IE INTCONbits.INTE
 
+#define HAS_DHT11
+#define DHT11_PORT_PULLUPS OPTION_REGbits.nWPUEN
+#define DHT11_PORT_TRIS TRISBbits.TRISB0
+#define DHT11_PORT PORTBbits.RB0
+#define US_TIMER TMR1L
+    // Prescaler 1:1, = 1MHz timer (us), started
+#define US_TIMER_INIT() { T1CON = 1; }
+
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;
 #define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }

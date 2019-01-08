@@ -4,7 +4,7 @@
 #ifdef HAS_DHT11
 
 void dht11_init();
-#define DHT11_SINK_ID "TEMP"
+#define SINK_DHT11_ID "TEMP"
 bit dht11_write();
 
 #endif

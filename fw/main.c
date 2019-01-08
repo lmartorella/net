@@ -68,10 +68,6 @@ void main()
     sram_init();
 #endif
     
-#ifdef HAS_DHT11
-    dht11_init();
-#endif
-
 #ifdef HAS_DIGIO
     digio_init();
 #endif
