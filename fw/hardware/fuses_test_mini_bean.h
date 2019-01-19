@@ -68,7 +68,7 @@ extern persistent BYTE g_exceptionPtr;
 
 
 #define HAS_DHT11
-#define DHT11_PORT_PULLUPS OPTION_REGbits.nRBPU
+#define DHT11_PORT_PULLUPS_INIT() { OPTION_REGbits.nRBPU = 0; }
 #define DHT11_PORT PORTBbits.RB5
 #define DHT11_PORT_TRIS TRISBbits.TRISB5
 #define US_TIMER TMR1L

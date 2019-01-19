@@ -6,7 +6,7 @@
 void dht11_init()
 {
     // Port high, pullups, output
-    DHT11_PORT_PULLUPS = 0;
+    DHT11_PORT_PULLUPS_INIT();
     DHT11_PORT = 1;
     DHT11_PORT_TRIS = 1;
     

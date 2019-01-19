@@ -12,6 +12,9 @@
         <itemPath>../apps/bmp180app.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="hardware" projectFiles="true">
+        <logicalFolder name="f1" displayName="Beans" projectFiles="true">
+          <itemPath>../hardware/beans/fuses_temp_and_valve.h</itemPath>
+        </logicalFolder>
         <itemPath>../hardware/cm1602.h</itemPath>
         <itemPath>../hardware/eeprom.h</itemPath>
         <itemPath>../hardware/spi.h</itemPath>
@@ -374,7 +377,7 @@
         <property key="verbose" value="false"/>
         <property key="warning-level" value="0"/>
         <property key="what-to-do" value="ignore"/>
-        <appendMe value="--MSGDISABLE=1427"/>
+        <appendMe value="--MSGDISABLE=1427,520"/>
       </HI-TECH-COMP>
       <HI-TECH-LINK>
         <property key="additional-options-checksum" value=""/>
@@ -423,7 +426,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
@@ -957,7 +959,7 @@
         <property key="verbose" value="false"/>
         <property key="warning-level" value="0"/>
         <property key="what-to-do" value="require"/>
-        <appendMe value="--MSGDISABLE=1427"/>
+        <appendMe value="--MSGDISABLE=1427;520"/>
       </HI-TECH-COMP>
       <HI-TECH-LINK>
         <property key="additional-options-checksum" value=""/>
@@ -2882,7 +2884,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
