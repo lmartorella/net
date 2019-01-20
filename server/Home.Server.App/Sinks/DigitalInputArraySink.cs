@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Serialization;
 
@@ -15,24 +14,14 @@ namespace Lucky.Home.Sinks
     [SinkId("DIAR")]
     internal class DigitalInputArraySink : SinkBase
     {
-        private TimeSpan _pollPeriod;
-        private Timer _timer;
-        private byte[] _lastData;
-        private bool _isInitialized;
+        public TimeSpan PollPeriod = TimeSpan.FromSeconds(5);
         private bool[] _status;
-
-        public DigitalInputArraySink()
-        {
-            PollPeriod = TimeSpan.FromSeconds(5);
-        }
 
         protected async override Task OnInitialize()
         {
             await base.OnInitialize();
-            _isInitialized = true;
-            // Start timer
-            PollPeriod = PollPeriod;
             Status = new bool[0];
+            RunLoop();
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -54,54 +43,36 @@ namespace Lucky.Home.Sinks
             {
                 _status = value;
                 SubCount = _status.Length;
-                if (StatusChanged != null)
-                {
-                    StatusChanged(this, EventArgs.Empty);
-                }
+                StatusChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        public TimeSpan PollPeriod
+        private async void RunLoop()
         {
-            get { return _pollPeriod; }
-            set
+            byte[] lastData = null;
+            while (true)
             {
-                _pollPeriod = value;
-                if (_isInitialized)
+                await Read(async reader =>
                 {
-                    if (_timer != null)
+                    var resp = await reader.Read<ReadStatusResponse>();
+                    if (resp != null)
                     {
-                        _timer.Dispose();
+                        if (lastData != null && !resp.Data.SequenceEqual(lastData))
+                        {
+                            // Something changed
+                            int swCount = Math.Min(resp.SwitchCount, resp.Data.Length * 8);
+                            var ret = new bool[swCount];
+                            for (int i = 0; i < swCount; i++)
+                            {
+                                ret[i] = (resp.Data[i / 8] & (1 << (i % 8))) != 0;
+                            }
+                            Status = ret;
+                        }
+                        lastData = resp.Data;
                     }
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                    _timer = new Timer(o => OnPoll(), null, TimeSpan.Zero, _pollPeriod);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                }
+                });
+                await Task.Delay(PollPeriod);
             }
-        }
-
-        private async Task OnPoll()
-        {
-            await Read(async reader =>
-            {
-                var resp = await reader.Read<ReadStatusResponse>();
-                if (resp == null || _lastData != null && resp.Data.SequenceEqual(_lastData))
-                {
-                    // Same data. No event.
-                }
-                else
-                {
-                    // Something changed
-                    _lastData = resp.Data;
-                    int swCount = Math.Min(resp.SwitchCount, resp.Data.Length * 8);
-                    var ret = new bool[swCount];
-                    for (int i = 0; i < swCount; i++)
-                    {
-                        ret[i] = (_lastData[i / 8] & (1 << (i % 8))) != 0;
-                    }
-                    Status = ret;
-                }
-            });
         }
 
         public event EventHandler StatusChanged;
