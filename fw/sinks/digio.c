@@ -26,16 +26,13 @@ bit digio_out_write()
 // Read bits to set as output
 bit digio_out_read()
 {
-    if (prot_control_readAvail() < 5) {
+    if (prot_control_readAvail() < 2) {
         // Need more data
         return TRUE;
     }
-    WORD swCount;
     BYTE arr;
-    // Number of switches sent (expect 1)
-    prot_control_read(&swCount, 2);
     // Number of bytes sent (expect 1)
-    prot_control_read(&swCount, 2);
+    prot_control_read(&arr, 1);
     // The byte: the bit 0 is data
     prot_control_read(&arr, 1);
     DIGIO_PORT_OUT_BIT = !!arr;
@@ -45,11 +42,9 @@ bit digio_out_read()
 // Write bits read as input
 bit digio_in_write()
 {   
-    WORD swCount = 1;
+    BYTE swCount = 1;
     // Number of switches sent (1)
-    prot_control_write(&swCount, 2);
-    // Number of bytes sent (1)
-    prot_control_write(&swCount, 2);
+    prot_control_write(&swCount, 1);
     BYTE arr = DIGIO_PORT_IN_BIT;
     // The byte: the bit 0 is data
     prot_control_write(&arr, 1);
