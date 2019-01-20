@@ -23,9 +23,8 @@ namespace Lucky.HomeMock.Sinks
             _owner.Dispatcher.Invoke(() =>
             {
                 var count = _owner.SwitchesCount;
-                writer.Write((ushort)count);
+                writer.Write((byte)count);
                 int bytes = ((count - 1) / 8) + 1;
-                writer.Write((ushort)bytes);
 
                 byte[] ret = new byte[bytes];
                 for (int i = 0; i < count; i++)

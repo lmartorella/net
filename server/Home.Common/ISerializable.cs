@@ -1,11 +1,15 @@
-﻿namespace Lucky
+﻿using System;
+using System.Threading.Tasks;
+
+namespace Lucky
 {
     public interface ISerializable
     {
         byte[] Serialize();
 
-        void Deserialize(byte[] data);
-
-        int DataSize { get; }
+        /// <summary>
+        /// Deserialize asking bundle of bytes at a time
+        /// </summary>
+        Task Deserialize(Func<int, Task<byte[]>> feeder);
     }
 }

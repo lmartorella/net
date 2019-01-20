@@ -14,10 +14,9 @@ namespace Lucky.HomeMock.Sinks
 
         public override void Read(BinaryReader reader)
         {
-            var count = reader.ReadUInt16();
-            var bytes = reader.ReadUInt16();
-
-            byte[] data = reader.ReadBytes(bytes);
+            int count = reader.ReadByte();
+            //var count = (_owner.SwitchesCount - 1) / 8 + 1;
+            byte[] data = reader.ReadBytes(count);
 
             // Write bare switch cound
             _owner.Dispatcher.Invoke(() =>

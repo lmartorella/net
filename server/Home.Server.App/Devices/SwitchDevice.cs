@@ -27,7 +27,7 @@ namespace Lucky.Home.Devices
 
         public SwitchDevice()
         {
-            _period = TimeSpan.FromMilliseconds(250);
+            _period = TimeSpan.FromMilliseconds(350);
         }
 
         protected override void OnSinkChanged(SubSink removed, SubSink added)
@@ -76,7 +76,10 @@ namespace Lucky.Home.Devices
 
         private void HandleStatusChanged(object sender, EventArgs e)
         {
-            Status = _inputs.Aggregate(false, (c, input) => c ^ (input.Sink.Status.Length > input.SubIndex && input.Sink.Status[input.SubIndex]));
+            if (_inputs.All(s => s.IsOnline))
+            {
+                Status = _inputs.Aggregate(false, (c, input) => c ^ (input.Sink.Status.Length > input.SubIndex && input.Sink.Status[input.SubIndex]));
+            }
         }
 
         protected override Task OnTerminate()

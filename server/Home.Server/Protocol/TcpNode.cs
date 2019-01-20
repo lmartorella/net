@@ -237,7 +237,10 @@ namespace Lucky.Home.Protocol
             _lastKnownChildren.Clear();
             foreach (var child in children)
             {
-                _lastKnownChildren[child.Address.Index] = child;
+                if (child != null)
+                {
+                    _lastKnownChildren[child.Address.Index] = child;
+                }
             }
         }
 

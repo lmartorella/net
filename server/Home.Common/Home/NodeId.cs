@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Lucky.Home
 {
@@ -22,14 +23,6 @@ namespace Lucky.Home
             get
             {
                 return String == null && Guid == Guid.Empty;
-            }
-        }
-
-        int ISerializable.DataSize
-        {
-            get
-            {
-                return 16;
             }
         }
 
@@ -106,8 +99,9 @@ namespace Lucky.Home
             }
         }
 
-        void ISerializable.Deserialize(byte[] data)
+        async Task ISerializable.Deserialize(Func<int, Task<byte[]>> feeder)
         {
+            byte[] data = await feeder(16);
             // Strip leading zeroes
             int pos = data.ToList().FindLastIndex(b => b != 0);
             string str = Encoding.ASCII.GetString(data, 0, pos + 1);

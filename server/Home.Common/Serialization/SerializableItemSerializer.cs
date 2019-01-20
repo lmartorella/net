@@ -26,13 +26,16 @@ namespace Lucky.Serialization
         public async Task<object> Deserialize(Stream reader, object instance)
         {
             T ret = new T();
-            byte[] buffer = new byte[ret.DataSize];
-            int s = await reader.ReadAsync(buffer, 0, ret.DataSize);
-            if (s < ret.DataSize)
+            await ret.Deserialize(async l =>
             {
-                throw new BufferUnderrunException(ret.DataSize, _fieldName);
-            }
-            ret.Deserialize(buffer);
+                byte[] buffer = new byte[l];
+                int s = await reader.ReadAsync(buffer, 0, l);
+                if (s < l)
+                {
+                    throw new BufferUnderrunException(l, _fieldName);
+                }
+                return buffer;
+            });
             return ret;
         }
     }

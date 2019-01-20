@@ -57,5 +57,13 @@ namespace Lucky.Home.Sinks
         {
             return Sink.GetHashCode() + 7 * SubIndex;
         }
+
+        public bool IsOnline
+        {
+            get
+            {
+                return Sink.IsOnline;
+            }
+        }
     }
 }

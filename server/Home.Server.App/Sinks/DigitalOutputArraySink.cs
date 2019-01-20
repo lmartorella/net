@@ -27,16 +27,31 @@ namespace Lucky.Home.Sinks
             public ushort SwitchCount;
         }
 
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class WriterStatusMessage
+        private class WriterStatusMessage : ISerializable
         {
-            public ushort SwitchCount;
+            private byte[] _msg;
 
-            /// <summary>
-            /// Switch data in bytes 
-            /// </summary>
-            [SerializeAsDynArray]
-            public byte[] Data;
+            public WriterStatusMessage()
+            {
+
+            }
+
+            public WriterStatusMessage(int bitCount, byte[] data)
+            {
+                _msg = new byte[data.Length + 1];
+                _msg[0] = (byte)bitCount;
+                Array.Copy(data, 0, _msg, 1, data.Length);
+            }
+
+            public Task Deserialize(Func<int, Task<byte[]>> feeder)
+            {
+                throw new NotImplementedException();
+            }
+
+            public byte[] Serialize()
+            {
+                return _msg;
+            }
         }
 
         protected async override Task OnInitialize()
@@ -70,23 +85,23 @@ namespace Lucky.Home.Sinks
 
         private async Task UpdateValues(bool[] value)
         {
-            if (SubCount <= 0)
+            if (SubCount != value.Length)
             {
-                return;
+                throw new ArgumentException("Array of values should match sub count");
             }
-
-            await Write(async writer =>
+            if (IsOnline)
             {
-                int swCount = Math.Min(SubCount, value.Length);
-                var msg = new WriterStatusMessage();
-                msg.SwitchCount = (ushort)swCount;
-                msg.Data = new byte[(swCount - 1) / 8 + 1];
-                for (int i = 0; i < swCount; i++)
+                await Write(async writer =>
                 {
-                    msg.Data[i / 8] |= (byte)((value[i] ? 1 : 0) << (i % 8));
-                }
-                await writer.Write(msg);
-            });
+                    var data = new byte[(SubCount - 1) / 8 + 1];
+                    for (int i = 0; i < SubCount; i++)
+                    {
+                        data[i / 8] |= (byte)((value[i] ? 1 : 0) << (i % 8));
+                    }
+                    var msg = new WriterStatusMessage(SubCount, data);
+                    await writer.Write(msg);
+                });
+            }
         }
     }
 }

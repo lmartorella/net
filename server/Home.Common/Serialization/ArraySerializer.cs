@@ -30,11 +30,15 @@ namespace Lucky.Serialization
 
             T[] array = (T[])source;
             int size = _forcedSize;
-            if (size <= 0)
+            if (size == 0)
             {
                 size = array.Length;
                 // Serialize count as word
                 await stream.WriteAsync(BitConverter.GetBytes((ushort)size), 0, 2);
+            }
+            else if (size < 0)
+            {
+                throw new ArgumentException("Invalid forced size: " + size);
             }
 
             // Serialize items
@@ -60,7 +64,7 @@ namespace Lucky.Serialization
 
                 if (size < 0)
                 {
-                    // Check for cases
+                    // Check for cases to transform the error
                     if (_cases != null)
                     {
                         DynArrayCaseAttribute specialCase;
@@ -70,8 +74,15 @@ namespace Lucky.Serialization
                             specialCase.FieldInfo.SetValue(instance, specialCase.FieldValue);
                             return new T[0];
                         }
+                        else
+                        {
+                            throw new ArgumentException("Invalid error for dynamic size: " + size);
+                        }
                     }
-                    throw new InvalidOperationException("Dynamic Array with negative size: " + size);
+                    else
+                    {
+                        throw new InvalidOperationException("Dynamic Array with negative size: " + size);
+                    }
                 }
             }
 
@@ -81,10 +92,6 @@ namespace Lucky.Serialization
                 array[i] = (T)(await _elementSerializer.Deserialize(reader, null));
             }
             return array;
-        }
-
-        private void ExecCase(DynArrayCaseAttribute specialCase)
-        {
         }
     }
 }
