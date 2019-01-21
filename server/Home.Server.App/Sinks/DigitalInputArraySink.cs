@@ -20,7 +20,21 @@ namespace Lucky.Home.Sinks
         protected async override Task OnInitialize()
         {
             await base.OnInitialize();
-            RunLoop();
+            byte[] lastData = null;
+            await Read(async reader =>
+            {
+                var resp = await reader.Read<ReadStatusResponse>();
+                SubCount = resp.SwitchesCount;
+                lastData = resp.Data;
+                var ret = new bool[SubCount];
+                for (int i = 0; i < SubCount; i++)
+                {
+                    ret[i] = (lastData[i / 8] & (1 << (i % 8))) != 0;
+                }
+                Status = ret;
+            });
+
+            RunLoop(lastData);
         }
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -62,31 +76,37 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        private async void RunLoop()
+        private async void RunLoop(byte[] lastData)
         {
-            byte[] lastData = null;
             while (true)
             {
+                await Task.Delay(PollPeriod);
+
+                bool[] ret = null;
                 await Read(async reader =>
                 {
                     var resp = await reader.Read<ReadStatusResponse>();
                     if (resp != null)
                     {
-                        if (lastData != null && !resp.Data.SequenceEqual(lastData))
+                        if (!resp.Data.SequenceEqual(lastData))
                         {
                             // Something changed
                             int swCount = Math.Min(resp.SwitchesCount, resp.Data.Length * 8);
-                            var ret = new bool[swCount];
+                            ret = new bool[swCount];
                             for (int i = 0; i < swCount; i++)
                             {
                                 ret[i] = (resp.Data[i / 8] & (1 << (i % 8))) != 0;
                             }
-                            Status = ret;
+                            lastData = resp.Data;
                         }
-                        lastData = resp.Data;
                     }
                 });
-                await Task.Delay(PollPeriod);
+
+                // Outside the Read to avoid reenter of other sinks
+                if (ret != null)
+                {
+                    Status = ret;
+                }
             }
         }
 

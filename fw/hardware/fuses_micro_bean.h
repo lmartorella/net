@@ -95,7 +95,7 @@
 
 #undef HAS_BMP180
 
-#define HAS_DIGITAL_COUNTER
+#undef HAS_DIGITAL_COUNTER
 #define DCNT_IF INTCONbits.INTF
 #define DCNT_IE INTCONbits.INTE
 

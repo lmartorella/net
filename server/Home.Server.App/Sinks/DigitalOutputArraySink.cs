@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Lucky.Serialization;
 
@@ -101,6 +102,7 @@ namespace Lucky.Home.Sinks
                     var msg = new WriterStatusMessage(SubCount, data);
                     await writer.Write(msg);
                 });
+                Debug.WriteLine("x");
             }
         }
     }
