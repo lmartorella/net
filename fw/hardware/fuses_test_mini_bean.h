@@ -75,7 +75,8 @@ extern persistent BYTE g_exceptionPtr;
     // Prescaler 1:1, = 1MHz timer (us), started
 #define US_TIMER_INIT() { T1CON = 1; }
 
-#define HAS_DIGIO
+#define HAS_DIGIO_OUT
+#define HAS_DIGIO_IN
 #define DIGIO_TRIS_IN_BIT TRISAbits.TRISA1
 #define DIGIO_PORT_IN_BIT PORTAbits.RA1
 #define DIGIO_TRIS_OUT_BIT TRISAbits.TRISA0

@@ -22,6 +22,7 @@ namespace Lucky.HomeMock
         private readonly DigitalInputArraySink _digitalInputsSink;
         private readonly DigitalOutputArraySink _digitalOutputsSink;
         private readonly FlowSinkMock _flowSink;
+        private readonly TemperatureSink _temperatureSink;
         private SystemSink _childSystemSink;
         private SamilPanelMock _solarSink;
         private CommandMockSink _commandSink;
@@ -34,6 +35,7 @@ namespace Lucky.HomeMock
             _displaySink = new DisplaySink();
             _systemSink = new SystemSink(false);
             _gardenSink = new GardenSink();
+            _temperatureSink = new TemperatureSink();
 
             ResetReasons = Enum.GetValues(typeof(ResetReason)).Cast<ResetReason>().ToArray();
             ResetReason = _systemSink.ResetReason;
@@ -69,7 +71,7 @@ namespace Lucky.HomeMock
             _childSystemSink = new SystemSink(true);
             HeloSender = new HeloSender(controlPort.Port, controlPort.LocalhostMode);
 
-            var sinks = new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink, _gardenSink, _flowSink };
+            var sinks = new SinkMockBase[] { _displaySink, _systemSink, _digitalInputsSink, _digitalOutputsSink, _solarSink, _commandSink, _gardenSink, _flowSink, _temperatureSink };
             controlPort.InitSinks(sinks, new[] { _childSystemSink }, HeloSender);
 
             foreach (var sink in sinks)

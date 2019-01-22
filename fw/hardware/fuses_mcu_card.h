@@ -71,7 +71,7 @@
 // ******
 // IO: power line on/off
 // ******
-#undef HAS_DIGIO
+//#undef HAS_DIGIO
 //#define DIGIO_TRIS_IN_BIT TRISGbits.RG4
 //#define DIGIO_PORT_IN_BIT PORTGbits.RG4
 //#define DIGIO_TRIS_OUT_BIT TRISGbits.RG4

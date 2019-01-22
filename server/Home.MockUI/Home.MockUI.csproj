@@ -67,6 +67,7 @@
     <Compile Include="Sinks\SinkStateManager.cs" />
     <Compile Include="Sinks\DigitalInputArraySink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
+    <Compile Include="Sinks\TemperatureSink.cs" />
     <Compile Include="Switch.cs" />
     <Compile Include="UiCommand.cs" />
     <Page Include="MainWindow.xaml">

@@ -13,7 +13,6 @@
 #undef HAS_IP
 #undef HAS_IO
 #undef HAS_DHT11
-#undef HAS_DIGIO
 
 #undef DEBUGMODE
 

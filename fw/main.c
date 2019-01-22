@@ -68,7 +68,7 @@ void main()
     sram_init();
 #endif
     
-#ifdef HAS_DIGIO
+#if defined(HAS_DIGIO_IN) || defined(HAS_DIGIO_OUT)
     digio_init();
 #endif
 

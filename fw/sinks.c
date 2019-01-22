@@ -21,8 +21,10 @@ static bit nil() {
 // Static allocation of sinks
 const char* const SINK_IDS = 
     SINK_SYS_ID
-#ifdef HAS_DIGIO
+#ifdef HAS_DIGIO_OUT
     DIGIO_OUT_SINK_ID
+#endif
+#ifdef HAS_DIGIO_IN
     DIGIO_IN_SINK_ID
 #endif
 #ifdef SINK_LINE_ID
@@ -47,8 +49,11 @@ const char* const SINK_IDS =
 
 const int SINK_IDS_COUNT = 
     1
-#ifdef HAS_DIGIO
-    + 2
+#ifdef HAS_DIGIO_OUT
+    + 1
+#endif
+#ifdef HAS_DIGIO_IN
+    + 1
 #endif
 #ifdef SINK_LINE_ID
     + 1
@@ -72,8 +77,10 @@ const int SINK_IDS_COUNT =
 
 const SinkFunction const sink_readHandlers[] = {
     sys_read
-#ifdef HAS_DIGIO
+#ifdef HAS_DIGIO_OUT
     ,digio_out_read
+#endif
+#ifdef HAS_DIGIO_IN
     ,nil
 #endif
 #ifdef SINK_LINE_ID
@@ -98,8 +105,10 @@ const SinkFunction const sink_readHandlers[] = {
 
 const SinkFunction const sink_writeHandlers[] = {
     sys_write
-#ifdef HAS_DIGIO
+#ifdef HAS_DIGIO_OUT
     ,digio_out_write
+#endif
+#ifdef HAS_DIGIO_IN
     ,digio_in_write
 #endif
 #ifdef SINK_LINE_ID

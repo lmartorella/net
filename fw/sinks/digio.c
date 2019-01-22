@@ -2,17 +2,25 @@
 #include "digio.h"
 #include "../protocol.h"
 
-#ifdef HAS_DIGIO
+#if defined(HAS_DIGIO_IN) || defined(HAS_DIGIO_OUT)
 
 // Only support 1 bit for IN and 1 for OUT (can even be the same)
 
 void digio_init()
 {
+#ifdef HAS_DIGIO_IN
     // First enable input bits
     DIGIO_TRIS_IN_BIT = 1;
+#endif
+#ifdef HAS_DIGIO_OUT
     // Then the output. So if the same port is configured as I/O it will work
     DIGIO_TRIS_OUT_BIT = 0;
+#endif
 }
+
+#endif
+
+#ifdef HAS_DIGIO_OUT
 
 bit digio_out_write()
 {
@@ -38,6 +46,9 @@ bit digio_out_read()
     DIGIO_PORT_OUT_BIT = !!arr;
     return FALSE;
 }
+
+#endif
+#ifdef HAS_DIGIO_IN
 
 // Write bits read as input
 bit digio_in_write()

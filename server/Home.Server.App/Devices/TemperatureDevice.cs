@@ -45,7 +45,7 @@ namespace Lucky.Home.Devices
             }, null, 0, 2000);
         }
 
-        private float ToDec(short bigEndian)
+        private static float ToDec(short bigEndian)
         {
             sbyte decPart = (sbyte)(bigEndian >> 8);
             byte intPart = (byte)(bigEndian & 0xff);
