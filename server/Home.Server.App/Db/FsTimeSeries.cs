@@ -212,6 +212,7 @@ namespace Lucky.Home.Db
                 await Task.Delay(2000);
                 if (retry++ == 5)
                 {
+                    Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori DB", "Cannot find file to backup after 5 retries");
                     _logger.Log("Cannot find file to backup after 5 retries", "src", oldFileName.FullName);
                     return;
                 }

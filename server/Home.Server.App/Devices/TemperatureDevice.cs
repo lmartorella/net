@@ -20,26 +20,11 @@ namespace Lucky.Home.Devices
             {
                 if (IsFullOnline)
                 {
-                    byte[] reading = await ((TemperatureSink)Sinks[0]).Read();
-                    if (reading == null || reading.Length != 6)
+                    TemperatureReading reading = await ((TemperatureSink)Sinks[0]).Read();
+                    if (reading.SinkStatus == TemperatureSinkStatus.Ok)
                     {
-                        Logger.Error("ProtocolError", "Len", reading != null ? reading.Length : -1);
-                        return;
+                        Logger.Log("Reading", "RH%", ToDec(reading.Humidity), "T(C)", ToDec(reading.Temperature));
                     }
-                    if (reading[0] != 1)
-                    {
-                        Logger.Error("BeanErrorReadingSensor");
-                        return;
-                    }
-                    // Calc checksum
-                    if (reading.Skip(1).Take(4).Sum(b => b) != reading[5])
-                    {
-                        Logger.Error("ChecksumError");
-                        return;
-                    }
-                    short u1 = BitConverter.ToInt16(reading, 1);
-                    short u2 = BitConverter.ToInt16(reading, 3);
-                    Logger.Log("Reading", "RH%", ToDec(u1), "T(C)", ToDec(u2));
                 }
 
             }, null, 0, 2000);

@@ -20,9 +20,9 @@ namespace Lucky.HomeMock.Sinks
 
         private static ushort FromDec(float n)
         {
-            int intPart = (int)Math.Floor(n);
-            uint decPart = (uint)((n - intPart) * 256.0f);
-            return (ushort)(((intPart & 0xff) << 8) + (decPart & 0xff));
+            byte intPart = (byte)(sbyte)Math.Floor(n);
+            byte decPart = (byte)((n - intPart) * 256.0f);
+            return (ushort)((decPart << 8) + intPart);
         }
 
         public override void Write(BinaryWriter writer)
