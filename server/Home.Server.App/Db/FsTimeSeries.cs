@@ -206,6 +206,7 @@ namespace Lucky.Home.Db
         private async Task CopyToBackup(FileInfo oldFileName)
         {
             int retry = 0;
+            oldFileName.Refresh();
             while (!oldFileName.Exists)
             {
                 await Task.Delay(2000);
@@ -214,6 +215,7 @@ namespace Lucky.Home.Db
                     _logger.Log("Cannot find file to backup after 5 retries", "src", oldFileName.FullName);
                     return;
                 }
+                oldFileName.Refresh();
             }
 
             var targetFile = GetBackupPath(oldFileName);
