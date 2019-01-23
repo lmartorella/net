@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace Lucky.Services
 {
@@ -50,7 +51,10 @@ namespace Lucky.Services
             FileInfo file = new FileInfo(Path.Combine(_isolatedStorageFolder, serviceName + ".json"));
             using (var fileStream = file.OpenWrite())
             {
-                serializer.WriteObject(fileStream, value);
+                using (var writer = JsonReaderWriterFactory.CreateJsonWriter(fileStream, Encoding.UTF8, true, true))
+                {
+                    serializer.WriteObject(writer, value);
+                }
             }
         }
     }

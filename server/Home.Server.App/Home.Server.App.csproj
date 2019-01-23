@@ -43,6 +43,7 @@
     <Compile Include="Application\HomeApp.cs" />
     <Compile Include="Db\FsTimeSeries.cs" />
     <Compile Include="Devices\BarometricTesterDevice.cs" />
+    <Compile Include="Devices\ClimatizationZoneDevice.cs" />
     <Compile Include="Devices\FlowTesterDevice.cs" />
     <Compile Include="Devices\GardenDevice.cs" />
     <Compile Include="Devices\ClockDevice.cs" />
@@ -55,7 +56,7 @@
     <Compile Include="Power\PowerData.cs" />
     <Compile Include="Devices\SamilInverterDeviceBase.cs" />
     <Compile Include="Devices\SwitchDevice.cs" />
-    <Compile Include="Devices\TemperatureDevice.cs" />
+    <Compile Include="Devices\TemperatureTesterDevice.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

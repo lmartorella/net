@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using Lucky.Services;
 using Lucky.Home.Sinks;
 
@@ -8,13 +6,13 @@ using Lucky.Home.Sinks;
 
 namespace Lucky.Home.Devices
 {
-    [Device("Temperature")]
+    [Device("Temperature Tester")]
     [Requires(typeof(TemperatureSink))]
-    public class TemperatureDevice : DeviceBase
+    public class TemperatureTesterDevice : DeviceBase
     {
         private Timer _timer;
 
-        public TemperatureDevice()
+        public TemperatureTesterDevice()
         {
             _timer = new Timer(async o =>
             {
