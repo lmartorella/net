@@ -21,6 +21,7 @@ namespace Lucky.Home.Services
         public ImmediateZone[] ImmediateZones { get; set; }
     }
 
+    [DataContract]
     public class ImmediateZone
     {
         [DataMember(Name = "zones")]

@@ -87,7 +87,7 @@ app.get('/r/gardenStatus', async (req, res) => {
 
 app.post('/r/gardenStart', ensureLoggedIn(), async (req, res) => {
     let immediate = req.body;
-    if (!Array.isArray(immediate) || !immediate.every(v => typeof v === "number") || immediate.every(v => v <= 0)) {
+    if (!Array.isArray(immediate) || !immediate.every(v => typeof v === "object") || immediate.every(v => v.time <= 0)) {
         // Do nothing
         res.status(500);
         res.send("Request incompatible");
