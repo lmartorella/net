@@ -18,11 +18,26 @@ interface IGardenStartStopResponse {
     error: string;
 }
 
+class Cycle {
+    constructor(zoneNames: string[]) {
+        this.zones = zoneNames.map((name, index) => ({ name, index }))
+    }
+
+    time: number = 0;
+
+    zones: { 
+        name: string;
+        enabled?: boolean;
+        index: number;
+    }[];
+}
+
 export class GardenController {
     
     public message: string;
     public error: string;
-    private zones: { name: string, time: number }[];
+    private zoneNames: string[] = [];
+    private program: Cycle[] = [];
     public status: string;
     public disableButton = true;
     public flow: { 
@@ -31,18 +46,12 @@ export class GardenController {
     };
     public nextCycles: { name: string, scheduledTime: string }[];
 
-    public isDisableButton() {
-        return this.disableButton || this.zones.every(z => z.time <= 0);
-    }
-
     static $inject = ['$http', '$scope'];
     constructor(private $http: ng.IHttpService) {
-        this.zones = [];
-    
         // Fetch zones
         this.$http.get<IGardenStatusResponse>("/r/gardenStatus").then(resp => {
             if (resp.status == 200 && resp.data) {
-                this.zones = resp.data.config && resp.data.config.zones.map(zone => ({ name: zone, time: 0 }));
+                this.zoneNames = resp.data.config && resp.data.config.zones;
                 this.status =  resp.data.online ? 'Online' : (resp.data.config ? 'OFFLINE' : 'NOT CONFIGURED');
                 this.flow = resp.data.flowData;
                 this.disableButton = false;
@@ -59,6 +68,10 @@ export class GardenController {
         }, err => {
             this.error = "Cannot fetch cfg: " + err.statusText;
         });
+    }
+
+    public isDisableButton() {
+        return this.disableButton || this.program.length === 0;
     }
 
     stop() {
@@ -80,7 +93,7 @@ export class GardenController {
 
     start() {
         this.disableButton = true;
-        var body = this.zones.map(zone => new Number(zone.time));
+        var body = this.program.map(cycle => ({ zones: cycle.zones.filter(z => z.enabled).map(z => z.index), time: new Number(cycle.time) }));
         this.$http.post<IGardenStartStopResponse>("/r/gardenStart", JSON.stringify(body)).then(resp => {
             if (resp.status == 200) {
                 if (resp.data.error) {
@@ -94,5 +107,13 @@ export class GardenController {
         }, err => {
             this.error = "Cannot start garden: " + err.statusText;
         });
+    }
+
+    addCycle(): void {
+        this.program.push(new Cycle(this.zoneNames));
+    }
+
+    removeCycle(index: number): void {
+        this.program.splice(index, 1);
     }
 }

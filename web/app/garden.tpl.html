@@ -4,10 +4,26 @@
   <span class="message" ng-if="ctrl.message"> {{ctrl.message}} </span>
   <span class="message" ng-if="ctrl.status"> {{ctrl.status}} </span>
 
-  <div ng-repeat="zone in ctrl.zones">
-    <label>{{zone.name}}</label>
-    <input type="text" ng-model="zone.time" />
+  <div>
+    <h4>Programma veloce:</h4>
+    <div ng-repeat="cycle in ctrl.program" class="program-cycle">
+      <div class="program-zones">
+          <div ng-repeat="zone in cycle.zones">
+             <label>{{zone.name}}</label>
+             <input type="checkbox" ng-model="zone.enabled" />
+          </div>
+      </div>
+      <p>
+        <span>Minuti: </span>
+        <input type="text" ng-model="cycle.time" style="width: 3em" />
+      </p>
+      <button ng-click="ctrl.removeCycle($index)">Rimuovi</button>
+    </div>
+    <button ng-click="ctrl.addCycle()">Aggiungi ciclo</button>
   </div>
+
+  <br/>
+  <br/>
   <button ng-click="ctrl.start()" ng-disabled="ctrl.isDisableButton()">Vai!</button>
   <br/>
   <br/>

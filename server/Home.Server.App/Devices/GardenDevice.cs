@@ -239,15 +239,15 @@ namespace Lucky.Home.Devices
                         });
                         break;
                     case "garden.setImmediate":
-                        Logger.Log("setImmediate", "zones", string.Join(",", e.Request.ImmediateZones));
+                        Logger.Log("setImmediate", "msg", string.Join(",", e.Request.ImmediateZones.Select(z => z.ToString())));
                         e.Response = Task.FromResult((WebResponse) new GardenWebResponse
                         {
                             Error = ScheduleCycle(new ImmediateProgram
                             {
-                                ZoneTimes = e.Request.ImmediateZones.Select((t, i) => new ZoneTime
+                                ZoneTimes = e.Request.ImmediateZones.Select(prg => new ZoneTime
                                 {
-                                    Minutes = t,
-                                    Zones = new[] { i }
+                                    Minutes = prg.Time,
+                                    Zones = prg.Zones
                                 }).ToArray(),
                                 Name = "Immediato"
                             })

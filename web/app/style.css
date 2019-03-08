@@ -39,3 +39,17 @@
     width: 75%;
 }
 
+.program-cycle {
+    border: 1px black solid;
+    background: #f0f8ff69;
+    padding: 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.program-zones {
+    display: flex;
+    flex-direction: column;
+}

@@ -18,7 +18,21 @@ namespace Lucky.Home.Services
         public string Command { get; set; }
 
         [DataMember(Name = "immediate")]
-        public int[] ImmediateZones { get; set; }
+        public ImmediateZone[] ImmediateZones { get; set; }
+    }
+
+    public class ImmediateZone
+    {
+        [DataMember(Name = "zones")]
+        public int[] Zones { get; set; }
+
+        [DataMember(Name = "time")]
+        public int Time { get; set; }
+
+        public override string ToString()
+        {
+            return "Zones: " + string.Join(",", Zones) + " [Time: " + Time + "]";
+        }
     }
 
     [DataContract]
