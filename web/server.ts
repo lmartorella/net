@@ -5,20 +5,22 @@ import * as compression from 'compression';
 import * as passportLocal from 'passport-local';
 import { setTimeout } from 'timers';
 import { getPvData, getPvChart } from './solar';
-import { binDir, etcDir, logsFile, gardenCfgFile, gardenCsvFile } from './settings';
+import { binDir, etcDir, logsFile, gardenCfgFile, gardenCsvFile, serverCfgFile } from './settings';
 import ProcessManager from './procMan';
+
+const settings = JSON.parse(fs.readFileSync(serverCfgFile, 'utf8'));
 
 let pm = new ProcessManager(binDir, etcDir, 'Home.Server.App.exe');
 
 passport.use(new passportLocal.Strategy((username: string, password: string, done: (error: any, user?: any) => void) => { 
-    if (username !== 'USER' || password != 'PASSWORD') {
+    if (username !== settings.username || password !== settings.password) {
         return done("Bad credentials");
     }
     return done(null, username);
 }));
 
 function validateUser(user) {
-    return (user === 'USER');
+    return (user === settings.username);
 }
 
 // Configure Passport authenticated session persistence.
