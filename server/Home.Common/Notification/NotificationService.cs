@@ -8,6 +8,7 @@ using System.Threading;
 using System.Linq;
 using System.Net.Mime;
 using System.IO;
+using System.Runtime.Serialization;
 
 namespace Lucky.Home.Notification
 {
@@ -50,16 +51,33 @@ namespace Lucky.Home.Notification
         IStatusUpdate EnqueueStatusUpdate(string groupTitle, string message);
     }
 
-    class NotificationService : ServiceBase, INotificationService
+    [DataContract]
+    public class MailConfiguration 
     {
-        private string _smtpHost = "=HIDDEN=";
-        private int _smtpPort = 587;
-        private bool _enableSsl = true;
-        private string _dest = "=HIDDEN=";
-        private string _sender = "=HIDDEN=";
-        private string _user = "=HIDDEN=";
-        private string _password = "=HIDDEN=";
+        [DataMember]
+        public string SmtpHost { get; set; }
 
+        [DataMember]
+        public int SmtpPort { get; set; }
+
+        [DataMember]
+        public bool EnableSsl { get; set; }
+
+        [DataMember]
+        public string To { get; set; }
+
+        [DataMember]
+        public string Sender { get; set; }
+
+        [DataMember]
+        public string User { get; set; }
+
+        [DataMember]
+        public string Password { get; set; }
+    }
+
+    class NotificationService : ServiceBaseWithData<MailConfiguration>, INotificationService
+    {
         private class Message : IStatusUpdate
         {
             private bool _sent;
@@ -152,10 +170,12 @@ namespace Lucky.Home.Notification
         /// </summary>
         public async Task SendMail(string title, string body)
         {
+            var configuration = State;
+
             Logger.Log("SendingMail", "title", title, "body", body);
 
             // Specify the message content.
-            MailMessage message = new MailMessage(_sender, _dest);
+            MailMessage message = new MailMessage(configuration.Sender, configuration.To);
             message.Subject = title;
             message.Body = body;
 
@@ -175,6 +195,8 @@ namespace Lucky.Home.Notification
         /// </summary>
         public async Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null)
         {
+            var configuration = State;
+
             if (attachments == null)
             {
                 attachments = new Tuple<Stream, ContentType, string>[0];
@@ -182,7 +204,7 @@ namespace Lucky.Home.Notification
             Logger.Log("SendingHtmlMail", "title", title, "attch", attachments.Count());
 
             // Specify the message content.
-            MailMessage message = new MailMessage(_sender, _dest);
+            MailMessage message = new MailMessage(configuration.Sender, configuration.To);
             message.Subject = title;
 
             var alternateView = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
@@ -210,18 +232,20 @@ namespace Lucky.Home.Notification
 
         private async Task<bool> TrySendMail(MailMessage message)
         {
+            var configuration = State;
+
             // Command line argument must the the SMTP host.
             SmtpClient client = new SmtpClient();
             client.DeliveryMethod = SmtpDeliveryMethod.Network;
-            client.Host = _smtpHost;
-            client.Port = _smtpPort;
-            client.Credentials = new NetworkCredential(_user, _password);
-            client.EnableSsl = _enableSsl;
+            client.Host = configuration.SmtpHost;
+            client.Port = configuration.SmtpPort;
+            client.Credentials = new NetworkCredential(configuration.User, configuration.Password);
+            client.EnableSsl = configuration.EnableSsl;
 
             try
             {
                 await client.SendMailAsync(message);
-                Logger.Log("Mail sent to: " + _dest);
+                Logger.Log("Mail sent to: " + configuration.To);
                 client.Dispose();
                 return true;
             }
