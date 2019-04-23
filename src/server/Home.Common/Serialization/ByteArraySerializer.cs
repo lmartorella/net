@@ -1,8 +1,11 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serializer for byte array fields
+    /// </summary>
     class ByteArraySerializer : ISerializer
     {
         protected readonly string _fieldName;

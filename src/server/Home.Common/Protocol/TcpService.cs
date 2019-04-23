@@ -3,12 +3,15 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Lucky.Serialization;
+using Lucky.Home.Serialization;
 using Lucky.Services;
 
 namespace Lucky.Net
 {
-    public interface IClient
+    /// <summary>
+    /// A wrapper around TCP client
+    /// </summary>
+    internal interface IClient
     {
         void Close(bool flush);
         bool IsClosed { get; }
@@ -19,9 +22,9 @@ namespace Lucky.Net
     }
 
     /// <summary>
-    /// Helper class
+    /// Helper class to create closeable TCP clients as read and write streams, and implement short timeouts
     /// </summary>
-    public class TcpService : ServiceBase
+    internal class TcpService : ServiceBase
     {
         private static readonly TimeSpan NET_STREAM_TIMEOUT = TimeSpan.FromSeconds(5);
 
@@ -68,9 +71,6 @@ namespace Lucky.Net
             return listener;
         }
 
-        /// <summary>
-        /// A TCP client
-        /// </summary>
         private class Client : IClient
         {
             private NetworkStream _stream;

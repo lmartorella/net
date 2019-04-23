@@ -5,17 +5,14 @@ using System.Linq;
 
 namespace Lucky.Services
 {
+    /// <summary>
+    /// Service manager
+    /// </summary>
     public static class Manager
     {
         private static readonly Dictionary<Type, Type> Types = new Dictionary<Type, Type>();
         private static readonly Dictionary<Type, object> Instances = new Dictionary<Type, object>();
         private static readonly object LockObject = new object();
-
-        static Manager()
-        {
-            Register<JsonIsolatedStorageService, IIsolatedStorageService>();
-            Register<NotificationService, INotificationService>();
-        }
 
         public static T GetService<T>() where T : IService
         {

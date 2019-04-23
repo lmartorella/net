@@ -4,8 +4,11 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serializer for array fields
+    /// </summary>
     class ArraySerializer<T> : ISerializer
     {
         private readonly ISerializer _elementSerializer;

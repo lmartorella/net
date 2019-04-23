@@ -6,8 +6,11 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serialize a .NET type
+    /// </summary>
     class TypeSerializer : ISerializer
     {
         private ISerializer _serializer;

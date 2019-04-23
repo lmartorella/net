@@ -60,6 +60,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Services\IJsonWebServer.cs" />
+    <Compile Include="Services\PipeJsonServer.cs" />
     <Compile Include="Services\PipeServer.cs" />
     <Compile Include="Sinks\BarometricSink.cs" />
     <Compile Include="Sinks\DigitalInputArraySink.cs" />

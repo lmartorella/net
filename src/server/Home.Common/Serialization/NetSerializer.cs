@@ -3,10 +3,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
     /// <summary>
-    /// Class to serialize/deserialize a complex type
+    /// Class to serialize/deserialize a complex .NET type using decorators on fields
     /// </summary>
     public class NetSerializer<T>
     {

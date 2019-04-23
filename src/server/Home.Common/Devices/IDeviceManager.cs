@@ -6,16 +6,19 @@ using System.Threading.Tasks;
 
 namespace Lucky.Home.Devices
 {
+    /// <summary>
+    /// Manager for devices
+    /// </summary>
     public interface IDeviceManager : IService
     {
-        object DevicesLock { get; }
-        IEnumerable<IDevice> Devices { get; }
-        event EventHandler DevicesChanged;
-    }
+        /// <summary>
+        /// Get the list of the currently registered devices
+        /// </summary>
+        IDevice[] Devices { get; }
 
-    internal interface IDeviceManagerInternal : IDeviceManager
-    {
-        void RegisterAssembly(Assembly assembly);
-        Task TerminateAll();
+        /// <summary>
+        /// Raised when the device list changes
+        /// </summary>
+        event EventHandler DevicesChanged;
     }
 }

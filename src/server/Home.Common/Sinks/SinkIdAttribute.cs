@@ -2,6 +2,9 @@
 
 namespace Lucky.Home.Sinks
 {
+    /// <summary>
+    /// Declare the 4-cc code of the sink
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class SinkIdAttribute : Attribute
     {

@@ -1,7 +1,10 @@
 ﻿using System;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Raised when trying to deserialize a stream closed or with less data than required
+    /// </summary>
     public class BufferUnderrunException : Exception
     {
         public BufferUnderrunException(BufferUnderrunException innerExc, Type owner)

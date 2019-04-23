@@ -49,6 +49,7 @@
     <Compile Include="Admin\AdminClient.cs" />
     <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
+    <Compile Include="Admin\MessageChannel.cs" />
     <Compile Include="Admin\MessageRequest.cs" />
     <Compile Include="Admin\MessageResponse.cs" />
     <Compile Include="Admin\MessageSerializerFactory.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="Protocol\HeloMessage.cs" />
     <Compile Include="Protocol\Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\JsonIsolatedStorageService.cs" />
     <Compile Include="Sinks\ISystemSink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
   </ItemGroup>

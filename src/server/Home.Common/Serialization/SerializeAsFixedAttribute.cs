@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
     public interface IFixedArrayAttribute
     {
@@ -8,7 +8,7 @@ namespace Lucky.Serialization
     }
 
     /// <summary>
-    /// Used for array 
+    /// Declares a fixed-size arrays
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class SerializeAsFixedArrayAttribute : Attribute, IFixedArrayAttribute
@@ -22,7 +22,7 @@ namespace Lucky.Serialization
     }
 
     /// <summary>
-    /// Used for strings
+    /// Declares a fixed-size string
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class SerializeAsFixedStringAttribute : Attribute, IFixedArrayAttribute

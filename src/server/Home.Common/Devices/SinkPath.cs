@@ -3,8 +3,11 @@ using System.Runtime.Serialization;
 
 namespace Lucky.Home.Devices
 {
+    /// <summary>
+    /// Serializable path to a sink
+    /// </summary>
     [DataContract]
-    public class SinkPath
+    internal class SinkPath
     {
         [DataMember]
         public NodeId NodeId { get; set; }

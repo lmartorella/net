@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Lucky
+namespace Lucky.Home
 {
+    /// <summary>
+    /// Custom stream serialization
+    /// </summary>
     public interface ISerializable
     {
         byte[] Serialize();

@@ -3,8 +3,11 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serialize a .NET string
+    /// </summary>
     class StringSerializer : ISerializer
     {
         private readonly string _fieldName;

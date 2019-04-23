@@ -1,9 +1,12 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Lucky.Home
+namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// Node status
+    /// </summary>
     [DataContract]
-    public class NodeStatus
+    internal class NodeStatus
     {
         [DataMember]
         public ResetReason ResetReason { get; set; }

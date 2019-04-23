@@ -2,8 +2,11 @@
 using System.Diagnostics;
 using System.Runtime.Serialization;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// A four characters code
+    /// </summary>
     [DataContract]
     public class Fourcc
     {

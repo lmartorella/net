@@ -5,8 +5,11 @@ using System.Runtime.Serialization;
 
 namespace Lucky.Home.Devices
 {
+    /// <summary>
+    /// Serialize the device type
+    /// </summary>
     [DataContract]
-    public class DeviceTypeDescriptor
+    internal class DeviceTypeDescriptor
     {
         public DeviceTypeDescriptor(Type type)
         {

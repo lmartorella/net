@@ -1,6 +1,9 @@
 namespace Lucky.Home
 {
-    public enum ResetReason
+    /// <summary>
+    /// Node reset reason
+    /// </summary>
+    internal enum ResetReason
     {
         Waiting = -1,
         None = 0,

@@ -3,8 +3,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serializer for custom .NET classes
+    /// </summary>
     class ClassSerializer<T> : ISerializer where T : class, new()
     {
         private TypeSerializer[] _fields;

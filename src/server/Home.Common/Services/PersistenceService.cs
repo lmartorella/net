@@ -3,6 +3,9 @@ using System.IO;
 
 namespace Lucky.Services
 {
+    /// <summary>
+    /// Helper service for persistence
+    /// </summary>
     public class PersistenceService : ServiceBase
     {
         public string GetAppFolderPath(string root = null)

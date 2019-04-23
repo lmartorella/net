@@ -10,7 +10,7 @@ namespace Lucky.Home.Sinks
     /// <summary>
     /// Base class for sinks
     /// </summary>
-    public class SinkBase : IDisposable, ISinkInternal
+    public class SinkBase : IDisposable, ISink
     {
         private int _index;
         protected ILogger Logger;
@@ -40,20 +40,11 @@ namespace Lucky.Home.Sinks
         public virtual void Dispose()
         { }
 
-        public SinkPath Path
+        internal SinkPath Path
         {
             get
             {
                 return new SinkPath(Node.NodeId, FourCc);
-            }
-        }
-
-        ITcpNode ISinkInternal.Node
-        {
-            get
-            {
-                return Node;
-
             }
         }
 
@@ -69,6 +60,9 @@ namespace Lucky.Home.Sinks
 
         public string FourCc { get; private set; }
 
+        /// <summary>
+        /// Read data after connection is established
+        /// </summary>
         protected Task<bool> Read(Func<IConnectionReader, Task> readHandler, int timeout = 0, [CallerMemberName] string context = "")
         {
             if (Node != null)
@@ -81,6 +75,9 @@ namespace Lucky.Home.Sinks
             }
         }
 
+        /// <summary>
+        /// Write data after connection is established
+        /// </summary>
         protected Task<bool> Write(Func<IConnectionWriter, Task> writeHandler, [CallerMemberName] string context = "")
         {
             if (Node != null)
@@ -93,8 +90,14 @@ namespace Lucky.Home.Sinks
             }
         }
 
+        /// <summary>
+        /// Count of sub sinks
+        /// </summary>
         public int SubCount { get; protected set; }
 
+        /// <summary>
+        /// Do a system reset of the node that exposes the sink
+        /// </summary>
         public void ResetNode()
         {
             Manager.GetService<SinkManager>().RaiseResetSink(this);

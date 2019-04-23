@@ -4,6 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Lucky.Home.Protocol
 {
+    /// <summary>
+    /// A TCP address
+    /// </summary>
     internal class TcpNodeAddress : IEquatable<TcpNodeAddress>
     {
         /// <summary>

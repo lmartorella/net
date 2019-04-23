@@ -2,11 +2,17 @@
 
 namespace Lucky.Services
 {
+    /// <summary>
+    /// A logger
+    /// </summary>
     public interface ILogger
     {
         void LogFormat(string type, string message, params object[] args);
     }
 
+    /// <summary>
+    /// Extension methods to log 
+    /// </summary>
     public static class LoggerExtensions
     {
         private const string WARN = "WARN";

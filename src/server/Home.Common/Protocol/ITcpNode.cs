@@ -5,6 +5,9 @@ using System.Runtime.CompilerServices;
 
 namespace Lucky.Home.Protocol
 {
+    /// <summary>
+    /// A TCP node (master)
+    /// </summary>
     internal interface ITcpNode
     {
         /// <summary>

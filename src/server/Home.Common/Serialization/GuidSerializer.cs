@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 
 // ReSharper disable StaticMemberInGenericType
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serialize a GUID
+    /// </summary>
     class GuidSerializer : ByteArraySerializer
     {
         private const int Size = 16;

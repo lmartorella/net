@@ -3,8 +3,11 @@ using System.Runtime.Serialization;
 
 namespace Lucky.Home.Devices
 {
+    /// <summary>
+    /// Serialize the registered device instance
+    /// </summary>
     [DataContract]
-    public class DeviceDescriptor
+    internal class DeviceDescriptor
     {
         [DataMember] 
         public Guid Id;

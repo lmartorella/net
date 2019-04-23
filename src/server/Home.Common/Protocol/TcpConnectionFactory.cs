@@ -9,6 +9,9 @@ using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
+    /// <summary>
+    /// Raised when a TCP node cannot be acquired after the timeout
+    /// </summary>
     public class DeadlockException : ApplicationException
     {
         public DeadlockException(string message)
@@ -19,7 +22,7 @@ namespace Lucky.Home.Protocol
     }
 
     /// <summary>
-    /// Used for reader only
+    /// A read-only stream 
     /// </summary>
     public interface IConnectionReader
     {
@@ -27,7 +30,7 @@ namespace Lucky.Home.Protocol
     }
 
     /// <summary>
-    /// Used for writer only
+    /// A write-only stream
     /// </summary>
     public interface IConnectionWriter
     {

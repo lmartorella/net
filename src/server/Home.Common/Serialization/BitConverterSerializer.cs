@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 
 // ReSharper disable StaticMemberInGenericType
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serializer for bit array fields
+    /// </summary>
     class BitConverterSerializer<T> : ByteArraySerializer where T : struct
     {
         private readonly Func<T, byte[]> _ser;

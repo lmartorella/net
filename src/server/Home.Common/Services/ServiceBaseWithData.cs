@@ -1,5 +1,9 @@
 namespace Lucky.Services
 {
+    /// <summary>
+    /// Base class for singleton services that have a persisted state
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class ServiceBaseWithData<T> : ServiceBase where T : class, new()
     {
         private T _state;

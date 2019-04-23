@@ -3,39 +3,27 @@ using System.Threading.Tasks;
 using Lucky.Home.Devices;
 using Lucky.Services;
 
-namespace Lucky.Home.Application
+namespace Lucky.Home
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
+    /// <summary>
+    /// Base class of application logic
+    /// </summary>
     public abstract class AppService : ServiceBase
     {
         private readonly TaskCompletionSource<object> _killDefer = new TaskCompletionSource<object>();
 
+        /// <summary>
+        /// Override to implement the start logic
+        /// </summary>
+        /// <returns></returns>
         public abstract Task Start();
 
-        public void Run()
+        internal async Task Run()
         {
-            AppDomain.CurrentDomain.UnhandledException += (o, e) =>
-            {
-                Logger.Exception((Exception)e.ExceptionObject);
-            };
-            StartLoop().Wait();
-        }
-
-        private async Task StartLoop()
-        {
-            Console.CancelKeyPress += (sender, args) =>
-            {
-                Kill("detected CtrlBreak");
-                args.Cancel = true;
-            };
             await _killDefer.Task;
-
-            // Safely stop devices
-            await Manager.GetService<IDeviceManagerInternal>().TerminateAll();
-            Logger.LogStderr("Exiting.");
         }
 
-        public void Kill(string reason)
+        internal void Kill(string reason)
         {
             Logger.LogStderr("Server killing: + " + reason + ". Stopping devices...");
             _killDefer.TrySetResult(null);

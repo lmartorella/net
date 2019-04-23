@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using System.Runtime.Serialization;
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serialize a two-character code
+    /// </summary>
     [DataContract]
     public class Twocc
     {

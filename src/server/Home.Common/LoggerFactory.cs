@@ -2,12 +2,12 @@
 using System.IO;
 using Lucky.Services;
 
-namespace Lucky
+namespace Lucky.Home
 {
     /// <summary>
-    /// Only console supported at the moment
+    /// Console logger
     /// </summary>
-    public class LoggerFactory : ServiceBase, ILoggerFactory
+    internal class LoggerFactory : ServiceBase, ILoggerFactory
     {
         private static string s_logFile;
 

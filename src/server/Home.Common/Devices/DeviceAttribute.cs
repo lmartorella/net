@@ -2,9 +2,15 @@
 
 namespace Lucky.Home.Devices
 {
+    /// <summary>
+    /// Decorates a device type
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class DeviceAttribute : Attribute
     {
+        /// <summary>
+        /// Unique display name
+        /// </summary>
         public string Name { get; set; }
 
         public DeviceAttribute() { }
@@ -15,6 +21,9 @@ namespace Lucky.Home.Devices
         }
     }
 
+    /// <summary>
+    /// Declared strong dependency to a sink type
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class RequiresAttribute : Attribute
     {
@@ -29,6 +38,9 @@ namespace Lucky.Home.Devices
         }
     }
 
+    /// <summary>
+    /// Declared strong dependency to a list of sinks of the given type
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class RequiresArrayAttribute : RequiresAttribute
     {

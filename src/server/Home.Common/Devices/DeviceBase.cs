@@ -10,10 +10,13 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
+    /// <summary>
+    /// Base class for device objects
+    /// </summary>
     public abstract class DeviceBase : IDevice
     {
         private readonly Type[] _requiredSinkTypes;
-        private readonly ObservableCollection<SubSink> _sinks = new ObservableCollection<SubSink>();
+        private readonly ObservableCollection<ISubSink> _sinks = new ObservableCollection<ISubSink>();
         private bool _isFullOnline;
         protected ILogger Logger;
 
@@ -39,15 +42,18 @@ namespace Lucky.Home.Devices
                     case NotifyCollectionChangedAction.Move:
                         throw new InvalidOperationException("Sink collection operation not supported: " + args.Action);
                     case NotifyCollectionChangedAction.Add:
-                        OnSinkChanged(null, (SubSink) args.NewItems[0]);
+                        OnSinkChanged(null, (ISubSink) args.NewItems[0]);
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        OnSinkChanged((SubSink) args.OldItems[0], null);
+                        OnSinkChanged((ISubSink) args.OldItems[0], null);
                         break;
                 }
             };
         }
 
+        /// <summary>
+        /// Get the list of the attached sinks
+        /// </summary>
         protected ISink[] Sinks
         {
             get
@@ -56,13 +62,19 @@ namespace Lucky.Home.Devices
             }
         }
 
-        protected virtual void OnSinkChanged(SubSink removed, SubSink added)
+        /// <summary>
+        /// Called when the list of attached sinks changes
+        /// </summary>
+        protected virtual void OnSinkChanged(ISubSink removed, ISubSink added)
         {
         }
 
-        public SinkPath[] SinkPaths { get; private set; }
+        /// <summary>
+        /// Get the serializable list of sinks (by path)
+        /// </summary>
+        internal SinkPath[] SinkPaths { get; private set; }
 
-        public virtual void OnInitialize(SinkPath[] sinkPaths)
+        internal void OnInitialize(SinkPath[] sinkPaths)
         {
             SinkPaths = sinkPaths;
             var sinkManager = Manager.GetService<SinkManager>();
@@ -79,6 +91,12 @@ namespace Lucky.Home.Devices
                 sinkManager.CollectionChanged += HandleSinkChanged;
             }
             OnSinkChanged();
+            OnInitialize();
+        }
+
+        protected virtual void OnInitialize()
+        {
+
         }
 
         protected internal virtual Task OnTerminate()
@@ -99,7 +117,7 @@ namespace Lucky.Home.Devices
 
         private void HandleSinkChanged(object sender, CollectionChangeEventArgs e)
         {
-            ISink item = (ISink)e.Element;
+            SinkBase item = (SinkBase)e.Element;
             if (e.Action == CollectionChangeAction.Add)
             {
                 var subSinkPaths = SinkPaths.Where(sp => item.Path.Owns(sp));
@@ -119,6 +137,9 @@ namespace Lucky.Home.Devices
             OnSinkChanged();
         }
 
+        /// <summary>
+        /// Raised when all the registered sinks are registered
+        /// </summary>
         public event EventHandler IsFullOnlineChanged;
 
         private void OnSinkChanged()

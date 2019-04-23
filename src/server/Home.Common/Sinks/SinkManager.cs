@@ -10,17 +10,13 @@ using Lucky.Services;
 
 namespace Lucky.Home.Sinks
 {
-    public interface ISinkManager : IService
-    {
-        void RegisterAssembly(Assembly assembly);
-        void RegisterType(Type type);
-    }
-
-    // ReSharper disable once ClassNeverInstantiated.Global
-    class SinkManager : ServiceBase, ISinkManager
+    /// <summary>
+    /// Sink manager
+    /// </summary>
+    class SinkManager : ServiceBase
     {
         private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
-        private readonly ObservableCollection<ISink> _sinks = new ObservableCollection<ISink>();
+        private readonly ObservableCollection<SinkBase> _sinks = new ObservableCollection<SinkBase>();
         public object LockObject { get; private set; }
 
         public SinkManager()

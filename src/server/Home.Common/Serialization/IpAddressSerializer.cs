@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 
 // ReSharper disable StaticMemberInGenericType
 
-namespace Lucky.Serialization
+namespace Lucky.Home.Serialization
 {
+    /// <summary>
+    /// Serialize a IPv4 address
+    /// </summary>
     class IpAddressSerializer : ByteArraySerializer
     {
         private const int Size = 4;

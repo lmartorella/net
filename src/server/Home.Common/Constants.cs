@@ -1,7 +1,10 @@
 ﻿
 namespace Lucky.Home
 {
-    public static class Constants
+    /// <summary>
+    /// Ports
+    /// </summary>
+    internal static class Constants
     {
         /// <summary>
         /// The HELLO port cannot be changed and are part of the protocol

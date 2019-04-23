@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace Lucky.Home
 {
+    /// <summary>
+    /// Serializable unique ID.
+    /// Support GUIDS or ASCII string (16 chars max)
+    /// </summary>
     [DataContract]
-    public class NodeId : ISerializable
+    internal class NodeId : ISerializable
     {
         private static Regex StrRegex = new Regex("[A-Z0-9_]+");
 

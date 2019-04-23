@@ -15,6 +15,9 @@ namespace Lucky.Home.Lib
     {
         public static void Main(string[] arguments)
         {
+            Manager.Register<JsonIsolatedStorageService, IIsolatedStorageService>();
+            Manager.Register<NotificationService, INotificationService>();
+
             Manager.Register<LoggerFactory, ILoggerFactory>();
             Manager.Register<ConfigurationService, IConfigurationService>();
             Manager.GetService<ConfigurationService>().Init(arguments);
@@ -51,7 +54,24 @@ namespace Lucky.Home.Lib
                 }
             };
 
-            Manager.GetService<AppService>().Run();
+            var app = Manager.GetService<AppService>();
+            AppDomain.CurrentDomain.UnhandledException += (o, e) =>
+            {
+                app.Logger.Exception((Exception)e.ExceptionObject);
+            };
+
+            Console.CancelKeyPress += (sender, args) =>
+            {
+                app.Kill("detected CtrlBreak");
+                args.Cancel = true;
+            };
+
+            Manager.GetService<AppService>().Run().ContinueWith(() =>
+            {
+                // Safely stop devices
+                await Manager.GetService<DeviceManager>().TerminateAll();
+                app.Logger.LogStderr("Exiting.");
+            });
         }
 
         private static void LibraryLoad(string path)

@@ -2,6 +2,9 @@
 
 namespace Lucky.Services
 {
+    /// <summary>
+    /// Base class for singleton services
+    /// </summary>
     public class ServiceBase : IService
     {
         protected readonly string LogName;
