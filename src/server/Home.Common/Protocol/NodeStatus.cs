@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Lucky.Home.Admin
+namespace Lucky.Home.Protocol
 {
     /// <summary>
     /// Node status

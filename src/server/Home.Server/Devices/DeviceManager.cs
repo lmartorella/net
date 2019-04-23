@@ -4,11 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Devices
 {
-    class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManagerInternal
+    /// <summary>
+    /// Device manager implementation
+    /// </summary>
+    class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManager
     {
         /// <summary>
         /// From type name to device type
@@ -16,12 +19,6 @@ namespace Lucky.Home.Devices
         private readonly Dictionary<string, DeviceTypeDescriptor> _deviceTypes = new Dictionary<string, DeviceTypeDescriptor>();
         private readonly Dictionary<Guid, Tuple<DeviceBase, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<DeviceBase, DeviceDescriptor>>();
         private List<Assembly> _assemblies = new List<Assembly>();
-        public object DevicesLock { get; private set; }
-
-        public DeviceManager()
-        {
-            DevicesLock = new object();
-        }
 
         [DataContract]
         internal class Persistence
@@ -157,11 +154,14 @@ namespace Lucky.Home.Devices
             }
         }
 
-        public IEnumerable<IDevice> Devices
+        public IDevice[] Devices
         {
             get
             {
-                return _devices.Values.Select(v => v.Item1);
+                lock (_devices)
+                {
+                    return _devices.Values.Select(v => v.Item1).ToArray();
+                }
             }
         }
 

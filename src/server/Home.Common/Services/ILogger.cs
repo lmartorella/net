@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Services
+namespace Lucky.Home.Services
 {
     /// <summary>
     /// A logger

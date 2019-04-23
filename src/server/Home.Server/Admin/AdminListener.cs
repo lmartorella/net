@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Lucky.IO;
 using Lucky.Net;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// TCP listener for admin connection
+    /// </summary>
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;

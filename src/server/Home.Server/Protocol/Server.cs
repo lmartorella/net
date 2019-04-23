@@ -4,15 +4,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Lucky.Net;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Protocol
 {
-    class Server : ServiceBase, IServer
+    /// <summary>
+    /// The server logic
+    /// </summary>
+    class Server : ServiceBase
     {
         private readonly TcpListener[] _tcpListeners;
         private UdpControlPortListener[] _helloListeners;
-        private readonly INodeManager _nodeManager;
+        private readonly NodeManager _nodeManager;
 
         // Find a free TCP port
         private const int DEFAULT_PORT = 17010;
@@ -27,7 +30,7 @@ namespace Lucky.Home.Protocol
                 Logger.Warning("Cannot find a valid public IP address of the host. Using IPv4 loopback.");
             }
             //Port = DefaultPort;
-            _nodeManager = Manager.GetService<INodeManager>();
+            _nodeManager = Manager.GetService<NodeManager>();
 
             _helloListeners = Addresses.Select(address =>
             {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Sinks
 {

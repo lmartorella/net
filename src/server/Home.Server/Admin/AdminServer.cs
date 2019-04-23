@@ -4,13 +4,16 @@ using System.Threading.Tasks;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// Service to serve admin data
+    /// </summary>
     class AdminServer : IAdminInterface
     {
-        private readonly INodeManager _manager;
+        private readonly NodeManager _manager;
 
         public AdminServer()
         {

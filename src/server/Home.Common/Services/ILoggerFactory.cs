@@ -1,4 +1,4 @@
-﻿namespace Lucky.Services
+﻿namespace Lucky.Home.Services
 {
     /// <summary>
     /// Service to create loggers

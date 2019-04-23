@@ -1,8 +1,13 @@
-﻿using Lucky.Serialization;
+﻿using Lucky.Home.Serialization;
+
+#pragma warning disable 649
 
 namespace Lucky.Home.Protocol
 {
-    public class HeloMessage
+    /// <summary>
+    /// Brodcast message sent in UDP by nodes for discovery
+    /// </summary>
+    internal class HeloMessage
     {
         /// <summary>
         /// HOME
@@ -12,7 +17,7 @@ namespace Lucky.Home.Protocol
         internal const string PreambleValue = "HOME";
 
         /// <summary>
-        /// HEL3 or HTBT
+        /// HEL4 or HTBT or CCHN
         /// </summary>
         public Fourcc MessageCode;
 
@@ -21,7 +26,7 @@ namespace Lucky.Home.Protocol
         internal const string SubNodeChanged = "CCHN";
         
         /// <summary>
-        /// Node ID
+        /// Node ID (GUID or string)
         /// </summary>
         public NodeId NodeId;
 

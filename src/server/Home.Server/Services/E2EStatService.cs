@@ -1,11 +1,14 @@
 ﻿using Lucky.Db;
-using Lucky.Services;
+using Lucky.Home.Services;
 using System;
 using System.IO;
 using System.Threading;
 
 namespace Lucky.Home.Services
 {
+    /// <summary>
+    /// End-to-end statistics service
+    /// </summary>
     class E2EStatService : IService
     {
         private Timer _timer;

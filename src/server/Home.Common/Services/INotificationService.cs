@@ -1,12 +1,11 @@
-﻿using Lucky.Services;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Notification
+namespace Lucky.Home.Services
 {
     /// <summary>
     /// A status message that will be aggregated in a single message

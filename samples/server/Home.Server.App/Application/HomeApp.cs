@@ -1,5 +1,5 @@
 ﻿using System;
-using Lucky.Services;
+using Lucky.Home.Services;
 using Lucky.Home.Devices;
 using System.Linq;
 using Lucky.Home.Db;
@@ -27,11 +27,7 @@ namespace Lucky.Home.Application
         public override async Task Start()
         {
             var deviceMan = Manager.GetService<IDeviceManager>();
-            IDevice[] devices;
-            lock (deviceMan.DevicesLock)
-            {
-                devices = deviceMan.Devices.ToArray();
-            }
+            IDevice[] devices = deviceMan.Devices;
 
             // Process all device created
             foreach (var device in devices.OfType<ISolarPanelDevice>())

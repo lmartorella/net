@@ -2,6 +2,9 @@ using System.Runtime.Serialization;
 
 namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// Request message
+    /// </summary>
     [DataContract]
     internal class MessageRequest
     {

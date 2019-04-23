@@ -1,12 +1,8 @@
-﻿using Lucky.Services;
+﻿using System;
 using Lucky.Home.Devices;
 using Lucky.Home.Sinks;
-using System.Reflection;
-using System.Threading.Tasks;
-using Lucky.Home.Application;
 using Lucky.Home.Services;
 using Lucky.Home.Protocol;
-using System;
 using Lucky.Home.Admin;
 
 namespace Lucky.Home.Lib
@@ -26,19 +22,19 @@ namespace Lucky.Home.Lib
 
             Manager.GetService<IIsolatedStorageService>().InitAppRoot("Server");
 
-            Manager.Register<Server, IServer>();
-            Manager.Register<NodeManager, INodeManager>();
+            Manager.Register<Server>();
+            Manager.Register<NodeManager>();
             Manager.Register<SinkManager>();
-            Manager.Register<SinkManager, ISinkManager>();
+            Manager.Register<SinkManager>();
             Manager.Register<DeviceManager, IDeviceManager>();
-            Manager.GetService<ISinkManager>().RegisterType(typeof(SystemSink));
+            Manager.GetService<SinkManager>().RegisterType(typeof(SystemSink));
 
             LibraryLoad("app");
 
             Manager.GetService<DeviceManager>().Load();
 
             // Start server
-            Manager.GetService<IServer>();
+            Manager.GetService<Server>();
 
             // Start Admin connection
             Manager.GetService<AdminListener>();
@@ -66,7 +62,7 @@ namespace Lucky.Home.Lib
                 args.Cancel = true;
             };
 
-            Manager.GetService<AppService>().Run().ContinueWith(() =>
+            Manager.GetService<AppService>().Run().ContinueWith(async (t) =>
             {
                 // Safely stop devices
                 await Manager.GetService<DeviceManager>().TerminateAll();

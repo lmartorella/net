@@ -1,8 +1,11 @@
 ﻿
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Services
 {
+    /// <summary>
+    /// Read CLI
+    /// </summary>
     class ConfigurationService : ServiceBase, IConfigurationService
     {
         private string[] _arguments;

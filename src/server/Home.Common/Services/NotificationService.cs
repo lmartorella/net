@@ -1,5 +1,4 @@
 ﻿using System;
-using Lucky.Services;
 using System.Net.Mail;
 using System.Net;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ using System.Linq;
 using System.Net.Mime;
 using System.IO;
 
-namespace Lucky.Home.Notification
+namespace Lucky.Home.Services
 {
     class NotificationService : ServiceBaseWithData<MailConfiguration>, INotificationService
     {

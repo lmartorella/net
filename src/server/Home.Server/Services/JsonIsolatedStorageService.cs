@@ -3,9 +3,11 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace Lucky.Services
+namespace Lucky.Home.Services
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
+    /// <summary>
+    /// Access isolated storage, using JSON as data language
+    /// </summary>
     internal class JsonIsolatedStorageService : ServiceBase, IIsolatedStorageService
     {
         private string _isolatedStorageFolder;

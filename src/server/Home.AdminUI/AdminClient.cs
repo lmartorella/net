@@ -8,7 +8,10 @@ using System.Threading.Tasks;
 
 namespace Lucky.Home.Admin
 {
-    public class AdminClient : IAdminInterface
+    /// <summary>
+    /// 
+    /// </summary>
+    internal class AdminClient : IAdminInterface
     {
         private MessageChannel _channel;
         private Func<Stream> _streamProvider;

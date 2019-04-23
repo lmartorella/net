@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Windows;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.HomeMock
 {

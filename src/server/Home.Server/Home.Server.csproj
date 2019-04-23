@@ -46,10 +46,8 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Admin\AdminClient.cs" />
     <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="Admin\MessageChannel.cs" />
     <Compile Include="Admin\MessageRequest.cs" />
     <Compile Include="Admin\MessageResponse.cs" />
     <Compile Include="Admin\MessageSerializerFactory.cs" />
@@ -58,10 +56,8 @@
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\E2EStatLogger.cs" />
     <Compile Include="Services\E2EStatService.cs" />
-    <Compile Include="Protocol\INodeManager.cs" />
     <Compile Include="Protocol\NodeManager.cs" />
     <Compile Include="Protocol\PingMessageType.cs" />
-    <Compile Include="Protocol\IServer.cs" />
     <Compile Include="Protocol\UdpControlPortListener.cs" />
     <Compile Include="Protocol\TcpNode.cs" />
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />

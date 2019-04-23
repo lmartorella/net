@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Lucky.Serialization;
+using Lucky.Home.Serialization;
 using Lucky.Home.Sinks;
-using Lucky.Services;
-using System.Runtime.CompilerServices;
-using Lucky.Home.Notification;
 using Lucky.Home.Services;
+using System.Runtime.CompilerServices;
 
 #pragma warning disable 649
 
 namespace Lucky.Home.Protocol
 {
+    /// <summary>
+    /// A TCP node (master node)
+    /// </summary>
     class TcpNode : ITcpNode
     {
         /// <summary>
@@ -125,7 +126,7 @@ namespace Lucky.Home.Protocol
                 // Only fetch changed nodes AND present nodes
                 var toRefecth = childrenChanged.Where(i => _lastKnownChildren.ContainsKey(i));
 
-                var nodeManager = Manager.GetService<INodeManager>();
+                var nodeManager = Manager.GetService<NodeManager>();
                 // Register subnodes, asking for identity
                 var children = await Task.WhenAll(toRefecth.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))));
                 children.Select(c => _lastKnownChildren[c.Address.Index] = c);
@@ -231,7 +232,7 @@ namespace Lucky.Home.Protocol
             }
 
             // Now register all the children
-            var nodeManager = Manager.GetService<INodeManager>();
+            var nodeManager = Manager.GetService<NodeManager>();
             // Register subnodes, asking for identity
             var children = await Task.WhenAll(ret.Item2.Select(async address => await nodeManager.RegisterUnknownNode(address)));
             _lastKnownChildren.Clear();
@@ -494,8 +495,8 @@ namespace Lucky.Home.Protocol
         {
             NodeId oldId = NodeId;
             NodeId = newId;
-            Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
-            Manager.GetService<INodeManager>().EndRenameNode(this, oldId, newId, true);
+            Manager.GetService<NodeManager>().BeginRenameNode(this, newId);
+            Manager.GetService<NodeManager>().EndRenameNode(this, oldId, newId, true);
 
             Logger.Warning("CorrectGuidAssigned", "oldId", oldId, "newId", newId);
         }
@@ -527,7 +528,7 @@ namespace Lucky.Home.Protocol
             try
             {
                 // Notify the node registrar too
-                Manager.GetService<INodeManager>().BeginRenameNode(this, newId);
+                Manager.GetService<NodeManager>().BeginRenameNode(this, newId);
 
                 await OpenNodeSession(async (connection, address) =>
                 {
@@ -550,7 +551,7 @@ namespace Lucky.Home.Protocol
                 {
                     _inRename = false;
                 }
-                Manager.GetService<INodeManager>().EndRenameNode(this, oldId, newId, success);
+                Manager.GetService<NodeManager>().EndRenameNode(this, oldId, newId, success);
             }
             return success;
         }

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Lucky.Services
+namespace Lucky.Home.Services
 {
     /// <summary>
     /// Base class for singleton services

@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Lucky.IO
+namespace Lucky.Home.Admin
 {
-    public class MessageChannel : IDisposable
+    /// <summary>
+    /// Bidirectional message-based channel 
+    /// </summary>
+    class MessageChannel : IDisposable
     {
         private readonly Stream _stream;
 

@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Protocol
 {
-    class NodeManager : ServiceBase, INodeManager
+    /// <summary>
+    /// Manager for nodes
+    /// </summary>
+    class NodeManager : ServiceBase
     {
         private readonly Dictionary<NodeId, TcpNode> _nodes = new Dictionary<NodeId, TcpNode>();
         private readonly Dictionary<TcpNodeAddress, TcpNode> _unnamedNodes = new Dictionary<TcpNodeAddress, TcpNode>();
@@ -155,7 +158,7 @@ namespace Lucky.Home.Protocol
             return node;
         }
 
-        ITcpNode INodeManager.FindNode(NodeId id)
+        public ITcpNode FindNode(NodeId id)
         {
             lock (_nodeLock)
             {
@@ -163,7 +166,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        ITcpNode INodeManager.FindNode(TcpNodeAddress address)
+        public ITcpNode FindNode(TcpNodeAddress address)
         {
             return FindUnnamed(address);
         }

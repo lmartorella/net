@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lucky.Net;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Protocol
 {

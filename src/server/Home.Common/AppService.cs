@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using Lucky.Home.Devices;
-using Lucky.Services;
+﻿using System.Threading.Tasks;
+using Lucky.Home.Services;
 
 namespace Lucky.Home
 {

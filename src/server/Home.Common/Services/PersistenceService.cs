@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Lucky.Services
+namespace Lucky.Home.Services
 {
     /// <summary>
     /// Helper service for persistence

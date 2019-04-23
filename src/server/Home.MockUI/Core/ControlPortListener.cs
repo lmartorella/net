@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Lucky.HomeMock.Sinks;
-using Lucky.Services;
+using Lucky.Home.Services;
 using System.Threading;
 
 namespace Lucky.HomeMock.Core

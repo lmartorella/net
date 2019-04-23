@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Lucky.Home.Sinks;
-using Lucky.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Devices
 {

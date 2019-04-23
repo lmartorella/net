@@ -1,5 +1,5 @@
 ﻿using System.Threading;
-using Lucky.Services;
+using Lucky.Home.Services;
 using Lucky.Home.Sinks;
 
 // ReSharper disable UnusedMember.Global

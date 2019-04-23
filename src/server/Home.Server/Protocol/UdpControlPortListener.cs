@@ -3,8 +3,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Lucky.Serialization;
-using Lucky.Services;
+using Lucky.Home.Serialization;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Protocol
 {

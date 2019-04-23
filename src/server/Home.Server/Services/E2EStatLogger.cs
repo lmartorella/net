@@ -1,10 +1,13 @@
-﻿using Lucky.Services;
+﻿using Lucky.Home.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Lucky.Home.Services
 {
+    /// <summary>
+    /// Logs end-to-end statistics, one instance for node
+    /// </summary>
     class E2EStatLogger
     {
         private NodeId _id;

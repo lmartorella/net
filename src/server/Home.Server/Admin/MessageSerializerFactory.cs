@@ -4,6 +4,9 @@ using Lucky.Home.Devices;
 
 namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// Factory for data contract serializer of messages
+    /// </summary>
     static class MessageSerializerFactory
     {
         private static readonly Type[] KnownTypes;

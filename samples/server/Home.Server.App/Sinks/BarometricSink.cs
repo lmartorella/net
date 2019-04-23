@@ -1,4 +1,4 @@
-﻿using Lucky.Serialization;
+﻿using Lucky.Home.Serialization;
 using System.Threading.Tasks;
 
 #pragma warning disable 649

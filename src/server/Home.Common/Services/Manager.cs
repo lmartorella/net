@@ -1,9 +1,8 @@
-﻿using Lucky.Home.Notification;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Lucky.Services
+namespace Lucky.Home.Services
 {
     /// <summary>
     /// Service manager

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Home.Protocol;
+using System;
 using System.Runtime.Serialization;
 
 namespace Lucky.Home.Admin

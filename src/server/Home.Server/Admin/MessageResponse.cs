@@ -2,8 +2,11 @@ using System.Runtime.Serialization;
 
 namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// Response message
+    /// </summary>
     [DataContract]
-    public class MessageResponse
+    internal class MessageResponse
     {
         [DataMember]
         public object Value { get; set; }

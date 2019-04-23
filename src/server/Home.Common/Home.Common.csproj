@@ -35,7 +35,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Admin\NodeStatus.cs" />
+    <Compile Include="Admin\MessageChannel.cs" />
+    <Compile Include="Protocol\NodeStatus.cs" />
     <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="AppService.cs" />
@@ -57,8 +58,8 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Devices\DeviceAttribute.cs" />
     <Compile Include="Devices\SinkPath.cs" />
-    <Compile Include="Notification\INotificationService.cs" />
-    <Compile Include="Notification\NotificationService.cs" />
+    <Compile Include="Services\INotificationService.cs" />
+    <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
     <Compile Include="Protocol\TcpConnectionFactory.cs" />
     <Compile Include="Protocol\TcpNodeAddress.cs" />
