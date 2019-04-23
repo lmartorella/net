@@ -2,19 +2,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Server", "Home.Server\Home.Server.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Server", "src\server\Home.Server\Home.Server.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.MockUI", "Home.MockUI\Home.MockUI.csproj", "{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.MockUI", "src\server\Home.MockUI\Home.MockUI.csproj", "{BE1652A1-7D09-4105-B4AC-99E1F8D5F10F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Common", "Home.Common\Home.Common.csproj", "{B13F0047-1CEE-4463-BAF6-A943E225D875}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Common", "src\server\Home.Common\Home.Common.csproj", "{B13F0047-1CEE-4463-BAF6-A943E225D875}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.AdminUI", "Home.AdminUI\Home.AdminUI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.AdminUI", "src\server\Home.AdminUI\Home.AdminUI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples", "..\..\samples\server\Home.Server.App\Home.Samples.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples", "samples\server\Home.Samples\Home.Samples.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UTs", "..\..\samples\server\UTs\UTs.csproj", "{731CE770-D0A6-4520-A37F-33CA9C0982D6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples.Tests", "samples\server\Home.Samples.Tests\Home.Samples.Tests.csproj", "{731CE770-D0A6-4520-A37F-33CA9C0982D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
