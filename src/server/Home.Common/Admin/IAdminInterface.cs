@@ -4,7 +4,10 @@ using Lucky.Home.Devices;
 
 namespace Lucky.Home.Admin
 {
-    public interface IAdminInterface
+    /// <summary>
+    /// Common interface used by Admin UI and implemented in server code
+    /// </summary>
+    internal interface IAdminInterface
     {
         Task<Node[]> GetTopology();
         Task<DeviceTypeDescriptor[]> GetDeviceTypes();

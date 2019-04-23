@@ -50,9 +50,6 @@
     <Compile Include="ISerializable.cs" />
     <Compile Include="LoggerFactory.cs" />
     <Compile Include="Admin\IAdminInterface.cs" />
-    <Compile Include="Admin\MessageRequest.cs" />
-    <Compile Include="Admin\MessageResponse.cs" />
-    <Compile Include="Admin\MessageSerializerFactory.cs" />
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Devices\DeviceAttribute.cs" />

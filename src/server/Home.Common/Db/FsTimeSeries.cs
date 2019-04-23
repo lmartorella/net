@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 namespace Lucky.Home.Db
 {
     /// <summary>
-    /// Supports summer time translation
+    /// A day-by-day time series that stores data in CSV files (one for each day).
+    /// Supports DST translation of timestamp (stores everything in non-DST time) for easy comparison (e.g. solar panel outputs).
+    /// Stores an additional aggregation CSV (_aggr.csv) for quick startup after restart.
     /// </summary>
     public class FsTimeSeries<T, Taggr> : ITimeSeries<T, Taggr> where T : TimeSample, new() where Taggr : DayTimeSample<T>, new()
     {
@@ -94,6 +96,10 @@ namespace Lucky.Home.Db
             }
         }
 
+        /// <summary>
+        /// Build a time series manager in a folder.
+        /// </summary>
+        /// <param name="folderPath">The relative path to the {etc}/Db/ path.</param>
         public FsTimeSeries(string folderPath)
         {
             _logger = Manager.GetService<ILoggerFactory>().Create("Db/" + folderPath);
@@ -121,12 +127,18 @@ namespace Lucky.Home.Db
             }
         }
 
+        /// <summary>
+        /// Called at startup to sync aggregate data
+        /// </summary>
         public async Task Init(DateTime start)
         {
             await SetupCurrentDb(start, true);
             AggregateData(_logger, _folder, start);
         }
 
+        /// <summary>
+        /// Called at the end of a day to open a new csv file
+        /// </summary>
         public async Task Rotate(DateTime start)
         {
             await SetupCurrentDb(start, false);
@@ -183,11 +195,17 @@ namespace Lucky.Home.Db
             }
         }
 
+        /// <summary>
+        /// Return aggregated data for the whole DB.
+        /// </summary>
         public Taggr GetAggregatedData()
         {
             return _currentPeriod.GetAggregatedData();
         }
 
+        /// <summary>
+        /// Register new sample
+        /// </summary>
         public void AddNewSample(T sample)
         {
             lock (_lockDb)
@@ -251,6 +269,9 @@ namespace Lucky.Home.Db
             return targetFile;
         }
 
+        /// <summary>
+        /// Aggregate whole DB content at startup
+        /// </summary>
         public static void AggregateData(ILogger logger, DirectoryInfo folder, DateTime now)
         {
             FileInfo aggrFile = new FileInfo(Path.Combine(folder.FullName, "_aggr.csv"));

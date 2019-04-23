@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 namespace Lucky.Home.Admin
 {
     [DataContract]
-    public class MessageRequest
+    internal class MessageRequest
     {
         [DataMember]
         public string Method { get; set; }

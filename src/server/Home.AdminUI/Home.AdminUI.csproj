@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
-    <AssemblyName>Home.Admin</AssemblyName>
+    <AssemblyName>Home.AdminUI</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -110,10 +110,6 @@
     <ProjectReference Include="..\Home.Common\Home.Common.csproj">
       <Project>{b13f0047-1cee-4463-baf6-a943e225d875}</Project>
       <Name>Home.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Home.Server\Home.Server.csproj">
-      <Project>{9da13c11-2457-42b0-8e6e-db1b0d3317bf}</Project>
-      <Name>Home.Server</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

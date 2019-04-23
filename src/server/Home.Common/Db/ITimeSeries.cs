@@ -4,12 +4,18 @@ using System.Threading.Tasks;
 
 namespace Lucky.Db
 {
+    /// <summary>
+    /// Csv basic type of a time-stamp based record
+    /// </summary>
     public class TimeSample
     {
         [Csv("HH:mm:ss")]
         public DateTime TimeStamp;
     }
 
+    /// <summary>
+    /// Csv for a day of samples, that supports custom aggregation
+    /// </summary>
     public abstract class DayTimeSample<T> where T : TimeSample
     {
         [Csv("yyyy-MM-dd")]
@@ -21,19 +27,25 @@ namespace Lucky.Db
         public abstract bool Aggregate(DateTime date, IEnumerable<T> samples);
     }
 
+    /// <summary>
+    /// A time series that support storage day-by-day
+    /// </summary>
     public interface ITimeSeries
     {
         /// <summary>
-        /// Start
+        /// Called at startup to sync aggregate data
         /// </summary>
         Task Init(DateTime now);
 
         /// <summary>
-        /// Change day
+        /// Called at the end of a day to open a new csv file
         /// </summary>
         Task Rotate(DateTime start);
     }
 
+    /// <summary>
+    /// Typed time series
+    /// </summary>
     public interface ITimeSeries<T, Taggr> : ITimeSeries where T : TimeSample where Taggr : DayTimeSample<T>
     {
         /// <summary>
@@ -42,7 +54,7 @@ namespace Lucky.Db
         void AddNewSample(T sample);
 
         /// <summary>
-        /// Get the current period data
+        /// Get the current period data aggregated with the Taggr logic.
         /// </summary>
         Taggr GetAggregatedData();
     }

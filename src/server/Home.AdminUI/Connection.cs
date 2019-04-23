@@ -16,7 +16,7 @@ namespace Lucky.Home
     {
         private readonly TcpClient _client;
         private bool _connected;
-        private readonly AdminClient _adminInterface;
+        private readonly IAdminInterface _adminInterface;
 
         public Connection(Action connectedHandler)
         {

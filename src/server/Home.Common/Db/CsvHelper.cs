@@ -7,6 +7,9 @@ using System.Reflection;
 
 namespace Lucky.Db
 {
+    /// <summary>
+    /// Serialize/deserialize from a csv file to C# objects.
+    /// </summary>
     public static class CsvHelper<T> where T : class, new()
     {
         private static readonly List<Tuple<FieldInfo, string>> s_fields;

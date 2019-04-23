@@ -9,6 +9,9 @@ using System.Linq;
 
 namespace Lucky.Charting
 {
+    /// <summary>
+    /// Plot a category chart to bitmap/png (offscreen)
+    /// </summary>
     public class CategoryChart
     {
         private PlotModel _plotModel;

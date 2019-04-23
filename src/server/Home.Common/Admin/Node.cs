@@ -3,8 +3,11 @@ using System.Runtime.Serialization;
 
 namespace Lucky.Home.Admin
 {
+    /// <summary>
+    /// Node object for admin API
+    /// </summary>
     [DataContract]
-    public class Node
+    internal class Node
     {
         [DataMember]
         public NodeId NodeId { get; set; }
