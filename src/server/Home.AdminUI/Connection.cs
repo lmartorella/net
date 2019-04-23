@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using Lucky.Home.Devices;
 
 namespace Lucky.Home
 {
-    public class Connection : DependencyObject, IDisposable
+    internal class Connection : DependencyObject, IDisposable
     {
         private readonly TcpClient _client;
         private bool _connected;

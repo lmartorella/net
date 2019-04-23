@@ -14,19 +14,19 @@ namespace Lucky.Home
             DataContext = this;
         }
 
-        public static readonly DependencyProperty DeviceTypesProperty = DependencyProperty.Register(
+        internal static readonly DependencyProperty DeviceTypesProperty = DependencyProperty.Register(
             "DeviceTypes", typeof(DeviceTypeDescriptor[]), typeof(CreateDeviceWindow), new PropertyMetadata(default(DeviceTypeDescriptor[])));
 
-        public DeviceTypeDescriptor[] DeviceTypes
+        internal DeviceTypeDescriptor[] DeviceTypes
         {
             get { return (DeviceTypeDescriptor[])GetValue(DeviceTypesProperty); }
             set { SetValue(DeviceTypesProperty, value); }
         }
 
-        public static readonly DependencyProperty DeviceTypeProperty = DependencyProperty.Register(
+        internal static readonly DependencyProperty DeviceTypeProperty = DependencyProperty.Register(
             "DeviceType", typeof(DeviceTypeDescriptor), typeof(CreateDeviceWindow), new PropertyMetadata(default(DeviceTypeDescriptor)));
 
-        public DeviceTypeDescriptor DeviceType
+        internal DeviceTypeDescriptor DeviceType
         {
             get { return (DeviceTypeDescriptor)GetValue(DeviceTypeProperty); }
             set { SetValue(DeviceTypeProperty, value); }

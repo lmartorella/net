@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Lucky.Home;
+using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 
 namespace Lucky.HomeMock.Sinks

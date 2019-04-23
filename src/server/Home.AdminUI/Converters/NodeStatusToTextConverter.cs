@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Home.Protocol;
+using System;
 using System.Globalization;
 using System.Windows.Data;
 

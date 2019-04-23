@@ -3,7 +3,7 @@ using Lucky.Home.Devices;
 
 namespace Lucky.Home
 {
-    public class SinkNode : TreeNode
+    class SinkNode : TreeNode
     {
         public SinkNode(string name, int subCount, TreeNode parent)
         {

@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace Lucky.Home
 {
-    public class TreeNode : DependencyObject
+    class TreeNode : DependencyObject
     {
         public ObservableCollection<object> Children { get; set; }
 

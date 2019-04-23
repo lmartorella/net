@@ -59,7 +59,7 @@ namespace Lucky.Home
             }
         }
 
-        public Connection TcpConnection
+        internal Connection TcpConnection
         {
             get { return (Connection)GetValue(TcpConnectionProperty); }
             set { SetValue(TcpConnectionProperty, value); }

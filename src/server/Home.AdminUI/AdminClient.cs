@@ -1,8 +1,6 @@
 ﻿using Lucky.Home.Devices;
-using Lucky.IO;
 using System;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 

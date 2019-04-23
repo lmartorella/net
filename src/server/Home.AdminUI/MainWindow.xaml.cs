@@ -14,10 +14,10 @@ namespace Lucky.Home
             RefreshClicked(null, null);
         }
 
-        public static readonly DependencyProperty ConnectionProperty = DependencyProperty.Register(
+        internal static readonly DependencyProperty ConnectionProperty = DependencyProperty.Register(
             "Connection", typeof (Connection), typeof (MainWindow), new PropertyMetadata(default(Connection)));
 
-        public Connection Connection
+        internal Connection Connection
         {
             get { return (Connection) GetValue(ConnectionProperty); }
             set { SetValue(ConnectionProperty, value); }

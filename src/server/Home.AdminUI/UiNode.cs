@@ -2,10 +2,11 @@
 using System.Linq;
 using System.Windows;
 using Lucky.Home.Admin;
+using Lucky.Home.Protocol;
 
 namespace Lucky.Home
 {
-    public class UiNode : TreeNode
+    internal class UiNode : TreeNode
     {
         // If a tcp node...
         public NodeStatus Status { get; set; }

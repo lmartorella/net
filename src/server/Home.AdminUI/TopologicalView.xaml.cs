@@ -17,10 +17,10 @@ namespace Lucky.Home
     {
         private UiNode _inEditItem;
 
-        public static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
+        internal static readonly DependencyProperty NodesProperty = DependencyProperty.Register(
             "Nodes", typeof (ObservableCollection<UiNode>), typeof (TopologicalView), new PropertyMetadata(default(ObservableCollection<UiNode>)));
 
-        public ObservableCollection<UiNode> Nodes
+        internal ObservableCollection<UiNode> Nodes
         {
             get { return (ObservableCollection<UiNode>) GetValue(NodesProperty); }
             set { SetValue(NodesProperty, value); }
@@ -145,7 +145,7 @@ namespace Lucky.Home
             }
         }
 
-        public Connection TcpConnection
+        internal Connection TcpConnection
         {
             get { return (Connection) GetValue(TcpConnectionProperty); }
             set { SetValue(TcpConnectionProperty, value); }

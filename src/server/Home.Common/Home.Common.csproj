@@ -36,6 +36,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Admin\MessageChannel.cs" />
+    <Compile Include="Admin\MessageRequest.cs" />
+    <Compile Include="Admin\MessageResponse.cs" />
+    <Compile Include="Admin\MessageSerializerFactory.cs" />
     <Compile Include="Protocol\NodeStatus.cs" />
     <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceTypeDescriptor.cs" />

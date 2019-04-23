@@ -122,16 +122,16 @@ namespace Lucky.HomeMock
             LogLine(string.Format(message, args), verbose);
         }
 
-        public static readonly DependencyProperty ResetReasonsProperty = DependencyProperty.Register(
+        internal static readonly DependencyProperty ResetReasonsProperty = DependencyProperty.Register(
             "ResetReasons", typeof (ResetReason[]), typeof (MainWindow), new PropertyMetadata(default(ResetReason[])));
 
-        public ResetReason[] ResetReasons
+        internal ResetReason[] ResetReasons
         {
             get { return (ResetReason[]) GetValue(ResetReasonsProperty); }
             set { SetValue(ResetReasonsProperty, value); }
         }
 
-        public static readonly DependencyProperty ResetReasonProperty = DependencyProperty.Register(
+        internal static readonly DependencyProperty ResetReasonProperty = DependencyProperty.Register(
             "ResetReason", typeof (ResetReason), typeof (MainWindow), new PropertyMetadata(ResetReason.Power, ResetReasonPropertyChangedCallback));
 
         private static void ResetReasonPropertyChangedCallback(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
@@ -146,7 +146,7 @@ namespace Lucky.HomeMock
             }
         }
 
-        public ResetReason ResetReason
+        internal ResetReason ResetReason
         {
             get { return (ResetReason) GetValue(ResetReasonProperty); }
             set { SetValue(ResetReasonProperty, value); }

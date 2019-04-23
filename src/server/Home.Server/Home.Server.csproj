@@ -48,9 +48,6 @@
   <ItemGroup>
     <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="Admin\MessageRequest.cs" />
-    <Compile Include="Admin\MessageResponse.cs" />
-    <Compile Include="Admin\MessageSerializerFactory.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
