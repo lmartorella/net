@@ -8,7 +8,7 @@ using Lucky.Services;
 
 namespace Lucky.Home.Devices
 {
-    class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManager
+    class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManagerInternal
     {
         /// <summary>
         /// From type name to device type
@@ -33,7 +33,7 @@ namespace Lucky.Home.Devices
         /// <summary>
         /// Used at exit
         /// </summary>
-        internal async Task TerminateAll()
+        public async Task TerminateAll()
         {
             List<DeviceBase> devices = new List<DeviceBase>();
             lock (_devices)

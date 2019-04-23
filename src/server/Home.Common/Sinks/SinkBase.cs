@@ -97,11 +97,7 @@ namespace Lucky.Home.Sinks
 
         public void ResetNode()
         {
-            var systemSink = Node.Sink<ISystemSink>();
-            if (systemSink != null)
-            {
-                systemSink.Reset();
-            }
+            Manager.GetService<SinkManager>().RaiseResetSink(this);
         }
     }
 }

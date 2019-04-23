@@ -10,7 +10,6 @@ using Lucky.Services;
 
 namespace Lucky.Home.Admin
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
     class AdminListener : ServiceBase
     {
         private TcpListener _listener;

@@ -1,7 +1,5 @@
 ﻿using Lucky.Serialization;
 
-// ReSharper disable UnassignedField.Global
-
 namespace Lucky.Home.Protocol
 {
     public class HeloMessage

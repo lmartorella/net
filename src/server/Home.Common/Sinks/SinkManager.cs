@@ -115,5 +115,22 @@ namespace Lucky.Home.Sinks
         /// Raised if a sink is added, removed or it changes state (e.g. zombie)
         /// </summary>
         public event EventHandler<CollectionChangeEventArgs> CollectionChanged;
+
+        internal class ResetSinkEventArgs : EventArgs
+        {
+            public readonly SinkBase Sink;
+
+            public ResetSinkEventArgs(SinkBase sink)
+            {
+                this.Sink = sink;
+            }
+        }
+
+        internal event EventHandler<ResetSinkEventArgs> ResetSink;
+
+        internal void RaiseResetSink(SinkBase sink)
+        {
+            ResetSink?.Invoke(this, new ResetSinkEventArgs(sink));
+        }
     }
 }

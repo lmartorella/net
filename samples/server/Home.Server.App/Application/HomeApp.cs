@@ -7,6 +7,7 @@ using System.Threading;
 using Lucky.Home.Power;
 using System.Threading.Tasks;
 using Lucky.Home.Notification;
+using Lucky.Home.Services;
 
 namespace Lucky.Home.Application
 {
@@ -23,7 +24,7 @@ namespace Lucky.Home.Application
         /// <summary>
         /// Fetch all devices. To be called when the list of the devices changes
         /// </summary>
-        public async Task Start()
+        public override async Task Start()
         {
             var deviceMan = Manager.GetService<IDeviceManager>();
             IDevice[] devices;
@@ -64,6 +65,19 @@ namespace Lucky.Home.Application
             {
                 await Manager.GetService<INotificationService>().SendMail("Messaggio", mail);
             }
+
+            Manager.GetService<PipeServer>().Message += (o, e) =>
+            {
+                if (e.Request.Command == "kill")
+                {
+                    e.Response = Task.FromResult(new WebResponse { CloseServer = true });
+
+                    Task.Delay(1500).ContinueWith(t =>
+                    {
+                        Manager.GetService<HomeApp>().Kill("killed by parent process");
+                    });
+                }
+            };
         }
     }
 }

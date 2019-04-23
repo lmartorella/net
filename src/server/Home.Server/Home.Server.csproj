@@ -6,7 +6,7 @@
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
     <AssemblyName>Home.Server</AssemblyName>
@@ -49,19 +49,13 @@
     <Compile Include="Admin\AdminClient.cs" />
     <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="AppService.cs" />
-    <Compile Include="Devices\DeviceBase.cs" />
     <Compile Include="Devices\DeviceManager.cs" />
-    <Compile Include="Devices\IDeviceManager.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\E2EStatLogger.cs" />
     <Compile Include="Services\E2EStatService.cs" />
-    <Compile Include="Sinks\SubSink.cs" />
-    <Compile Include="Protocol\TcpConnectionFactory.cs" />
-    <Compile Include="Devices\IDevice.cs" />
     <Compile Include="Protocol\INodeManager.cs" />
     <Compile Include="Protocol\NodeManager.cs" />
-    <Compile Include="Protocol\ITcpNode.cs" />
     <Compile Include="Protocol\PingMessageType.cs" />
     <Compile Include="Protocol\IServer.cs" />
     <Compile Include="Protocol\UdpControlPortListener.cs" />
@@ -69,12 +63,6 @@
     <Compile Include="Protocol\NodeMessageEventArgs.cs" />
     <Compile Include="Protocol\HeloMessage.cs" />
     <Compile Include="Protocol\Server.cs" />
-    <Compile Include="Sinks\ISink.cs" />
-    <Compile Include="Sinks\SinkBase.cs" />
-    <Compile Include="Sinks\SinkIdAttribute.cs" />
-    <Compile Include="Sinks\SinkManager.cs" />
-    <Compile Include="Protocol\TcpNodeAddress.cs" />
-    <Compile Include="ServerEntryPoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sinks\ISystemSink.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
@@ -88,7 +76,6 @@
   <ItemGroup />
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

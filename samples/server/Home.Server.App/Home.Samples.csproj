@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F4C20249-D189-40A9-A7C1-18F15025319A}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
     <AssemblyName>Home.Server.App</AssemblyName>
@@ -56,7 +56,6 @@
     <Compile Include="Devices\SamilInverterDeviceBase.cs" />
     <Compile Include="Devices\SwitchDevice.cs" />
     <Compile Include="Devices\TemperatureTesterDevice.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -75,17 +74,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Home.Common\Home.Common.csproj">
+    <ProjectReference Include="..\..\..\src\server\Home.Common\Home.Common.csproj">
       <Project>{b13f0047-1cee-4463-baf6-a943e225d875}</Project>
       <Name>Home.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Home.Server\Home.Server.csproj">
-      <Project>{9da13c11-2457-42b0-8e6e-db1b0d3317bf}</Project>
-      <Name>Home.Server</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

@@ -7,7 +7,6 @@ using Lucky.Services;
 
 namespace Lucky.Home.Protocol
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
     class NodeManager : ServiceBase, INodeManager
     {
         private readonly Dictionary<NodeId, TcpNode> _nodes = new Dictionary<NodeId, TcpNode>();

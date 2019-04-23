@@ -10,11 +10,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Common", "Home.Common\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.AdminUI", "Home.AdminUI\Home.AdminUI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Server.App", "Home.Server.App\Home.Server.App.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples", "..\..\samples\server\Home.Server.App\Home.Samples.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UTs", "UTs\UTs.csproj", "{731CE770-D0A6-4520-A37F-33CA9C0982D6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UTs", "..\..\samples\server\UTs\UTs.csproj", "{731CE770-D0A6-4520-A37F-33CA9C0982D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +51,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{F4C20249-D189-40A9-A7C1-18F15025319A} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
 		{731CE770-D0A6-4520-A37F-33CA9C0982D6} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

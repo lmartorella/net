@@ -3,8 +3,6 @@ using Lucky.Serialization;
 using Lucky.Services;
 using System.Threading.Tasks;
 
-// ReSharper disable UnusedMember.Global
-
 namespace Lucky.Home.Sinks
 {
     [SinkId("SYS ")]
