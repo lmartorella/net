@@ -6,8 +6,6 @@ using Lucky.Home.Db;
 using System.Threading;
 using Lucky.Home.Power;
 using System.Threading.Tasks;
-using Lucky.Home.Notification;
-using Lucky.Home.Services;
 
 namespace Lucky.Home.Application
 {

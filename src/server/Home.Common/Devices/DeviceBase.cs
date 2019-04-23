@@ -16,7 +16,7 @@ namespace Lucky.Home.Devices
     public abstract class DeviceBase : IDevice
     {
         private readonly Type[] _requiredSinkTypes;
-        private readonly ObservableCollection<ISubSink> _sinks = new ObservableCollection<ISubSink>();
+        private readonly ObservableCollection<SubSink> _sinks = new ObservableCollection<SubSink>();
         private bool _isFullOnline;
         protected ILogger Logger;
 
@@ -42,10 +42,10 @@ namespace Lucky.Home.Devices
                     case NotifyCollectionChangedAction.Move:
                         throw new InvalidOperationException("Sink collection operation not supported: " + args.Action);
                     case NotifyCollectionChangedAction.Add:
-                        OnSinkChanged(null, (ISubSink) args.NewItems[0]);
+                        OnSinkChanged(null, (SubSink) args.NewItems[0]);
                         break;
                     case NotifyCollectionChangedAction.Remove:
-                        OnSinkChanged((ISubSink) args.OldItems[0], null);
+                        OnSinkChanged((SubSink) args.OldItems[0], null);
                         break;
                 }
             };
@@ -65,7 +65,7 @@ namespace Lucky.Home.Devices
         /// <summary>
         /// Called when the list of attached sinks changes
         /// </summary>
-        protected virtual void OnSinkChanged(ISubSink removed, ISubSink added)
+        protected virtual void OnSinkChanged(SubSink removed, SubSink added)
         {
         }
 

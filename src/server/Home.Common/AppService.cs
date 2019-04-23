@@ -21,7 +21,7 @@ namespace Lucky.Home
             await _killDefer.Task;
         }
 
-        internal void Kill(string reason)
+        public void Kill(string reason)
         {
             Logger.LogStderr("Server killing: + " + reason + ". Stopping devices...");
             _killDefer.TrySetResult(null);

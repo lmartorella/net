@@ -3,18 +3,7 @@ namespace Lucky.Home.Sinks
     /// <summary>
     /// Some sinks exposes collection of logical sub-sinks
     /// </summary>
-    public interface ISubSink
-    {
-        /// <summary>
-        /// Owner sink
-        /// </summary>
-        ISink Sink { get; }
-    }
-
-    /// <summary>
-    /// Some sinks exposes collection of logical sub-sinks
-    /// </summary>
-    public class SubSink : ISubSink
+    public class SubSink
     {
         /// <summary>
         /// Owner sink
@@ -54,7 +43,5 @@ namespace Lucky.Home.Sinks
                 return Sink.IsOnline;
             }
         }
-
-        ISink ISubSink.Sink => Sink;
     }
 }

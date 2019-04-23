@@ -58,6 +58,11 @@ namespace Lucky.Home.Sinks
 
         internal ITcpNode Node { get; private set; }
 
+        public override string ToString()
+        {
+            return GetType().Name + "[" + Node.NodeId + "]";
+        }
+
         public string FourCc { get; private set; }
 
         /// <summary>

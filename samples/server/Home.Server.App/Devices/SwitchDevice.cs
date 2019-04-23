@@ -20,8 +20,8 @@ namespace Lucky.Home.Devices
     {
         private readonly TimeSpan _period;
 
-        private readonly List<SubSink<DigitalInputArraySink>> _inputs = new List<SubSink<DigitalInputArraySink>>();
-        private readonly List<SubSink<DigitalOutputArraySink>> _outputs = new List<SubSink<DigitalOutputArraySink>>();
+        private readonly List<SubSink> _inputs = new List<SubSink>();
+        private readonly List<SubSink> _outputs = new List<SubSink>();
 
         private bool _lastStatus;
 
@@ -78,7 +78,7 @@ namespace Lucky.Home.Devices
         {
             if (_inputs.All(s => s.IsOnline))
             {
-                Status = _inputs.Aggregate(false, (c, input) => c ^ (input.Sink.Status.Length > input.SubIndex && input.Sink.Status[input.SubIndex]));
+                Status = _inputs.Aggregate(false, (c, input) => c ^ ((input.Sink as DigitalInputArraySink).Status.Length > input.SubIndex && (input.Sink as DigitalInputArraySink).Status[input.SubIndex]));
             }
         }
 
@@ -86,7 +86,7 @@ namespace Lucky.Home.Devices
         {
             foreach (var input in _inputs)
             {
-                input.Sink.StatusChanged -= HandleStatusChanged;
+                (input.Sink as DigitalInputArraySink).StatusChanged -= HandleStatusChanged;
             }
             return base.OnTerminate();
         }
@@ -115,11 +115,11 @@ namespace Lucky.Home.Devices
         {
             foreach (var output in _outputs)
             {
-                if (output.SubIndex < output.Sink.Status.Length)
+                if (output.SubIndex < (output.Sink as DigitalOutputArraySink).Status.Length)
                 {
-                    var state = output.Sink.Status;
+                    var state = (output.Sink as DigitalOutputArraySink).Status;
                     state[output.SubIndex] = Status;
-                    output.Sink.Status = state;
+                    (output.Sink as DigitalOutputArraySink).Status = state;
                 }
             }
         }

@@ -122,7 +122,7 @@ namespace Lucky.Home.Devices
                             byte[] data = await sink.ReadCalibrationData();
                             if (data != null && data.Length == 22)
                             {
-                                WriteData(sink.Path, data);
+                                WriteData(sink, data);
                                 _calibData = new CalibrationData(data);
                             }
                         }
@@ -135,7 +135,7 @@ namespace Lucky.Home.Devices
                                 float pressure;
                                 float temperature;
                                 _calibData.DecodeData(data, out temperature, out pressure);
-                                Console.WriteLine("{0}: {1}'C, {2}hPa", sink.Path, temperature, pressure);
+                                Console.WriteLine("{0}: {1}'C, {2}hPa", sink, temperature, pressure);
                             }
                         }
                     }
@@ -143,9 +143,9 @@ namespace Lucky.Home.Devices
             }, null, 0, 1500);
         }
 
-        private void WriteData(SinkPath path, byte[] data)
+        private void WriteData(BarometricSink sink, byte[] data)
         {
-            Console.WriteLine("{0}: {1}", path, string.Join(" ", data.Select(b => b.ToString("x2"))));
+            Console.WriteLine("{0}: {1}", sink.ToString(), string.Join(" ", data.Select(b => b.ToString("x2"))));
         }
     }
 }

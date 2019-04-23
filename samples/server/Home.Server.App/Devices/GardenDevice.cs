@@ -1,17 +1,15 @@
-﻿using System.Linq;
+﻿using Lucky.Db;
+using Lucky.Home.Model;
+using Lucky.Home.Services;
 using Lucky.Home.Sinks;
 using System;
-using System.Threading;
-using Lucky.Home.Services;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Threading;
 using System.Threading.Tasks;
-using Lucky.Home.Model;
-using System.Collections.Generic;
-using Lucky.Db;
-using Lucky.Home.Notification;
-using Lucky.Home.Services;
 using static Lucky.Home.Devices.GardenDevice;
 
 namespace Lucky.Home.Devices
