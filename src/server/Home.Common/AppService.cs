@@ -16,9 +16,9 @@ namespace Lucky.Home
         /// <returns></returns>
         public abstract Task Start();
 
-        internal async Task Run()
+        internal Task Run()
         {
-            await _killDefer.Task;
+            return _killDefer.Task;
         }
 
         public void Kill(string reason)

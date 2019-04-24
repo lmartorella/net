@@ -37,6 +37,10 @@ namespace Lucky.Home.Services
             Type implType;
             if (!Types.TryGetValue(typeof (T), out implType))
             {
+                if (typeof (T).IsAbstract || typeof(T).IsInterface)
+                {
+                    throw new ArgumentException("Implementation of " + typeof(T) + " not found");
+                }
                 implType = typeof (T);
                 Types.Add(implType, implType);
             }
@@ -58,6 +62,19 @@ namespace Lucky.Home.Services
             lock (LockObject)
             {
                 Types[typeof (TC)] = typeof (TC);
+            }
+        }
+
+        internal static void Register(Type tc, Type ti)
+        {
+            if (!ti.IsAssignableFrom(tc))
+            {
+                throw new ArgumentException("Invalid types");
+            }
+            lock (LockObject)
+            {
+                Types[tc] = tc;
+                Types[ti] = tc;
             }
         }
     }

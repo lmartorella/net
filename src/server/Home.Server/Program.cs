@@ -4,12 +4,20 @@ using Lucky.Home.Sinks;
 using Lucky.Home.Services;
 using Lucky.Home.Protocol;
 using Lucky.Home.Admin;
+using System.Reflection;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Lib
 {
     static class Program
     {
         public static void Main(string[] arguments)
+        {
+            Run(arguments).Wait();
+        }
+
+        private static async Task Run(string[] arguments)
         {
             Manager.Register<JsonIsolatedStorageService, IIsolatedStorageService>();
             Manager.Register<NotificationService, INotificationService>();
@@ -29,7 +37,7 @@ namespace Lucky.Home.Lib
             Manager.Register<DeviceManager, IDeviceManager>();
             Manager.GetService<SinkManager>().RegisterType(typeof(SystemSink));
 
-            LibraryLoad("app");
+            LibraryLoad("Home.Server.App.dll");
 
             Manager.GetService<DeviceManager>().Load();
 
@@ -39,7 +47,8 @@ namespace Lucky.Home.Lib
             // Start Admin connection
             Manager.GetService<AdminListener>();
 
-            _ = Manager.GetService<AppService>().Start();
+            var app = Manager.GetService<AppService>();
+            await app.Start();
 
             Manager.GetService<SinkManager>().ResetSink += (o, e) =>
             {
@@ -50,7 +59,6 @@ namespace Lucky.Home.Lib
                 }
             };
 
-            var app = Manager.GetService<AppService>();
             AppDomain.CurrentDomain.UnhandledException += (o, e) =>
             {
                 app.Logger.Exception((Exception)e.ExceptionObject);
@@ -62,24 +70,25 @@ namespace Lucky.Home.Lib
                 args.Cancel = true;
             };
 
-            Manager.GetService<AppService>().Run().ContinueWith(async (t) =>
-            {
-                // Safely stop devices
-                await Manager.GetService<DeviceManager>().TerminateAll();
-                app.Logger.LogStderr("Exiting.");
-            });
+            await Manager.GetService<AppService>().Run();
+
+            // Safely stop devices
+            await Manager.GetService<DeviceManager>().TerminateAll();
+            app.Logger.LogStderr("Exiting.");
         }
 
         private static void LibraryLoad(string path)
         {
-            throw new NotImplementedException();
-            //// Register app service
-            //Manager.Register<AppService>();
+            var appModule = Assembly.LoadFrom(path);
+            var types = appModule.GetTypes();
 
-            //// Register app sinks
-            //Manager.GetService<ISinkManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
-            //// Register devices
-            //Manager.GetService<IDeviceManager>().RegisterAssembly(Assembly.GetExecutingAssembly());
+            // Register application services
+            types.Where(t => typeof(AppService).IsAssignableFrom(t)).ToList().ForEach(t => Manager.Register(t, typeof(AppService)));
+
+            // Register app sinks
+            Manager.GetService<SinkManager>().RegisterAssembly(appModule);
+            // Register devices
+            Manager.GetService<DeviceManager>().RegisterAssembly(appModule);
         }
     }
 }
