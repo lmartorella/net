@@ -1,13 +1,14 @@
-﻿using Lucky.Home.Devices;
+﻿using Lucky.Home.Admin;
+using Lucky.Home.Devices;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Lucky.Home.Admin
+namespace Lucky.Home.Services
 {
     /// <summary>
-    /// 
+    /// Connects to the server via TCP message-based channel
     /// </summary>
     internal class AdminClient : IAdminInterface
     {

@@ -4,8 +4,11 @@ using System.Windows;
 using Lucky.Home.Admin;
 using Lucky.Home.Protocol;
 
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
+    /// <summary>
+    /// Tree item for a net node (can be TCP master or slave)
+    /// </summary>
     internal class UiNode : TreeNode
     {
         // If a tcp node...

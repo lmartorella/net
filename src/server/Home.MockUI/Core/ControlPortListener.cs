@@ -10,7 +10,6 @@ using System.Threading;
 
 namespace Lucky.HomeMock.Core
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
     class ControlPortListener : ServiceBaseWithData<Data>, ControlSession.IdProvider
     {
         private readonly TcpListener _serviceListener;

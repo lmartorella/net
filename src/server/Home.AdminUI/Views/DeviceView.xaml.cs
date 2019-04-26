@@ -1,7 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using Lucky.Home.Models;
+using Lucky.Home.Services;
+using System.Collections.ObjectModel;
 using System.Windows;
 
-namespace Lucky.Home
+namespace Lucky.Home.Views
 {
     /// <summary>
     /// Interaction logic for DeviceView.xaml

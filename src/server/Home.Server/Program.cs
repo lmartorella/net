@@ -7,6 +7,8 @@ using Lucky.Home.Admin;
 using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Lucky.Home.Lib
 {
@@ -37,7 +39,8 @@ namespace Lucky.Home.Lib
             Manager.Register<DeviceManager, IDeviceManager>();
             Manager.GetService<SinkManager>().RegisterType(typeof(SystemSink));
 
-            LibraryLoad("Home.Server.App.dll");
+            var logger = Manager.GetService<ILoggerFactory>().Create("Main");
+            var applications = LibraryLoad(logger);
 
             Manager.GetService<DeviceManager>().Load();
 
@@ -47,8 +50,10 @@ namespace Lucky.Home.Lib
             // Start Admin connection
             Manager.GetService<AdminListener>();
 
-            var app = Manager.GetService<AppService>();
-            await app.Start();
+            foreach (var app in applications)
+            {
+                await app.Start();
+            }
 
             Manager.GetService<SinkManager>().ResetSink += (o, e) =>
             {
@@ -61,34 +66,64 @@ namespace Lucky.Home.Lib
 
             AppDomain.CurrentDomain.UnhandledException += (o, e) =>
             {
-                app.Logger.Exception((Exception)e.ExceptionObject);
+                logger.Exception((Exception)e.ExceptionObject);
             };
 
             Console.CancelKeyPress += (sender, args) =>
             {
-                app.Kill("detected CtrlBreak");
+                Manager.Kill(logger, "detected CtrlBreak");
                 args.Cancel = true;
             };
 
-            await Manager.GetService<AppService>().Run();
+            await Manager.Run();
 
             // Safely stop devices
             await Manager.GetService<DeviceManager>().TerminateAll();
-            app.Logger.LogStderr("Exiting.");
+            logger.LogStderr("Exiting.");
         }
 
-        private static void LibraryLoad(string path)
+        private static bool IsApplication(FileInfo fileInfo)
         {
-            var appModule = Assembly.LoadFrom(path);
-            var types = appModule.GetTypes();
+            Assembly assembly = Assembly.ReflectionOnlyLoadFrom(fileInfo.FullName);
+            return assembly.GetCustomAttributesData().Any(d => d.AttributeType.FullName == typeof(ApplicationAttribute).FullName);
+        }
 
-            // Register application services
-            types.Where(t => typeof(AppService).IsAssignableFrom(t)).ToList().ForEach(t => Manager.Register(t, typeof(AppService)));
+        private static IApplication[] LibraryLoad(ILogger logger)
+        {
+            ResolveEventHandler handler = (s, e) => Assembly.ReflectionOnlyLoad(e.Name);
+            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += handler;
 
-            // Register app sinks
-            Manager.GetService<SinkManager>().RegisterAssembly(appModule);
-            // Register devices
-            Manager.GetService<DeviceManager>().RegisterAssembly(appModule);
+            // Find all .dlls in the bin folder and find for application
+            var dlls = new FileInfo(Assembly.GetEntryAssembly().Location).Directory.GetFiles("*.dll").Where(dll => IsApplication(dll)).ToArray();
+            List<IApplication> applications = new List<IApplication>();
+            if (dlls.Length == 0)
+            {
+                logger.Warning("Application dll not found");
+            }
+            else
+            {
+                foreach (FileInfo dll in dlls)
+                {
+                    // Load it in the AppDomain
+                    Assembly assembly = Assembly.LoadFrom(dll.FullName);
+                    Type mainType = assembly.GetCustomAttribute<ApplicationAttribute>().ApplicationType;
+                    if (!typeof(IService).IsAssignableFrom(mainType))
+                    {
+                        throw new InvalidOperationException("The main application " + mainType.FullName + " is not a service");
+                    }
+                    applications.Add(Activator.CreateInstance(mainType) as IApplication);
+
+                    var types = assembly.GetTypes();
+
+                    // Register app sinks
+                    Manager.GetService<SinkManager>().RegisterAssembly(assembly);
+                    // Register devices
+                    Manager.GetService<DeviceManager>().RegisterAssembly(assembly);
+                }
+            }
+
+            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= handler;
+            return applications.ToArray();
         }
     }
 }

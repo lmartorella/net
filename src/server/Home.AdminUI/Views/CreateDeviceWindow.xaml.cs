@@ -1,10 +1,10 @@
 ﻿using System.Windows;
 using Lucky.Home.Devices;
 
-namespace Lucky.Home
+namespace Lucky.Home.Views
 {
     /// <summary>
-    /// Interaction logic for CreateDeviceWindow.xaml
+    /// Top-level window for the Create Device action
     /// </summary>
     public partial class CreateDeviceWindow
     {

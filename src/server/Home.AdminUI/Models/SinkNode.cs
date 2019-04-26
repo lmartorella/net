@@ -1,8 +1,11 @@
-using System.Windows;
 using Lucky.Home.Devices;
+using System.Windows;
 
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
+    /// <summary>
+    /// A sink node for the tree visualizer (always child of a node)
+    /// </summary>
     class SinkNode : TreeNode
     {
         public SinkNode(string name, int subCount, TreeNode parent)

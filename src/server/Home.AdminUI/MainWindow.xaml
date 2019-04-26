@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Lucky.Home.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:home="clr-namespace:Lucky.Home"
+        xmlns:views="clr-namespace:Lucky.Home.Views"
         Title="Admin UI" Height="350" Width="525">
     <Grid>
         <Grid.RowDefinitions>
@@ -22,10 +22,10 @@
 
         <TabControl Grid.Row="1">
             <TabItem Header="Topological View">
-                <home:TopologicalView Nodes="{Binding Connection.Nodes}" TcpConnection="{Binding Connection}"/>
+                <views:TopologicalView Nodes="{Binding Connection.Nodes}" TcpConnection="{Binding Connection}"/>
             </TabItem>
             <TabItem Header="Devices">
-                <home:DeviceView Devices="{Binding Connection.Devices}" TcpConnection="{Binding Connection}"/>
+                <views:DeviceView Devices="{Binding Connection.Devices}" TcpConnection="{Binding Connection}"/>
             </TabItem>
         </TabControl>
     </Grid>

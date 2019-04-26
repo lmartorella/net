@@ -2,8 +2,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Windows;
 
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
+    /// <summary>
+    /// Base class for tree objects
+    /// </summary>
     class TreeNode : DependencyObject
     {
         public ObservableCollection<object> Children { get; set; }

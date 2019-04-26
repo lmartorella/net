@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Services
 {
@@ -12,6 +13,7 @@ namespace Lucky.Home.Services
         private static readonly Dictionary<Type, Type> Types = new Dictionary<Type, Type>();
         private static readonly Dictionary<Type, object> Instances = new Dictionary<Type, object>();
         private static readonly object LockObject = new object();
+        private static readonly TaskCompletionSource<object> _killDefer = new TaskCompletionSource<object>();
 
         public static T GetService<T>() where T : IService
         {
@@ -76,6 +78,17 @@ namespace Lucky.Home.Services
                 Types[tc] = tc;
                 Types[ti] = tc;
             }
+        }
+
+        internal static Task Run()
+        {
+            return _killDefer.Task;
+        }
+
+        public static void Kill(ILogger logger, string reason)
+        {
+            logger.LogStderr("Server killing: + " + reason + ". Stopping devices...");
+            _killDefer.TrySetResult(null);
         }
     }
 }

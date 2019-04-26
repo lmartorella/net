@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Lucky.Home.Models;
+using System.Windows;
 
 namespace Lucky.Home
 {

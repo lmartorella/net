@@ -42,7 +42,7 @@
     <Compile Include="Protocol\NodeStatus.cs" />
     <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceTypeDescriptor.cs" />
-    <Compile Include="AppService.cs" />
+    <Compile Include="IApplication.cs" />
     <Compile Include="Charting\Chart.cs" />
     <Compile Include="Db\CsvAggregate.cs" />
     <Compile Include="Db\CsvAttribute.cs" />

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Lucky.Home.Models;
+using Lucky.Home.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,9 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-// ReSharper disable MemberCanBePrivate.Global
-
-namespace Lucky.Home
+namespace Lucky.Home.Views
 {
     /// <summary>
     /// Interaction logic for TopologicalView.xaml

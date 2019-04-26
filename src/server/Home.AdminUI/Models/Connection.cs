@@ -1,16 +1,18 @@
-﻿using System;
+﻿using Lucky.Home.Admin;
+using Lucky.Home.Devices;
+using Lucky.Home.Services;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows;
-using Lucky.Home.Admin;
-using Lucky.Home.Devices;
 
-// ReSharper disable RedundantArgumentDefaultValue
-
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
+    /// <summary>
+    /// Model for connection status
+    /// </summary>
     internal class Connection : DependencyObject, IDisposable
     {
         private readonly TcpClient _client;

@@ -1,8 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-// ReSharper disable StaticMemberInGenericType
-
 namespace Lucky.Home.Serialization
 {
     /// <summary>

@@ -3,8 +3,11 @@ using System.Linq;
 using System.Windows;
 using Lucky.Home.Devices;
 
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
+    /// <summary>
+    /// Model for a device item
+    /// </summary>
     public class UiDevice : DependencyObject
     {
         internal UiDevice(DeviceDescriptor desc)

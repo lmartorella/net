@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lucky.Home</RootNamespace>
-    <AssemblyName>Home.AdminUI</AssemblyName>
+    <AssemblyName>Home.Manager.UI</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -54,28 +54,28 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="AdminClient.cs" />
+    <Compile Include="Services\AdminClient.cs" />
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\IsZombieToFontStyleConverter.cs" />
-    <Compile Include="CreateDeviceWindow.xaml.cs">
+    <Compile Include="Views\CreateDeviceWindow.xaml.cs">
       <DependentUpon>CreateDeviceWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DeviceView.xaml.cs">
+    <Compile Include="Views\DeviceView.xaml.cs">
       <DependentUpon>DeviceView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SinkNode.cs" />
-    <Compile Include="UiDevice.cs" />
-    <Compile Include="UiNode.cs" />
-    <Compile Include="UiCommand.cs" />
-    <Compile Include="TreeNode.cs" />
+    <Compile Include="Models\SinkNode.cs" />
+    <Compile Include="Models\UiDevice.cs" />
+    <Compile Include="Models\UiNode.cs" />
+    <Compile Include="Models\UiCommand.cs" />
+    <Compile Include="Models\TreeNode.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="DeviceView.xaml">
+    <Page Include="Views\DeviceView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="TopologicalView.xaml">
+    <Page Include="Views\TopologicalView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -83,13 +83,13 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Connection.cs" />
+    <Compile Include="Models\Connection.cs" />
     <Compile Include="Converters\NodeStatusToTextConverter.cs" />
-    <Compile Include="TopologicalView.xaml.cs">
+    <Compile Include="Views\TopologicalView.xaml.cs">
       <DependentUpon>TopologicalView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="CreateDeviceWindow.xaml">
+    <Page Include="Views\CreateDeviceWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

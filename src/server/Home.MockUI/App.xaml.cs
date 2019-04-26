@@ -17,7 +17,6 @@ namespace Lucky.HomeMock
             }
         }
 
-        // ReSharper disable once NotAccessedField.Local
         private Semaphore _semaphore;
 
         protected override void OnStartup(StartupEventArgs e)

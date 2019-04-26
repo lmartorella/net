@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.MockUI", "src\server\H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Common", "src\server\Home.Common\Home.Common.csproj", "{B13F0047-1CEE-4463-BAF6-A943E225D875}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.AdminUI", "src\server\Home.AdminUI\Home.AdminUI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Manager.UI", "src\server\Home.AdminUI\Home.Manager.UI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples", "samples\server\Home.Samples\Home.Samples.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
 EndProject

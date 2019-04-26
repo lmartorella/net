@@ -1,8 +1,11 @@
 using System;
 using System.Windows.Input;
 
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
+    /// <summary>
+    /// Implementation of ICommand
+    /// </summary>
     public class UiCommand : ICommand
     {
         private readonly Action _action;

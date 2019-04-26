@@ -4,7 +4,6 @@ using Lucky.Home.Services;
 
 namespace Lucky.HomeMock
 {
-    // ReSharper disable once ClassNeverInstantiated.Global
     internal class GuiLoggerFactory : ServiceBase, ILoggerFactory
     {
         private MainWindow _masterLogger;
