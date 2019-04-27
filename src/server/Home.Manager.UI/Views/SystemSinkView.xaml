@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="Lucky.Home.Views.SystemSinkView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cvts="clr-namespace:Lucky.Home.Converters">
+    <Grid>
+        <Grid.Resources>
+            <cvts:ResetReasonToEnabledConverter x:Key="ResetReasonToEnabledConverter" />
+        </Grid.Resources>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Margin="4">Reset reason</TextBlock>
+            <ComboBox Margin="4" ItemsSource="{Binding ResetReasons}" SelectedItem="{Binding ResetReason}"></ComboBox>
+            <TextBlock Margin="4">Exc</TextBlock>
+            <TextBox Margin="4" Text="{Binding ExcMsg}" MinWidth="150" IsEnabled="{Binding ResetReason, Converter={StaticResource ResetReasonToEnabledConverter}}"></TextBox>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B028C2D1-3594-4A99-8E0D-075A23FA0FFE}</ProjectGuid>
+    <OutputType>library</OutputType>
+    <RootNamespace>Lucky.Home</RootNamespace>
+    <AssemblyName>Home.Samples.Simulator.UI</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Converters\IntToStringConverter.cs" />
+    <Compile Include="SimulatorSample.cs" />
+    <Compile Include="Switch.cs" />
+    <Compile Include="Views\CommandMockView.xaml.cs">
+      <DependentUpon>CommandMockView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DigitalInputArraySinkView.xaml.cs">
+      <DependentUpon>DigitalInputArraySinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DigitalOutputArraySinkView.xaml.cs">
+      <DependentUpon>DigitalOutputArraySinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DisplaySinkView.xaml.cs">
+      <DependentUpon>DisplaySinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FlowSinkMockView.xaml.cs">
+      <DependentUpon>FlowSinkMockView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GardenSinkView.xaml.cs">
+      <DependentUpon>GardenSinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SamilSinkView.xaml.cs">
+      <DependentUpon>SamilSinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TemperatureSinkView.xaml.cs">
+      <DependentUpon>TemperatureSinkView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\server\Home.Manager.UI\Home.Manager.UI.csproj">
+      <Project>{331bdbfc-a2bc-483a-a9a6-89ce570e6b81}</Project>
+      <Name>Home.Manager.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\server\Home.Common\Home.Common.csproj">
+      <Project>{B13F0047-1CEE-4463-BAF6-A943E225D875}</Project>
+      <Name>Home.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Views\CommandMockView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DigitalInputArraySinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DigitalOutputArraySinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\DisplaySinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FlowSinkMockView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GardenSinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SamilSinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TemperatureSinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
