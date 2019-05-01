@@ -10,7 +10,7 @@ namespace Lucky.Home.Views
     [MockSink("GARD")]
     public partial class GardenSinkView : UserControl, ISinkMock
     {
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         private enum DeviceState : byte
         {
@@ -48,6 +48,12 @@ namespace Lucky.Home.Views
             InitializeComponent();
 
             _cycles = Enumerable.Range(0, 5).Select(i => new Cycles { Zones = 0, Minutes = 0 }).ToArray();
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("GardenSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
         }
 
         public void Read(BinaryReader reader)

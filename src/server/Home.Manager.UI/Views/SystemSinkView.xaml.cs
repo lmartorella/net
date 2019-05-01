@@ -13,14 +13,20 @@ namespace Lucky.Home.Views
     public partial class SystemSinkView : UserControl, ISinkMock
     {
         private bool _initialized;
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         public SystemSinkView()
         {
             InitializeComponent();
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("SysSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
 
             ResetReasons = Enum.GetValues(typeof(ResetReason)).Cast<ResetReason>().ToArray();
-            //NodeStatus = (owner.StateProvider as IStateProviderInternal).Status;
+            NodeStatus = (node as ISimulatedNodeInternal).Status;
 
             _initialized = true;
         }

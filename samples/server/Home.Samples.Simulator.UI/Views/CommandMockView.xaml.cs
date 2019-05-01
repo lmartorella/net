@@ -12,7 +12,7 @@ namespace Lucky.Home.Views
     [MockSink("TCMD")]
     public partial class CommandMockView : UserControl, ISinkMock
     {
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         public CommandMockView()
         {
@@ -24,6 +24,12 @@ namespace Lucky.Home.Views
                 Command = "";
                 CommandLog += "<- " + LastCommand + Environment.NewLine;
             });
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("CommandSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
         }
 
         public string LastCommand { get; private set; }

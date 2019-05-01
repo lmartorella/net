@@ -10,25 +10,17 @@ namespace Lucky.Home.Simulator
     public interface ISimulatedNode
     {
         /// <summary>
-        /// Get the logger
-        /// </summary>
-        ILogger Logger { get; }
-
-        /// <summary>
-        /// Get the status serializer
-        /// </summary>
-        IStateProvider StateProvider { get; }
-    }
-
-    public interface IStateProvider
-    {
-        /// <summary>
         /// Get/set the node ID
         /// </summary>
         Guid Id { get; set; }
+
+        /// <summary>
+        /// Event raised when id changes
+        /// </summary>
+        event EventHandler IdChanged;
     }
 
-    internal interface IStateProviderInternal : IStateProvider
+    internal interface ISimulatedNodeInternal : ISimulatedNode
     {
         /// <summary>
         /// Get/set the serializable state

@@ -60,7 +60,7 @@
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\IsZombieToFontStyleConverter.cs" />
     <Compile Include="Services\MockSinkManager.cs" />
-    <Compile Include="Simulator\GuiLoggerFactory.cs" />
+    <Compile Include="Services\GuiLoggerFactory.cs" />
     <Compile Include="Simulator\ISimulatedNode.cs" />
     <Compile Include="Simulator\MasterNode.cs" />
     <Compile Include="Simulator\ClientProtocolNode.cs" />

@@ -2,6 +2,7 @@
 using Lucky.Home.Services;
 using Lucky.Home.Simulator;
 using Lucky.Home.Views;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -17,6 +18,11 @@ namespace Lucky.Home
             InitializeComponent();
             DataContext = this;
             RefreshClicked(null, null);
+
+            ClearLogCommand = new UiCommand(() =>
+            {
+                LogBox.Clear();
+            });
 
             var nodes = Manager.GetService<SimulatorNodesService>().Restore();
             foreach (var node in nodes)
@@ -64,6 +70,40 @@ namespace Lucky.Home
             var content = new MasterNodeView();
             content.Init(node);
             TabControl.Items.Add(new TabItem { Header = "Master Node", Content = content });
+        }
+
+        private void LogLine(string line, bool verbose)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (!verbose || VerboseLog)
+                {
+                    LogBox.AppendText(line + Environment.NewLine);
+                }
+            });
+        }
+
+        public void LogFormat(bool verbose, string type, string message, params object[] args)
+        {
+            LogLine(string.Format(message, args), verbose);
+        }
+
+        public static readonly DependencyProperty ClearLogCommandProperty = DependencyProperty.Register(
+            "ClearLogCommand", typeof(UiCommand), typeof(MasterNodeView), new PropertyMetadata(default(UiCommand)));
+
+        public UiCommand ClearLogCommand
+        {
+            get { return (UiCommand)GetValue(ClearLogCommandProperty); }
+            set { SetValue(ClearLogCommandProperty, value); }
+        }
+
+        public static readonly DependencyProperty VerboseLogProperty = DependencyProperty.Register(
+            "VerboseLog", typeof(bool), typeof(MasterNodeView), new PropertyMetadata(false));
+
+        public bool VerboseLog
+        {
+            get { return (bool)GetValue(VerboseLogProperty); }
+            set { SetValue(VerboseLogProperty, value); }
         }
     }
 }

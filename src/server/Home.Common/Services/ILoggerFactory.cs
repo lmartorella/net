@@ -5,6 +5,8 @@
     /// </summary>
     public interface ILoggerFactory : IService
     {
-        ILogger Create(string name, bool verbose = false);
+        ILogger Create(string name);
+        ILogger Create(string name, string subKey);
+        ILogger Create(string name, bool verbose);
     }
 }

@@ -13,7 +13,7 @@ namespace Lucky.Home.Views
         private Timer _timer;
         private uint _counter;
         private ushort _flow;
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         public FlowSinkMockView()
         {
@@ -26,6 +26,12 @@ namespace Lucky.Home.Views
             {
                 _counter += _flow;
             }, null, 0, 1000);
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("FlowSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
         }
 
         public void Read(BinaryReader reader)

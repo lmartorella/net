@@ -28,8 +28,8 @@ namespace Lucky.Home.Services
 
         public ISinkMock Create(string fourcc, ISimulatedNode node)
         {
-            var sink = (ISinkMock)Activator.CreateInstance(_mockTypes[fourcc], node);
-            sink.Logger = Logger;
+            var sink = (ISinkMock)Activator.CreateInstance(_mockTypes[fourcc]);
+            sink.Init(node);
             return sink;
         }
 

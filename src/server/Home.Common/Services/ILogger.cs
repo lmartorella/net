@@ -7,6 +7,7 @@ namespace Lucky.Home.Services
     /// </summary>
     public interface ILogger
     {
+        string SubKey { get; set; }
         void LogFormat(string type, string message, params object[] args);
     }
 

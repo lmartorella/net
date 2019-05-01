@@ -31,6 +31,20 @@
             <TabItem Header="Devices">
                 <views:DeviceView Devices="{Binding Connection.Devices}" TcpConnection="{Binding Connection}"/>
             </TabItem>
+            <!-- Logs -->
+            <TabItem Header="Logs">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal">
+                        <CheckBox Margin="4" IsChecked="{Binding VerboseLog}">Verbose</CheckBox>
+                        <Button Command="{Binding ClearLogCommand}">Clear</Button>
+                    </StackPanel>
+                    <TextBox  Grid.Row="1" x:Name="LogBox" Margin="4" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

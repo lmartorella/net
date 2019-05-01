@@ -9,20 +9,17 @@ using System.Threading;
 
 namespace Lucky.Home.Simulator
 {
-    public class MasterNode : ISimulatedNode, IDisposable
+    class MasterNode : NodeBase, IDisposable
     {
         private readonly TcpListener _serviceListener;
         private ISinkMock[] _sinks;
         private CancellationToken _cancellationToken;
         private HeloSender _heloSender;
-        public ILogger Logger { get; private set; }
-        public IStateProvider StateProvider { get; private set; }
         private List<SlaveNode> _children = new List<SlaveNode>();
 
-        public MasterNode(ILogger logger, IStateProvider stateProvider, string[] sinks)
+        public MasterNode(SimulatorNodesService.NodeData nodeData, string[] sinks)
+            :base("MasterNode", nodeData)
         {
-            Logger = logger;
-            StateProvider = stateProvider;
             var sinkManager = Manager.GetService<MockSinkManager>();
             _sinks = sinks.Select(name => sinkManager.Create(name, this)).ToArray();
 
@@ -66,18 +63,6 @@ namespace Lucky.Home.Simulator
                     HandleServiceSocketAccepted(tcpClient);
                 }
             }, cancellationToken);
-        }
-
-        public Guid Id
-        {
-            get
-            {
-                return StateProvider.Id;
-            }
-            set
-            {
-                StateProvider.Id = value;
-            }
         }
 
         public void Dispose()

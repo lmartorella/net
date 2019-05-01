@@ -20,11 +20,17 @@ namespace Lucky.Home.Views
 
         private State _state = State.Logout;
         private byte[] _response = new byte[0];
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         public SamilSinkView()
         {
             InitializeComponent();
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("SamilSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
         }
 
         public void Read(BinaryReader reader)

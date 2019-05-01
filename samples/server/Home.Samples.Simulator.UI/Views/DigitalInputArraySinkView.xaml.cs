@@ -11,13 +11,19 @@ namespace Lucky.Home.Views
     [MockSink("DIAR")]
     public partial class DigitalInputArraySinkView : UserControl, ISinkMock
     {
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         public DigitalInputArraySinkView()
         {
             InitializeComponent();
 
             SwitchesCount = 8;
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("DiarSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
         }
 
         public void Read(BinaryReader reader)

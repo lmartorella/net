@@ -11,19 +11,19 @@ namespace Lucky.Home.Simulator
     /// </summary>
     class ClientProtocolNode
     {
-        public ILogger Logger { get; private set; }
+        private ILogger Logger;
         private readonly BinaryWriter _writer;
         private readonly BinaryReader _reader;
         public ISinkMock[] Sinks { get; private set; }
         private readonly List<ClientProtocolNode> _children = new List<ClientProtocolNode>();
         private ISimulatedNode _node;
-        private string _name;
+        private string _logId;
         private HeloSender _heloSender;
 
-        public ClientProtocolNode(string name, BinaryWriter writer, BinaryReader reader, ISimulatedNode idProvider, ISinkMock[] sinks, HeloSender heloSender = null)
+        public ClientProtocolNode(string logId, BinaryWriter writer, BinaryReader reader, ISimulatedNode idProvider, ISinkMock[] sinks, HeloSender heloSender = null)
         {
-            _name = name;
-            Logger = idProvider.Logger;
+            _logId = logId;
+            Logger = Manager.GetService<ILoggerFactory>().Create("ClientProtocolNode:" + logId);
             _node = idProvider;
             _writer = writer;
             _reader = reader;
@@ -61,7 +61,7 @@ namespace Lucky.Home.Simulator
                 return RunStatus.Aborted;
             }
 
-            Logger.Log(string.Format("[{1}] Msg: {0}", command, _name));
+            Logger.Log("Msg: " + command);
             var sinkManager = Manager.GetService<MockSinkManager>();
             ushort sinkIdx;
             switch (command)
@@ -71,7 +71,7 @@ namespace Lucky.Home.Simulator
                     _writer.Write(new byte[] { 0x1e });
                     return RunStatus.Closed;
                 case "CH":
-                    Write(_node.StateProvider.Id);
+                    Write(_node.Id);
                     Write((ushort)_children.Count);
                     if (_children.Count > 0) {
                         // 1 bit for each children
@@ -116,7 +116,7 @@ namespace Lucky.Home.Simulator
                     }
                     break;
                 case "GU":
-                    _node.StateProvider.Id = ReadGuid();
+                    _node.Id = ReadGuid();
                     break;
                 case "WR":
                     sinkIdx = ReadUint16();

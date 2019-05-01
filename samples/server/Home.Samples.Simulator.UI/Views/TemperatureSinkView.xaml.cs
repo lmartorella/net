@@ -10,11 +10,17 @@ namespace Lucky.Home.Views
     public partial class TemperatureSinkView : UserControl, ISinkMock
     {
         private readonly Random _random = new Random();
-        public ILogger Logger { get; set; }
+        private ILogger Logger;
 
         public TemperatureSinkView()
         {
             InitializeComponent();
+        }
+
+        public void Init(ISimulatedNode node)
+        {
+            Logger = Manager.GetService<ILoggerFactory>().Create("TempSink", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
         }
 
         public void Read(BinaryReader reader)

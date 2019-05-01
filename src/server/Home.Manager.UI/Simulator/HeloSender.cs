@@ -22,10 +22,11 @@ namespace Lucky.Home.Simulator
 
         public HeloSender(ushort rcvPort, bool localhostMode, ISimulatedNode node)
         {
-            _logger = node.Logger;
             _node = node;
             _rcvPort = rcvPort;
             _localhostMode = localhostMode;
+            _logger = Manager.GetService<ILoggerFactory>().Create("HeloSender", node.Id.ToString());
+            node.IdChanged += (o, e) => _logger.SubKey = node.Id.ToString();
             // Install an auto-repeat timer until closed
             _timer = new Timer(HandleTick, null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
         }
@@ -39,7 +40,7 @@ namespace Lucky.Home.Simulator
         {
             get
             {
-                return _node.StateProvider.Id != Guid.Empty;
+                return _node.Id != Guid.Empty;
             }
         }
 
@@ -56,7 +57,7 @@ namespace Lucky.Home.Simulator
             {
                 // Write HOMEHELO
                 writer.Write(Encoding.ASCII.GetBytes("HOME" + msg));
-                writer.Write(_node.StateProvider.Id.ToByteArray());
+                writer.Write(_node.Id.ToByteArray());
                 writer.Write(BitConverter.GetBytes(_rcvPort));
                 // If child changed, add a mask for changes
                 if (ChildChanged)

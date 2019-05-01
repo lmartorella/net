@@ -7,7 +7,7 @@ namespace Lucky.Home.Simulator
 {
     public interface ISinkMock
     {
-        ILogger Logger { get; set; }
+        void Init(ISimulatedNode node);
         void Read(BinaryReader reader);
         void Write(BinaryWriter writer);
     }
