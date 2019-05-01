@@ -7,11 +7,16 @@
             <cvts:ResetReasonToEnabledConverter x:Key="ResetReasonToEnabledConverter" />
         </Grid.Resources>
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <StackPanel Grid.Row="0" Orientation="Horizontal">
             <TextBlock Margin="4">Reset reason</TextBlock>
             <ComboBox Margin="4" ItemsSource="{Binding ResetReasons}" SelectedItem="{Binding ResetReason}"></ComboBox>
             <TextBlock Margin="4">Exc</TextBlock>
             <TextBox Margin="4" Text="{Binding ExcMsg}" MinWidth="150" IsEnabled="{Binding ResetReason, Converter={StaticResource ResetReasonToEnabledConverter}}"></TextBox>
+            <Button Click="HandleResetClick">Reset</Button>
         </StackPanel>
     </Grid>
 </UserControl>

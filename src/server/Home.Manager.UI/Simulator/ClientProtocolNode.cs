@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Lucky.Home.Simulator
 {
@@ -16,15 +18,16 @@ namespace Lucky.Home.Simulator
         private readonly BinaryReader _reader;
         public ISinkMock[] Sinks { get; private set; }
         private readonly List<ClientProtocolNode> _children = new List<ClientProtocolNode>();
-        private ISimulatedNode _node;
-        private string _logId;
-        private HeloSender _heloSender;
+        private readonly ISimulatedNode _node;
+        private readonly HeloSender _heloSender;
+        private readonly Dispatcher _dispatcher;
 
-        public ClientProtocolNode(string logId, BinaryWriter writer, BinaryReader reader, ISimulatedNode idProvider, ISinkMock[] sinks, HeloSender heloSender = null)
+        public ClientProtocolNode(Dispatcher dispatcher, BinaryWriter writer, BinaryReader reader, ISimulatedNodeInternal node, ISinkMock[] sinks, HeloSender heloSender = null)
         {
-            _logId = logId;
-            Logger = Manager.GetService<ILoggerFactory>().Create("ClientProtocolNode:" + logId);
-            _node = idProvider;
+            Logger = Manager.GetService<ILoggerFactory>().Create("ClientProtocolNode", node.Id.ToString());
+            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
+            _dispatcher = dispatcher;
+            _node = node;
             _writer = writer;
             _reader = reader;
             _heloSender = heloSender;
@@ -33,16 +36,22 @@ namespace Lucky.Home.Simulator
 
         public void AddChild(string name, SlaveNode slaveNode)
         {
-            _children.Add(new ClientProtocolNode(name, _writer, _reader, slaveNode, slaveNode.Sinks));
+            _children.Add(new ClientProtocolNode(_dispatcher, _writer, _reader, slaveNode, slaveNode.Sinks));
         }
 
         private string ReadCommand()
         {
-            var buffer = MasterNode.ReadBytesWait(_reader, 2);
-            if (buffer == null)
+            var buffer = new byte[2];
+            int idx = 0;
+            do
             {
-                return null;
-            }
+                int c = _reader.Read(buffer, idx, 2 - idx);
+                if (c == 0)
+                {
+                    return null;
+                }
+                idx += c;
+            } while (idx < 2);
             return Encoding.ASCII.GetString(buffer);
         }
 
@@ -53,7 +62,7 @@ namespace Lucky.Home.Simulator
             Aborted
         }
 
-        public RunStatus RunServer()
+        public async Task<RunStatus> RunServer()
         {
             string command = ReadCommand();
             if (command == null)
@@ -95,7 +104,7 @@ namespace Lucky.Home.Simulator
                     {
                         while (true)
                         {
-                            var ret = _children[id - 1].RunServer();
+                            var ret = await _children[id - 1].RunServer();
                             if (ret == RunStatus.Closed)
                             {
                                 _heloSender.ChildChanged = false;
@@ -120,11 +129,18 @@ namespace Lucky.Home.Simulator
                     break;
                 case "WR":
                     sinkIdx = ReadUint16();
-                    Sinks[sinkIdx].Read(_reader);
+                    // Sync with main dispatcher
+                    await _dispatcher.Invoke(async () =>
+                    {
+                        Sinks[sinkIdx].Read(_reader);
+                    });
                     break;
                 case "RD":
                     sinkIdx = ReadUint16();
-                    Sinks[sinkIdx].Write(_writer);
+                    await _dispatcher.Invoke(async () =>
+                    {
+                        Sinks[sinkIdx].Write(_writer);
+                    });
                     break;
                 default:
                     throw new InvalidOperationException("Unknown protocol command: " + command);

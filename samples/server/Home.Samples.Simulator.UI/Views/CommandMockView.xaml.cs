@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("TCMD")]
+    [MockSink("TCMD", "Command")]
     public partial class CommandMockView : UserControl, ISinkMock
     {
         private ILogger Logger;

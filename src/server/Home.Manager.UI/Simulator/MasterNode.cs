@@ -6,23 +6,27 @@ using System.Net;
 using System.Net.Sockets;
 using Lucky.Home.Services;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Lucky.Home.Simulator
 {
     class MasterNode : NodeBase, IDisposable
     {
         private readonly TcpListener _serviceListener;
-        private ISinkMock[] _sinks;
+        public ISinkMock[] Sinks { get; private set; }
         private CancellationToken _cancellationToken;
         private HeloSender _heloSender;
         private List<SlaveNode> _children = new List<SlaveNode>();
+        private Dispatcher _dispatcher;
 
-        public MasterNode(SimulatorNodesService.NodeData nodeData, string[] sinks)
+        public MasterNode(Dispatcher dispatcher, SimulatorNodesService.NodeData nodeData)
             :base("MasterNode", nodeData)
         {
+            _dispatcher = dispatcher;
             var sinkManager = Manager.GetService<MockSinkManager>();
-            _sinks = sinks.Select(name => sinkManager.Create(name, this)).ToArray();
-
+            Sinks = nodeData.Sinks.Select(name => sinkManager.Create(name, this)).ToArray();
+ 
             var port = (ushort)new Random().Next(17000, 18000);
             bool localhostMode = false;
 
@@ -55,35 +59,27 @@ namespace Lucky.Home.Simulator
         public void StartServer(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
-            System.Threading.Tasks.Task.Run(async () =>
+            TcpClient tcpClient = null;
+            Task.Run(async () =>
             {
                 while (true)
                 {
-                    var tcpClient = await _serviceListener.AcceptTcpClientAsync();
+                    tcpClient = await _serviceListener.AcceptTcpClientAsync();
                     HandleServiceSocketAccepted(tcpClient);
                 }
-            }, cancellationToken);
+            }, cancellationToken).ContinueWith(t =>
+            {
+                if (tcpClient != null)
+                {
+                    tcpClient.Close();
+                    tcpClient.Dispose();
+                }
+            }, TaskContinuationOptions.OnlyOnCanceled);
         }
 
         public void Dispose()
         {
             _serviceListener.Stop();
-        }
-
-        internal static byte[] ReadBytesWait(BinaryReader reader, int l)
-        {
-            var buffer = new byte[l];
-            int idx = 0;
-            do
-            {
-                int c = reader.Read(buffer, idx, l - idx);
-                if (c == 0)
-                {
-                    return null;
-                }
-                idx += c;
-            } while (idx < l);
-            return buffer;
         }
 
         public void AddChild(SlaveNode node)
@@ -92,7 +88,7 @@ namespace Lucky.Home.Simulator
             _heloSender.ChildChanged = false;
         }
 
-        private void HandleServiceSocketAccepted(TcpClient tcpClient)
+        private async Task HandleServiceSocketAccepted(TcpClient tcpClient)
         {
             var sinkManager = Manager.GetService<MockSinkManager>();
             tcpClient.NoDelay = true;
@@ -105,24 +101,24 @@ namespace Lucky.Home.Simulator
                 {
                     using (var writer = new BinaryWriter(stream))
                     {
-                        var controlSession = new ClientProtocolNode("Master", writer, reader, this, _sinks, _heloSender);
+                        var controlSession = new ClientProtocolNode(_dispatcher, writer, reader, this, Sinks, _heloSender);
                         _children.ForEach(child =>
                         {
                             controlSession.AddChild("Child", child);
                         });
-                        Run(controlSession);
+                        await Run(controlSession);
                     }
                 }
             }
         }
 
-        private void Run(ClientProtocolNode session)
+        private async Task Run(ClientProtocolNode session)
         {
             try
             {
                 while (!_cancellationToken.IsCancellationRequested)
                 {
-                    if (session.RunServer() == ClientProtocolNode.RunStatus.Aborted)
+                    if (await session.RunServer() == ClientProtocolNode.RunStatus.Aborted)
                     {
                         break;
                     }

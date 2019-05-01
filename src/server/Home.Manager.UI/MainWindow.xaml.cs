@@ -24,7 +24,9 @@ namespace Lucky.Home
                 LogBox.Clear();
             });
 
-            var nodes = Manager.GetService<SimulatorNodesService>().Restore();
+            Manager.GetService<GuiLoggerFactory>().Register(this);
+
+            var nodes = Manager.GetService<SimulatorNodesService>().Restore(Dispatcher);
             foreach (var node in nodes)
             {
                 AddNewNodeTab(node);
@@ -61,7 +63,7 @@ namespace Lucky.Home
 
         private void NewNodeClicked(object sender, RoutedEventArgs e)
         {
-            var node = Manager.GetService<SimulatorNodesService>().CreateNewMasterNode(Manager.GetService<MockSinkManager>().GetAllSinks());
+            var node = Manager.GetService<SimulatorNodesService>().CreateNewMasterNode(Dispatcher, Manager.GetService<MockSinkManager>().GetAllSinks());
             AddNewNodeTab(node);
         }
 

@@ -9,11 +9,12 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("SYS ")]
+    [MockSink("SYS ", "System")]
     public partial class SystemSinkView : UserControl, ISinkMock
     {
         private bool _initialized;
         private ILogger Logger;
+        private ISimulatedNodeInternal _node;
 
         public SystemSinkView()
         {
@@ -22,6 +23,7 @@ namespace Lucky.Home.Views
 
         public void Init(ISimulatedNode node)
         {
+            _node = node as ISimulatedNodeInternal;
             Logger = Manager.GetService<ILoggerFactory>().Create("SysSink", node.Id.ToString());
             node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
 
@@ -82,6 +84,11 @@ namespace Lucky.Home.Views
                 writer.WriteString(ExcMsg);
             }
             writer.WriteTwocc("EN");
+        }
+
+        private void HandleResetClick(object sender, EventArgs args)
+        {
+            _node.Reset();
         }
 
         internal static readonly DependencyProperty ResetReasonsProperty = DependencyProperty.Register(

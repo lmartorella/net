@@ -6,7 +6,7 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("TEMP")]
+    [MockSink("TEMP", "Temp sensor")]
     public partial class TemperatureSinkView : UserControl, ISinkMock
     {
         private readonly Random _random = new Random();

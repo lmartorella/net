@@ -3,6 +3,7 @@ using Lucky.Home.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Threading;
 
 namespace Lucky.Home.Simulator
 {
@@ -16,6 +17,8 @@ namespace Lucky.Home.Simulator
             _nodeData = nodeData;
             Logger = Manager.GetService<ILoggerFactory>().Create(logKey, Id.ToString());
         }
+
+        public Action Reset { get; set; }
 
         public Guid Id
         {
@@ -54,7 +57,7 @@ namespace Lucky.Home.Simulator
 
     class SimulatorNodesService : ServiceBaseWithData<SimulatorNodesService.Data>
     {
-        public MasterNode[] Restore()
+        public MasterNode[] Restore(Dispatcher dispatcher)
         {
             // Restore the nodes
             var state = State;
@@ -63,7 +66,7 @@ namespace Lucky.Home.Simulator
             {
                 foreach (NodeData nodeData in state.MasterNodes)
                 {
-                    var master = CreateNewMasterNode(nodeData);
+                    var master = CreateNewMasterNode(dispatcher, nodeData);
                     ret.Add(master);
                     if (nodeData.Children != null)
                     {
@@ -95,21 +98,21 @@ namespace Lucky.Home.Simulator
 
         }
 
-        public MasterNode CreateNewMasterNode(string[] sinks)
+        public MasterNode CreateNewMasterNode(Dispatcher dispatcher, string[] sinks)
         {
             NodeData data = new NodeData { Sinks = sinks };
             State.MasterNodes = (State.MasterNodes ?? new NodeData[0]).Concat(new[] { data }).ToArray();
-            return CreateNewMasterNode(data);
+            return CreateNewMasterNode(dispatcher, data);
         }
 
-        private MasterNode CreateNewMasterNode(NodeData nodeData)
+        private MasterNode CreateNewMasterNode(Dispatcher dispatcher, NodeData nodeData)
         {
-            return new MasterNode(nodeData, nodeData.Sinks);
+            return new MasterNode(dispatcher, nodeData);
         }
 
         private SlaveNode CreateSlaveNode(MasterNode master, NodeData nodeData)
         {
-            var slave = new SlaveNode(nodeData, nodeData.Sinks);
+            var slave = new SlaveNode(nodeData);
             master.AddChild(slave);
             return slave;
         }

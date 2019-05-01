@@ -8,7 +8,7 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("DOAR")]
+    [MockSink("DOAR", "Output array")]
     public partial class DigitalOutputArraySinkView : UserControl, ISinkMock
     {
         private ILogger Logger;

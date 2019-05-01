@@ -47,5 +47,15 @@ namespace Lucky.Home.Services
         {
             return GetFourCc(sink.GetType());
         }
+
+        internal string GetDisplayName(Type sinkType)
+        {
+            return sinkType.GetCustomAttribute<MockSinkAttribute>().Name;
+        }
+
+        internal string GetDisplayName(ISinkMock sink)
+        {
+            return GetDisplayName(sink.GetType());
+        }
     }
 }

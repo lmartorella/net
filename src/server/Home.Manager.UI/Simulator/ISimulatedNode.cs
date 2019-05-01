@@ -26,5 +26,10 @@ namespace Lucky.Home.Simulator
         /// Get/set the serializable state
         /// </summary>
         NodeStatus Status { get; set; }
+
+        /// <summary>
+        /// Simulate a reset
+        /// </summary>
+        Action Reset { get; set; }
     }
 }

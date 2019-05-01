@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("GARD")]
+    [MockSink("GARD", "Garden")]
     public partial class GardenSinkView : UserControl, ISinkMock
     {
         private ILogger Logger;

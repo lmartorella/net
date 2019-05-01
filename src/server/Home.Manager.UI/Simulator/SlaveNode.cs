@@ -8,11 +8,11 @@ namespace Lucky.Home.Simulator
     {
         public ISinkMock[] Sinks { get; }
 
-        public SlaveNode(SimulatorNodesService.NodeData nodeData, string[] sinks)
+        public SlaveNode(SimulatorNodesService.NodeData nodeData)
             :base("SlaveNode", nodeData)
         {
             var sinkManager = Manager.GetService<MockSinkManager>();
-            Sinks = sinks.Select(name => sinkManager.Create(name, this)).ToArray();
+            Sinks = nodeData.Sinks.Select(name => sinkManager.Create(name, this)).ToArray();
         }
     }
 }

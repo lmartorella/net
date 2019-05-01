@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("FLOW")]
+    [MockSink("FLOW", "Flow meter")]
     public partial class FlowSinkMockView : UserControl, ISinkMock
     {
         private Timer _timer;

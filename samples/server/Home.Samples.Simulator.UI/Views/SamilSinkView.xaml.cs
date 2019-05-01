@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
-    [MockSink("SLIN")]
+    [MockSink("SLIN", "Samil Inverter")]
     public partial class SamilSinkView : UserControl, ISinkMock
     {
         private enum State
