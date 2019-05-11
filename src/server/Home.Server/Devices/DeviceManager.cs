@@ -13,12 +13,7 @@ namespace Lucky.Home.Devices
     /// </summary>
     class DeviceManager : ServiceBaseWithData<DeviceManager.Persistence>, IDeviceManager
     {
-        /// <summary>
-        /// From type name to device type
-        /// </summary>
-        private readonly Dictionary<string, DeviceTypeDescriptor> _deviceTypes = new Dictionary<string, DeviceTypeDescriptor>();
         private readonly Dictionary<Guid, Tuple<DeviceBase, DeviceDescriptor>> _devices = new Dictionary<Guid, Tuple<DeviceBase, DeviceDescriptor>>();
-        private List<Assembly> _assemblies = new List<Assembly>();
 
         [DataContract]
         internal class Persistence
@@ -44,27 +39,6 @@ namespace Lucky.Home.Devices
             }
         }
 
-        public DeviceTypeDescriptor[] DeviceTypes
-        {
-            get
-            {
-                return _deviceTypes.Values.ToArray();
-            }
-        }
-
-        public void RegisterAssembly(Assembly assembly)
-        {
-            var l = _deviceTypes.Count;
-            _assemblies.Add(assembly);
-            foreach (var deviceType in assembly.GetTypes().Where(type => type.BaseType != null && type != typeof(DeviceBase) && typeof(DeviceBase).IsAssignableFrom(type) && type.GetCustomAttribute<DeviceAttribute>() != null))
-            {
-                var descriptor = new DeviceTypeDescriptor(deviceType);
-                // Exception if already registered..
-                _deviceTypes.Add(descriptor.Name, descriptor);
-            }
-            Logger.Log("DeviceType Reg", "Asm", assembly.GetName().Name, "Count", _deviceTypes.Count - l);
-        }
-
         private void LoadState(DeviceDescriptor[] descriptors)
         {
             lock (_devices)
@@ -81,20 +55,7 @@ namespace Lucky.Home.Devices
 
         private DeviceBase CreateDevice(DeviceDescriptor descriptor)
         {
-            DeviceTypeDescriptor desc;
-            if (!_deviceTypes.TryGetValue(descriptor.DeviceTypeName, out desc))
-            {
-                // Type not found
-                return null;
-            }
-
-            // Find type
-            var typeName = desc.FullTypeName;
-            var type = _assemblies.Select(a => a.GetType(typeName)).FirstOrDefault(t => t != null);
-            if (type == null)
-            {
-                throw new InvalidOperationException("Devcice type not found: " + typeName);
-            }
+            var type = Manager.GetService<DeviceTypeManager>().GetDeviceType(descriptor.DeviceTypeName);
 
             DeviceBase device = (DeviceBase)Activator.CreateInstance(type, FillDefaultArguments(descriptor.Arguments, type));
             device.OnInitialize(descriptor.SinkPaths);

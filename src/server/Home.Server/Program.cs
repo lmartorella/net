@@ -37,10 +37,11 @@ namespace Lucky.Home.Lib
             Manager.Register<SinkManager>();
             Manager.Register<SinkManager>();
             Manager.Register<DeviceManager, IDeviceManager>();
-            Manager.GetService<SinkManager>().RegisterType(typeof(SystemSink));
+            Manager.Register<SinkManager, ISinkManager>();
+            Manager.GetService<SinkTypeManager>().RegisterType(typeof(SystemSink));
 
             var logger = Manager.GetService<ILoggerFactory>().Create("Main");
-            var applications = LibraryLoad(logger);
+            var applications = Manager.GetService<Registrar>().LoadLibraries();
 
             Manager.GetService<DeviceManager>().Load();
 
@@ -80,50 +81,6 @@ namespace Lucky.Home.Lib
             // Safely stop devices
             await Manager.GetService<DeviceManager>().TerminateAll();
             logger.LogStderr("Exiting.");
-        }
-
-        private static bool IsApplication(FileInfo fileInfo)
-        {
-            Assembly assembly = Assembly.ReflectionOnlyLoadFrom(fileInfo.FullName);
-            return assembly.GetCustomAttributesData().Any(d => d.AttributeType.FullName == typeof(ApplicationAttribute).FullName);
-        }
-
-        private static IApplication[] LibraryLoad(ILogger logger)
-        {
-            ResolveEventHandler handler = (s, e) => Assembly.ReflectionOnlyLoad(e.Name);
-            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += handler;
-
-            // Find all .dlls in the bin folder and find for application
-            var dlls = new FileInfo(Assembly.GetEntryAssembly().Location).Directory.GetFiles("*.dll").Where(dll => IsApplication(dll)).ToArray();
-            List<IApplication> applications = new List<IApplication>();
-            if (dlls.Length == 0)
-            {
-                logger.Warning("Application dll not found");
-            }
-            else
-            {
-                foreach (FileInfo dll in dlls)
-                {
-                    // Load it in the AppDomain
-                    Assembly assembly = Assembly.LoadFrom(dll.FullName);
-                    Type mainType = assembly.GetCustomAttribute<ApplicationAttribute>().ApplicationType;
-                    if (!typeof(IService).IsAssignableFrom(mainType))
-                    {
-                        throw new InvalidOperationException("The main application " + mainType.FullName + " is not a service");
-                    }
-                    applications.Add(Activator.CreateInstance(mainType) as IApplication);
-
-                    var types = assembly.GetTypes();
-
-                    // Register app sinks
-                    Manager.GetService<SinkManager>().RegisterAssembly(assembly);
-                    // Register devices
-                    Manager.GetService<DeviceManager>().RegisterAssembly(assembly);
-                }
-            }
-
-            AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve -= handler;
-            return applications.ToArray();
         }
     }
 }

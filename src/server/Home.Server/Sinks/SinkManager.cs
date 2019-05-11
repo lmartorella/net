@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
 using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Services;
@@ -11,31 +10,16 @@ using Lucky.Home.Services;
 namespace Lucky.Home.Sinks
 {
     /// <summary>
-    /// Sink manager
+    /// Sink instance manager
     /// </summary>
-    class SinkManager : ServiceBase
+    class SinkManager : ServiceBase, ISinkManager
     {
-        private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
         private readonly ObservableCollection<SinkBase> _sinks = new ObservableCollection<SinkBase>();
         public object LockObject { get; private set; }
 
         public SinkManager()
         {
             LockObject = new object();
-        }
-
-        public void RegisterAssembly(Assembly assembly)
-        {
-            foreach (var type in assembly.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
-            {
-                RegisterType(type);
-            }
-        }
-
-        public void RegisterType(Type type)
-        {
-            // Exception if already registered..
-            _sinkTypes.Add(GetSinkFourCc(type), type);
         }
 
         public IEnumerable<T> SinksOfType<T>() where T : ISink
@@ -46,15 +30,10 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        internal static string GetSinkFourCc(Type type)
-        {
-            return type.GetCustomAttribute<SinkIdAttribute>().SinkFourCc;
-        }
-
         public SinkBase CreateSink(string sinkFourCc, ITcpNode node, int index)
         {
-            Type type;
-            if (!_sinkTypes.TryGetValue(sinkFourCc, out type))
+            Type type = Manager.GetService<SinkTypeManager>().FindType(sinkFourCc);
+            if (type == null)
             {
                 // Unknown sink type
                 Logger.Warning("Unknown sink code", "code", sinkFourCc, "guid", node.NodeId);
@@ -124,7 +103,7 @@ namespace Lucky.Home.Sinks
 
         internal event EventHandler<ResetSinkEventArgs> ResetSink;
 
-        internal void RaiseResetSink(SinkBase sink)
+        public void RaiseResetSink(SinkBase sink)
         {
             ResetSink?.Invoke(this, new ResetSinkEventArgs(sink));
         }

@@ -1,4 +1,5 @@
-﻿using Lucky.Home.Models;
+﻿using Lucky.Home.Devices;
+using Lucky.Home.Models;
 using Lucky.Home.Services;
 using System;
 using System.Collections.Generic;
@@ -202,7 +203,7 @@ namespace Lucky.Home.Views
         {
             // Create device
             CreateDeviceWindow wnd = new CreateDeviceWindow();
-            wnd.DeviceTypes = await TcpConnection.GetDeviceTypes();
+            wnd.DeviceTypes = Manager.GetService<DeviceTypeManager>().DeviceTypes;
             if (wnd.ShowDialog() == true)
             {
                 var argumentTypes = wnd.DeviceType.ArgumentTypes.Select(Type.GetType).ToArray();

@@ -77,7 +77,7 @@ namespace Lucky.Home.Devices
         internal void OnInitialize(SinkPath[] sinkPaths)
         {
             SinkPaths = sinkPaths;
-            var sinkManager = Manager.GetService<SinkManager>();
+            var sinkManager = Manager.GetService<ISinkManager>();
             lock (sinkManager.LockObject)
             {
                 foreach (var sinkPath in SinkPaths)
@@ -101,7 +101,7 @@ namespace Lucky.Home.Devices
 
         protected internal virtual Task OnTerminate()
         {
-            var sinkManager = Manager.GetService<SinkManager>();
+            var sinkManager = Manager.GetService<ISinkManager>();
             lock (sinkManager.LockObject)
             {
                 sinkManager.CollectionChanged -= HandleSinkChanged;

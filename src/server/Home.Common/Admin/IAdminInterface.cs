@@ -10,7 +10,6 @@ namespace Lucky.Home.Admin
     internal interface IAdminInterface
     {
         Task<Node[]> GetTopology();
-        Task<DeviceTypeDescriptor[]> GetDeviceTypes();
         Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId);
         Task<string> CreateDevice(DeviceDescriptor descriptor);
         Task<DeviceDescriptor[]> GetDevices();

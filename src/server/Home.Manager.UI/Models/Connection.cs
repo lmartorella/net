@@ -123,11 +123,6 @@ namespace Lucky.Home.Models
             return ret;
         }
 
-        public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
-        {
-            return await _adminInterface.GetDeviceTypes();
-        }
-
         public async void DeleteDevice(UiDevice uiDevice)
         {
             await _adminInterface.DeleteDevice(uiDevice.Id);

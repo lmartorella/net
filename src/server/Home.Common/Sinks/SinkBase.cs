@@ -19,7 +19,7 @@ namespace Lucky.Home.Sinks
         {
             Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name);
             SubCount = 0;
-            FourCc = fourcc ?? SinkManager.GetSinkFourCc(GetType());
+            FourCc = fourcc ?? SinkTypeManager.GetSinkFourCc(GetType());
         }
 
         internal void Init(ITcpNode node, int index)
@@ -105,7 +105,7 @@ namespace Lucky.Home.Sinks
         /// </summary>
         public void ResetNode()
         {
-            Manager.GetService<SinkManager>().RaiseResetSink(this);
+            Manager.GetService<ISinkManager>().RaiseResetSink(this);
         }
     }
 }

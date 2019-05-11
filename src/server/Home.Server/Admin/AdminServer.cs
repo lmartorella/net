@@ -25,11 +25,6 @@ namespace Lucky.Home.Admin
             return Task.FromResult(BuildTree());
         }
 
-        public Task<DeviceTypeDescriptor[]> GetDeviceTypes()
-        {
-            return Task.FromResult(Manager.GetService<DeviceManager>().DeviceTypes);
-        }
-
         public Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId)
         {
             ITcpNode node;

@@ -18,6 +18,8 @@ namespace Lucky.Home
 
             Manager.GetService<IIsolatedStorageService>().InitAppRoot("Manager.UI");
             Manager.GetService<ILoggerFactory>().Create("App").Log("Started");
+
+            Manager.GetService<Registrar>().LoadLibraries();
         }
 
         private class GuiConfigurationService : IConfigurationService

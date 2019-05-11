@@ -68,11 +68,6 @@ namespace Lucky.Home.Services
             return (Node[])await Request();
         }
 
-        public async Task<DeviceTypeDescriptor[]> GetDeviceTypes()
-        {
-            return (DeviceTypeDescriptor[])await Request();
-        }
-
         public async Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId)
         {
             return (bool)await Request("RenameNode", nodeAddress, oldId, newId);
