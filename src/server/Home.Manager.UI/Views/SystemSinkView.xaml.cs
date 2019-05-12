@@ -1,4 +1,5 @@
-﻿using Lucky.Home.Protocol;
+﻿using Lucky.Home.Models;
+using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 using Lucky.Home.Simulator;
 using System;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Lucky.Home.Views
 {
@@ -152,6 +154,15 @@ namespace Lucky.Home.Views
             {
                 //(_owner.StateProvider as IStateProviderInternal).Status = me.NodeStatus;
             }
+        }
+
+        public static readonly DependencyProperty AddSlaveCommandProperty = DependencyProperty.Register(
+            "AddSlaveCommand", typeof(ICommand), typeof(SystemSinkView), null);
+
+        public ICommand AddSlaveCommand
+        {
+            get { return (ICommand)GetValue(AddSlaveCommandProperty); }
+            set { SetValue(AddSlaveCommandProperty, value); }
         }
     }
 }

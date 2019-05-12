@@ -1,18 +1,13 @@
-﻿using System;
-using System.Linq;
-using Lucky.Home.Services;
-
-namespace Lucky.Home.Simulator
+﻿namespace Lucky.Home.Simulator
 {
     class SlaveNode : NodeBase
     {
-        public ISinkMock[] Sinks { get; }
-
         public SlaveNode(SimulatorNodesService.NodeData nodeData)
             :base("SlaveNode", nodeData)
+        { }
+
+        public override void Reset()
         {
-            var sinkManager = Manager.GetService<MockSinkManager>();
-            Sinks = nodeData.Sinks.Select(name => sinkManager.Create(name, this)).ToArray();
         }
     }
 }

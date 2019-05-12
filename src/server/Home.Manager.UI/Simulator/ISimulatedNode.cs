@@ -30,6 +30,6 @@ namespace Lucky.Home.Simulator
         /// <summary>
         /// Simulate a reset
         /// </summary>
-        Action Reset { get; set; }
+        void Reset();
     }
 }

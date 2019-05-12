@@ -14,18 +14,17 @@ namespace Lucky.Home.Simulator
     class MasterNode : NodeBase, IDisposable
     {
         private readonly TcpListener _serviceListener;
-        public ISinkMock[] Sinks { get; private set; }
-        private CancellationToken _cancellationToken;
         private HeloSender _heloSender;
         private List<SlaveNode> _children = new List<SlaveNode>();
         private Dispatcher _dispatcher;
+
+        private CancellationTokenSource _cancellationTokenSrc = new CancellationTokenSource();
+        private CancellationToken _cancellationToken;
 
         public MasterNode(Dispatcher dispatcher, SimulatorNodesService.NodeData nodeData)
             :base("MasterNode", nodeData)
         {
             _dispatcher = dispatcher;
-            var sinkManager = Manager.GetService<MockSinkManager>();
-            Sinks = nodeData.Sinks.Select(name => sinkManager.Create(name, this)).ToArray();
  
             var port = (ushort)new Random().Next(17000, 18000);
             bool localhostMode = false;
@@ -56,9 +55,17 @@ namespace Lucky.Home.Simulator
             _heloSender = new HeloSender(port, localhostMode, this);
         }
 
-        public void StartServer(CancellationToken cancellationToken)
+        public SlaveNode[] Children
         {
-            _cancellationToken = cancellationToken;
+            get
+            {
+                return _children.ToArray();
+            }
+        }
+
+        public void StartServer()
+        {
+            _cancellationToken = _cancellationTokenSrc.Token;
             TcpClient tcpClient = null;
             Task.Run(async () =>
             {
@@ -67,7 +74,7 @@ namespace Lucky.Home.Simulator
                     tcpClient = await _serviceListener.AcceptTcpClientAsync();
                     HandleServiceSocketAccepted(tcpClient);
                 }
-            }, cancellationToken).ContinueWith(t =>
+            }, _cancellationToken).ContinueWith(t =>
             {
                 if (tcpClient != null)
                 {
@@ -128,6 +135,13 @@ namespace Lucky.Home.Simulator
             {
                 Logger.Exception(exc);
             }
+        }
+
+        public override void Reset()
+        {
+            _cancellationTokenSrc.Cancel();
+            _cancellationTokenSrc = new CancellationTokenSource();
+            StartServer();
         }
     }
 }

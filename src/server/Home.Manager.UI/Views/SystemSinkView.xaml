@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -23,6 +24,10 @@
             <TextBlock Margin="4">Exc</TextBlock>
             <TextBox Margin="4" Text="{Binding ExcMsg}" MinWidth="150" IsEnabled="{Binding ResetReason, Converter={StaticResource ResetReasonToEnabledConverter}}"></TextBox>
             <Button Click="HandleResetClick">Reset</Button>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Command="{Binding AddSlaveCommand}">Add Slave</Button>
         </StackPanel>
     </Grid>
 </UserControl>

@@ -25,7 +25,7 @@ namespace Lucky.Home.Simulator
                     {
                         foreach (NodeData slaveData in nodeData.Children)
                         {
-                            CreateSlaveNode(master, slaveData);
+                            CreateSlaveNode(master, slaveData, false);
                         }
                     }
                 }
@@ -58,8 +58,7 @@ namespace Lucky.Home.Simulator
 
         public MasterNode CreateNewMasterNode(Dispatcher dispatcher, string[] sinks)
         {
-            NodeData data = new NodeData { Sinks = sinks };
-            return CreateNewMasterNode(dispatcher, data, true);
+            return CreateNewMasterNode(dispatcher, new NodeData { Sinks = sinks }, true);
         }
 
         private MasterNode CreateNewMasterNode(Dispatcher dispatcher, NodeData nodeData, bool save)
@@ -70,6 +69,7 @@ namespace Lucky.Home.Simulator
                 State.MasterNodes = (State.MasterNodes ?? new NodeData[0]).Concat(new[] { nodeData }).ToArray();
                 Save();
             }
+            node.StartServer();
             return node;
         }
 
@@ -78,10 +78,20 @@ namespace Lucky.Home.Simulator
             base.Save();
         }
 
-        private SlaveNode CreateSlaveNode(MasterNode master, NodeData nodeData)
+        public SlaveNode CreateNewSlaveNode(MasterNode masterNode, string[] sinks)
+        {
+            return CreateSlaveNode(masterNode, new NodeData { Sinks = sinks }, true);
+        }
+
+        private SlaveNode CreateSlaveNode(MasterNode master, NodeData nodeData, bool save)
         {
             var slave = new SlaveNode(nodeData);
             master.AddChild(slave);
+            if (save)
+            {
+                master.NodeData.Children = (master.NodeData.Children ?? new NodeData[0]).Concat(new[] { nodeData }).ToArray();
+                Save();
+            }
             return slave;
         }
     }

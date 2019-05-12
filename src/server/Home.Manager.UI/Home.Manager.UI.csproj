@@ -87,7 +87,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\MasterNodeView.xaml">
+    <Page Include="Views\NodeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -105,8 +105,8 @@
     </Compile>
     <Compile Include="Models\Connection.cs" />
     <Compile Include="Converters\NodeStatusToTextConverter.cs" />
-    <Compile Include="Views\MasterNodeView.xaml.cs">
-      <DependentUpon>MasterNodeView.xaml</DependentUpon>
+    <Compile Include="Views\NodeView.xaml.cs">
+      <DependentUpon>NodeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SystemSinkView.xaml.cs">
       <DependentUpon>SystemSinkView.xaml</DependentUpon>

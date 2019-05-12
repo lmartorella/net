@@ -1,5 +1,6 @@
 ﻿using Lucky.Home.Devices;
 using Lucky.Home.Services;
+using System.Threading;
 using System.Windows;
 
 namespace Lucky.Home
@@ -11,6 +12,8 @@ namespace Lucky.Home
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+
             base.OnStartup(e);
 
             Manager.Register<JsonIsolatedStorageService, IIsolatedStorageService>();

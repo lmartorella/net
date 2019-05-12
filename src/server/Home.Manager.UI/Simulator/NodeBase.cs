@@ -1,32 +1,37 @@
 ﻿using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 using System;
+using System.Linq;
 
 namespace Lucky.Home.Simulator
 {
-    class NodeBase : ISimulatedNodeInternal
+    abstract class NodeBase : ISimulatedNodeInternal
     {
-        private SimulatorNodesService.NodeData _nodeData;
+        public SimulatorNodesService.NodeData NodeData { get; private set; }
         protected ILogger Logger { get; private set; }
+        public ISinkMock[] Sinks { get; private set; }
 
         public NodeBase(string logKey, SimulatorNodesService.NodeData nodeData)
         {
-            _nodeData = nodeData;
+            NodeData = nodeData;
             nodeData.Id = nodeData.Id ?? new NodeId();
             Logger = Manager.GetService<ILoggerFactory>().Create(logKey, Id.ToString());
+
+            var sinkManager = Manager.GetService<MockSinkManager>();
+            Sinks = nodeData.Sinks.Select(name => sinkManager.Create(name, this)).ToArray();
         }
 
-        public Action Reset { get; set; }
+        public abstract void Reset();
 
         public NodeId Id
         {
             get
             {
-                return _nodeData.Id;
+                return NodeData.Id;
             }
             set
             {
-                _nodeData.Id = value;
+                NodeData.Id = value;
                 Logger.Log("New guid: " + value);
                 Logger.SubKey = value.ToString();
 
@@ -40,11 +45,11 @@ namespace Lucky.Home.Simulator
         {
             get
             {
-                return _nodeData.Status;
+                return NodeData.Status;
             }
             set
             {
-                _nodeData.Status = value;
+                NodeData.Status = value;
                 var svc = Manager.GetService<SimulatorNodesService>();
                 svc.Save();
             }

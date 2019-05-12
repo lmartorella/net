@@ -69,7 +69,7 @@ namespace Lucky.Home
 
         private void AddNewNodeTab(MasterNode node)
         {
-            var content = new MasterNodeView();
+            var content = new NodeView();
             content.Init(node);
             TabControl.Items.Add(new TabItem { Header = "Master Node", Content = content });
         }
@@ -91,7 +91,7 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty ClearLogCommandProperty = DependencyProperty.Register(
-            "ClearLogCommand", typeof(UiCommand), typeof(MasterNodeView), new PropertyMetadata(default(UiCommand)));
+            "ClearLogCommand", typeof(UiCommand), typeof(NodeView), new PropertyMetadata(default(UiCommand)));
 
         public UiCommand ClearLogCommand
         {
@@ -100,7 +100,7 @@ namespace Lucky.Home
         }
 
         public static readonly DependencyProperty VerboseLogProperty = DependencyProperty.Register(
-            "VerboseLog", typeof(bool), typeof(MasterNodeView), new PropertyMetadata(false));
+            "VerboseLog", typeof(bool), typeof(NodeView), new PropertyMetadata(false));
 
         public bool VerboseLog
         {
