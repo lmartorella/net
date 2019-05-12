@@ -6,6 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-         Constant flow of 10 lt/min
+        <TextBlock Text="Constant flow of 10 lt/min">
+        </TextBlock>
     </Grid>
 </UserControl>

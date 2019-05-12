@@ -21,7 +21,15 @@ namespace Lucky.Home.Devices
             }
         }
 
-        public void RegisterAssembly(Assembly assembly)
+        public DeviceTypeManager()
+        {
+            Manager.GetService<Registrar>().AssemblyLoaded += (o, e) =>
+            {
+                RegisterAssembly(e.Item);
+            };
+        }
+
+        private void RegisterAssembly(Assembly assembly)
         {
             var l = _deviceTypes.Count;
             _assemblies.Add(assembly);

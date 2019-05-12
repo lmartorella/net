@@ -39,9 +39,22 @@ namespace Lucky.Home.Lib
             Manager.Register<DeviceManager, IDeviceManager>();
             Manager.Register<SinkManager, ISinkManager>();
             Manager.GetService<SinkTypeManager>().RegisterType(typeof(SystemSink));
+            Manager.GetService<DeviceTypeManager>();
 
             var logger = Manager.GetService<ILoggerFactory>().Create("Main");
-            var applications = Manager.GetService<Registrar>().LoadLibraries();
+
+            var registrar = Manager.GetService<Registrar>();
+            var applications = new List<IApplication>();
+            registrar.AssemblyLoaded += (o, e) =>
+            {
+                Type mainType = e.Item.GetCustomAttribute<ApplicationAttribute>().ApplicationType;
+                if (!typeof(IService).IsAssignableFrom(mainType))
+                {
+                    throw new InvalidOperationException("The main application " + mainType.FullName + " is not a service");
+                }
+                applications.Add(Activator.CreateInstance(mainType) as IApplication);
+            };
+            registrar.LoadLibraries(new[] { typeof(ApplicationAttribute) });
 
             Manager.GetService<DeviceManager>().Load();
 

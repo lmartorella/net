@@ -18,6 +18,7 @@ namespace Lucky.Home.Views
             InitializeComponent();
 
             SwitchesCount = 8;
+            DataContext = this;
         }
 
         public void Init(ISimulatedNode node)

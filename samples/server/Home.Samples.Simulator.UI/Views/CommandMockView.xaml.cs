@@ -24,6 +24,8 @@ namespace Lucky.Home.Views
                 Command = "";
                 CommandLog += "<- " + LastCommand + Environment.NewLine;
             });
+
+            DataContext = this;
         }
 
         public void Init(ISimulatedNode node)

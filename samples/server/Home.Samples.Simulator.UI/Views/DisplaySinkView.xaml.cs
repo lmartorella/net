@@ -14,6 +14,7 @@ namespace Lucky.Home.Views
         public DisplaySinkView()
         {
             InitializeComponent();
+            DataContext = this;
         }
 
         public void Init(ISimulatedNode node)

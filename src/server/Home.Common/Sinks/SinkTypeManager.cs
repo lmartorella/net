@@ -13,19 +13,22 @@ namespace Lucky.Home.Sinks
     {
         private readonly Dictionary<string, Type> _sinkTypes = new Dictionary<string, Type>();
 
+        public SinkTypeManager()
+        {
+            Manager.GetService<Registrar>().AssemblyLoaded += (o, e) =>
+            {
+                foreach (var type in e.Item.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
+                {
+                    RegisterType(type);
+                }
+            };
+        }
+
         public Type FindType(string sinkFourCc)
         {
             Type type;
             _sinkTypes.TryGetValue(sinkFourCc, out type);
             return type;
-        }
-
-        public void RegisterAssembly(Assembly assembly)
-        {
-            foreach (var type in assembly.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
-            {
-                RegisterType(type);
-            }
         }
 
         public void RegisterType(Type type)

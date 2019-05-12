@@ -1,4 +1,5 @@
-﻿using Lucky.Home.Services;
+﻿using Lucky.Home.Devices;
+using Lucky.Home.Services;
 using System.Windows;
 
 namespace Lucky.Home
@@ -19,7 +20,9 @@ namespace Lucky.Home
             Manager.GetService<IIsolatedStorageService>().InitAppRoot("Manager.UI");
             Manager.GetService<ILoggerFactory>().Create("App").Log("Started");
 
-            Manager.GetService<Registrar>().LoadLibraries();
+            Manager.GetService<MockSinkManager>();
+            Manager.GetService<DeviceTypeManager>();
+            Manager.GetService<Registrar>().LoadLibraries(new[] { typeof(ApplicationAttribute), typeof(UiLibraryAttribute) });
         }
 
         private class GuiConfigurationService : IConfigurationService

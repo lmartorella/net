@@ -14,9 +14,14 @@ namespace Lucky.Home.Services
         public MockSinkManager()
         {
             _mockTypes.Add(GetFourCc(typeof(SystemSinkView)), typeof(SystemSinkView));
+
+            Manager.GetService<Registrar>().AssemblyLoaded += (o, e) =>
+            {
+                RegisterAssembly(e.Item);
+            };
         }
 
-        public void RegisterAssembly(Assembly assembly)
+        private void RegisterAssembly(Assembly assembly)
         {
             Type[] sinkTypes = assembly.GetTypes().Where(t => typeof(ISinkMock).IsAssignableFrom(t) && t.GetCustomAttribute<MockSinkAttribute>() != null).ToArray();
             foreach (Type type in sinkTypes)
