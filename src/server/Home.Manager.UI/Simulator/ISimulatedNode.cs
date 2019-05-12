@@ -12,7 +12,7 @@ namespace Lucky.Home.Simulator
         /// <summary>
         /// Get/set the node ID
         /// </summary>
-        Guid Id { get; set; }
+        NodeId Id { get; set; }
 
         /// <summary>
         /// Event raised when id changes

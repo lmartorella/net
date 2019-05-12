@@ -3,58 +3,11 @@ using Lucky.Home.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Windows.Threading;
 
 namespace Lucky.Home.Simulator
 {
-    class NodeBase : ISimulatedNodeInternal
-    {
-        private SimulatorNodesService.NodeData _nodeData;
-        protected ILogger Logger { get; private set; }
-
-        public NodeBase(string logKey, SimulatorNodesService.NodeData nodeData)
-        {
-            _nodeData = nodeData;
-            Logger = Manager.GetService<ILoggerFactory>().Create(logKey, Id.ToString());
-        }
-
-        public Action Reset { get; set; }
-
-        public Guid Id
-        {
-            get
-            {
-                return _nodeData.Id;
-            }
-            set
-            {
-                _nodeData.Id = value;
-                Logger.Log("New guid: " + value);
-                Logger.SubKey = value.ToString();
-
-                var svc = Manager.GetService<SimulatorNodesService>();
-                svc.Save();
-                IdChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public NodeStatus Status
-        {
-            get
-            {
-                return _nodeData.Status;
-            }
-            set
-            {
-                _nodeData.Status = value;
-                var svc = Manager.GetService<SimulatorNodesService>();
-                svc.Save();
-            }
-        }
-
-        public event EventHandler IdChanged;
-    }
-
     class SimulatorNodesService : ServiceBaseWithData<SimulatorNodesService.Data>
     {
         public MasterNode[] Restore(Dispatcher dispatcher)
@@ -66,7 +19,7 @@ namespace Lucky.Home.Simulator
             {
                 foreach (NodeData nodeData in state.MasterNodes)
                 {
-                    var master = CreateNewMasterNode(dispatcher, nodeData);
+                    var master = CreateNewMasterNode(dispatcher, nodeData, false);
                     ret.Add(master);
                     if (nodeData.Children != null)
                     {
@@ -80,34 +33,49 @@ namespace Lucky.Home.Simulator
             return ret.ToArray();
         }
 
+        [DataContract]
         internal class Data
         {
+            [DataMember]
             public NodeData[] MasterNodes { get; set; }
         }
 
+        [DataContract]
         internal class NodeData
         {
-            public Guid Id { get; set; }
+            [DataMember]
+            public NodeId Id { get; set; }
+
+            [DataMember]
             public string[] Sinks { get; set; }
+
+            [DataMember]
             public NodeStatus Status { get; set; }
+
+            [DataMember]
             public NodeData[] Children { get; set; }
-        }
-
-        public void Save()
-        {
-
         }
 
         public MasterNode CreateNewMasterNode(Dispatcher dispatcher, string[] sinks)
         {
             NodeData data = new NodeData { Sinks = sinks };
-            State.MasterNodes = (State.MasterNodes ?? new NodeData[0]).Concat(new[] { data }).ToArray();
-            return CreateNewMasterNode(dispatcher, data);
+            return CreateNewMasterNode(dispatcher, data, true);
         }
 
-        private MasterNode CreateNewMasterNode(Dispatcher dispatcher, NodeData nodeData)
+        private MasterNode CreateNewMasterNode(Dispatcher dispatcher, NodeData nodeData, bool save)
         {
-            return new MasterNode(dispatcher, nodeData);
+            var node = new MasterNode(dispatcher, nodeData);
+            if (save)
+            {
+                State.MasterNodes = (State.MasterNodes ?? new NodeData[0]).Concat(new[] { nodeData }).ToArray();
+                Save();
+            }
+            return node;
+        }
+
+        public new void Save()
+        {
+            base.Save();
         }
 
         private SlaveNode CreateSlaveNode(MasterNode master, NodeData nodeData)

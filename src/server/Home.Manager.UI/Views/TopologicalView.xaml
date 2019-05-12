@@ -5,7 +5,10 @@
         xmlns:models="clr-namespace:Lucky.Home.Models">
 
     <Grid>
-        <TreeView ItemsSource="{Binding Nodes, PresentationTraceSources.TraceLevel=High}" x:Name="TreeView" SelectedItemChanged="HandleSelectedItemChanged">
+        <TreeView x:Name="TreeView" 
+                  ItemsSource="{Binding Nodes, PresentationTraceSources.TraceLevel=High}" 
+                  SelectedItemChanged="HandleSelectedItemChanged"
+                  KeyDown="HandleKeyDown">
             <TreeView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Command="{Binding RenameCommand}" Header="Rename..." />

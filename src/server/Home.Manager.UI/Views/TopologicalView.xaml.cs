@@ -114,6 +114,14 @@ namespace Lucky.Home.Views
             }
         }
 
+        private void HandleKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F2)
+            {
+                RenameCommand.Execute(null);
+            }
+        }
+
         private void RenameBoxKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)

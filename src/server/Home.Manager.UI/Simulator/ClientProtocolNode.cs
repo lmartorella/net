@@ -80,7 +80,7 @@ namespace Lucky.Home.Simulator
                     _writer.Write(new byte[] { 0x1e });
                     return RunStatus.Closed;
                 case "CH":
-                    Write(_node.Id);
+                    Write(_node.Id.ToBytes());
                     Write((ushort)_children.Count);
                     if (_children.Count > 0) {
                         // 1 bit for each children
@@ -125,7 +125,7 @@ namespace Lucky.Home.Simulator
                     }
                     break;
                 case "GU":
-                    _node.Id = ReadGuid();
+                    _node.Id = NodeId.FromBytes(ReadBytes(16));
                     break;
                 case "WR":
                     sinkIdx = ReadUint16();
@@ -154,9 +154,9 @@ namespace Lucky.Home.Simulator
             return _reader.ReadUInt16();
         }
 
-        private Guid ReadGuid()
+        private byte[] ReadBytes(int size)
         {
-            return new Guid(_reader.ReadBytes(16));
+            return _reader.ReadBytes(size);
         }
 
         private void Write(ushort i)
@@ -174,9 +174,9 @@ namespace Lucky.Home.Simulator
             _writer.Write(Encoding.ASCII.GetBytes(data));
         }
 
-        private void Write(Guid guid)
+        private void Write(byte[] bytes)
         {
-            _writer.Write(guid.ToByteArray());
+            _writer.Write(bytes);
         }
     }
 }

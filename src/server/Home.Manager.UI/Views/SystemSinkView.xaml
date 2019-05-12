@@ -9,9 +9,15 @@
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <TextBlock Margin="4">Node ID:</TextBlock>
+            <TextBlock Margin="4" Text="{Binding NodeId}" FontWeight="Bold"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
             <TextBlock Margin="4">Reset reason</TextBlock>
             <ComboBox Margin="4" ItemsSource="{Binding ResetReasons}" SelectedItem="{Binding ResetReason}"></ComboBox>
             <TextBlock Margin="4">Exc</TextBlock>

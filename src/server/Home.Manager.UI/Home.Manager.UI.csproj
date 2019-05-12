@@ -64,6 +64,7 @@
     <Compile Include="Simulator\MasterNode.cs" />
     <Compile Include="Simulator\ClientProtocolNode.cs" />
     <Compile Include="Simulator\HeloSender.cs" />
+    <Compile Include="Simulator\NodeBase.cs" />
     <Compile Include="Simulator\SimulatorNodeService.cs" />
     <Compile Include="Simulator\ISinkMock.cs" />
     <Compile Include="Simulator\SlaveNode.cs" />

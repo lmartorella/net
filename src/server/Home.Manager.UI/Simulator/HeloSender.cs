@@ -40,7 +40,7 @@ namespace Lucky.Home.Simulator
         {
             get
             {
-                return _node.Id != Guid.Empty;
+                return !_node.Id.IsEmpty;
             }
         }
 
@@ -57,7 +57,7 @@ namespace Lucky.Home.Simulator
             {
                 // Write HOMEHELO
                 writer.Write(Encoding.ASCII.GetBytes("HOME" + msg));
-                writer.Write(_node.Id.ToByteArray());
+                writer.Write(_node.Id.ToBytes());
                 writer.Write(BitConverter.GetBytes(_rcvPort));
                 // If child changed, add a mask for changes
                 if (ChildChanged)

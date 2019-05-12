@@ -12,7 +12,7 @@ namespace Lucky.Home
     /// Support GUIDS or ASCII string (16 chars max)
     /// </summary>
     [DataContract]
-    internal class NodeId : ISerializable
+    public class NodeId : ISerializable
     {
         private static Regex StrRegex = new Regex("[A-Z0-9_]+");
 
@@ -91,6 +91,11 @@ namespace Lucky.Home
 
         byte[] ISerializable.Serialize()
         {
+            return ToBytes();
+        }
+
+        public byte[] ToBytes()
+        {
             if (String != null)
             {
                 byte[] ret = new byte[16];
@@ -106,9 +111,21 @@ namespace Lucky.Home
         async Task ISerializable.Deserialize(Func<int, Task<byte[]>> feeder)
         {
             byte[] data = await feeder(16);
+            ReadBytes(data);
+        }
+
+        public static NodeId FromBytes(byte[] bytes)
+        {
+            var ret = new NodeId();
+            ret.ReadBytes(bytes);
+            return ret;
+        }
+
+        private void ReadBytes(byte[] bytes)
+        {
             // Strip leading zeroes
-            int pos = data.ToList().FindLastIndex(b => b != 0);
-            string str = Encoding.ASCII.GetString(data, 0, pos + 1);
+            int pos = bytes.ToList().FindLastIndex(b => b != 0);
+            string str = Encoding.ASCII.GetString(bytes, 0, pos + 1);
             if (StrRegex.IsMatch(str))
             {
                 String = str;
@@ -116,7 +133,7 @@ namespace Lucky.Home
             }
             else
             {
-                Guid = new Guid(data);
+                Guid = new Guid(bytes);
             }
         }
     }

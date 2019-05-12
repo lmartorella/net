@@ -28,8 +28,13 @@ namespace Lucky.Home.Services
             set
             {
                 _state = value;
-                Manager.GetService<IIsolatedStorageService>().SetState(LogName, value);
+                Save();
             }
+        }
+
+        protected void Save()
+        {
+            Manager.GetService<IIsolatedStorageService>().SetState(LogName, State);
         }
     }
 }

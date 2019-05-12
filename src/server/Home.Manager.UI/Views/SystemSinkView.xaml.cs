@@ -19,19 +19,28 @@ namespace Lucky.Home.Views
         public SystemSinkView()
         {
             InitializeComponent();
+            DataContext = this;
         }
 
         public void Init(ISimulatedNode node)
         {
             _node = node as ISimulatedNodeInternal;
             Logger = Manager.GetService<ILoggerFactory>().Create("SysSink", node.Id.ToString());
-            node.IdChanged += (o, e) => Logger.SubKey = node.Id.ToString();
+            node.IdChanged += (o, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    NodeId = node.Id?.ToString();
+                    Logger.SubKey = node.Id.ToString();
+                });
+            };
 
             ResetReasons = Enum.GetValues(typeof(ResetReason)).Cast<ResetReason>().ToArray();
             NodeStatus = (node as ISimulatedNodeInternal).Status;
+            NodeId = node.Id?.ToString();
 
             _initialized = true;
-        }
+        }        
 
         private NodeStatus NodeStatus
         {
@@ -89,6 +98,15 @@ namespace Lucky.Home.Views
         private void HandleResetClick(object sender, EventArgs args)
         {
             _node.Reset();
+        }
+
+        internal static readonly DependencyProperty NodeIdProperty = DependencyProperty.Register(
+           "NodeId", typeof(string), typeof(SystemSinkView), null);
+
+        internal string NodeId
+        {
+            get { return (string)GetValue(NodeIdProperty); }
+            set { SetValue(NodeIdProperty, value); }
         }
 
         internal static readonly DependencyProperty ResetReasonsProperty = DependencyProperty.Register(
