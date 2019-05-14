@@ -1,4 +1,5 @@
-﻿using Lucky.Home.Services;
+﻿using Lucky.Home.Models;
+using Lucky.Home.Services;
 using Lucky.Home.Simulator;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -8,6 +9,9 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Mock sink + UI for bit input array
+    /// </summary>
     [MockSink("DIAR", "Input array")]
     public partial class DigitalInputArraySinkView : UserControl, ISinkMock
     {

@@ -2,20 +2,17 @@
 using Lucky.Home.Simulator;
 using System;
 using System.IO;
-using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Simulate a DHT11 temperature sensor that returns random temperatures and humidity
+    /// </summary>
     [MockSink("TEMP", "Temp sensor")]
-    public partial class TemperatureSinkView : UserControl, ISinkMock
+    public partial class TemperatureSinkView : ISinkMock
     {
         private readonly Random _random = new Random();
         private ILogger Logger;
-
-        public TemperatureSinkView()
-        {
-            InitializeComponent();
-        }
 
         public void Init(ISimulatedNode node)
         {

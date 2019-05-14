@@ -3,12 +3,14 @@ using Lucky.Home.Simulator;
 using System;
 using System.IO;
 using System.Threading;
-using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Mock sink for flow meter 
+    /// </summary>
     [MockSink("FLOW", "Flow meter")]
-    public partial class FlowSinkMockView : UserControl, ISinkMock
+    public partial class FlowSinkMockView : ISinkMock
     {
         private Timer _timer;
         private uint _counter;
@@ -17,8 +19,6 @@ namespace Lucky.Home.Views
 
         public FlowSinkMockView()
         {
-            InitializeComponent();
-
             // 10 lt min
             _flow = 55;
 

@@ -3,12 +3,14 @@ using Lucky.Home.Simulator;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Mock sink for the garden programmer
+    /// </summary>
     [MockSink("GARD", "Garden")]
-    public partial class GardenSinkView : UserControl, ISinkMock
+    public partial class GardenSinkView : ISinkMock
     {
         private ILogger Logger;
 
@@ -45,8 +47,6 @@ namespace Lucky.Home.Views
 
         public GardenSinkView()
         {
-            InitializeComponent();
-
             _cycles = Enumerable.Range(0, 5).Select(i => new Cycles { Zones = 0, Minutes = 0 }).ToArray();
         }
 

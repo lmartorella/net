@@ -4,6 +4,7 @@ using Lucky.Home.Simulator;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using Lucky.Home.Models;
+using System.Windows;
 
 namespace Lucky.Home.Views
 {
@@ -21,8 +22,11 @@ namespace Lucky.Home.Views
             var sinkManager = Manager.GetService<MockSinkManager>();
             foreach (var sink in node.Sinks)
             {
-                TabItem tabItem = new TabItem { Content = sink, Header = sinkManager.GetDisplayName(sink) };
-                TabControl.Items.Add(tabItem);
+                if (sink is UIElement)
+                {
+                    TabItem tabItem = new TabItem { Content = sink, Header = sinkManager.GetDisplayName(sink) };
+                    TabControl.Items.Add(tabItem);
+                }
 
                 if (sink is SystemSinkView)
                 {

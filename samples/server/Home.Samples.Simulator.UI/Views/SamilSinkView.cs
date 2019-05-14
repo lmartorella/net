@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Mock sink for a Samil solar inverter
+    /// </summary>
     [MockSink("SLIN", "Samil Inverter")]
-    public partial class SamilSinkView : UserControl, ISinkMock
+    public partial class SamilSinkView : ISinkMock
     {
         private enum State
         {
@@ -21,11 +23,6 @@ namespace Lucky.Home.Views
         private State _state = State.Logout;
         private byte[] _response = new byte[0];
         private ILogger Logger;
-
-        public SamilSinkView()
-        {
-            InitializeComponent();
-        }
 
         public void Init(ISimulatedNode node)
         {

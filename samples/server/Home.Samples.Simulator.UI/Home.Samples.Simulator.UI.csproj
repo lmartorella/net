@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="Converters\IntToStringConverter.cs" />
     <Compile Include="SimulatorSample.cs" />
-    <Compile Include="Switch.cs" />
+    <Compile Include="Models\Switch.cs" />
     <Compile Include="Views\CommandMockView.xaml.cs">
       <DependentUpon>CommandMockView.xaml</DependentUpon>
     </Compile>
@@ -57,17 +57,13 @@
     <Compile Include="Views\DisplaySinkView.xaml.cs">
       <DependentUpon>DisplaySinkView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\FlowSinkMockView.xaml.cs">
-      <DependentUpon>FlowSinkMockView.xaml</DependentUpon>
+    <Compile Include="Views\FlowSinkMockView.cs">
     </Compile>
-    <Compile Include="Views\GardenSinkView.xaml.cs">
-      <DependentUpon>GardenSinkView.xaml</DependentUpon>
+    <Compile Include="Views\GardenSinkView.cs">
     </Compile>
-    <Compile Include="Views\SamilSinkView.xaml.cs">
-      <DependentUpon>SamilSinkView.xaml</DependentUpon>
+    <Compile Include="Views\SamilSinkView.cs">
     </Compile>
-    <Compile Include="Views\TemperatureSinkView.xaml.cs">
-      <DependentUpon>TemperatureSinkView.xaml</DependentUpon>
+    <Compile Include="Views\TemperatureSinkView.cs">
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -99,22 +95,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DisplaySinkView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\FlowSinkMockView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\GardenSinkView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\SamilSinkView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\TemperatureSinkView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

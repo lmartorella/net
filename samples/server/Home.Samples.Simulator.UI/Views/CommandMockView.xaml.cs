@@ -9,6 +9,9 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Mock sink + UI for command-based message sender
+    /// </summary>
     [MockSink("TCMD", "Command")]
     public partial class CommandMockView : UserControl, ISinkMock
     {

@@ -6,6 +6,9 @@ using System.Windows.Controls;
 
 namespace Lucky.Home.Views
 {
+    /// <summary>
+    /// Mock sink + UI for line display (readonly)
+    /// </summary>
     [MockSink("LINE", "Display")]
     public partial class DisplaySinkView : UserControl, ISinkMock
     {

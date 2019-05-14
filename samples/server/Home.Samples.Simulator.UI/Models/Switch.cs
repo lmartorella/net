@@ -1,6 +1,6 @@
 using System.Windows;
 
-namespace Lucky.Home
+namespace Lucky.Home.Models
 {
     public class Switch : DependencyObject
     {

@@ -3,12 +3,15 @@ using System.IO;
 using System.IO.Pipes;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lucky.Net
 {
-    public class PipeJsonServer<TReq, TResp> : IJsonWebServer<TReq, TResp>
+    /// <summary>
+    /// Generic based on pipe JSON message.
+    /// Creates a Windows named bidirectional pipe for communication
+    /// </summary>
+    public class PipeJsonServer<TReq, TResp>
     {
         private string _path;
         private DataContractJsonSerializer _reqSer;
