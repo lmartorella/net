@@ -30,7 +30,7 @@ namespace Lucky.Home.Lib
 
             LoggerFactory.Init(Manager.GetService<PersistenceService>());
 
-            Manager.GetService<IIsolatedStorageService>().InitAppRoot("Server");
+            Manager.GetService<IIsolatedStorageService>().InitAppRoot("server");
 
             Manager.Register<Server>();
             Manager.Register<NodeManager>();
