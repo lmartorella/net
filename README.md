@@ -1,15 +1,15 @@
 # Home
 
-Internet of Things for DIY enthusiasts.
+This is a hobbist/educational fulls stack project about Internet of Things (IoT) for DIY enthusiasts. It starts from scratch, using bare microcontrollers (MCU), network, and PC software without any relevant dependency.
 
-This project is about a lost-cost wired platform for general purpose automation control (for example domotic projects, security, garden automation, etc...). It is designed to connect a whole home and its surroundings.
+The idea is about implementing a lost-cost open-source, open-hardware wired platform for general purpose automation control (for example domotic projects, security, garden automation, etc...). It is designed to connect a whole home and its surroundings.
 
 The core of the project is a tiny MCU board that can embedded in any hardware, even a normal wall switch.
 
-Node-to-node communication happens via common 4-wire or 6-wire low-voltage cables, like KNX or other commercial systems, using industrial-grade RS485 specifications for great scalability. Node-to-master communication is through IP (e.g. ethernet, wifi, etc...) for improved scalability. This allow wireless nodes to be implemented as well. 
+Node-to-node communication happens via common 4-wire or 6-wire low-voltage cables, like KNX, CAN-bus or other commercial systems, using industrial-grade [RS-485](https://en.wikipedia.org/wiki/RS-485) specifications for great scalability. Node-to-master communication is through IP (e.g. ethernet, wifi, etc...) for improved scalability. This allow wireless nodes to be implemented as well. 
 
 What this project is aimed to:
-- connect sensors 
+- connect any type of sensor 
 - integrate devices that can be interfaced via a MCU
 - log data
 - implement custom logic to automate tasks
@@ -19,36 +19,36 @@ The bus structure allow extension with other open standards for IoT.
 
 # The network
 
-The wired connection network is similar to the [KNX](https://en.wikipedia.org/wiki/KNX_(standard)) open standard. However, instead of using proprietary electrical bus drivers, it relies on the broadly available [RS485](https://en.wikipedia.org/wiki/RS-485) standard (for example, a MAX485 IC can be used as a driver).
+The network topology uses two mediums: a custom wired low-voltage bus to allow simple MCUs to be used, and a higher LAN/IP level to aggregate wired sections and server connection.
 
-An industrial-level RS485 bus can range up to hundreds of meters, even on electrically noisy environments. See [Maxim Integrated AN](https://www.maximintegrated.com/en/app-notes/index.mvp/id/3884).
+The wired design is similar to the [KNX](https://en.wikipedia.org/wiki/KNX_(standard)) open standard. However, instead of using proprietary electrical bus drivers, it relies on the broadly available [RS-485](https://en.wikipedia.org/wiki/RS-485) standard (for example, a [Maxim MAX485 IC](https://www.maximintegrated.com/en/products/interface/transceivers/MAX485.html) can be used as a driver).
 
-Different of type of cables can be used (twisted pairs, UTP, shielded, etc...). The simplest topology requires 4-wires cables (a pair for the unregulated power supply and another pair for the communication). Non-linear topology, due for example to derivations, will require a 6-wires cable. This is the same type of hardware used by wired alarm systems.
+An industrial-level RS-485 bus can range up to 32 nodes on the same wire and span hundreds of meters, even on electrically noisy environments. See [Maxim Integrated AN](https://www.maximintegrated.com/en/app-notes/index.mvp/id/3884).
 
-Each wired section needs to contain a master node, that allows LAN connection to the server.
+Frames are byte-oriented, allowing a common bi-directional [UART](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter) to be used. This simplifies the selection of the hardware, since no bit-level CAN-bus or MODBUS logic is required. 
+
+Each wired section needs to contain a *master* node, that allows IP connection to the server through Wi-Fi or Ethernet cables (it needs both UDP and TCP).
+
+The custom protocol built on top is designed to offer features to ease the network installation:
+- Auto-discovery for all connected nodes
+- Zero-configuration: allow dynamic allocation of nodes via push-button and a PC application
+- Fail-over due to bus failures, IP connection failures or node failures.
+
+The byte-level message-based protocol is then shared between wired sections and to increase simplicity and issue analysis.
+
+More details [in this page](doc/protocol.md).
 
 # The microbean (µBean)
 
-The prototyped hardware is a small board (just 30x28mm) built around a cheap but powerful 8-bit Microchip MCU, a RS485 level adapter and a PSU. The board expose almost all MCU lines to the maker, allowing digital and analog I/O.
+The prototyped hardware is a small board (just 30x28mm) built around a cost-effective [Microchip PIC16F1827 MCU](https://www.microchip.com/wwwproducts/en/PIC16F1827), a RS-485 level adapter and a voltage regulator. The board expose almost all MCU lines to the maker, allowing a great amount of free digital and analog I/O pins.
 
-![](doc/ubean.png)
+![The microbean](./src/nodes/doc/ubean.png)
 
 Once the MCU are programmed, the network topology can be easily configured with a PC.
 
 Each physical node exposes one or more applicative drivers, called *sinks*. In this way, a single bean can be programmed to interface more than one device.
 
-Details [here](src/nodes/README.md).
-
-# The protocol
-
-The protocol is designed to offer some features to ease the network installation:
-- Auto-discovery for all connected nodes
-- Zero-configuration: allow dynamic allocation of nodes via push-button and a PC application
-- Fail-over due to bus failures, IP connection failures or node failures.
-
-The byte-level message-based protocol is shared between wired sections (multi-master RS485) and IP (through UDP and TCP).
-
-Details [here](doc/protocol.md).
+More details can be found [here](./src/nodes/doc/microbean.md).
 
 # Some examples
 
@@ -101,7 +101,7 @@ Beans can be used to interact with existing climatization systems
 
 The project contains software elements (the .NET server, the node simulators and the control panel UI), hardware (the microbean) and the firmware for these nodes.
 
-It is however possible to try the system with a complete software environment and use the node simulator to have a try.
+It is however possible to run the system with a software-only environment, using the node simulators to have a try.
 
 ## The server
 
@@ -135,3 +135,8 @@ The [Microchip MPLAB X IDE](https://www.microchip.com/mplab/mplab-x-ide) with [X
 
 See [here](src/nodes/README.md) for more information.
 
+## The web server
+
+A minimalistic web-server implementation is presented to allow remote access to the applications exposed by the server.
+
+See [here](src/web/README.md) for more information.
