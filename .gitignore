@@ -8,3 +8,4 @@ packages
 /samples/web/app/index.js
 /node_modules
 /package-lock.json
+/.vscode/ipch
