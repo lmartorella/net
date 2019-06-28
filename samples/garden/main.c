@@ -53,7 +53,7 @@ static void interrupt low_isr() {
     }
 
     // Update tick timers at ~Khz freq
-    TickUpdate();
+    timers_poll();
 #ifdef HAS_RS485
     rs485_interrupt();
 #endif
@@ -90,9 +90,9 @@ int main() {
 
     // Init Ticks on timer0 (low prio) module
     timers_init();
-    appio_init();
+    io_init();
 
-    pers_init();
+    pers_load();
 
 #ifdef HAS_RS485
     rs485_init();
