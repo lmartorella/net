@@ -1,7 +1,7 @@
 #include "program.h"
 #include "state.h"
-#include "../fw/pch.h"
-#include "../fw/protocol.h"
+#include "../../src/nodes/pch.h"
+#include "../../src/nodes/protocol.h"
 
 static enum {
     RS_START,

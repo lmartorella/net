@@ -7,12 +7,12 @@
 #include "program.h"
 #include "state.h"
 
-#include "../fw/pch.h"
-#include "../fw/hardware/tick.h"
-#include "../fw/rs485.h"
-#include "../fw/appio.h"
-#include "../fw/persistence.h"
-#include "../fw/protocol.h"
+#include "../../src/nodes/pch.h"
+#include "../../src/nodes/hardware/tick.h"
+#include "../../src/nodes/rs485.h"
+#include "../../src/nodes/appio.h"
+#include "../../src/nodes/persistence.h"
+#include "../../src/nodes/protocol.h"
 
 // CONFIG1
 #pragma config FOSC = INTRC_NOCLKOUT// Oscillator Selection bits (INTOSCIO oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)

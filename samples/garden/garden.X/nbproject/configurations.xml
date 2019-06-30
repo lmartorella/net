@@ -6,13 +6,12 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="bus" projectFiles="true">
         <logicalFolder name="f1" displayName="hardware" projectFiles="true">
-          <itemPath>../../fw/hardware/hw.h</itemPath>
-          <itemPath>../../fw/hardware/fuses_garden_bean.h</itemPath>
-          <itemPath>../../fw/hardware/eeprom.h</itemPath>
-          <itemPath>../../fw/hardware/fuses_pic16f887.inc</itemPath>
+          <itemPath>../../../src/nodes/hardware/eeprom.h</itemPath>
+          <itemPath>../../../src/nodes/hardware/fuses_pic16f887.inc</itemPath>
+          <itemPath>../../../src/nodes/hardware/hw.h</itemPath>
         </logicalFolder>
-        <itemPath>../../fw/pch.h</itemPath>
-        <itemPath>../../fw/sinks.h</itemPath>
+        <itemPath>../../../src/nodes/pch.h</itemPath>
+        <itemPath>../../../src/nodes/sinks.h</itemPath>
       </logicalFolder>
       <itemPath>../timers.h</itemPath>
       <itemPath>../display.h</itemPath>
@@ -21,6 +20,7 @@
       <itemPath>../outputs.h</itemPath>
       <itemPath>../hw/ports.h</itemPath>
       <itemPath>../state.h</itemPath>
+      <itemPath>../fuses_garden_bean.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -31,17 +31,17 @@
                    projectFiles="true">
       <logicalFolder name="f1" displayName="bus" projectFiles="true">
         <logicalFolder name="f1" displayName="hardware" projectFiles="true">
-          <itemPath>../../fw/hardware/eeprom.c</itemPath>
-          <itemPath>../../fw/hardware/hw.c</itemPath>
-          <itemPath>../../fw/hardware/tick_pic16.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/eeprom.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/hw.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/tick_pic16.c</itemPath>
         </logicalFolder>
-        <itemPath>../../fw/appio.c</itemPath>
-        <itemPath>../../fw/bus_client.c</itemPath>
-        <itemPath>../../fw/lib8.c</itemPath>
-        <itemPath>../../fw/persistence.c</itemPath>
-        <itemPath>../../fw/protocol.c</itemPath>
-        <itemPath>../../fw/sinks.c</itemPath>
-        <itemPath>../../fw/rs485.c</itemPath>
+        <itemPath>../../../src/nodes/appio.c</itemPath>
+        <itemPath>../../../src/nodes/bus_client.c</itemPath>
+        <itemPath>../../../src/nodes/lib8.c</itemPath>
+        <itemPath>../../../src/nodes/persistence.c</itemPath>
+        <itemPath>../../../src/nodes/protocol.c</itemPath>
+        <itemPath>../../../src/nodes/rs485.c</itemPath>
+        <itemPath>../../../src/nodes/sinks.c</itemPath>
       </logicalFolder>
       <itemPath>../main.c</itemPath>
       <itemPath>../program.c</itemPath>
@@ -61,6 +61,7 @@
   <sourceRootList>
     <Elem>..</Elem>
     <Elem>../../fw</Elem>
+    <Elem>../../../src/nodes</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
