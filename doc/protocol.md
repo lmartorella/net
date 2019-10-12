@@ -158,7 +158,9 @@ However, due to constant drop in cost and size of ethernet-enabled devices ([Ras
 
 ## In details: Transport layer
 
-The UDP port 17007 (17008 for debug environments) is used to broadcast hello packets from master nodes.
+The UDP port 17007 is used to broadcast hello packets from master nodes.
+
+> The UDP port 17008 is used for debug builds of master nodes and the server. This allows to run two separate networks in the same LAN, one for production and one for development.
 
 When the node is started and no server connection is recevied yet, the master node sends Hello packets every second:
 
