@@ -140,7 +140,7 @@ static void imm_update_disp() {
         }
         else {
             char buf[3];
-            itoa(buf, val, 10);
+            utoa(buf, val, 10);
             display_data(buf);
         }
         currDispVal = val;

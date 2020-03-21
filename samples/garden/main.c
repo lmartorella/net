@@ -33,13 +33,12 @@
 UI_STATE g_state;
 
 static const char IMMEDIATE_SYMBOL = 'I';
-static const char LEVEL_SYMBOL = 'L';
-static const char PROGRAM_SYMBOL = 'P';
+static const char FLOW_SYMBOL = 'F';
 static long s_idleTime;
 
 #define IMM_TIME_TICK (2l * TICK_PER_SEC)
 #ifndef __DEBUG
-#define AUTO_OFF_TICK (30l * TICK_PER_SEC)
+#define AUTO_OFF_TICK (60l * TICK_PER_SEC)
 #else
 #define AUTO_OFF_TICK (3l * TICK_PER_SEC)
 #endif
@@ -73,18 +72,21 @@ static void go_off() {
     display_off();
     imm_init();
     // Power off 24V too
-    output_clear();
+    output_clear_zones();
+    output_clear_pwr();
 }
 
-// Immediately switch to programming state
-static void go_program() {
-    output_pwr();
-    g_state = PROGRAM_TIMER;
-    
-    display_mode(PROGRAM_SYMBOL);
-    // Load data from memory
-    program_load();
-    imm_restart(0);
+static void update_flow() {
+    g_flowDirty = 0;
+    char buf[3];
+    if (g_flow < -9) {
+        display_data("-E");
+    } else if (g_flow > 99) {
+        display_data(" E");
+    } else {
+        itoa(buf, g_flow, 10);
+        display_data(buf);
+    }
 }
 
 int main() {
@@ -139,6 +141,10 @@ int main() {
                 // Program finished! Go off.
                 go_off();
             }
+            
+            if (g_state == FLOW_CHECK && g_flowDirty) {
+                update_flow();
+            }
         
             // Back to immediate?
             long elapsed = timer_get_time() - s_idleTime;
@@ -189,29 +195,14 @@ int main() {
                             else {
                                 imm_stop();
                                 // Immediately switch to level state
-                                g_state = LEVEL_CHECK;
-                                display_mode(LEVEL_SYMBOL);
-                                // Not implemented
-                                display_data("--");
+                                g_state = FLOW_CHECK;
+                                display_mode(FLOW_SYMBOL);
+                                update_flow();
                             }
                             break;
-                        case LEVEL_CHECK:
-                            // Go in program mode
-                            go_program();
-                            break;
-                        case PROGRAM_TIMER:
-                            // Accept the program?
-                            if (imm_is_modified()) {
-                                // Accept it
-                                program_save();
-                                display_mode(' ');
-                                display_data("OK");
-                                g_state = WAIT_FOR_IMMEDIATE;
-                            }
-                            else {
-                                // Back to immediate
-                                go_immediate(0);
-                            }
+                        case FLOW_CHECK:
+                            // Back to immediate
+                            go_immediate(0);
                             break;
                         case IN_USE:
                             // Panic button!!
@@ -228,7 +219,6 @@ int main() {
                             go_immediate(scanCode - 1);
                             break;
                         case PROGRAM_IMMEDIATE:
-                        case PROGRAM_TIMER:
                             // Only accepted during programming (immediate or program)
                             imm_zone_pressed(scanCode - 1);
                             break;

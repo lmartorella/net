@@ -21,16 +21,21 @@ const SinkFunction const sink_writeHandlers[] = { sys_write, gardenSink_write };
 
 static enum {
     RS_START,
-    RS_READZONES
+    RS_READZONES,
+    RS_READFLOW
 } s_readState;
-static WORD s_readZoneCount;
+static int s_readZoneCount;
 static IMM_TIMER s_zoneTimers[SUPPORTED_ZONES];
 
 bit gsink_start;
+bit g_flowDirty;
+int g_flow;
 
 void gsink_init() {
     s_readState = RS_START;
     gsink_start = 0;
+    g_flowDirty = 0;
+    g_flow = -1; // no data
 }
 
 // New data coming from the bus. Accept commands
@@ -41,12 +46,17 @@ static bit gardenSink_read() {
             // Poll again
             return 1;
         }
-        prot_control_read(&s_readZoneCount, 2);
-        if (s_readZoneCount > SUPPORTED_ZONES) {
-            s_readZoneCount = SUPPORTED_ZONES;
+        prot_control_read(&s_readZoneCount, sizeof(int));
+        if (s_readZoneCount == -1) {
+            s_readState = RS_READFLOW;
+        } else {
+            if (s_readZoneCount > SUPPORTED_ZONES) {
+                s_readZoneCount = SUPPORTED_ZONES;
+            }
+            s_readState = RS_READZONES;
         }
-        s_readState = RS_READZONES;
     }
+    // Now read data
     if (s_readState == RS_READZONES) {
         memset(s_zoneTimers, 0, SUPPORTED_ZONES * sizeof(IMM_TIMER));
         // Read zone count
@@ -64,6 +74,15 @@ static bit gardenSink_read() {
             // Start!
             gsink_start = 1;
         }
+        s_readState = RS_START;
+        return 0;
+    } else if (s_readState == RS_READFLOW) {
+        if (prot_control_readAvail() < 2) {
+            // Poll again
+            return 1;
+        }
+        prot_control_read(&g_flow, 2);
+        g_flowDirty = 1;
         s_readState = RS_START;
         return 0;
     }
