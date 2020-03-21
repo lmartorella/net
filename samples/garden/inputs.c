@@ -9,9 +9,8 @@
 // 2: button zone2
 // 3: button zone3
 // 4: button zone4
-// 5: external input
 
-// bit0 is button0, to bit5 (ext)
+// bit0 is button0, to bit4 (button4)
 static unsigned char s_currState;
 // Pending event to dispatch, as scan code
 static bit s_isr;
@@ -35,11 +34,9 @@ void portb_setup() {
     s_isr = 0;
 }
 
-// returns 00E43210
+// returns 00043210
 static unsigned char get_state() {
     char ret = 0;
-    ret |= !BUTTON_IN_EXT;
-    ret <<= 1;
 #ifndef DEBUG_PINS
     ret |= !BUTTON_IN_4;
 #endif

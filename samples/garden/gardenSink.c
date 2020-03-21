@@ -2,6 +2,22 @@
 #include "state.h"
 #include "../../src/nodes/pch.h"
 #include "../../src/nodes/protocol.h"
+#include "../../src/nodes/sinks.h"
+
+#define GARDEN_SINK_ID "GARD"
+static bit gardenSink_read();
+static bit gardenSink_write();
+
+// REGISTER SINKS
+// Static allocation of sinks
+const char* const SINK_IDS = 
+    SINK_SYS_ID
+    GARDEN_SINK_ID
+;
+const int SINK_IDS_COUNT = 2;
+
+const SinkFunction const sink_readHandlers[] = { sys_read, gardenSink_read };
+const SinkFunction const sink_writeHandlers[] = { sys_write, gardenSink_write };
 
 static enum {
     RS_START,
@@ -18,7 +34,7 @@ void gsink_init() {
 }
 
 // New data coming from the bus. Accept commands
-bit gardenSink_read() {
+static bit gardenSink_read() {
     if (s_readState == RS_START) {
         // Read zone count
         if (prot_control_readAvail() < 2) {
@@ -56,7 +72,7 @@ bit gardenSink_read() {
 }
 
 // The server asks for status/configuration
-bit gardenSink_write() {
+static bit gardenSink_write() {
     // 1 status byte + 2 header bytes + IMM_TIMER for each zone (remaining time in minutes + zones)
     if (prot_control_writeAvail() < (3 + SUPPORTED_ZONES * sizeof(IMM_TIMER))) {
         return 1;

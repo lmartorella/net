@@ -124,7 +124,7 @@ void imm_restart(int zone) {
     }
     
     s_modified = 0;
-    output_clear();
+    output_clear_zones();
     s_state = UI;
     currDispVal = -1;
 
@@ -223,7 +223,7 @@ bit imm_poll() {
             if (elapsedTicks > s_ticksToWait) { 
                 // Ok, time gone
                 // Switch off
-                output_clear();
+                output_clear_zones();
                 // Switch off the led
                 imm_timers[s_current_zone].time = 0;
                 go_state(RELAIS_WAIT_FOR_OFF);

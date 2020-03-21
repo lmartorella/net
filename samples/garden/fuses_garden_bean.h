@@ -85,18 +85,9 @@
 #define LED_PORTBIT PORTAbits.RA3
 #define LED_TRISBIT TRISAbits.TRISA3
 
-
 // Reset the device with fatal error
 extern persistent BYTE g_exceptionPtr;
 #define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }
-
-#define HAS_CUSTOM_SINK
-#define SINK_CUSTOM_ID "GARD"
-#define customsink_read gardenSink_read
-#define customsink_write gardenSink_write
-
-extern bit gardenSink_read();
-extern bit gardenSink_write();
 
 #endif
 
