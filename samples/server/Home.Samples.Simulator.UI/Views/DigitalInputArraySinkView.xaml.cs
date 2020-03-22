@@ -1,6 +1,8 @@
 ﻿using Lucky.Home.Models;
 using Lucky.Home.Services;
 using Lucky.Home.Simulator;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -16,6 +18,13 @@ namespace Lucky.Home.Views
     public partial class DigitalInputArraySinkView : UserControl, ISinkMock
     {
         private ILogger Logger;
+        private List<ChangesEvent> _events = new List<ChangesEvent>();
+
+        private class ChangesEvent
+        {
+            public readonly DateTime TimeStamp = DateTime.Now;
+            public byte[] State;
+        }
 
         public DigitalInputArraySinkView()
         {
@@ -33,25 +42,39 @@ namespace Lucky.Home.Views
 
         public void Read(BinaryReader reader)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void Write(BinaryWriter writer)
         {
-            // Write bare switch cound
+            // Write back events
             Dispatcher.Invoke(() =>
             {
                 var count = SwitchesCount;
-                writer.Write((byte)count);
-                int bytes = ((count - 1) / 8) + 1;
+                // Write count (high nibble) + tick size
+                writer.Write((byte)((count << 4) + sizeof(long)));
+                // Write current state
+                writer.Write(GetState());
 
-                byte[] ret = new byte[bytes];
-                for (int i = 0; i < count; i++)
+                // Write ticks/seconds in long
+                writer.Write((long)10e6);
+                // Write now in ticks
+                writer.Write(DateTime.Now.Ticks);
+
+                lock (_events)
                 {
-                    // Pack bits
-                    ret[i / 8] = (byte)(ret[i / 8] | (Inputs[i].Value ? (1 << (i % 8)) : 0));
+                    // Write event count (1 byte)
+                    int n = Math.Min(_events.Count, 255);
+                    writer.Write((byte)n);
+                    foreach (var evt in _events.Take(n))
+                    {
+                        // Write timestamp
+                        writer.Write(evt.TimeStamp.Ticks);
+                        // Write state
+                        writer.Write(evt.State);
+                    }
+                    _events.RemoveRange(0, n);
                 }
-                writer.Write(ret);
             });
         }
 
@@ -64,10 +87,36 @@ namespace Lucky.Home.Views
             set { SetValue(SwitchesCountProperty, value); }
         }
 
+        private byte[] GetState()
+        {
+            int n = Inputs.Count;
+            int bytes = ((n - 1) / 8) + 1;
+            byte[] ret = new byte[bytes];
+            for (int i = 0; i < n; i++)
+            {
+                // Pack bits
+                ret[i / 8] = (byte)(ret[i / 8] | (Inputs[i].Value ? (1 << (i % 8)) : 0));
+            }
+            return ret;
+        }
+
         private static void HandleSwitchesCountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             DigitalInputArraySinkView me = (DigitalInputArraySinkView)d;
-            me.Inputs = new ObservableCollection<Switch>(Enumerable.Range(0, me.SwitchesCount).Select(i => new Switch(false, "Input " + i)));
+            me.Inputs = new ObservableCollection<Switch>(Enumerable.Range(0, me.SwitchesCount).Select(i =>
+            {
+                var model = new Switch(false, "Input " + i);
+                model.ValueChanged += (o, _) =>
+                {
+                    // Called on UI thread, OK to fetch all values here
+                    lock (me._events)
+                    {
+                        me._events.Add(new ChangesEvent { State = me.GetState() });
+                    }
+                };
+                return model;
+            }));
+            me._events.Clear();
         }
 
         public static readonly DependencyProperty InputsProperty = DependencyProperty.Register(
