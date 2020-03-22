@@ -71,7 +71,28 @@ namespace Lucky.Home
         {
             var content = new NodeView();
             content.Init(node);
-            TabControl.Items.Add(new TabItem { Header = "Master Node", Content = content });
+            TabItem tab = null;
+            tab = new TabItem
+            {
+                Header = "Master Node",
+                Content = content,
+                ContextMenu = new ContextMenu
+                {
+                    ItemsSource = new MenuItem[]
+                    {
+                        new MenuItem
+                        {
+                            Header = "Remove",
+                            Command = new UiCommand(() =>
+                            {
+                                TabControl.Items.Remove(tab);
+                                Manager.GetService<SimulatorNodesService>().Destroy(node);
+                            })
+                        }
+                    }
+                }
+            };
+            TabControl.Items.Add(tab);
         }
 
         private void LogLine(string line, bool verbose)
