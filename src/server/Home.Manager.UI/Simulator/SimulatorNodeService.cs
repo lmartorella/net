@@ -73,6 +73,16 @@ namespace Lucky.Home.Simulator
             return node;
         }
 
+        public void Destroy(MasterNode node)
+        {
+            node.Dispose();
+            if (State.MasterNodes != null)
+            {
+                State.MasterNodes = State.MasterNodes.Where(n => n != node.NodeData).ToArray();
+                Save();
+            }
+        }
+
         public new void Save()
         {
             base.Save();
