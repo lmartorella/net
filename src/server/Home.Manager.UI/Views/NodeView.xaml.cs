@@ -1,10 +1,8 @@
-﻿using Lucky.Home.Services;
-using System.Threading;
-using Lucky.Home.Simulator;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Threading.Tasks;
 using Lucky.Home.Models;
-using System.Windows;
+using Lucky.Home.Services;
+using Lucky.Home.Simulator;
 
 namespace Lucky.Home.Views
 {

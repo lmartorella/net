@@ -14,6 +14,7 @@ namespace Lucky.Home.Sinks
     {
         private int _index;
         protected ILogger Logger;
+        private Task _initialized;
 
         public SinkBase(string fourcc = null)
         {
@@ -29,12 +30,21 @@ namespace Lucky.Home.Sinks
 
             Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name + ":" + node.Address);
 
-            OnInitialize();
+            // Start initialization, don't wait for async
+            _initialized = OnInitialize();
         }
 
         protected virtual Task OnInitialize()
         {
             return Task.CompletedTask;
+        }
+
+        public Task Initialized
+        {
+            get
+            {
+                return _initialized;
+            }
         }
 
         public virtual void Dispose()
