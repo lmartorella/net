@@ -105,7 +105,7 @@ namespace Lucky.Home.Views
             DigitalInputArraySinkView me = (DigitalInputArraySinkView)d;
             me.Inputs = new ObservableCollection<Switch>(Enumerable.Range(0, me.SwitchesCount).Select(i =>
             {
-                var model = new Switch(false, "Input " + i);
+                var model = new Switch(true, "Input " + i);
                 model.ValueChanged += (o, _) =>
                 {
                     // Called on UI thread, OK to fetch all values here

@@ -21,7 +21,7 @@ namespace Lucky.Home.Models
             base.OnPropertyChanged(e);
             if (e.Property == ValueProperty)
             {
-                ValueChanged(this, EventArgs.Empty);
+                ValueChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
