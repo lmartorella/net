@@ -60,4 +60,4 @@ Install the Windows Linux Subsystem and your preferred linux distro.
 
 Enable SSH there and install gcc tools.
 
-COnfigure NetBeans to use WSL as a build host.
+Configure NetBeans to use WSL as a build host.

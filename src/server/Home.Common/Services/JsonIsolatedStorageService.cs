@@ -51,7 +51,7 @@ namespace Lucky.Home.Services
         {
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
             FileInfo file = new FileInfo(Path.Combine(_isolatedStorageFolder, serviceName + ".json"));
-            using (var fileStream = file.OpenWrite())
+            using (var fileStream = file.Open(FileMode.Create))
             {
                 using (var writer = JsonReaderWriterFactory.CreateJsonWriter(fileStream, Encoding.UTF8, true, true))
                 {

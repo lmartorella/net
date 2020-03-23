@@ -52,6 +52,10 @@ More details can be found [here](./src/nodes/doc/microbean.md).
 
 # Some examples
 
+A collection of sample code for beans can be found in the samples folder.
+
+Each sample is documented [here](./samples/beans/README.md).
+
 ## Light control
 
 One bean installed in each wall box.
