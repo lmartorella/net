@@ -19,10 +19,8 @@ namespace Lucky.Home.Views
             Off = 0,
             // Immediate program mode
             ProgramImmediate,
-            // Display water level (future usage))
-            LevelCheck,
-            // Program the timer mode
-            ProgramTimer,
+            // Display flow level
+            FlowCheck,
             // Looping a program (manual or automatic)
             InUse,
             // Timer used after new programming, while the display shows OK, to go back to imm state (2 seconds)
@@ -60,22 +58,30 @@ namespace Lucky.Home.Views
         {
             // Read new program
             short count = reader.ReadInt16();
-            var times = reader.ReadBytes(count * 2);
-
-            lock (_lockObject)
+            if (count == -1)
             {
-                if (_state == DeviceState.Off)
+                // Flow data
+                var flow = reader.ReadInt16();
+                Logger.Log(string.Format("Flow data received: {0} lt/min", flow));
+            }
+            else
+            {
+                var times = reader.ReadBytes(count * 2);
+                lock (_lockObject)
                 {
-                    for (int i = 0; i < count; i++)
+                    if (_state == DeviceState.Off)
                     {
-                        _cycles[i] = new Cycles { Minutes = times[i * 2], Zones = times[i * 2 + 1] };
+                        for (int i = 0; i < count; i++)
+                        {
+                            _cycles[i] = new Cycles { Minutes = times[i * 2], Zones = times[i * 2 + 1] };
+                        }
+                        Logger.Log(string.Format("Garden timer: {0}", string.Join(", ", _cycles.Select(t => t.ToString()))));
+                        StartProgram();
                     }
-                    Logger.Log(string.Format("Garden timer: {0}", string.Join(", ", _cycles.Select(t => t.ToString()))));
-                    StartProgram();
-                }
-                else
-                {
-                    Logger.Log("Program ignored: " + _state);
+                    else
+                    {
+                        Logger.Log("Program ignored: " + _state);
+                    }
                 }
             }
         }
