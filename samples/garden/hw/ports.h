@@ -22,11 +22,10 @@
 // ICD uses RB6
 #define BUTTON_IN_4 PORTBbits.RB6
 #endif
-#define BUTTON_IN_EXT PORTBbits.RB2
 #if !defined(DEBUG_PINS)
-#define BUTTON_IN_MASK 0x5f
+#define BUTTON_IN_MASK (1 | 2 | 8 | 0x10 | 0x40) 
 #else
-#define BUTTON_IN_MASK 0x1f
+#define BUTTON_IN_MASK (1 | 2 | 8 | 0x10)
 #endif
 
 #define SEGMENT_LED_a PORTCbits.RC1
@@ -43,9 +42,15 @@
 #define DIGIT_DRIVE_2 PORTDbits.RD0
 
 #define RELAIS_0 PORTDbits.RD5   // pin7 ribbon cable
+#define RELAIS_0_TRIS TRISDbits.TRISD5  
 #define RELAIS_1 PORTDbits.RD4   // pin4
+#define RELAIS_1_TRIS TRISDbits.TRISD4
 #define RELAIS_2 PORTCbits.RC5   // pin2
+#define RELAIS_2_TRIS TRISCbits.TRISC5
 #define RELAIS_3 PORTCbits.RC4   // pin1
+#define RELAIS_3_TRIS TRISCbits.TRISC4
+#define RELAIS_PWR PORTBbits.RB2
+#define RELAIS_PWR_TRIS TRISBbits.TRISB2
 
 
 #endif	/* XC_PORTS_H */

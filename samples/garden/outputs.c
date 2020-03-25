@@ -4,17 +4,15 @@
 
 void output_setup() { 
     // relais
-    TRISDbits.TRISD4 = 0;
-    PORTDbits.RD4 = 0;
-    TRISDbits.TRISD5 = 0;
-    PORTDbits.RD5 = 0;
-    TRISCbits.TRISC4 = 0;
-    PORTCbits.RC4 = 0;
-    TRISCbits.TRISC5 = 0;
-    PORTCbits.RC5 = 0;
+    RELAIS_0_TRIS = 0;
+    RELAIS_1_TRIS = 0;
+    RELAIS_2_TRIS = 0;
+    RELAIS_3_TRIS = 0;
+    // power relais
+    RELAIS_PWR_TRIS = 0;
 }
 
-void output_clear() {
+void output_clear_zones() {
    RELAIS_0 = 0;
    RELAIS_1 = 0;
    RELAIS_2 = 0;

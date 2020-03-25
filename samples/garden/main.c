@@ -33,13 +33,12 @@
 UI_STATE g_state;
 
 static const char IMMEDIATE_SYMBOL = 'I';
-static const char LEVEL_SYMBOL = 'L';
-static const char PROGRAM_SYMBOL = 'P';
+static const char FLOW_SYMBOL = 'F';
 static long s_idleTime;
 
 #define IMM_TIME_TICK (2l * TICK_PER_SEC)
 #ifndef __DEBUG
-#define AUTO_OFF_TICK (30l * TICK_PER_SEC)
+#define AUTO_OFF_TICK (60l * TICK_PER_SEC)
 #else
 #define AUTO_OFF_TICK (3l * TICK_PER_SEC)
 #endif
@@ -60,6 +59,7 @@ static void interrupt low_isr() {
 }
 
 static void go_immediate(int zone) {
+    output_pwr();
     g_state = PROGRAM_IMMEDIATE;
     imm_load();
     imm_restart(zone);
@@ -71,17 +71,22 @@ static void go_off() {
     g_state = OFF;
     display_off();
     imm_init();
-    output_clear();
+    // Power off 24V too
+    output_clear_zones();
+    output_clear_pwr();
 }
 
-// Immediately switch to programming state
-static void go_program() {
-    g_state = PROGRAM_TIMER;
-    
-    display_mode(PROGRAM_SYMBOL);
-    // Load data from memory
-    program_load();
-    imm_restart(0);
+static void update_flow() {
+    g_flowDirty = 0;
+    char buf[3];
+    if (g_flow < -9) {
+        display_data("-E");
+    } else if (g_flow > 99) {
+        display_data(" E");
+    } else {
+        itoa(buf, g_flow, 10);
+        display_data(buf);
+    }
 }
 
 int main() {
@@ -105,11 +110,10 @@ int main() {
     timer_setup();
     display_setup();
     portb_setup();
-    imm_init();
     output_setup();
     gsink_init();
-    
-    g_state = OFF;
+
+    go_off();
     
     enableInterrupts();
    
@@ -137,6 +141,10 @@ int main() {
                 // Program finished! Go off.
                 go_off();
             }
+            
+            if (g_state == FLOW_CHECK && g_flowDirty) {
+                update_flow();
+            }
         
             // Back to immediate?
             long elapsed = timer_get_time() - s_idleTime;
@@ -157,93 +165,63 @@ int main() {
                 continue;
             }
 
-            if (scanCode == PORTB_EXT_TRIGGER) { 
-                // Manage the external timer.
-                // If the UI is already in IN_USE mode, ignore it.
-                // Otherwise load the program and switch to it.
-                if (g_state != IN_USE) {
-                    // Load program from memory
-                    program_load();
-                    imm_restart(0);
-                    goto in_use;
+            s_idleTime = timer_get_time();
+            // Check the current mode for the meaning of key
+            if (scanCode < 0) {
+                // Get the long press code
+                scanCode = ~scanCode;
+                // Long press a key
+                if (scanCode == 0) {
+                    // If long-pressing the off key, stop all and go in off state
+                    go_off();
                 }
-                // else ignore, spurious command
             }
             else {
-                s_idleTime = timer_get_time();
-                // Check the current mode for the meaning of key
-                if (scanCode < 0) {
-                    // Get the long press code
-                    scanCode = ~scanCode;
-                    // Long press a key
-                    if (scanCode == 0) {
-                        // If long-pressing the off key, stop all and go in off state
-                        go_off();
+                // Normal key press
+                if (scanCode == 0) {
+                    // Power/mode key pressed. Cycle mode, if possible
+                    // Master button pressed: cycle if possible
+                    switch (g_state) {
+                        case OFF:
+                            // Go in immediate mode
+                            go_immediate(0);
+                            break;
+                        case PROGRAM_IMMEDIATE:
+                            // Accept the immediate program?
+                            if (imm_is_modified()) {
+                                // Accept it
+                                goto in_use;
+                            }
+                            else {
+                                imm_stop();
+                                // Immediately switch to level state
+                                g_state = FLOW_CHECK;
+                                display_mode(FLOW_SYMBOL);
+                                update_flow();
+                            }
+                            break;
+                        case FLOW_CHECK:
+                            // Back to immediate
+                            go_immediate(0);
+                            break;
+                        case IN_USE:
+                            // Panic button!!
+                            go_off();
+                            break;
                     }
                 }
-                else {
-                    // Normal key press
-                    if (scanCode == 0) {
-                        // Power/mode key pressed. Cycle mode, if possible
-                        // Master button pressed: cycle if possible
-                        switch (g_state) {
-                            case OFF:
-                                // Go in immediate mode
-                                go_immediate(0);
-                                break;
-                            case PROGRAM_IMMEDIATE:
-                                // Accept the immediate program?
-                                if (imm_is_modified()) {
-                                    // Accept it
-                                    goto in_use;
-                                }
-                                else {
-                                    imm_stop();
-                                    // Immediately switch to level state
-                                    g_state = LEVEL_CHECK;
-                                    display_mode(LEVEL_SYMBOL);
-                                    // Not implemented
-                                    display_data("--");
-                                }
-                                break;
-                            case LEVEL_CHECK:
-                                // Go in program mode
-                                go_program();
-                                break;
-                            case PROGRAM_TIMER:
-                                // Accept the program?
-                                if (imm_is_modified()) {
-                                    // Accept it
-                                    program_save();
-                                    display_mode(' ');
-                                    display_data("OK");
-                                    g_state = WAIT_FOR_IMMEDIATE;
-                                }
-                                else {
-                                    // Back to immediate
-                                    go_immediate(0);
-                                }
-                                break;
-                            case IN_USE:
-                                // Panic button!!
-                                go_off();
-                                break;
-                        }
-                    }
-                    else { 
-                        // Individual zone button pressed.
-                        // Zone button pressed: add it to the current program if possible
-                        switch (g_state) {
-                            case OFF: 
-                                // Switch it on
-                                go_immediate(scanCode - 1);
-                                break;
-                            case PROGRAM_IMMEDIATE:
-                            case PROGRAM_TIMER:
-                                // Only accepted during programming (immediate or program)
-                                imm_zone_pressed(scanCode - 1);
-                                break;
-                        }
+                else { 
+                    // Individual zone button pressed.
+                    // Zone button pressed: add it to the current program if possible
+                    switch (g_state) {
+                        case OFF: 
+                            // Switch it on
+                            go_immediate(scanCode - 1);
+                            break;
+                        case PROGRAM_IMMEDIATE:
+                            // Only accepted during programming (immediate or program)
+                            imm_zone_pressed(scanCode - 1);
+                            break;
                     }
                 }
             }
@@ -257,7 +235,8 @@ int main() {
 
         continue;
 in_use:    
-        // Immediately switch to in use, using the current loaded program
+        output_pwr();
+       // Immediately switch to in use, using the current loaded program
         g_state = IN_USE;
         display_mode_anim();
         imm_start();

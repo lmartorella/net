@@ -59,8 +59,6 @@ void display_setup() {
     TRISCbits.TRISC3 = 0;
     TRISDbits.TRISD0 = 0;
     TRISDbits.TRISD6 = 0;
-    
-    display_off();
 }
 
 void display_off() {

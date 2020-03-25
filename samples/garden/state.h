@@ -6,10 +6,8 @@ typedef enum {
     OFF = 0,
     // Immediate program mode
     PROGRAM_IMMEDIATE,
-    // Display water level (future usage))
-    LEVEL_CHECK,
-    // Program the timer mode
-    PROGRAM_TIMER,
+    // Display flow level
+    FLOW_CHECK,
     // Looping a program (manual or automatic)
     IN_USE,
     // Timer used after new programming, while the display shows OK, to go back to imm state (2 seconds)
@@ -17,6 +15,8 @@ typedef enum {
 } UI_STATE;
 
 extern UI_STATE g_state;
+extern bit g_flowDirty;
+extern int g_flow;
 
 #endif	/* STATES_H */
 
