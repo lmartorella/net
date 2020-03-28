@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Home.IO;
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,11 +28,14 @@ namespace Lucky.Home.Serialization
             {
                 size = str.Length;
                 // Serialize count as word
-                await stream.WriteAsync(BitConverter.GetBytes((ushort)size), 0, 2);
+                if (await stream.SafeWriteAsync(BitConverter.GetBytes((ushort)size), 2) < 2)
+                {
+                    return;
+                }
             }
 
             var buffer = Encoding.ASCII.GetBytes(str.ToCharArray(), 0, size);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
+            await stream.SafeWriteAsync(buffer, buffer.Length);
         }
 
         public async Task<object> Deserialize(Stream reader, object instance)
@@ -41,7 +45,7 @@ namespace Lucky.Home.Serialization
             {
                 // Read size
                 byte[] buf = new byte[2];
-                var b = await reader.ReadAsync(buf, 0, 2);
+                var b = await reader.SafeReadAsync(buf, 2);
                 if (b < 2)
                 {
                     throw new BufferUnderrunException(2, "(sizeof)" + (_fieldName ?? ""));
@@ -54,7 +58,7 @@ namespace Lucky.Home.Serialization
             }
 
             byte[] buffer = new byte[size];
-            int l = await reader.ReadAsync(buffer, 0, size);
+            int l = await reader.SafeReadAsync(buffer, size);
             if (l < size)
             {
                 throw new BufferUnderrunException(size, _fieldName);

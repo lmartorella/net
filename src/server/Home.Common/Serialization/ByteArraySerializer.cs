@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Lucky.Home.IO;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Lucky.Home.Serialization
@@ -25,7 +26,7 @@ namespace Lucky.Home.Serialization
 
         public Task Serialize(Stream writer, byte[] array, int size)
         {
-            return writer.WriteAsync(array, 0, size);
+            return writer.SafeWriteAsync(array, size);
         }
 
         public virtual async Task<object> Deserialize(Stream reader, object instance)
@@ -36,7 +37,7 @@ namespace Lucky.Home.Serialization
         public async Task<byte[]> Deserialize(Stream reader, int size)
         {
             byte[] buffer = new byte[size];
-            int l = await reader.ReadAsync(buffer, 0, size);
+            int l = await reader.SafeReadAsync(buffer, size);
             if (l < size)
             {
                 throw new BufferUnderrunException(size, _fieldName);

@@ -54,7 +54,7 @@ namespace Lucky.Home.Protocol
 
             if (relogin)
             {
-                // The node was reset (Whatchdog?)
+                // The node was reset (Whatchdog?), and probably changed sub-index address
                 await node.Relogin(address);
             }
             else
@@ -73,7 +73,7 @@ namespace Lucky.Home.Protocol
                 // Ignore consecutive messages
                 if (_unnamedNodes.TryGetValue(address, out newNode))
                 {
-                    newNode.Dezombie("hello");
+                    newNode.Dezombie("hello", address);
                 }
                 else
                 {

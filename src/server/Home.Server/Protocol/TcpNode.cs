@@ -59,15 +59,14 @@ namespace Lucky.Home.Protocol
 
         public async Task Heartbeat(TcpNodeAddress address)
         {
-            // Update address!
-            lock (Address)
-            {
-                Address = address;
-            }
-            Dezombie("hbeat");
+            Dezombie("hbeat", address);
 
             // Check for zombied children and try to de-zombie it
-            var lastKnownChildren = _lastKnownChildren.Values.ToArray();
+            ITcpNode[] lastKnownChildren;
+            lock (_lockObject)
+            {
+                lastKnownChildren = _lastKnownChildren.Values.ToArray();
+            }
             if (lastKnownChildren.Any(n => n == null || n.IsZombie))
             {
                 // Re-fire the children request and de-zombie
@@ -111,25 +110,34 @@ namespace Lucky.Home.Protocol
         /// </summary>
         public async Task Relogin(TcpNodeAddress address, int[] childrenChanged = null)
         {
-            // Update address!
-            lock (Address)
-            {
-                Address = address;
-            }
-            Dezombie("relogin: " + address.ToString() + ", childrenChanged: " + ((childrenChanged != null) ? string.Join(";", childrenChanged.Select(c => c.ToString())) : "<null>"));
+            Dezombie("relogin: " + address.ToString() + ", childrenChanged: " + ((childrenChanged != null) ? string.Join(";", childrenChanged.Select(c => c.ToString())) : "<null>"), address);
 
             // Start data fetch asynchrously
             // This resets also the dirty children state
             await FetchMetadata();
             if (childrenChanged != null)
             {
-                // Only fetch changed nodes AND present nodes
-                var toRefecth = childrenChanged.Where(i => _lastKnownChildren.ContainsKey(i));
-
                 var nodeManager = Manager.GetService<NodeManager>();
+
+                int[] knownIdxs;
+                lock (_lockObject)
+                {
+                    knownIdxs = _lastKnownChildren.Keys.ToArray();
+                }
+                // Only fetch changed nodes AND present nodes
+                var toRefecth = childrenChanged.Where(i => knownIdxs.Contains(i));
+                var deadNodesIndices = childrenChanged.Where(i => !knownIdxs.Contains(i));
+                foreach (var idx in deadNodesIndices)
+                {
+                    Logger.Log("DeadNode", "address", address, "idx", idx);
+                }
+
                 // Register subnodes, asking for identity
-                var children = await Task.WhenAll(toRefecth.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))));
-                children.Select(c => _lastKnownChildren[c.Address.Index] = c);
+                var children = (await Task.WhenAll(toRefecth.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))))).ToArray();
+                lock (_lockObject)
+                {
+                    children.Select(c => _lastKnownChildren[c.Address.Index] = c);
+                }
             }
         }
 
@@ -234,11 +242,13 @@ namespace Lucky.Home.Protocol
             // Now register all the children
             var nodeManager = Manager.GetService<NodeManager>();
             // Register subnodes, asking for identity
-            var children = await Task.WhenAll(ret.Item2.Select(async address => await nodeManager.RegisterUnknownNode(address)));
-            _lastKnownChildren.Clear();
-            foreach (var child in children)
+            var children = (await Task.WhenAll(ret.Item2.Select(async address => await nodeManager.RegisterUnknownNode(address))))
+                .Where(c => c != null).ToArray();
+
+            lock (_lockObject)
             {
-                if (child != null)
+                _lastKnownChildren.Clear();
+                foreach (var child in children)
                 {
                     _lastKnownChildren[child.Address.Index] = child;
                 }
@@ -321,8 +331,18 @@ namespace Lucky.Home.Protocol
             return ok;
         }
 
-        internal void Dezombie(string reason)
+        internal void Dezombie(string reason, TcpNodeAddress address)
         {
+            // Update address
+            lock (Address)
+            {
+                if (Address.IsSubNode != address.IsSubNode)
+                {
+                    Logger.Log("ERR:LevelChange", "from", Address, "to", address);
+                }
+                Address = address;
+            }
+
             if (IsZombie)
             {
                 Logger.Log("Dezombie", "reason", reason);
@@ -358,7 +378,7 @@ namespace Lucky.Home.Protocol
                 var childNodes = await connection.Read<GetChildrenMessageResponse>();
                 if (childNodes != null)
                 {
-                    ret = DecodeRawMask(childNodes.Mask, i => i);
+                    ret = DecodeRawMask(childNodes.Mask, i => i + 1).ToArray();
                     return true;
                 }
                 else
@@ -439,10 +459,12 @@ namespace Lucky.Home.Protocol
             // Now register sinks
             RegisterSinks(sinks);
 
-            return Tuple.Create(true, DecodeRawMask(childMask, i => address.SubNode(i)));
+            // Create child addresses
+            var subNodes = DecodeRawMask(childMask, i => address.SubNode(i + 1)).ToArray();
+            return Tuple.Create(true, subNodes);
         }
 
-        private static IEnumerable<int> ToIntEnumerable(byte[] mask)
+        public static IEnumerable<T> DecodeRawMask<T>(byte[] mask, Func<int, T> select)
         {
             int index = 0;
             for (int j = 0; j < mask.Length; j++)
@@ -452,15 +474,10 @@ namespace Lucky.Home.Protocol
                 {
                     if ((b & 1) != 0)
                     {
-                        yield return index;
+                        yield return select(index);
                     }
                 }
             }
-        }
-
-        public static T[] DecodeRawMask<T>(byte[] mask, Func<int, T> select)
-        {
-            return ToIntEnumerable(mask).Select(i => select(i + 1)).ToArray();
         }
 
         private void RegisterSinks(string[] sinks)

@@ -38,7 +38,6 @@ namespace Lucky.Net
                     stream = new NamedPipeServerStream(@"\\.\" + _path);
                     await stream.WaitForConnectionAsync();
                     TReq req;
-                    //var req = reqSer.ReadObject(stream) as WebRequest;
                     {
                         var r = new StreamReader(stream, Encoding.UTF8, false, 1024, true);
                         var buf = await r.ReadLineAsync();

@@ -12,7 +12,6 @@ namespace Lucky.Home.Services
     /// </summary>
     internal class AdminClient : IAdminInterface
     {
-        private MessageChannel _channel;
         private Func<Stream> _streamProvider;
         private Action _disconnect;
 
@@ -27,11 +26,9 @@ namespace Lucky.Home.Services
             MessageRequest request = new MessageRequest { Method = methodName, Arguments = arguments };
             try
             {
-                using (_channel = new MessageChannel(_streamProvider()))
-                {
-                    await Send(request);
-                    return (await Receive()).Value;
-                }
+                var channel = new MessageChannel(_streamProvider());
+                await Send(request, channel);
+                return (await Receive(channel)).Value;
             }
             catch (Exception)
             {
@@ -40,19 +37,19 @@ namespace Lucky.Home.Services
             }
         }
 
-        private async Task Send(MessageRequest message)
+        private async Task Send(MessageRequest message, MessageChannel channel)
         {
             using (var ms = new MemoryStream())
             {
                 MessageRequest.DataContractSerializer.WriteObject(ms, message);
                 ms.Flush();
-                await _channel.WriteMessage(ms.ToArray());
+                await channel.WriteMessage(ms.ToArray());
             }
         }
 
-        private async Task<MessageResponse> Receive()
+        private async Task<MessageResponse> Receive(MessageChannel channel)
         {
-            var buffer = await _channel.ReadMessage();
+            var buffer = await channel.ReadMessage();
             if (buffer == null)
             {
                 return null;
@@ -70,7 +67,8 @@ namespace Lucky.Home.Services
 
         public async Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId)
         {
-            return (bool)await Request("RenameNode", nodeAddress, oldId, newId);
+            var ret = await Request("RenameNode", nodeAddress, oldId, newId);
+            return (ret is bool) && (bool)ret;
         }
 
         public async Task ResetNode(NodeId id, string nodeAddress)

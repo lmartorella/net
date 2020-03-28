@@ -17,6 +17,7 @@
 #endif
 
 #define CLIENT_TCP_PORT 20000
+#define MASTER_MAX_CHILDREN 16
 
 #define RS485_BAUD 19200
 #define RS485_BUF_SIZE 64

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Home.IO;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -37,7 +38,11 @@ namespace Lucky.Home.Serialization
             {
                 size = array.Length;
                 // Serialize count as word
-                await stream.WriteAsync(BitConverter.GetBytes((ushort)size), 0, 2);
+                if (await stream.SafeWriteAsync(BitConverter.GetBytes((ushort)size), 2) < 2)
+                {
+                    // EOF
+                    return;
+                }
             }
             else if (size < 0)
             {
@@ -58,7 +63,7 @@ namespace Lucky.Home.Serialization
             {
                 // Read size
                 byte[] buffer = new byte[2];
-                var b = await reader.ReadAsync(buffer, 0, 2);
+                var b = await reader.SafeReadAsync(buffer, 2);
                 if (b < 2)
                 {
                     throw new BufferUnderrunException(2, "(sizeof)" + (_fieldName ?? ""));

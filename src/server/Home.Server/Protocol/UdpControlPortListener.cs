@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -96,7 +97,7 @@ namespace Lucky.Home.Protocol
                         var mask = (await NetSerializer<HeloSubNodeChangedMessage>.Read(stream))?.Mask;
                         if (mask != null)
                         {
-                            ret.ChildrenChanged = TcpNode.DecodeRawMask(mask, i => i);
+                            ret.ChildrenChanged = TcpNode.DecodeRawMask(mask, i => i + 1).ToArray();
                             ret.PingMessageType = PingMessageType.SubNodeChanged;
                         }
                         break;

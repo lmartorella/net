@@ -89,37 +89,53 @@ namespace Lucky.Home.Models
             await FetchTree();
             await FetchDevices();
             Connected = true;
-            App.Current.Dispatcher.Invoke(connectedHandler);
+            Application.Current.Dispatcher.Invoke(connectedHandler);
         }
 
-        private async Task FetchTree()
+        private async Task<bool> FetchTree()
         {
             var topology = await _adminInterface.GetTopology();
-            var uinodes = topology.Select(n =>
+            if (topology != null)
             {
-                var node = new UiNode(n, null);
-                node.SelectionChanged += (o, e) =>
+                var uinodes = topology.Select(n =>
                 {
-                    if (NodeSelectionChanged != null)
+                    var node = new UiNode(n, null);
+                    node.SelectionChanged += (o, e) =>
                     {
-                        NodeSelectionChanged(this, e);
-                    }
-                };
-                return node;
-            });
-            App.Current.Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
+                        NodeSelectionChanged?.Invoke(this, e);
+                    };
+                    return node;
+                });
+                Application.Current.Dispatcher.Invoke(() => Nodes = new ObservableCollection<UiNode>(uinodes));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
-        private async Task FetchDevices()
+        private async Task<bool> FetchDevices()
         {
-            var devices = (await _adminInterface.GetDevices()).Select(desc => new UiDevice(desc));
-            App.Current.Dispatcher.Invoke(() => Devices = new ObservableCollection<UiDevice>(devices));
+            var devices = (await _adminInterface.GetDevices())?.Select(desc => new UiDevice(desc));
+            if (devices != null)
+            { 
+                Application.Current.Dispatcher.Invoke(() => Devices = new ObservableCollection<UiDevice>(devices));
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public async Task<bool> RenameNode(Node node, NodeId newName)
         {
             bool ret = await _adminInterface.RenameNode(node.Address, node.NodeId, newName);
-            await FetchTree();
+            if (ret)
+            {
+                ret = await FetchTree();
+            }
             return ret;
         }
 
