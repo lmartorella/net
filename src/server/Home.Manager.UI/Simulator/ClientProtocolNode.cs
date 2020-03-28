@@ -130,14 +130,14 @@ namespace Lucky.Home.Simulator
                 case "WR":
                     sinkIdx = ReadUint16();
                     // Sync with main dispatcher
-                    await _dispatcher.Invoke(async () =>
+                    _dispatcher.Invoke(() =>
                     {
                         Sinks[sinkIdx].Read(_reader);
                     });
                     break;
                 case "RD":
                     sinkIdx = ReadUint16();
-                    await _dispatcher.Invoke(async () =>
+                    _dispatcher.Invoke(() =>
                     {
                         Sinks[sinkIdx].Write(_writer);
                     });

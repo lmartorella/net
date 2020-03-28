@@ -72,7 +72,7 @@ namespace Lucky.Home.Simulator
                 while (true)
                 {
                     tcpClient = await _serviceListener.AcceptTcpClientAsync();
-                    HandleServiceSocketAccepted(tcpClient);
+                    _ = HandleServiceSocketAccepted(tcpClient);
                 }
             }, _cancellationToken).ContinueWith(t =>
             {
