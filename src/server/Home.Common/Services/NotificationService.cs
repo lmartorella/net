@@ -75,24 +75,22 @@ namespace Lucky.Home.Services
                     // Start timer
                     if (_timer == null)
                     {
-                        _timer = new Timer(HandleTimer, null, (int)TimeSpan.FromHours(1).TotalMilliseconds, Timeout.Infinite);
+                        _timer = new Timer(_ =>
+                        {
+                            string msg;
+                            lock (this)
+                            {
+                                // Send a single mail with all the content
+                                msg = string.Join(Environment.NewLine, _messages.Select(m => m.Send()));
+                                _messages.Clear();
+                                _timer = null;
+                            }
+                            if (msg.Trim().Length > 0)
+                            {
+                                _ = _svc.SendMail(_groupTitle, msg, true);
+                            }
+                        }, null, (int)TimeSpan.FromHours(1).TotalMilliseconds, Timeout.Infinite);
                     }
-                }
-            }
-
-            private void HandleTimer(object state)
-            {
-                string msg;
-                lock (this)
-                {
-                    // Send a single mail with all the content
-                    msg = string.Join(Environment.NewLine, _messages.Select(m => m.Send()));
-                    _messages.Clear();
-                    _timer = null;
-                }
-                if (msg.Trim().Length > 0)
-                {
-                    _ = _svc.SendMail(_groupTitle, msg);
                 }
             }
         }
@@ -102,14 +100,14 @@ namespace Lucky.Home.Services
         /// <summary>
         /// Send a text mail
         /// </summary>
-        public async Task SendMail(string title, string body)
+        public async Task SendMail(string title, string body, bool isAdminReport)
         {
             var configuration = State;
 
             Logger.Log("SendingMail", "title", title, "body", body);
 
             // Specify the message content.
-            MailMessage message = new MailMessage(configuration.Sender, configuration.To);
+            MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient);
             message.Subject = title;
             message.Body = body;
 
@@ -127,7 +125,7 @@ namespace Lucky.Home.Services
         /// <summary>
         /// Send a HTML mail
         /// </summary>
-        public async Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null)
+        public async Task SendHtmlMail(string title, string htmlBody, bool isAdminReport, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null)
         {
             var configuration = State;
 
@@ -138,7 +136,7 @@ namespace Lucky.Home.Services
             Logger.Log("SendingHtmlMail", "title", title, "attch", attachments.Count());
 
             // Specify the message content.
-            MailMessage message = new MailMessage(configuration.Sender, configuration.To);
+            MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient);
             message.Subject = title;
 
             var alternateView = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
@@ -179,7 +177,7 @@ namespace Lucky.Home.Services
             try
             {
                 await client.SendMailAsync(message);
-                Logger.Log("Mail sent to: " + configuration.To);
+                Logger.Log("Mail sent to: " + message.To);
                 client.Dispose();
                 return true;
             }

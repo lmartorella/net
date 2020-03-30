@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
@@ -17,7 +18,7 @@ namespace Lucky.Home.Services
             _isolatedStorageFolder = Manager.GetService<PersistenceService>().GetAppFolderPath(appRoot);
         }
 
-        public T GetState<T>(string serviceName) where T : class, new()
+        public T GetState<T>(string serviceName, Func<T> defaultProvider)
         {
             FileInfo file = new FileInfo(Path.Combine(_isolatedStorageFolder, serviceName + ".json"));
             if (file.Exists)
@@ -34,7 +35,10 @@ namespace Lucky.Home.Services
                     // Broken file.
                     if (stream != null) stream.Dispose();
                     file.Delete();
-                    return new T();
+
+                    var state = defaultProvider();
+                    SetState(serviceName, state);
+                    return state;
                 }
                 finally
                 {
@@ -43,11 +47,13 @@ namespace Lucky.Home.Services
             }
             else
             {
-                return new T();
+                var state = defaultProvider();
+                SetState(serviceName, state);
+                return state;
             }
         }
 
-        public void SetState<T>(string serviceName, T value) where T : class
+        public void SetState<T>(string serviceName, T value)
         {
             DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
             FileInfo file = new FileInfo(Path.Combine(_isolatedStorageFolder, serviceName + ".json"));

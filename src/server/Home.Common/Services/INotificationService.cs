@@ -38,12 +38,12 @@ namespace Lucky.Home.Services
         /// <summary>
         /// Send an immediate text mail (not coalesced)
         /// </summary>
-        Task SendMail(string title, string body);
+        Task SendMail(string title, string body, bool isAdminReport);
 
         /// <summary>
         /// Send an immediate HTML mail (not coalesced)
         /// </summary>
-        Task SendHtmlMail(string title, string htmlBody, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null);
+        Task SendHtmlMail(string title, string htmlBody, bool isAdminReport, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null);
 
         /// <summary>
         /// Enqueue a low-priority notification (sent aggregated on throttle basis).
@@ -58,6 +58,17 @@ namespace Lucky.Home.Services
     [DataContract]
     internal class MailConfiguration
     {
+        public MailConfiguration()
+        {
+            SmtpHost = "smtp.host.com";
+            SmtpPort = 25;
+            Sender = "net@mail.com";
+            User = "user";
+            Password = "password";
+            NotificationRecipient = "user@mail.com";
+            AdminNotificationRecipient = "admin@mail.com";
+        }
+
         [DataMember]
         public string SmtpHost { get; set; }
 
@@ -68,9 +79,6 @@ namespace Lucky.Home.Services
         public bool EnableSsl { get; set; }
 
         [DataMember]
-        public string To { get; set; }
-
-        [DataMember]
         public string Sender { get; set; }
 
         [DataMember]
@@ -78,5 +86,11 @@ namespace Lucky.Home.Services
 
         [DataMember]
         public string Password { get; set; }
+
+        [DataMember]
+        public string NotificationRecipient { get; set; }
+
+        [DataMember]
+        public string AdminNotificationRecipient { get; set; }
     }
 }

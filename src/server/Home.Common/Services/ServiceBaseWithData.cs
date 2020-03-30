@@ -1,9 +1,10 @@
+using System.Resources;
+
 namespace Lucky.Home.Services
 {
     /// <summary>
     /// Base class for singleton services that have a persisted state
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     public abstract class ServiceBaseWithData<T> : ServiceBase where T : class, new()
     {
         private T _state;
@@ -21,7 +22,7 @@ namespace Lucky.Home.Services
             {
                 if (_state == null)
                 {
-                    _state = Manager.GetService<IIsolatedStorageService>().GetState<T>(LogName);
+                    _state = Manager.GetService<IIsolatedStorageService>().GetState<T>(LogName, () => DefaultState);
                 }
                 return _state;
             }
@@ -29,6 +30,14 @@ namespace Lucky.Home.Services
             {
                 _state = value;
                 Save();
+            }
+        }
+
+        protected virtual T DefaultState
+        {
+            get
+            {
+                return new T();
             }
         }
 
