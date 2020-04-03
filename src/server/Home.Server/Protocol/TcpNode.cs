@@ -30,7 +30,7 @@ namespace Lucky.Home.Protocol
         private bool _inFetchSinkData;
         private bool _inRename;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(5);
-        private TcpConnectionFactory _tcpConnectionFactory;
+        private TcpConnectionSessionManager _tcpConnectionFactory;
 
         /// <summary>
         /// Valid sinks
@@ -49,7 +49,7 @@ namespace Lucky.Home.Protocol
             NodeId = id;
             Address = address;
             Logger = Manager.GetService<ILoggerFactory>().Create("Node:" + id);
-            _tcpConnectionFactory = Manager.GetService<TcpConnectionFactory>();
+            _tcpConnectionFactory = Manager.GetService<TcpConnectionSessionManager>();
             _e2eStatLogger = new E2EStatLogger(id);
         }
 
@@ -255,7 +255,7 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private async Task<bool> OpenNodeSession(Func<IConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
+        private async Task<bool> OpenNodeSession(Func<TcpConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
         {
             if (IsZombie)
             {

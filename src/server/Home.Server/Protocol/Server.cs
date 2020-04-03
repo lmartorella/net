@@ -13,12 +13,8 @@ namespace Lucky.Home.Protocol
     /// </summary>
     class Server : ServiceBase
     {
-        private readonly TcpListener[] _tcpListeners;
         private UdpControlPortListener[] _helloListeners;
         private readonly NodeManager _nodeManager;
-
-        // Find a free TCP port
-        private const int DEFAULT_PORT = 17010;
 
         public Server() 
         {
@@ -39,8 +35,6 @@ namespace Lucky.Home.Protocol
                 helloListener.NodeMessage += (o, e) => HandleNodeMessage(e.NodeId, e.Address, e.MessageType, e.ChildrenChanged);
                 return helloListener;
             }).ToArray();
-
-            _tcpListeners = Addresses.Select(address => Manager.GetService<TcpService>().CreateListener(address, DEFAULT_PORT, "HomeServer", HandleServiceSocketAccepted)).ToArray();
 
             Logger.Log("Opened Server", "hosts", string.Join(";", Addresses.Select(a => a.ToString())));
         }
@@ -79,13 +73,5 @@ namespace Lucky.Home.Protocol
         public IPAddress[] Addresses { get; private set; }
 
         #endregion
-
-        private void HandleServiceSocketAccepted(NetworkStream stream)
-        {
-            using (new BinaryReader(stream))
-            {
-                throw new NotSupportedException("Tcp port not supported yet");
-            }
-        }
     }
 }

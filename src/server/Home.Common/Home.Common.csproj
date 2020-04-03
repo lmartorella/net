@@ -41,6 +41,11 @@
     <Compile Include="Admin\MessageSerializerFactory.cs" />
     <Compile Include="IO\StreamExt.cs" />
     <Compile Include="ItemEventArgs.cs" />
+    <Compile Include="Protocol\MessageTcpClient.cs" />
+    <Compile Include="Protocol\TcpConnectionSession.cs" />
+    <Compile Include="Protocol\DeadlockException.cs" />
+    <Compile Include="Protocol\IConnectionReader.cs" />
+    <Compile Include="Protocol\IConnectionWriter.cs" />
     <Compile Include="Protocol\NodeStatus.cs" />
     <Compile Include="Devices\DeviceDescriptor.cs" />
     <Compile Include="Devices\DeviceTypeDescriptor.cs" />
@@ -67,7 +72,7 @@
     <Compile Include="Services\JsonIsolatedStorageService.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
-    <Compile Include="Protocol\TcpConnectionFactory.cs" />
+    <Compile Include="Protocol\TcpConnectionSessionManager.cs" />
     <Compile Include="Protocol\TcpNodeAddress.cs" />
     <Compile Include="Serialization\ArraySerializer.cs" />
     <Compile Include="Serialization\BitConverterSerializer.cs" />
