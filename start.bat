@@ -1,1 +1,1 @@
-node src\web\server.js
+npm run serve

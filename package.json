@@ -2,10 +2,12 @@
   "name": "home.web",
   "version": "1.0.0",
   "scripts": {
-    "buildNet": "node scripts/buildServer.js",
+    "buildNet": "node scripts/buildServer.js Release",
+    "buildNetDebug": "node scripts/buildServer.js Debug",
     "buildWeb": "cd samples/web/app && tsc",
     "build": "npm run buildNet && npm run buildWeb",
-    "run": "node src/web/server.js"
+    "dev": "npm run buildNetDebug && npm run buildWeb",
+    "serve": "node src/web/server.js"
   },
   "repository": {
     "url": "https://github.com/lmartorella/net"
