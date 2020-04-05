@@ -35,7 +35,7 @@ namespace Lucky.Home.Db
             public PeriodData(DateTime begin, bool useSummerTime)
             {
                 Begin = begin;
-                Enqueue(new T() { TimeStamp = begin }, true);
+                Add(new T() { TimeStamp = begin });
 
                 // Check if DST. However DST is usually starting at 3:00 AM, so use midday time
                 if ((begin.Date + TimeSpan.FromHours(12)).IsDaylightSavingTime() && useSummerTime)
@@ -60,12 +60,16 @@ namespace Lucky.Home.Db
                 }
             }
 
-            public void Add(T sample)
+            internal T GetLastSample()
             {
-                Enqueue(sample, false);
+                lock (_data)
+                {
+                    // Skip the first, added in the ctor to maintain the begin timestamp
+                    return _data.Skip(1).LastOrDefault();
+                }
             }
 
-            private void Enqueue(T sample, bool init)
+            public void Add(T sample)
             {
                 lock (_data)
                 {
@@ -215,8 +219,16 @@ namespace Lucky.Home.Db
                 // Add it to the aggregator
                 _currentPeriod.Add(sample);
 
-                // In addition, write immediately on the CSV file (for the web server)\
+                // In addition, write immediately on the CSV file.
                 CsvHelper<T>.WriteCsvLine(_dayFile, sample);
+            }
+        }
+
+        public T GetLastSample()
+        {
+            lock (_lockDb)
+            {
+                return _currentPeriod.GetLastSample();
             }
         }
 

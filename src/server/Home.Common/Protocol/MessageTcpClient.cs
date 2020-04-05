@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Lucky.Home.Serialization;
 using Lucky.Home.Services;
 
-namespace Lucky.Net
+namespace Lucky.Home.Protocol
 {
     /// <summary>
     /// Wrapper around the framework <see cref="TcpClient"/>. Exposes message-based read/write channel. 

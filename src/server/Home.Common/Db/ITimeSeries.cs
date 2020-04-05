@@ -54,6 +54,11 @@ namespace Lucky.Db
         void AddNewSample(T sample);
 
         /// <summary>
+        /// Retrieve the last sample, if one
+        /// </summary>
+        T GetLastSample();
+
+        /// <summary>
         /// Get the current period data aggregated with the Taggr logic.
         /// </summary>
         Taggr GetAggregatedData();
