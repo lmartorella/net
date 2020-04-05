@@ -21,6 +21,11 @@ namespace Lucky.Home.Sinks
             SubIndex = subIndex;
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0};{1}", Sink, SubIndex);
+        }
+
         public override bool Equals(object obj)
         {
             var other = obj as SubSink;

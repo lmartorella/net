@@ -39,6 +39,7 @@
     <Compile Include="Admin\MessageRequest.cs" />
     <Compile Include="Admin\MessageResponse.cs" />
     <Compile Include="Admin\MessageSerializerFactory.cs" />
+    <Compile Include="IO\FileWatcher.cs" />
     <Compile Include="IO\StreamExt.cs" />
     <Compile Include="ItemEventArgs.cs" />
     <Compile Include="Protocol\MessageTcpClient.cs" />
