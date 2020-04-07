@@ -104,7 +104,7 @@ namespace Lucky.Home.Services
         {
             var configuration = State;
 
-            Logger.Log("SendingMail", "title", title, "body", body);
+            Logger.Log("SendingMail", "title", title);
 
             // Specify the message content.
             MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient);

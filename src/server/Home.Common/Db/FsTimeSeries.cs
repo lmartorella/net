@@ -73,11 +73,17 @@ namespace Lucky.Home.Db
             {
                 lock (_data)
                 {
+                    // Convert TS to non-daylight saving time
+                    sample.TimeStamp = ToInvariantTime(sample.TimeStamp);
+                    sample.DaylightDelta = _daylightDelta;
                     _data.Add(sample);
                 }
             }
 
-            internal DateTime Adjust(DateTime ts)
+            /// <summary>
+            /// Convert a DST/non-DST time to invariant non-DST time
+            /// </summary>
+            private DateTime ToInvariantTime(DateTime ts)
             {
                 return ts - _daylightDelta;
             }
@@ -85,6 +91,7 @@ namespace Lucky.Home.Db
             public Taggr GetAggregatedData()
             {
                 var ret = new Taggr();
+                ret.DaylightDelta = _daylightDelta;
                 lock (_data)
                 {
                     if (ret.Aggregate(Begin.Date, _data))
@@ -213,10 +220,7 @@ namespace Lucky.Home.Db
         {
             lock (_lockDb)
             {
-                // Convert TS to non-daylight saving time
-                sample.TimeStamp = _currentPeriod.Adjust(sample.TimeStamp);
-
-                // Add it to the aggregator
+                // Add it to the aggregator frist, so daylight time will be updated
                 _currentPeriod.Add(sample);
 
                 // In addition, write immediately on the CSV file.
