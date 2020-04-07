@@ -35,7 +35,7 @@ namespace Lucky.Home.Db
             public PeriodData(DateTime begin, bool useSummerTime)
             {
                 Begin = begin;
-                Add(new T() { TimeStamp = begin });
+                Add(new T() { TimeStamp = begin }, true);
 
                 // Check if DST. However DST is usually starting at 3:00 AM, so use midday time
                 if ((begin.Date + TimeSpan.FromHours(12)).IsDaylightSavingTime() && useSummerTime)
@@ -56,7 +56,7 @@ namespace Lucky.Home.Db
             {
                 foreach (var sample in CsvHelper<T>.ReadCsv(file))
                 {
-                    Add(sample);
+                    Add(sample, false);
                 }
             }
 
@@ -69,12 +69,15 @@ namespace Lucky.Home.Db
                 }
             }
 
-            public void Add(T sample)
+            public void Add(T sample, bool convert)
             {
                 lock (_data)
                 {
                     // Convert TS to non-daylight saving time
-                    sample.TimeStamp = ToInvariantTime(sample.TimeStamp);
+                    if (convert)
+                    {
+                        sample.TimeStamp = ToInvariantTime(sample.TimeStamp);
+                    }
                     sample.DaylightDelta = _daylightDelta;
                     _data.Add(sample);
                 }
@@ -221,7 +224,7 @@ namespace Lucky.Home.Db
             lock (_lockDb)
             {
                 // Add it to the aggregator frist, so daylight time will be updated
-                _currentPeriod.Add(sample);
+                _currentPeriod.Add(sample, true);
 
                 // In addition, write immediately on the CSV file.
                 CsvHelper<T>.WriteCsvLine(_dayFile, sample);

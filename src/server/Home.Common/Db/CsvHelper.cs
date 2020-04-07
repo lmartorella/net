@@ -176,13 +176,13 @@ namespace Lucky.Db
                 using (var reader = new StreamReader(stream))
                 {
                     // Read header
-                    var header = CsvHelper<T>.ParseHeader(reader.ReadLine());
+                    var header = ParseHeader(reader.ReadLine());
                     // Read data
                     string line;
                     List<T> data = new List<T>();
                     while ((line = reader.ReadLine()) != null)
                     {
-                        var l = CsvHelper<T>.ParseLine(line, header);
+                        var l = ParseLine(line, header);
                         if (l != null)
                         {
                             data.Add(l);
