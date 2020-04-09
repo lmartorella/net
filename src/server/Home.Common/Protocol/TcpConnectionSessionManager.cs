@@ -15,7 +15,10 @@ namespace Lucky.Home.Protocol
     /// </summary>
     internal class TcpConnectionSessionManager : ServiceBase
     {
-        private static readonly TimeSpan GRACE_TIME = TimeSpan.FromSeconds(10);
+        /// <summary>
+        /// Auto-close dangling TCP connections if not re-acquired
+        /// </summary>
+        private static readonly TimeSpan GRACE_TIME = TimeSpan.FromMinutes(1);
 
         /// <summary>
         /// Don't let a single TCP socket to run too long. After 30 minutes forces a closing and reopening of the underlying socket.
@@ -33,7 +36,8 @@ namespace Lucky.Home.Protocol
         private static readonly TimeSpan SLOW_ACQUIRE_LOG = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// If a session remains locked for more than 25 seconds (close to the timeout), log a error
+        /// If a session remains locked for more than 25 seconds (close to the timeout), log a error.
+        /// Greater than 20 seconds observed timeout for TCP Connect.
         /// </summary>
         private static readonly TimeSpan LONG_SESSION = TimeSpan.FromSeconds(25);
 
@@ -83,7 +87,7 @@ namespace Lucky.Home.Protocol
                 if (!_semaphore.Wait(ACQUISITION_TIMEOUT))
                 {
                     Client.Close(false);
-                    throw new DeadlockException("Acquire locked");
+                    throw new DeadlockException("Acquire locked for address " + Client.EndPoint);
                 }
 
                 var elapsed = DateTime.Now - ts;
@@ -113,7 +117,7 @@ namespace Lucky.Home.Protocol
                 // Cancel the missing release error
                 _missingReleaseTimeoutTokenSource.Cancel();
 
-                // Start timeout auto-disposal timer if not re-acquired in 10 seconds
+                // Start timeout auto-disposal timer if not re-acquired in 60 seconds
                 _cancellationToken = new CancellationTokenSource();
                 Task.Delay(GRACE_TIME, _cancellationToken.Token).ContinueWith(t =>
                 {

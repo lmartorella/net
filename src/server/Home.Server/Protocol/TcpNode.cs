@@ -345,7 +345,7 @@ namespace Lucky.Home.Protocol
 
             if (IsZombie)
             {
-                Logger.Log("Dezombie", "reason", reason);
+                Logger.Log("Dezombie", "reason", reason, "address", address);
                 IsZombie = false;
                 Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Risolto: ristabilita connessione con " + NodeId);
                 UpdateSinks();
