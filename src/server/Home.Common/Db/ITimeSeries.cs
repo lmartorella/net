@@ -9,6 +9,24 @@ namespace Lucky.Db
     /// </summary>
     public class TimeSample
     {
+        internal TimeSpan DaylightDelta = TimeSpan.Zero;
+
+        /// <summary>
+        /// Convert an invariant time to local time (DST/non-DST)
+        /// </summary>
+        public TimeSpan FromInvariantTime(TimeSpan ts)
+        {
+            return ts + DaylightDelta;
+        }
+
+        /// <summary>
+        /// Convert an invariant time to local time (DST/non-DST)
+        /// </summary>
+        public DateTime FromInvariantTime(DateTime dt)
+        {
+            return dt + DaylightDelta;
+        }
+
         [Csv("HH:mm:ss")]
         public DateTime TimeStamp;
     }
@@ -18,6 +36,16 @@ namespace Lucky.Db
     /// </summary>
     public abstract class DayTimeSample<T> where T : TimeSample
     {
+        internal TimeSpan DaylightDelta = TimeSpan.Zero;
+
+        /// <summary>
+        /// Convert an invariant time to local time (DST/non-DST)
+        /// </summary>
+        public TimeSpan FromInvariantTime(TimeSpan ts)
+        {
+            return ts + DaylightDelta;
+        }
+
         [Csv("yyyy-MM-dd")]
         public DateTime Date;
 
@@ -52,6 +80,11 @@ namespace Lucky.Db
         /// Register new sample
         /// </summary>
         void AddNewSample(T sample);
+
+        /// <summary>
+        /// Retrieve the last sample, if one
+        /// </summary>
+        T GetLastSample();
 
         /// <summary>
         /// Get the current period data aggregated with the Taggr logic.

@@ -70,13 +70,14 @@ namespace Lucky.Home.Simulator
                 return RunStatus.Aborted;
             }
 
-            Logger.Log("Msg: " + command);
+            string msg = "Msg: " + command;
             var sinkManager = Manager.GetService<MockSinkManager>();
             ushort sinkIdx;
             switch (command)
             {
                 case "CL":
                     // Ack
+                    Logger.Log(msg);
                     _writer.Write(new byte[] { 0x1e });
                     return RunStatus.Closed;
                 case "CH":
@@ -100,6 +101,7 @@ namespace Lucky.Home.Simulator
                     break;
                 case "SL":
                     var id = ReadUint16();
+                    msg += " " + id;
                     if (id > 0)
                     {
                         while (true)
@@ -126,9 +128,11 @@ namespace Lucky.Home.Simulator
                     break;
                 case "GU":
                     _node.Id = NodeId.FromBytes(ReadBytes(16));
+                    msg += " " + _node.Id;
                     break;
                 case "WR":
                     sinkIdx = ReadUint16();
+                    msg += " " + sinkIdx + " (" + Sinks[sinkIdx].GetFourCc() + ")";
                     // Sync with main dispatcher
                     _dispatcher.Invoke(() =>
                     {
@@ -137,6 +141,7 @@ namespace Lucky.Home.Simulator
                     break;
                 case "RD":
                     sinkIdx = ReadUint16();
+                    msg += " " + sinkIdx + " (" + Sinks[sinkIdx].GetFourCc() + ")";
                     _dispatcher.Invoke(() =>
                     {
                         Sinks[sinkIdx].Write(_writer);
@@ -145,7 +150,7 @@ namespace Lucky.Home.Simulator
                 default:
                     throw new InvalidOperationException("Unknown protocol command: " + command);
             }
-
+            Logger.Log(msg);
             return RunStatus.Continue;
         }
 

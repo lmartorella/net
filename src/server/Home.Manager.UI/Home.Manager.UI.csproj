@@ -67,6 +67,7 @@
     <Compile Include="Simulator\NodeBase.cs" />
     <Compile Include="Simulator\SimulatorNodeService.cs" />
     <Compile Include="Simulator\ISinkMock.cs" />
+    <Compile Include="Simulator\SinkMockExtensions.cs" />
     <Compile Include="Simulator\SlaveNode.cs" />
     <Compile Include="UiLibraryAttribute.cs" />
     <Compile Include="Views\CreateDeviceWindow.xaml.cs">

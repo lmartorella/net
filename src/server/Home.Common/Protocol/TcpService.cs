@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Lucky.Home.Services;
 
-namespace Lucky.Net
+namespace Lucky.Home.Protocol
 {
     /// <summary>
     /// Helper class to create <see cref="MessageTcpClient"/> and TCP socket listeners (used for Admin channel).

@@ -5,10 +5,9 @@ using Lucky.Home.Services;
 using Lucky.Home.Protocol;
 using Lucky.Home.Admin;
 using System.Reflection;
-using System.Linq;
 using System.Threading.Tasks;
-using System.IO;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Lucky.Home.Lib
 {
@@ -16,6 +15,9 @@ namespace Lucky.Home.Lib
     {
         public static void Main(string[] arguments)
         {
+            System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo("it-IT");
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("it-IT");
+
             Run(arguments).Wait();
         }
 

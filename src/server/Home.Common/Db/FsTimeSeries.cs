@@ -35,7 +35,7 @@ namespace Lucky.Home.Db
             public PeriodData(DateTime begin, bool useSummerTime)
             {
                 Begin = begin;
-                Enqueue(new T() { TimeStamp = begin }, true);
+                Add(new T() { TimeStamp = begin }, true);
 
                 // Check if DST. However DST is usually starting at 3:00 AM, so use midday time
                 if ((begin.Date + TimeSpan.FromHours(12)).IsDaylightSavingTime() && useSummerTime)
@@ -56,24 +56,37 @@ namespace Lucky.Home.Db
             {
                 foreach (var sample in CsvHelper<T>.ReadCsv(file))
                 {
-                    Add(sample);
+                    Add(sample, false);
                 }
             }
 
-            public void Add(T sample)
-            {
-                Enqueue(sample, false);
-            }
-
-            private void Enqueue(T sample, bool init)
+            internal T GetLastSample()
             {
                 lock (_data)
                 {
+                    // Skip the first, added in the ctor to maintain the begin timestamp
+                    return _data.Skip(1).LastOrDefault();
+                }
+            }
+
+            public void Add(T sample, bool convert)
+            {
+                lock (_data)
+                {
+                    // Convert TS to non-daylight saving time
+                    if (convert)
+                    {
+                        sample.TimeStamp = ToInvariantTime(sample.TimeStamp);
+                    }
+                    sample.DaylightDelta = _daylightDelta;
                     _data.Add(sample);
                 }
             }
 
-            internal DateTime Adjust(DateTime ts)
+            /// <summary>
+            /// Convert a DST/non-DST time to invariant non-DST time
+            /// </summary>
+            private DateTime ToInvariantTime(DateTime ts)
             {
                 return ts - _daylightDelta;
             }
@@ -81,6 +94,7 @@ namespace Lucky.Home.Db
             public Taggr GetAggregatedData()
             {
                 var ret = new Taggr();
+                ret.DaylightDelta = _daylightDelta;
                 lock (_data)
                 {
                     if (ret.Aggregate(Begin.Date, _data))
@@ -209,14 +223,19 @@ namespace Lucky.Home.Db
         {
             lock (_lockDb)
             {
-                // Convert TS to non-daylight saving time
-                sample.TimeStamp = _currentPeriod.Adjust(sample.TimeStamp);
+                // Add it to the aggregator frist, so daylight time will be updated
+                _currentPeriod.Add(sample, true);
 
-                // Add it to the aggregator
-                _currentPeriod.Add(sample);
-
-                // In addition, write immediately on the CSV file (for the web server)\
+                // In addition, write immediately on the CSV file.
                 CsvHelper<T>.WriteCsvLine(_dayFile, sample);
+            }
+        }
+
+        public T GetLastSample()
+        {
+            lock (_lockDb)
+            {
+                return _currentPeriod.GetLastSample();
             }
         }
 

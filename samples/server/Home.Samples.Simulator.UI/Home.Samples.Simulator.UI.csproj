@@ -62,7 +62,8 @@
     </Compile>
     <Compile Include="Views\GardenSinkView.cs">
     </Compile>
-    <Compile Include="Views\SamilSinkView.cs">
+    <Compile Include="Views\SamilSinkView.xaml.cs">
+      <DependentUpon>SamilSinkView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TemperatureSinkView.cs">
     </Compile>
@@ -96,6 +97,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DisplaySinkView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SamilSinkView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

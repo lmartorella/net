@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Lucky.Net;
 
 namespace Lucky.Home.Protocol
 {
