@@ -109,6 +109,10 @@ namespace Lucky.Home.Serialization
                 {
                     _serializer = new BitConverterSerializer<int>(4, BitConverter.GetBytes, a => BitConverter.ToInt32(a, 0), fieldName);
                 }
+                else if (fieldType == typeof(float))
+                {
+                    _serializer = new BitConverterSerializer<float>(4, BitConverter.GetBytes, a => BitConverter.ToSingle(a, 0), fieldName);
+                }
                 else if (fieldType == typeof(Guid))
                 {
                     _serializer = new GuidSerializer(fieldName);

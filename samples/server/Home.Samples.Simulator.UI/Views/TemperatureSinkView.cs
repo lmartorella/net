@@ -9,7 +9,7 @@ namespace Lucky.Home.Views
     /// Simulate a DHT11 temperature sensor that returns random temperatures and humidity
     /// </summary>
     [MockSink("TEMP", "Temp sensor")]
-    public partial class TemperatureSinkView : ISinkMock
+    public class TemperatureSinkView : ISinkMock
     {
         private readonly Random _random = new Random();
         private ILogger Logger;

@@ -10,7 +10,7 @@ namespace Lucky.Home.Views
     /// Mock sink for the garden programmer
     /// </summary>
     [MockSink("GARD", "Garden")]
-    public partial class GardenSinkView : ISinkMock
+    public class GardenSinkView : ISinkMock
     {
         private ILogger Logger;
 
