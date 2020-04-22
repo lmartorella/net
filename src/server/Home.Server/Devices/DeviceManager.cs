@@ -56,6 +56,10 @@ namespace Lucky.Home.Devices
         private DeviceBase CreateDevice(DeviceDescriptor descriptor)
         {
             var type = Manager.GetService<DeviceTypeManager>().GetDeviceType(descriptor.DeviceTypeName);
+            if (type == null)
+            {
+                return null;
+            }
 
             DeviceBase device = (DeviceBase)Activator.CreateInstance(type, FillDefaultArguments(descriptor.Arguments, type));
             device.OnInitialize(descriptor.SinkPaths);
