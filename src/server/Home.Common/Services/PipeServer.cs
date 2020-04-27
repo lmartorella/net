@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Lucky.Home.Services
 {
-    [DataContract]
+    [DataContract(Namespace = "Net")]
     public class WebRequest
     {
         /// <summary>
