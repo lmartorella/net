@@ -10,7 +10,7 @@ namespace Lucky.Home.Views
     /// Mock sink for flow meter 
     /// </summary>
     [MockSink("FLOW", "Flow meter")]
-    public partial class FlowSinkMockView : ISinkMock
+    public class FlowSinkMockView : ISinkMock
     {
         private Timer _timer;
         private uint _counter;
