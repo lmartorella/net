@@ -46,6 +46,7 @@
     <Compile Include="Converters\IntToStringConverter.cs" />
     <Compile Include="SimulatorSample.cs" />
     <Compile Include="Models\Switch.cs" />
+    <Compile Include="Views\AnalogIntegratorSinkView.cs" />
     <Compile Include="Views\CommandMockView.xaml.cs">
       <DependentUpon>CommandMockView.xaml</DependentUpon>
     </Compile>
