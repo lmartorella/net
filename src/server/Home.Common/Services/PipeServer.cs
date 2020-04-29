@@ -54,6 +54,10 @@ namespace Lucky.Home.Services
                     return Tuple.Create(new WebResponse { Error = exc.Message }, false);
                 }
             };
+            _server.ManageSerializationError = exc =>
+            {
+                return Tuple.Create(new WebResponse { Error = exc.Message }, false);
+            };
             _ = _server.Start();
         }
 

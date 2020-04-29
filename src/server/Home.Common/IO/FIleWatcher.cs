@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.IO
 {
@@ -11,11 +13,25 @@ namespace Lucky.Home.IO
     {
         private Timer _debounceTimer;
         private FileSystemWatcher _cfgFileObserver;
+        private Queue<TaskCompletionSource<bool>> _waiterQueue = new Queue<TaskCompletionSource<bool>>();
 
         public FileWatcher(FileInfo fileInfo)
         {
             _cfgFileObserver = new FileSystemWatcher(fileInfo.DirectoryName, fileInfo.Name);
-            _cfgFileObserver.Changed += (o, e) => Debounce(() => Changed?.Invoke(this, EventArgs.Empty));
+            _cfgFileObserver.Changed += (o, e) => Debounce(() =>
+            {
+                lock (_waiterQueue)
+                {
+                    // Check if suspended
+                    if (_waiterQueue.Count > 0)
+                    {
+                        _waiterQueue.Dequeue().SetResult(true);
+                        return;
+                    }
+                }
+                // Else...
+                Changed?.Invoke(this, EventArgs.Empty);
+            });
             _cfgFileObserver.NotifyFilter = NotifyFilters.LastWrite;
             _cfgFileObserver.EnableRaisingEvents = true;
         }
@@ -41,6 +57,16 @@ namespace Lucky.Home.IO
         public void Dispose()
         {
             _cfgFileObserver.Dispose();
+        }
+
+        public Task SuspendAndWaitForUpdate()
+        {
+            lock (_waiterQueue)
+            {
+                var source = new TaskCompletionSource<bool>();
+                _waiterQueue.Enqueue(source);
+                return source.Task;
+            }
         }
     }
 }
