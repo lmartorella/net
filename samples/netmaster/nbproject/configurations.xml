@@ -178,6 +178,7 @@
           <developmentMode>5</developmentMode>
           <standard>10</standard>
           <commandlineTool>gcc</commandlineTool>
+          <commandLine>-ggdb</commandLine>
           <preprocessorList>
             <Elem>_CONF_RASPBIAN</Elem>
             <Elem>__USE_BSD</Elem>
