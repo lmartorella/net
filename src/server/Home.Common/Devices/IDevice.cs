@@ -10,11 +10,11 @@ namespace Lucky.Home.Devices
         /// <summary>
         /// Are all the relevant sinks connected?
         /// </summary>
-        bool IsFullOnline { get; }
+        OnlineStatus OnlineStatus { get; }
 
         /// <summary>
-        /// Raised when the <see cref="IsFullOnline"/> changes
+        /// Raised when the <see cref="OnlineStatus"/> changes
         /// </summary>
-        event EventHandler IsFullOnlineChanged;
+        event EventHandler OnlineStatusChanged;
     }
 }

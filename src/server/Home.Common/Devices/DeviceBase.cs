@@ -15,20 +15,19 @@ namespace Lucky.Home.Devices
     /// </summary>
     public abstract class DeviceBase : IDevice
     {
-        private readonly Type[] _requiredSinkTypes;
+        private readonly RequiresAttribute[] _requiredSinkTypes;
         private readonly ObservableCollection<SubSink> _sinks = new ObservableCollection<SubSink>();
-        private bool _isFullOnline;
-        protected ILogger Logger;
+        private OnlineStatus _onlineStatus;
+        protected readonly ILogger Logger;
 
         protected DeviceBase()
         {
             Logger = Manager.GetService<LoggerFactory>().Create(GetType().Name);
-            var attr = (RequiresAttribute[])GetType().GetCustomAttributes(typeof(RequiresAttribute));
-            if (attr == null || attr.Length == 0)
+            _requiredSinkTypes = (RequiresAttribute[])GetType().GetCustomAttributes(typeof(RequiresAttribute));
+            if (_requiredSinkTypes == null || _requiredSinkTypes.Length == 0)
             {
                 throw new ArgumentNullException("Missing mandatory Requires/RequiresArray attribute on type " + GetType().FullName);
             }
-            _requiredSinkTypes = attr.Select(a => a.Type).ToArray();
 
             _sinks.CollectionChanged += (sender, args) =>
             {
@@ -140,11 +139,23 @@ namespace Lucky.Home.Devices
         /// <summary>
         /// Raised when all the registered sinks are registered
         /// </summary>
-        public event EventHandler IsFullOnlineChanged;
+        public event EventHandler OnlineStatusChanged;
 
         private void OnSinkChanged()
         {
-            IsFullOnline = _requiredSinkTypes.All(t => Sinks.Any(s => t.IsInstanceOfType(s) && s.IsOnline));
+            if (_requiredSinkTypes.All(t => Sinks.Any(s => t.Type.IsInstanceOfType(s) && s.IsOnline)))
+            {
+                // Full online
+                OnlineStatus = OnlineStatus.Online;
+            }
+            else if (_requiredSinkTypes.Where(t => !t.Optional).All(t => Sinks.Any(s => t.Type.IsInstanceOfType(s) && s.IsOnline)))
+            {
+                OnlineStatus = OnlineStatus.PartiallyOnline;
+            }
+            else
+            {
+                OnlineStatus = OnlineStatus.Offline;
+            }
         }
 
         protected T GetFirstOnlineSink<T>() where T : SinkBase
@@ -152,21 +163,18 @@ namespace Lucky.Home.Devices
             return Sinks.OfType<T>().FirstOrDefault(s => s.IsOnline);
         }
 
-        public bool IsFullOnline
+        public OnlineStatus OnlineStatus
         {
             get
             {
-                return _isFullOnline;
+                return _onlineStatus;
             }
             private set
             {
-                if (_isFullOnline != value)
+                if (_onlineStatus != value)
                 {
-                    _isFullOnline = value;
-                    if (IsFullOnlineChanged != null)
-                    {
-                        IsFullOnlineChanged(this, EventArgs.Empty);
-                    }
+                    _onlineStatus = value;
+                    OnlineStatusChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }

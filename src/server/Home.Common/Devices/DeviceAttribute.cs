@@ -29,6 +29,7 @@ namespace Lucky.Home.Devices
     {
         public Type Type { get; set; }
         public bool AllowMultiple { get; set; }
+        public bool Optional { get; set; }
 
         public RequiresAttribute() { }
 
