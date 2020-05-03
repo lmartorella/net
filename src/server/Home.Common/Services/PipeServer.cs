@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Lucky.Home.Services
 {
-    [DataContract]
+    [DataContract(Namespace = "Net")]
     public class WebRequest
     {
         /// <summary>
@@ -53,6 +53,10 @@ namespace Lucky.Home.Services
                     // Exc response
                     return Tuple.Create(new WebResponse { Error = exc.Message }, false);
                 }
+            };
+            _server.ManageSerializationError = exc =>
+            {
+                return Tuple.Create(new WebResponse { Error = exc.Message }, false);
             };
             _ = _server.Start();
         }

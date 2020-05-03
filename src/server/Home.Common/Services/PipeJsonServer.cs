@@ -12,7 +12,7 @@ namespace Lucky.Home.Services
     /// Generic based on pipe JSON message.
     /// Creates a Windows named bidirectional pipe for communication
     /// </summary>
-    class PipeJsonServer<TReq, TResp>
+    class PipeJsonServer<TReq, TResp> where TReq: class where TResp: class
     {
         private string _path;
         private DataContractJsonSerializer _reqSer;
@@ -60,6 +60,7 @@ namespace Lucky.Home.Services
         }
 
         public Func<TReq, Task<Tuple<TResp, bool>>> ManageRequest { get; set; }
+        public Func<Exception, Tuple<TResp, bool>> ManageSerializationError{ get; set; }
 
         public async Task Start()
         {
@@ -72,14 +73,25 @@ namespace Lucky.Home.Services
                     // Open named pipe
                     stream = new NamedPipeServerStream(@"\\.\" + _path);
                     await stream.WaitForConnectionAsync();
-                    TReq req;
+                    TReq req = null;
+                    Tuple<TResp, bool> resp = null;
+                    try
                     {
                         var r = new StreamReader(stream, Encoding.UTF8, false, 1024, true);
                         var buf = await r.ReadLineAsync();
                         req = (TReq)RequestSerializer.ReadObject(new MemoryStream(Encoding.UTF8.GetBytes(buf)));
                     }
+                    catch (Exception exc)
+                    {
+                        // Send back error
+                        resp = ManageSerializationError(exc);
+                    }
 
-                    var resp = await ManageRequest(req);
+                    if (resp == null)
+                    {
+                        resp = await ManageRequest(req);
+                    }
+
                     ResponseSerializer.WriteObject(stream, resp.Item1);
                     // New line
                     await stream.WriteAsync(new byte[] { 10, 13 }, 0, 2);
