@@ -132,12 +132,7 @@ namespace Lucky.Home.Protocol
                     Logger.Log("DeadNode", "address", address, "idx", idx);
                 }
 
-                // Register subnodes, asking for identity
-                var children = (await Task.WhenAll(toRefecth.Select(async i => await nodeManager.RegisterUnknownNode(address.SubNode(i))))).ToArray();
-                lock (_lockObject)
-                {
-                    children.Select(c => _lastKnownChildren[c.Address.Index] = c);
-                }
+                await RegisterChildren(toRefecth.Select(i => address.SubNode(i)));
             }
         }
 
@@ -215,7 +210,6 @@ namespace Lucky.Home.Protocol
         
         internal async Task FetchMetadata()
         {
-            Logger.Log("Fetching metadata");
             lock (_lockObject)
             {
                 if (_inFetchSinkData)
@@ -224,12 +218,14 @@ namespace Lucky.Home.Protocol
                 }
                 _inFetchSinkData = true;
             }
+            Logger.Log("Fetching metadata");
 
             Tuple<bool, TcpNodeAddress[]> ret;
             // Repeat until metadata are OK
+            int i = 0;
             while (!(ret = await TryFetchMetadata()).Item1)
             {
-                Logger.Log("RetryMD");
+                Logger.Log("RetryMD", "#", ++i);
                 await Task.Delay(RetryTime);
             }
 
@@ -239,18 +235,37 @@ namespace Lucky.Home.Protocol
                 _inFetchSinkData = false;
             }
 
-            // Now register all the children
-            var nodeManager = Manager.GetService<NodeManager>();
-            // Register subnodes, asking for identity
-            var children = (await Task.WhenAll(ret.Item2.Select(async address => await nodeManager.RegisterUnknownNode(address))))
-                .Where(c => c != null).ToArray();
-
+            var children = new ITcpNode[0];
             lock (_lockObject)
             {
                 _lastKnownChildren.Clear();
-                foreach (var child in children)
+            }
+
+            if (ret.Item2.Length > 0)
+            {
+                // Now register all the children
+                Logger.Log("RegisterChildren", "count", ret.Item2.Length);
+                await RegisterChildren(ret.Item2);
+            }
+        }
+
+        /// <summary>
+        /// Register children, one at a time to avoid timeouts on the master line
+        /// </summary>
+        private async Task RegisterChildren(IEnumerable<TcpNodeAddress> addresses)
+        {
+            var nodeManager = Manager.GetService<NodeManager>();
+
+            // Register subnodes, asking for identity
+            foreach (var address in addresses)
+            {
+                var child = await nodeManager.RegisterUnknownNode(address);
+                if (child != null)
                 {
-                    _lastKnownChildren[child.Address.Index] = child;
+                    lock (_lockObject)
+                    {
+                        _lastKnownChildren[child.Address.Index] = child;
+                    }
                 }
             }
         }
@@ -440,6 +455,10 @@ namespace Lucky.Home.Protocol
                     Logger.Warning("InvalidGuidInEnum", "Id", NodeId, "returned", childNodes.Id);
                 }
                 childMask = childNodes.Mask;
+                if (childMask.Any(b => b != 0))
+                {
+                    Logger.Log("ChildMask", "mask", string.Join(",", DecodeRawMask(childMask, i => i.ToString())));
+                }
 
                 // Then ask for sinks
                 await connection.Write(new GetSinksMessage());
@@ -482,7 +501,7 @@ namespace Lucky.Home.Protocol
 
         private void RegisterSinks(string[] sinks)
         {
-            Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks));
+            Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
             var sinkManager = Manager.GetService<SinkManager>();
 
             // Identity of sink is due to its position in the sink array.

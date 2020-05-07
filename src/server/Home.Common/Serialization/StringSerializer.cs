@@ -48,7 +48,7 @@ namespace Lucky.Home.Serialization
                 var b = await reader.SafeReadAsync(buf, 2);
                 if (b < 2)
                 {
-                    throw new BufferUnderrunException(2, "(sizeof)" + (_fieldName ?? ""));
+                    throw new BufferUnderrunException(2, b, "(sizeof)" + (_fieldName ?? ""));
                 }
                 size = BitConverter.ToInt16(buf, 0);
                 if (size < 0)
@@ -61,7 +61,7 @@ namespace Lucky.Home.Serialization
             int l = await reader.SafeReadAsync(buffer, size);
             if (l < size)
             {
-                throw new BufferUnderrunException(size, _fieldName);
+                throw new BufferUnderrunException(size, l, _fieldName);
             }
             return Encoding.ASCII.GetString(buffer, 0, size);
         }

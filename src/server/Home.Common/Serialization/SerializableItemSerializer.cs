@@ -32,7 +32,7 @@ namespace Lucky.Home.Serialization
                 int s = await reader.SafeReadAsync(buffer, l);
                 if (s < l)
                 {
-                    throw new BufferUnderrunException(l, _fieldName);
+                    throw new BufferUnderrunException(l, s, _fieldName);
                 }
                 return buffer;
             });
