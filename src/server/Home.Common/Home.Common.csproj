@@ -72,6 +72,7 @@
     <Compile Include="Devices\SinkPath.cs" />
     <Compile Include="Services\INotificationService.cs" />
     <Compile Include="Services\JsonIsolatedStorageService.cs" />
+    <Compile Include="Services\LoggerExtensions.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
     <Compile Include="Protocol\TcpConnectionSessionManager.cs" />

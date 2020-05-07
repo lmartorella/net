@@ -1,28 +1,35 @@
-﻿using System.Linq;
-
-namespace Lucky.Home.Services
+﻿namespace Lucky.Home.Services
 {
     /// <summary>
     /// Base class for singleton services
     /// </summary>
     public class ServiceBase : IService
     {
-        protected readonly string LogName;
+        private ILogger _logger;
+        private bool _verboseLog;
+        protected string LogName { get; private set; }
 
         protected ServiceBase(bool verboseLog = false)
         {
-            if (!GetType().GetInterfaces().Any(t => t == typeof(ILoggerFactory)))
+            _verboseLog = verboseLog;
+            LogName = GetType().Name;
+            if (LogName.EndsWith("Service"))
             {
-                LogName = GetType().Name;
-                if (LogName.EndsWith("Service"))
-                {
-                    LogName = LogName.Substring(0, LogName.Length - "Service".Length);
-                }
-                Logger = Manager.GetService<ILoggerFactory>().Create(LogName, verboseLog);
+                LogName = LogName.Substring(0, LogName.Length - "Service".Length);
             }
         }
 
-        public ILogger Logger { get; private set; }
+        public ILogger Logger 
+        { 
+            get 
+            {
+                if (_logger == null)
+                {
+                    _logger = Manager.GetService<ILoggerFactory>().Create(LogName, _verboseLog);
+                }
+                return _logger;
+            } 
+        }
 
         public virtual void Dispose()
         { }

@@ -87,7 +87,7 @@ namespace Lucky.Home.Services
 
         public static void Kill(ILogger logger, string reason)
         {
-            logger.LogStderr("Server killing: + " + reason + ". Stopping devices...");
+            logger.Log("Server killing: + " + reason + ". Stopping devices...");
             _killDefer.TrySetResult(null);
         }
     }

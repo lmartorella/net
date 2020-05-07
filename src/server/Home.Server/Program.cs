@@ -26,11 +26,11 @@ namespace Lucky.Home.Lib
             Manager.Register<JsonIsolatedStorageService, IIsolatedStorageService>();
             Manager.Register<NotificationService, INotificationService>();
 
-            Manager.Register<LoggerFactory, ILoggerFactory>();
             Manager.Register<ConfigurationService, IConfigurationService>();
             Manager.GetService<ConfigurationService>().Init(arguments);
 
-            LoggerFactory.Init(Manager.GetService<PersistenceService>());
+            Manager.Register<LoggerFactory, ILoggerFactory>();
+            Manager.GetService<LoggerFactory>().Init(Manager.GetService<PersistenceService>());
 
             Manager.GetService<IIsolatedStorageService>().InitAppRoot("server");
 
@@ -95,7 +95,7 @@ namespace Lucky.Home.Lib
 
             // Safely stop devices
             await Manager.GetService<DeviceManager>().TerminateAll();
-            logger.LogStderr("Exiting.");
+            logger.Log("Exiting.");
         }
     }
 }

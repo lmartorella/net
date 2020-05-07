@@ -3,10 +3,12 @@ using System.Collections.Generic;
 
 namespace Lucky.Home.Services
 {
-    internal class GuiLoggerFactory : ILoggerFactory, IDisposable  
+    internal class GuiLoggerFactory : ILoggerFactory, IDisposable
     {
         private MainWindow _masterLogger;
         private readonly List<Action> _delayedLogs = new List<Action>();
+
+        public string LastErrorText => null;
 
         public ILogger Create(string name)
         {
@@ -51,6 +53,11 @@ namespace Lucky.Home.Services
                 {
                     _owner._delayedLogs.Add(() => LogFormat(type, message, args));
                 }
+            }
+
+            public void LogFormatErr(string type, string message, params object[] args)
+            {
+                LogFormat(type, message, args);
             }
         }
 

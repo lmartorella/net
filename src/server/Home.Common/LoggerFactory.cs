@@ -9,15 +9,20 @@ namespace Lucky.Home
     /// </summary>
     internal class LoggerFactory : ServiceBase, ILoggerFactory
     {
-        private static string s_logFile;
+        private string _logFile;
+        private string _errFile;
+
+        public string LastErrorText { get; private set; }
 
         public class ConsoleLogger : ILogger
         {
+            private readonly LoggerFactory _owner;
             private readonly string _name;
             public string SubKey { get; set; }
 
-            public ConsoleLogger(string name, string subKey = null)
+            public ConsoleLogger(LoggerFactory owner, string name, string subKey = null)
             {
+                _owner = owner;
                 _name = name;
                 SubKey = subKey;
             }
@@ -27,30 +32,52 @@ namespace Lucky.Home
                 var ts = DateTime.Now.ToString("HH:mm:ss");
                 var line = string.Format(ts + " " + type + "|" + _name + (SubKey != null ? "-" + SubKey : "") + ": " + message, args);
                 Console.WriteLine(line);
-
-                if (s_logFile != null)
-                {
-                    AppendLogFile(line);
-                }
+                _owner.AppendLogFile(_owner._logFile, line);
             }
 
-            private void AppendLogFile(string line)
+            public void LogFormatErr(string type, string message, params object[] args)
             {
-                // Don't crash if another thread is locking the file
-                lock (s_logFile)
+                var ts = DateTime.Now.ToString("HH:mm:ss");
+                var line = string.Format(ts + " " + type + "|" + _name + (SubKey != null ? "-" + SubKey : "") + ": " + message, args);
+                Console.WriteLine(line);
+                _owner.AppendLogFile(_owner._logFile, line);
+                // err.log always contains last error only
+                _owner.OverwriteLogFile(_owner._errFile, line);
+            }
+        }
+
+        private void AppendLogFile(string file, string line)
+        {
+            // Don't crash if another thread is locking the file
+            lock (this)
+            {
+                using (StreamWriter logger = new StreamWriter(file, true))
                 {
-                    using (StreamWriter logger = new StreamWriter(s_logFile, true))
-                    {
-                        logger.WriteLine(line);
-                    }
+                    logger.WriteLine(line);
                 }
             }
         }
 
-        public static void Init(PersistenceService service)
+        private void OverwriteLogFile(string file, string line)
         {
-            s_logFile = Path.Combine(service.GetAppFolderPath(), "log.txt");
-            Console.WriteLine("LOG: " + s_logFile);
+            lock (this)
+            {
+                using (StreamWriter logger = new StreamWriter(file))
+                {
+                    logger.WriteLine(line);
+                }
+            }
+        }
+
+        public void Init(PersistenceService service)
+        {
+            _logFile = Path.Combine(service.GetAppFolderPath(), "log.txt");
+            _errFile = Path.Combine(service.GetAppFolderPath(), "err.txt");
+            if (File.Exists(_errFile))
+            {
+                LastErrorText = File.ReadAllText(_errFile);
+                File.Delete(_errFile);
+            }
         }
 
         /// <summary>
@@ -58,7 +85,7 @@ namespace Lucky.Home
         /// </summary>
         public ILogger Create(string name)
         {
-            return new ConsoleLogger(name);
+            return new ConsoleLogger(this, name);
         }
 
         /// <summary>
@@ -66,7 +93,7 @@ namespace Lucky.Home
         /// </summary>
         public ILogger Create(string name, bool verbose)
         {
-            return new ConsoleLogger(name);
+            return new ConsoleLogger(this, name);
         }
 
         /// <summary>
@@ -74,7 +101,7 @@ namespace Lucky.Home
         /// </summary>
         public ILogger Create(string name, string subKey)
         {
-            return new ConsoleLogger(name, subKey);
+            return new ConsoleLogger(this, name, subKey);
         }
     }
 }
