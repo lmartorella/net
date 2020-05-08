@@ -59,48 +59,56 @@ namespace Lucky.Home.Protocol
 
         public async Task Heartbeat(TcpNodeAddress address)
         {
-            Dezombie("hbeat", address);
-
-            // Check for zombied children and try to de-zombie it
-            ITcpNode[] lastKnownChildren;
-            lock (_lockObject)
+            var wasZombie = Dezombie("hbeat", address);
+            if (wasZombie)
             {
-                lastKnownChildren = _lastKnownChildren.Values.ToArray();
+                // Refetch metadata, something can be changed
+                await FetchMetadata();
             }
-            if (lastKnownChildren.Any(n => n == null || n.IsZombie))
+            else
             {
-                // Re-fire the children request and de-zombie
-                var subNodes = await GetChildrenIndexes();
-                if (subNodes != null)
+
+                // Check for zombied children and try to de-zombie it
+                ITcpNode[] lastKnownChildren;
+                lock (_lockObject)
                 {
-                    // If same children, simply de-zombie
-                    var sameChildren = lastKnownChildren.Select(n => n != null ? n.Address.Index : -1).SequenceEqual(subNodes);
-                    if (sameChildren)
+                    lastKnownChildren = _lastKnownChildren.Values.ToArray();
+                }
+                if (lastKnownChildren.Any(n => n == null || n.IsZombie))
+                {
+                    // Re-fire the children request and de-zombie
+                    var subNodes = await GetChildrenIndexes();
+                    if (subNodes != null)
                     {
-                        // Directly de-zombie all children
-                        foreach (var node in lastKnownChildren.Where(c => c == null || c.IsZombie))
+                        // If same children, simply de-zombie
+                        var sameChildren = lastKnownChildren.Select(n => n != null ? n.Address.Index : -1).SequenceEqual(subNodes);
+                        if (sameChildren)
                         {
-                            // Re-fetch reset status
-                            await node.Relogin(node.Address);
+                            // Directly de-zombie all children
+                            foreach (var node in lastKnownChildren.Where(c => c == null || c.IsZombie))
+                            {
+                                // Re-fetch reset status
+                                await node.Relogin(node.Address);
+                            }
+                        }
+                        else
+                        {
+                            // Else refetch metadata, something changed
+                            await FetchMetadata();
                         }
                     }
-                    else
-                    {
-                        // Else refetch metadata, something changed
-                        await FetchMetadata();
-                    }
+                    // Else error in fetching children...
                 }
-                // Else error in fetching children...
-            }
 
-            // Ask system sink if ETH node DEBUG DEBUG
-            if (!address.IsSubNode)
-            {
-                var systemSink = Sink<SystemSink>();
-                if (systemSink != null)
+                // Ask system sink if ETH node
+                if (!address.IsSubNode && wasZombie)
                 {
-                    // Ask system status
-                    await systemSink.FetchStatus();
+                    var systemSink = Sink<SystemSink>();
+                    if (systemSink != null)
+                    {
+                        // Ask system status
+                        await systemSink.FetchStatus();
+                    }
                 }
             }
         }
@@ -235,12 +243,10 @@ namespace Lucky.Home.Protocol
                 _inFetchSinkData = false;
             }
 
-            var children = new ITcpNode[0];
             lock (_lockObject)
             {
                 _lastKnownChildren.Clear();
             }
-
             if (ret.Item2.Length > 0)
             {
                 // Now register all the children
@@ -346,7 +352,10 @@ namespace Lucky.Home.Protocol
             return ok;
         }
 
-        internal void Dezombie(string reason, TcpNodeAddress address)
+        /// <summary>
+        /// Returns true if the node was actually de-zombied
+        /// </summary>
+        internal bool Dezombie(string reason, TcpNodeAddress address)
         {
             // Update address
             lock (Address)
@@ -364,6 +373,11 @@ namespace Lucky.Home.Protocol
                 IsZombie = false;
                 Manager.GetService<INotificationService>().EnqueueStatusUpdate("Errori bus", "Risolto: ristabilita connessione con " + NodeId);
                 UpdateSinks();
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -380,8 +394,7 @@ namespace Lucky.Home.Protocol
 
         private void UpdateSinks()
         {
-            var sinkManager = Manager.GetService<SinkManager>();
-            sinkManager.UpdateSinks();
+            Manager.GetService<SinkManager>().UpdateSinks();
         }
 
         private async Task<int[]> GetChildrenIndexes()
