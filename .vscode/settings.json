@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "pch.h": "c",
-        "bus.h": "c",
-        "persistence.h": "c"
-    }
-}
