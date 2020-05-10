@@ -101,7 +101,7 @@ namespace Lucky.Home.Protocol
                 }
 
                 // Ask system sink if ETH node
-                if (!address.IsSubNode && wasZombie)
+                if (!address.IsSubNode && wasZombie && !IsZombie)
                 {
                     var systemSink = Sink<SystemSink>();
                     if (systemSink != null)
@@ -123,7 +123,7 @@ namespace Lucky.Home.Protocol
             // Start data fetch asynchrously
             // This resets also the dirty children state
             await FetchMetadata();
-            if (childrenChanged != null)
+            if (childrenChanged != null && !IsZombie)
             {
                 var nodeManager = Manager.GetService<NodeManager>();
 
@@ -233,7 +233,12 @@ namespace Lucky.Home.Protocol
             int i = 0;
             while (!(ret = await TryFetchMetadata()).Item1)
             {
-                Logger.Log("RetryMD", "#", ++i);
+                if (++i > 10)
+                {
+                    ToZombie();
+                    return;
+                }
+                Logger.Log("RetryMD", "#", i);
                 await Task.Delay(RetryTime);
             }
 

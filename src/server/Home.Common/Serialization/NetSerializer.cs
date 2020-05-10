@@ -11,25 +11,15 @@ namespace Lucky.Home.Serialization
     public class NetSerializer<T>
     {
         private static readonly TypeSerializer s_directSerializer;
-        private static readonly ILogger s_logger;
 
         static NetSerializer()
         {
             s_directSerializer = new TypeSerializer(null, typeof(T));
-            s_logger = Manager.GetService<LoggerFactory>().Create("NetSerializer");
         }
 
         public static async Task<T> Read(Stream reader)
         {
-            try
-            {
-                return (T)(await s_directSerializer.Deserialize(reader, null));
-            }
-            catch (BufferUnderrunException exc)
-            {
-                s_logger.Error(exc.Message);
-                return default(T);
-            }
+            return (T)(await s_directSerializer.Deserialize(reader, null));
         }
 
         public static Task Write(Stream writer, T value)

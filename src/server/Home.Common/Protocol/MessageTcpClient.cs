@@ -112,6 +112,13 @@ namespace Lucky.Home.Protocol
             {
                 return await NetSerializer<T>.Read(_stream);
             }
+            catch (BufferUnderrunException exc)
+            {
+                _logger.Error(exc.Message);
+                // Destroy the channel
+                Close(false);
+                return default(T);
+            }
             catch (Exception exc)
             {
                 Exception src = exc.GetBaseException();

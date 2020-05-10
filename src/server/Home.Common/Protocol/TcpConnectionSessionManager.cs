@@ -128,7 +128,7 @@ namespace Lucky.Home.Protocol
                     }
                 });
 
-                if ((DateTime.Now - _openTime) > MAX_LIFE_TIME)
+                if ((DateTime.Now - _openTime) > MAX_LIFE_TIME && !Client.IsClosed)
                 {
                     // Close session
                     _logger.Log("DEBUG:MaxLive", "EP", Client.EndPoint);
@@ -168,8 +168,6 @@ namespace Lucky.Home.Protocol
 
                     Action<string> release = isAborted =>
                     {
-                        // Release is thread-safe
-                        connection.Release();
                         lock (_connections)
                         {
                             if (isAborted != null)
@@ -182,6 +180,8 @@ namespace Lucky.Home.Protocol
                                 _connections.Remove(endPoint);
                             }
                         }
+                        // Release is thread-safe
+                        connection.Release();
                     };
 
                     // Acquire it outside the hashtable lock, since this operation can be blocking and we should wait for releases.
