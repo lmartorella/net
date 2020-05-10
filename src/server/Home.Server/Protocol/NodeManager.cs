@@ -48,6 +48,7 @@ namespace Lucky.Home.Protocol
                 }
                 else
                 {
+                    // Node already registered. Do a relogin/status fetch
                     relogin = true;
                 }
             }

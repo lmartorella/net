@@ -67,7 +67,6 @@ namespace Lucky.Home.Protocol
             }
             else
             {
-
                 // Check for zombied children and try to de-zombie it
                 ITcpNode[] lastKnownChildren;
                 lock (_lockObject)
@@ -103,13 +102,18 @@ namespace Lucky.Home.Protocol
                 // Ask system sink if ETH node
                 if (!address.IsSubNode && wasZombie && !IsZombie)
                 {
-                    var systemSink = Sink<SystemSink>();
-                    if (systemSink != null)
-                    {
-                        // Ask system status
-                        await systemSink.FetchStatus();
-                    }
+                    await FetchSystemStatus();
                 }
+            }
+        }
+
+        private async Task FetchSystemStatus()
+        {
+            var systemSink = Sink<SystemSink>();
+            if (systemSink != null)
+            {
+                // Ask system status
+                await systemSink.FetchStatus();
             }
         }
 
@@ -120,9 +124,10 @@ namespace Lucky.Home.Protocol
         {
             Dezombie("relogin: " + address.ToString() + ", childrenChanged: " + ((childrenChanged != null) ? string.Join(";", childrenChanged.Select(c => c.ToString())) : "<null>"), address);
 
-            // Start data fetch asynchrously
-            // This resets also the dirty children state
+            // Start data fetch asynchronously
+            // This resets also the dirty children state. This will fetch the reset status as well
             await FetchMetadata();
+
             if (childrenChanged != null && !IsZombie)
             {
                 var nodeManager = Manager.GetService<NodeManager>();
@@ -494,7 +499,7 @@ namespace Lucky.Home.Protocol
             }
 
             // Now register sinks
-            RegisterSinks(sinks);
+            await RegisterSinks(sinks);
 
             // Create child addresses
             var subNodes = DecodeRawMask(childMask, i => address.SubNode(i + 1)).ToArray();
@@ -517,17 +522,33 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private void RegisterSinks(string[] sinks)
+        private async Task RegisterSinks(string[] sinks)
         {
-            Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
             var sinkManager = Manager.GetService<SinkManager>();
 
             // Identity of sink is due to its position in the sink array.
             // Null sink are valid, it means no sink at that position. Useful for dynamic add/remove of sinks.
+            bool fetchSystemStatus = false;
             lock (_sinks)
             {
-                ClearSinks();
-                _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, this, i)));
+                // if sinks are not changed, don't recreate it
+                if (_sinks.Select(s => s.FourCc).SequenceEqual(sinks))
+                {
+                    Logger.Log("SinksOk", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
+                    // Don't recreate the sinks. However ask for status errors...
+                    fetchSystemStatus = true;
+                }
+                else
+                {
+                    Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
+                    ClearSinks();
+                    _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, this, i)));
+                }
+            }
+            
+            if (fetchSystemStatus)
+            {
+                await FetchSystemStatus();
             }
         }
 

@@ -28,12 +28,6 @@ namespace Lucky.Home.Sinks
         public async Task FetchStatus()
         { 
             Status = await GetBootStatus();
-            if (Status == null)
-            {
-                // Schedule a retry
-                await Task.Delay(1500);
-                await FetchStatus();
-            }
         }
 
         private enum SysCommand : byte
@@ -88,6 +82,7 @@ namespace Lucky.Home.Sinks
             if (status == null)
             {
                 // EOF?
+                Logger.Log("Error fetching system sink status");
                 return null;
             }
 
