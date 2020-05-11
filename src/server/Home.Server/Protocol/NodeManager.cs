@@ -88,18 +88,35 @@ namespace Lucky.Home.Protocol
 
         public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
         {
-            Logger.Log("RegisterUnknownNode", "address", address);
+            // Check if a node already exists for such address. In that case, use that instance to fetch GUID and 
+            // then check if already registered
+            var node = FindNodeByAddress(address) as TcpNode;
+            var nodeCreated = false;
+            if (node == null)
+            {
+                node = new TcpNode(new NodeId(), address);
+                nodeCreated = true;
+            }
+
             // Ask for guid
-            var id = await new TcpNode(new NodeId(), address).TryFetchGuid();
+            var id = await node.TryFetchGuid();
             if (id == null)
             {
                 // Error in fetching
                 Logger.Warning("Error/timeout in RegisterUnknownNode of " + address);
                 return null;
             }
+
+            if (nodeCreated || !id.Equals(node.NodeId))
+            {
+                Logger.Log("RegisterUnknownNode", "address", address);
+                return await RegisterNode(id, address);
+            }
             else
             {
-                return await RegisterNode(id, address);
+                // The node is exactly the same, simply re-fetch metadata
+                await node.FetchMetadata();
+                return node;
             }
         }
 
@@ -167,9 +184,14 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public ITcpNode FindNode(TcpNodeAddress address)
+        public ITcpNode FindNodeByAddress(TcpNodeAddress address)
         {
-            return FindUnnamed(address);
+            var ret = FindUnnamed(address);
+            if (ret == null)
+            {
+                ret = _nodes.Values.FirstOrDefault(n => n.Address.Equals(address));
+            }
+            return ret;
         }
 
         public IEnumerable<ITcpNode> Nodes
