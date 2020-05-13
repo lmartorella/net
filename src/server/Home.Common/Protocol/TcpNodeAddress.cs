@@ -20,7 +20,7 @@ namespace Lucky.Home.Protocol
         public readonly ushort ControlPort;
 
         /// <summary>
-        /// The remote end-point IP port
+        /// The child subindex. 0 means the node itself (IP), >= 1 are child sub-indexes
         /// </summary>
         public readonly int Index;
 

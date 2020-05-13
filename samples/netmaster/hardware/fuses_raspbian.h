@@ -29,6 +29,7 @@ typedef DWORD TICK_TYPE;
 void CLRWDT();
 void enableInterrupts();
 void rom_poll();
+#define LAST_EXC_TYPE const char*
 void fatal(const char* str);
 
 #endif /* FUSES_RASPBIAN_H */

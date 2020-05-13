@@ -23,6 +23,7 @@ namespace Lucky.Home.Protocol
 
         internal const string HeloMessageCode = "HEL4";
         internal const string HeartbeatMessageCode = "HTBT";
+        internal const string HeartbeatMessageCode2 = "HTB2";
         internal const string SubNodeChanged = "CCHN";
         
         /// <summary>

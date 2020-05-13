@@ -27,7 +27,6 @@ namespace Lucky.Home.Protocol
         public bool IsZombie { get; set; }
 
         private readonly object _lockObject = new object();
-        private bool _inFetchSinkData;
         private bool _inRename;
         private static readonly TimeSpan RetryTime = TimeSpan.FromSeconds(5);
         private TcpConnectionSessionManager _tcpConnectionFactory;
@@ -37,7 +36,7 @@ namespace Lucky.Home.Protocol
         /// </summary>
         private readonly List<SinkBase> _sinks = new List<SinkBase>();
 
-        private Dictionary<int, ITcpNode> _lastKnownChildren = new Dictionary<int, ITcpNode>();
+        private List<ITcpNode> _lastKnownChildren = new List<ITcpNode>();
         private DateTime? _firstFailTime;
         private readonly E2EStatLogger _e2eStatLogger;
 
@@ -57,59 +56,58 @@ namespace Lucky.Home.Protocol
 
         private ILogger Logger { get; set; }
 
-        public async Task Heartbeat(TcpNodeAddress address)
+        public async Task Heartbeat(TcpNodeAddress address, int[] aliveChildren)
         {
             var wasZombie = Dezombie("hbeat", address);
             if (wasZombie)
             {
                 // Refetch metadata, something can be changed
-                await FetchMetadata();
+                await FetchMetadata("heartbeat");
             }
             else
             {
-
                 // Check for zombied children and try to de-zombie it
                 ITcpNode[] lastKnownChildren;
                 lock (_lockObject)
                 {
-                    lastKnownChildren = _lastKnownChildren.Values.ToArray();
+                    lastKnownChildren = _lastKnownChildren.ToArray();
                 }
-                if (lastKnownChildren.Any(n => n == null || n.IsZombie))
+                if (lastKnownChildren.Any(n => n.IsZombie))
                 {
-                    // Re-fire the children request and de-zombie
-                    var subNodes = await GetChildrenIndexes();
-                    if (subNodes != null)
-                    {
-                        // If same children, simply de-zombie
-                        var sameChildren = lastKnownChildren.Select(n => n != null ? n.Address.Index : -1).SequenceEqual(subNodes);
-                        if (sameChildren)
-                        {
-                            // Directly de-zombie all children
-                            foreach (var node in lastKnownChildren.Where(c => c == null || c.IsZombie))
-                            {
-                                // Re-fetch reset status
-                                await node.Relogin(node.Address);
-                            }
-                        }
-                        else
-                        {
-                            // Else refetch metadata, something changed
-                            await FetchMetadata();
-                        }
-                    }
-                    // Else error in fetching children...
+                    // Refetch metadata and children, something changed
+                    await FetchMetadata("heartbeat");
                 }
+                else
+                {
+                    // Do children check
+                    var lastKnownChildrenIndexes = lastKnownChildren.Select(n => n.Address.Index);
+                    if (aliveChildren != null && !lastKnownChildrenIndexes.SequenceEqual(aliveChildren))
+                    {
+                        Func<IEnumerable<int>, string> ToString = coll =>
+                        {
+                            return string.Join(";", coll.Select(i => i.ToString()));
+                        };
+                        Logger.Log("DiffChildInHtbt", "mine", ToString(lastKnownChildrenIndexes), "rcvd", ToString(aliveChildren));
+                        // Refetch metadata and children, something changed
+                        await FetchMetadata("heartbeat");
+                    }
+                }
+            }
 
-                // Ask system sink if ETH node
-                if (!address.IsSubNode && wasZombie && !IsZombie)
-                {
-                    var systemSink = Sink<SystemSink>();
-                    if (systemSink != null)
-                    {
-                        // Ask system status
-                        await systemSink.FetchStatus();
-                    }
-                }
+            // Ask system sink after dezombie
+            if (wasZombie && !IsZombie)
+            {
+                await FetchSystemStatus();
+            }
+        }
+
+        private async Task FetchSystemStatus()
+        {
+            var systemSink = Sink<SystemSink>();
+            if (systemSink != null)
+            {
+                // Ask system status
+                await systemSink.FetchStatus();
             }
         }
 
@@ -120,9 +118,10 @@ namespace Lucky.Home.Protocol
         {
             Dezombie("relogin: " + address.ToString() + ", childrenChanged: " + ((childrenChanged != null) ? string.Join(";", childrenChanged.Select(c => c.ToString())) : "<null>"), address);
 
-            // Start data fetch asynchrously
-            // This resets also the dirty children state
-            await FetchMetadata();
+            // Start data fetch asynchronously
+            // This resets also the dirty children state. This will fetch the reset status as well
+            await FetchMetadata("relogin");
+
             if (childrenChanged != null && !IsZombie)
             {
                 var nodeManager = Manager.GetService<NodeManager>();
@@ -130,7 +129,7 @@ namespace Lucky.Home.Protocol
                 int[] knownIdxs;
                 lock (_lockObject)
                 {
-                    knownIdxs = _lastKnownChildren.Keys.ToArray();
+                    knownIdxs = _lastKnownChildren.Select(c => c.Address.Index).ToArray();
                 }
                 // Only fetch changed nodes AND present nodes
                 var toRefecth = childrenChanged.Where(i => knownIdxs.Contains(i));
@@ -140,7 +139,7 @@ namespace Lucky.Home.Protocol
                     Logger.Log("DeadNode", "address", address, "idx", idx);
                 }
 
-                await RegisterChildren(toRefecth.Select(i => address.SubNode(i)));
+                await RegisterChildren(toRefecth.Select(i => address.SubNode(i)), "relogin");
             }
         }
 
@@ -215,8 +214,12 @@ namespace Lucky.Home.Protocol
             // 0x1e
             public byte Ack;
         }
-        
-        internal async Task FetchMetadata()
+
+        private bool _inFetchSinkData;
+        /// <summary>
+        /// Fetch metadata and rebuild the children list
+        /// </summary>
+        internal async Task FetchMetadata(string context)
         {
             lock (_lockObject)
             {
@@ -226,64 +229,83 @@ namespace Lucky.Home.Protocol
                 }
                 _inFetchSinkData = true;
             }
-            Logger.Log("Fetching metadata");
 
-            Tuple<bool, TcpNodeAddress[]> ret;
-            // Repeat until metadata are OK
-            int i = 0;
-            while (!(ret = await TryFetchMetadata()).Item1)
+            try
             {
-                if (++i > 10)
-                {
-                    ToZombie();
-                    return;
-                }
-                Logger.Log("RetryMD", "#", i);
-                await Task.Delay(RetryTime);
-            }
+                Logger.Log("Fetching metadata");
 
-            // Ok, metadata of the master node are OK
-            lock (_lockObject)
+                Tuple<bool, TcpNodeAddress[]> ret;
+                // Repeat until metadata are OK
+                int i = 0;
+                while (!(ret = await TryFetchMetadata()).Item1)
+                {
+                    if (++i > 10)
+                    {
+                        ToZombie();
+                        return;
+                    }
+                    Logger.Log("RetryMD", "#", i);
+                    await Task.Delay(RetryTime);
+                }
+
+                lock (_lockObject)
+                {
+                    _lastKnownChildren.Clear();
+                }
+                if (ret.Item2.Length > 0)
+                {
+                    // Now register all the children
+                    Logger.Log("RegisterChildren", "count", ret.Item2.Length);
+                    await RegisterChildren(ret.Item2, context);
+                }
+            }
+            finally
             {
                 _inFetchSinkData = false;
             }
-
-            lock (_lockObject)
-            {
-                _lastKnownChildren.Clear();
-            }
-            if (ret.Item2.Length > 0)
-            {
-                // Now register all the children
-                Logger.Log("RegisterChildren", "count", ret.Item2.Length);
-                await RegisterChildren(ret.Item2);
-            }
         }
 
+        private bool _isRegisterChildren = false;
         /// <summary>
         /// Register children, one at a time to avoid timeouts on the master line
         /// </summary>
-        private async Task RegisterChildren(IEnumerable<TcpNodeAddress> addresses)
+        private async Task RegisterChildren(IEnumerable<TcpNodeAddress> addresses, string context)
         {
-            var nodeManager = Manager.GetService<NodeManager>();
-
-            // Register subnodes, asking for identity
-            foreach (var address in addresses)
+            lock (_lockObject)
             {
-                var child = await nodeManager.RegisterUnknownNode(address);
-                if (child != null)
+                if (_isRegisterChildren)
                 {
-                    lock (_lockObject)
+                    return;
+                }
+                _isRegisterChildren = true;
+            }
+
+            try
+            {
+                var nodeManager = Manager.GetService<NodeManager>();
+
+                // Register subnodes, asking for identity
+                foreach (var address in addresses)
+                {
+                    var child = await nodeManager.RegisterUnknownNode(address, context);
+                    if (child != null)
                     {
-                        _lastKnownChildren[child.Address.Index] = child;
+                        lock (_lockObject)
+                        {
+                            _lastKnownChildren.Add(child);
+                        }
                     }
                 }
             }
+            finally
+            {
+                _isRegisterChildren = false;
+            }
         }
 
-        private async Task<bool> OpenNodeSession(Func<TcpConnectionSession, TcpNodeAddress, Task<bool>> handler, [CallerMemberName] string context = null)
+        private async Task<bool> OpenNodeSession(Func<TcpConnectionSession, TcpNodeAddress, Task<bool>> handler, bool dezombie = false, [CallerMemberName] string context = null)
         {
-            if (IsZombie)
+            if (!dezombie && IsZombie)
             {
                 // Avoid thrashing the network
                 return false;
@@ -402,6 +424,9 @@ namespace Lucky.Home.Protocol
             Manager.GetService<SinkManager>().UpdateSinks();
         }
 
+        /// <summary>
+        /// Fetch and return the list of children addresses, +1 base
+        /// </summary>
         private async Task<int[]> GetChildrenIndexes()
         {
             int[] ret = null;
@@ -424,9 +449,8 @@ namespace Lucky.Home.Protocol
 
         internal async Task<NodeId> TryFetchGuid()
         {
-            // Init a METADATA fetch connection
+            // Init a METADATA fetch connection, ignoring the zombie status
             NodeId id = null;
-
             if (!await OpenNodeSession(async (connection, addr) =>
             {
                 // Ask for subnodes
@@ -439,7 +463,7 @@ namespace Lucky.Home.Protocol
                 }
                 id = childNodes.Id;
                 return true;
-            }))
+            }, true))
             {
                 // Error, no metadata
                 return null;
@@ -494,7 +518,7 @@ namespace Lucky.Home.Protocol
             }
 
             // Now register sinks
-            RegisterSinks(sinks);
+            await RegisterSinks(sinks);
 
             // Create child addresses
             var subNodes = DecodeRawMask(childMask, i => address.SubNode(i + 1)).ToArray();
@@ -517,17 +541,33 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        private void RegisterSinks(string[] sinks)
+        private async Task RegisterSinks(string[] sinks)
         {
-            Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
             var sinkManager = Manager.GetService<SinkManager>();
 
             // Identity of sink is due to its position in the sink array.
             // Null sink are valid, it means no sink at that position. Useful for dynamic add/remove of sinks.
+            bool fetchSystemStatus = false;
             lock (_sinks)
             {
-                ClearSinks();
-                _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, this, i)));
+                // if sinks are not changed, don't recreate it
+                if (_sinks.Select(s => s.FourCc).SequenceEqual(sinks))
+                {
+                    Logger.Log("SinksOk", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
+                    // Don't recreate the sinks. However ask for status errors...
+                    fetchSystemStatus = true;
+                }
+                else
+                {
+                    Logger.Log("Registering sinks", "sinkIds", string.Join(",", sinks.Select(s => s.Trim())));
+                    ClearSinks();
+                    _sinks.AddRange(sinks.Select((s, i) => sinkManager.CreateSink(s, this, i)));
+                }
+            }
+            
+            if (fetchSystemStatus)
+            {
+                await FetchSystemStatus();
             }
         }
 
@@ -543,16 +583,6 @@ namespace Lucky.Home.Protocol
                 }
                 _sinks.Clear();
             }
-        }
-
-        private void RenameInternal(NodeId newId)
-        {
-            NodeId oldId = NodeId;
-            NodeId = newId;
-            Manager.GetService<NodeManager>().BeginRenameNode(this, newId);
-            Manager.GetService<NodeManager>().EndRenameNode(this, oldId, newId, true);
-
-            Logger.Warning("CorrectGuidAssigned", "oldId", oldId, "newId", newId);
         }
 
         /// <summary>
@@ -620,7 +650,7 @@ namespace Lucky.Home.Protocol
                 // Returns when done, and the protocol should leave the channel clean
                 await writeHandler(connection);
                 return true;
-            }, "WriteToSink:" + context);
+            }, false, "WriteToSink:" + context);
         }
 
         public async Task<bool> ReadFromSink(int sinkId, Func<IConnectionReader, Task> readHandler, int timeout = 0, [CallerMemberName] string context = "")
@@ -638,7 +668,7 @@ namespace Lucky.Home.Protocol
                 _e2eStatLogger.AddE2EReadSample(end - start);
 
                 return true;
-            }, "ReadFromSink:" + context);
+            }, false, "ReadFromSink:" + context);
 
             if (timeout > 0)
             {

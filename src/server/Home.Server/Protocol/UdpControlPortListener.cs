@@ -52,53 +52,61 @@ namespace Lucky.Home.Protocol
                 {
                     using (var reader = new MemoryStream(bytes))
                     {
-                        var message = await DecodeHelloMessage(reader);
-                        var tcpNodeAddress = new TcpNodeAddress(result.RemoteEndPoint.Address, message.HeloMessage.ControlPort, 0);
-                        if (message.PingMessageType == PingMessageType.Unknown)
+                        var message = await DecodeHelloMessage(reader, result.RemoteEndPoint.Address);
+                        if (message == null || message.MessageType == PingMessageType.Unknown)
                         {
                             _logger.Warning("WRONGMSG");
                         }
                         else
                         {
-                            if (message.PingMessageType != PingMessageType.Heartbeat)
+                            if (message.MessageType != PingMessageType.Heartbeat)
                             {
-                                _logger.Log("NodeMessage", "ID", message.HeloMessage.NodeId, "messageType", message.PingMessageType);
+                                _logger.Log("NodeMessage", "ID", message.NodeId, "messageType", message.MessageType);
                             }
-                            NodeMessage?.Invoke(this, new NodeMessageEventArgs(message.HeloMessage.NodeId, tcpNodeAddress, message.PingMessageType, message.ChildrenChanged));
+                            NodeMessage?.Invoke(this, message);
                         }
                     }
                 }
             }
         }
 
-        private class DecodedHeloMessage
+        private async Task<NodeMessageEventArgs> DecodeHelloMessage(Stream stream, IPAddress address)
         {
-            public PingMessageType PingMessageType;
-            public HeloMessage HeloMessage;
-            public int[] ChildrenChanged;
-        }
+            var ret = new NodeMessageEventArgs();
+            ret.MessageType = PingMessageType.Unknown;
 
-        private async Task<DecodedHeloMessage> DecodeHelloMessage(Stream stream)
-        {
-            var ret = new DecodedHeloMessage();
-            ret.PingMessageType = PingMessageType.Unknown;
-            var msg = ret.HeloMessage = await NetSerializer<HeloMessage>.Read(stream);
+            var msg = await NetSerializer<HeloMessage>.Read(stream);
             if (msg != null && msg.Preamble.Code == HeloMessage.PreambleValue)
             {
+                ret.Address = new TcpNodeAddress(address, msg.ControlPort, 0);
+                ret.NodeId = msg.NodeId;
+
                 switch (msg.MessageCode.Code)
                 {
                     case HeloMessage.HeartbeatMessageCode:
-                        ret.PingMessageType = PingMessageType.Heartbeat;
+                        ret.MessageType = PingMessageType.Heartbeat;
+                        break;
+                    case HeloMessage.HeartbeatMessageCode2:
+                        {
+                            var mask = (await NetSerializer<HeloSubNodeChangedMessage>.Read(stream))?.Mask;
+                            if (mask != null)
+                            {
+                                ret.AliveChildren = TcpNode.DecodeRawMask(mask, i => i + 1).ToArray();
+                                ret.MessageType = PingMessageType.Heartbeat;
+                            }
+                        }
                         break;
                     case HeloMessage.HeloMessageCode:
-                        ret.PingMessageType = PingMessageType.Hello;
+                        ret.MessageType = PingMessageType.Hello;
                         break;
                     case HeloMessage.SubNodeChanged:
-                        var mask = (await NetSerializer<HeloSubNodeChangedMessage>.Read(stream))?.Mask;
-                        if (mask != null)
                         {
-                            ret.ChildrenChanged = TcpNode.DecodeRawMask(mask, i => i + 1).ToArray();
-                            ret.PingMessageType = PingMessageType.SubNodeChanged;
+                            var mask = (await NetSerializer<HeloSubNodeChangedMessage>.Read(stream))?.Mask;
+                            if (mask != null)
+                            {
+                                ret.ChildrenChanged = TcpNode.DecodeRawMask(mask, i => i + 1).ToArray();
+                                ret.MessageType = PingMessageType.SubNodeChanged;
+                            }
                         }
                         break;
                 }

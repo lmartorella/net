@@ -48,6 +48,7 @@ namespace Lucky.Home.Protocol
                 }
                 else
                 {
+                    // Node already registered. Do a relogin/status fetch
                     relogin = true;
                 }
             }
@@ -59,7 +60,7 @@ namespace Lucky.Home.Protocol
             }
             else
             {
-                await node.FetchMetadata();
+                await node.FetchMetadata("registerNamed");
             }
             return node;
         }
@@ -81,33 +82,51 @@ namespace Lucky.Home.Protocol
                     _unnamedNodes.Add(address, newNode);
                 }
             }
-            await newNode.FetchMetadata();
+            await newNode.FetchMetadata("registerNew");
             return newNode;
         }
 
-        public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
+        public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address, string context)
         {
-            Logger.Log("RegisterUnknownNode", "address", address);
+            // Check if a node already exists for such address. In that case, use that instance to fetch GUID and 
+            // then check if already registered
+            var node = FindNodeByAddress(address) as TcpNode;
+            var nodeCreated = false;
+            if (node == null)
+            {
+                node = new TcpNode(new NodeId(), address);
+                nodeCreated = true;
+            }
+
             // Ask for guid
-            var id = await new TcpNode(new NodeId(), address).TryFetchGuid();
+            var id = await node.TryFetchGuid();
             if (id == null)
             {
                 // Error in fetching
                 Logger.Warning("Error/timeout in RegisterUnknownNode of " + address);
                 return null;
             }
+
+            if (nodeCreated || !id.Equals(node.NodeId))
+            {
+                Logger.Log("RegisterUnknownNode", "address", address);
+                return await RegisterNode(id, address);
+            }
             else
             {
-                return await RegisterNode(id, address);
+                // The node is exactly the same, simply re-fetch metadata
+                await node.FetchMetadata("registerUnknown");
+                node.Dezombie(context, address);
+                return node;
             }
         }
 
-        public async Task HeartbeatNode(NodeId id, TcpNodeAddress address)
+        public async Task HeartbeatNode(NodeId id, TcpNodeAddress address, int[] aliveChildren)
         {
             TcpNode node;
             lock (_nodeLock)
             {
-                node = (!id.IsEmpty) ? FindById(id) : FindUnnamed(address);
+                node = (id.IsEmpty) ? FindUnnamed(address) : FindById(id);
             }
 
             // Not known?
@@ -119,7 +138,7 @@ namespace Lucky.Home.Protocol
             else
             {
                 // Normal heartbeat
-                await node.Heartbeat(address);
+                await node.Heartbeat(address, aliveChildren);
             }
         }
 
@@ -166,9 +185,14 @@ namespace Lucky.Home.Protocol
             }
         }
 
-        public ITcpNode FindNode(TcpNodeAddress address)
+        public ITcpNode FindNodeByAddress(TcpNodeAddress address)
         {
-            return FindUnnamed(address);
+            var ret = FindUnnamed(address);
+            if (ret == null)
+            {
+                ret = _nodes.Values.FirstOrDefault(n => n.Address.Equals(address));
+            }
+            return ret;
         }
 
         public IEnumerable<ITcpNode> Nodes

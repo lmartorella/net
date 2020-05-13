@@ -30,7 +30,7 @@ namespace Lucky.Home.Admin
             ITcpNode node;
             if (oldId.IsEmpty)
             {
-                node = _manager.FindNode(TcpNodeAddress.Parse(nodeAddress));
+                node = _manager.FindNodeByAddress(TcpNodeAddress.Parse(nodeAddress));
             }
             else
             {
@@ -56,7 +56,7 @@ namespace Lucky.Home.Admin
             }
             else
             {
-                node = _manager.FindNode(TcpNodeAddress.Parse(nodeAddress));
+                node = _manager.FindNodeByAddress(TcpNodeAddress.Parse(nodeAddress));
             }
 
             if (node != null)
