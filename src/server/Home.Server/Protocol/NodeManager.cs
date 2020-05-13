@@ -60,7 +60,7 @@ namespace Lucky.Home.Protocol
             }
             else
             {
-                await node.FetchMetadata();
+                await node.FetchMetadata("registerNamed");
             }
             return node;
         }
@@ -82,11 +82,11 @@ namespace Lucky.Home.Protocol
                     _unnamedNodes.Add(address, newNode);
                 }
             }
-            await newNode.FetchMetadata();
+            await newNode.FetchMetadata("registerNew");
             return newNode;
         }
 
-        public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address)
+        public async Task<ITcpNode> RegisterUnknownNode(TcpNodeAddress address, string context)
         {
             // Check if a node already exists for such address. In that case, use that instance to fetch GUID and 
             // then check if already registered
@@ -115,17 +115,18 @@ namespace Lucky.Home.Protocol
             else
             {
                 // The node is exactly the same, simply re-fetch metadata
-                await node.FetchMetadata();
+                await node.FetchMetadata("registerUnknown");
+                node.Dezombie(context, address);
                 return node;
             }
         }
 
-        public async Task HeartbeatNode(NodeId id, TcpNodeAddress address)
+        public async Task HeartbeatNode(NodeId id, TcpNodeAddress address, int[] aliveChildren)
         {
             TcpNode node;
             lock (_nodeLock)
             {
-                node = (!id.IsEmpty) ? FindById(id) : FindUnnamed(address);
+                node = (id.IsEmpty) ? FindUnnamed(address) : FindById(id);
             }
 
             // Not known?
@@ -137,7 +138,7 @@ namespace Lucky.Home.Protocol
             else
             {
                 // Normal heartbeat
-                await node.Heartbeat(address);
+                await node.Heartbeat(address, aliveChildren);
             }
         }
 
