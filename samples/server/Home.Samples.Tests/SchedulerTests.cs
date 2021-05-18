@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Lucky.Home.Model;
 using System.Linq;
 
-namespace UTs
+namespace Home.Samples.Tests
 {
     [TestClass]
     public class SchedulerTests
