@@ -8,11 +8,11 @@
         <itemPath>../../src/nodes/hardware/eeprom.h</itemPath>
         <itemPath>hardware/fuses_raspbian.h</itemPath>
         <itemPath>../../src/nodes/hardware/hw.h</itemPath>
-        <itemPath>../../src/nodes/hardware/ip_raspbian.h</itemPath>
+        <itemPath>../../src/nodes/hardware/linux/ip.h</itemPath>
         <itemPath>../../src/nodes/hardware/leds.h</itemPath>
         <itemPath>../../src/nodes/hardware/tick.h</itemPath>
         <itemPath>../../src/nodes/hardware/uart.h</itemPath>
-        <itemPath>../../src/nodes/hardware/utilities.h</itemPath>
+        <itemPath>../../src/nodes/hardware/wait.h</itemPath>
       </logicalFolder>
       <itemPath>../../src/nodes/appio.h</itemPath>
       <itemPath>../../src/nodes/bus.h</itemPath>
@@ -33,10 +33,10 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f1" displayName="hardware" projectFiles="true">
-        <itemPath>../../src/nodes/hardware/hw_raspbian.c</itemPath>
-        <itemPath>../../src/nodes/hardware/ip_raspbian.c</itemPath>
-        <itemPath>../../src/nodes/hardware/tick_raspbian.c</itemPath>
-        <itemPath>../../src/nodes/hardware/uart_raspbian.c</itemPath>
+        <itemPath>../../src/nodes/hardware/linux/hw.c</itemPath>
+        <itemPath>../../src/nodes/hardware/linux/ip.c</itemPath>
+        <itemPath>../../src/nodes/hardware/linux/tick.c</itemPath>
+        <itemPath>../../src/nodes/hardware/linux/uart.c</itemPath>
       </logicalFolder>
       <itemPath>../../src/nodes/appio.c</itemPath>
       <itemPath>../../src/nodes/bus_server.c</itemPath>
@@ -103,12 +103,12 @@
             tool="0"
             flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/ip_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/ip.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/ip_raspbian.h"
+      <item path="../../src/nodes/hardware/linux/ip.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -117,19 +117,19 @@
       </item>
       <item path="../../src/nodes/hardware/tick.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/tick_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/tick.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
       <item path="../../src/nodes/hardware/uart.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/uart_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/uart.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/utilities.h"
+      <item path="../../src/nodes/hardware/wait.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -213,17 +213,17 @@
       </item>
       <item path="../../src/nodes/hardware/hw.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/hw_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/hw_raspbian.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/ip_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/ip.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/ip_raspbian.h"
+      <item path="../../src/nodes/hardware/linux/ip.h"
             ex="false"
             tool="3"
             flavor2="0">
@@ -232,19 +232,19 @@
       </item>
       <item path="../../src/nodes/hardware/tick.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/tick_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/tick.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
       <item path="../../src/nodes/hardware/uart.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/uart_raspbian.c"
+      <item path="../../src/nodes/hardware/linux/uart.c"
             ex="false"
             tool="0"
             flavor2="0">
       </item>
-      <item path="../../src/nodes/hardware/utilities.h"
+      <item path="../../src/nodes/hardware/wait.h"
             ex="false"
             tool="3"
             flavor2="0">

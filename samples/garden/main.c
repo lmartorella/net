@@ -103,7 +103,7 @@ int main() {
     rs485_init();
 #endif
 
-#ifdef HAS_BUS
+#ifdef HAS_RS485_BUS
     prot_init();
 #endif
 
@@ -120,10 +120,10 @@ int main() {
     while (1) {
         CLRWDT();
         
-#if defined(HAS_BUS_CLIENT) || defined(HAS_BUS_SERVER)
+#if defined(HAS_RS485_BUS_CLIENT) || defined(HAS_RS485_BUS_SERVER)
         bus_poll();
 #endif
-#ifdef HAS_BUS
+#ifdef HAS_RS485_BUS
         prot_poll();
 #endif
 #ifdef HAS_RS485

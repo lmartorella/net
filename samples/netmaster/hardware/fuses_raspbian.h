@@ -5,7 +5,7 @@
 
 // Define IP and protocol
 #define HAS_IP
-#define HAS_BUS
+#define HAS_RS485_BUS
 #define HAS_RS485
 
 #ifdef DEBUG
