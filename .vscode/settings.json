@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "Helo"
-    ]
+    ],
+    "cmake.sourceDirectory": "${workspaceFolder}/samples/netmaster"
 }

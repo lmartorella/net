@@ -1,4 +1,4 @@
-This folder contains the Visual Studio code project to build a master node for a Linux OS (e.g. Raspberry).
+This folder contains the CMake project to build a master node for a Linux OS (e.g. Raspberry).
 
 The whole C Microchip core code is shared with this implementation.
 
@@ -64,8 +64,8 @@ sudo systemctl start netmaster
 
 # How to build on Windows 10 (for testing)
 
-Install the Windows Linux Subsystem and your preferred linux distro.
+Install the Windows Linux Subsystem and your preferred linux distribution.
 
-Enable SSH there and install gcc tools.
+Enable SSH there and install `clang` tools.
 
-Configure VS Code to use WSL as a build host.
+Configure VS Code to use WSL as a build host. Install CMake Extensions and C/C++ Development Extension.
