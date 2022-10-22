@@ -38,7 +38,6 @@
 // ******
 // RS485: use USART on 16F877 (PORTB)
 // ******
-#define HAS_RS485
 #define RS485_BUF_SIZE 32
 #define RS485_RCSTA RCSTAbits
 #define RS485_TXSTA TXSTAbits
