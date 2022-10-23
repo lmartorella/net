@@ -7,6 +7,7 @@
 #define HAS_IP
 #define HAS_RS485_BUS
 #define HAS_RS485
+#define HAS_RS485_BUS_PRIMARY
 
 #ifdef DEBUG
 // 17008 is the debug port

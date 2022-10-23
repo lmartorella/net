@@ -4,6 +4,7 @@
 #include "../../src/nodes/persistence.h"
 #include "../../src/nodes/protocol.h"
 #include "../../src/nodes/sinks.h"
+#include "../../src/nodes/bus_primary.h"
 
 void main()
 {
@@ -16,13 +17,8 @@ void main()
 
     pers_load();
 
-#ifdef HAS_RS485_BUS
     prot_init();
-#endif
-
-#ifdef HAS_RS485
     rs485_init();
-#endif
                 
     sinks_init();
         
@@ -35,15 +31,9 @@ void main()
         usleep(300);
         rs485_interrupt();
         
-#if defined(HAS_RS485_BUS_CLIENT) || defined(HAS_RS485_BUS_SERVER)
-        bus_poll();
-#endif
-#ifdef HAS_RS485_BUS
+        bus_prim_poll();
         prot_poll();
-#endif
-#ifdef HAS_RS485
         rs485_poll();
-#endif
 
         sinks_poll();
         

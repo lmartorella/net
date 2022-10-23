@@ -36,7 +36,7 @@
           <itemPath>../../../src/nodes/hardware/pic/tick_pic16.c</itemPath>
         </logicalFolder>
         <itemPath>../../../src/nodes/appio.c</itemPath>
-        <itemPath>../../../src/nodes/bus_client.c</itemPath>
+        <itemPath>../../../src/nodes/bus_secondary.c</itemPath>
         <itemPath>../../../src/nodes/lib8.c</itemPath>
         <itemPath>../../../src/nodes/persistence.c</itemPath>
         <itemPath>../../../src/nodes/protocol.c</itemPath>
