@@ -23,7 +23,7 @@
 #define RS485_BAUD 19200
 #define RS485_BUF_SIZE 64
 
-typedef DWORD TICK_TYPE;
+typedef uint32_t TICK_TYPE;
 // Using gettime
 #define TICKS_PER_SECOND (1000000u)
 
