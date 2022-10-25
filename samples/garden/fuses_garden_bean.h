@@ -16,7 +16,9 @@
 
 #undef DEBUGMODE
 
+#define HAS_RS485
 #define HAS_RS485_BUS
+#define HAS_RS485_BUS_SECONDARY
 
 #undef HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB3
@@ -77,7 +79,7 @@
 #define TICK_INTCON_IE INTCONbits.T0IE
 #define TICK_CLOCK_BASE (SYSTEM_CLOCK / 4)
 #define TICK_PRESCALER 256
-#define TICK_TYPE WORD
+#define TICK_TYPE uint16_t
 
 // The protocol led is overridden with the first button (in OFF state)
 #define HAS_LED
@@ -85,8 +87,9 @@
 #define LED_TRISBIT TRISAbits.TRISA3
 
 // Reset the device with fatal error
-extern persistent BYTE g_exceptionPtr;
-#define fatal(msg) { g_exceptionPtr = (BYTE)msg; RESET(); }
+extern __persistent uint8_t g_exceptionPtr;
+#define LAST_EXC_TYPE uint8_t
+#define fatal(msg) { g_exceptionPtr = (uint8_t)msg; RESET(); }
 
 #endif
 

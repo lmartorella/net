@@ -5,8 +5,8 @@
 #include "../../src/nodes/sinks.h"
 
 #define GARDEN_SINK_ID "GARD"
-static bit gardenSink_read();
-static bit gardenSink_write();
+static __bit gardenSink_read();
+static __bit gardenSink_write();
 
 // REGISTER SINKS
 // Static allocation of sinks
@@ -27,8 +27,8 @@ static enum {
 static int s_readZoneCount;
 static IMM_TIMER s_zoneTimers[SUPPORTED_ZONES];
 
-bit gsink_start;
-bit g_flowDirty;
+__bit gsink_start;
+__bit g_flowDirty;
 int g_flow;
 
 void gsink_init() {
@@ -39,7 +39,7 @@ void gsink_init() {
 }
 
 // New data coming from the bus. Accept commands
-static bit gardenSink_read() {
+static __bit gardenSink_read() {
     if (s_readState == RS_START) {
         // Read zone count
         if (prot_control_readAvail() < 2) {
@@ -91,14 +91,14 @@ static bit gardenSink_read() {
 }
 
 // The server asks for status/configuration
-static bit gardenSink_write() {
+static __bit gardenSink_write() {
     // 1 status byte + 2 header bytes + IMM_TIMER for each zone (remaining time in minutes + zones)
     if (prot_control_writeAvail() < (3 + SUPPORTED_ZONES * sizeof(IMM_TIMER))) {
         return 1;
     }
 
     // Send current state (1 byte)
-    WORD data = g_state;
+    uint16_t data = g_state;
     prot_control_write(&data, 1);
 
     // Send current program (if compatible with the state)

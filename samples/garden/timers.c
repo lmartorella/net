@@ -6,8 +6,8 @@
 #define TMR1_VAL (0x10000u - (125000l / TICK_PER_SEC))
 
 static long ticks = 0;
-static bit ticksDirty;
-static bit on;
+static __bit ticksDirty;
+static __bit on;
 
 void timer_setup() {
     on = 0;

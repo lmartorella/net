@@ -13,12 +13,12 @@
 // bit0 is button0, to bit4 (button4)
 static unsigned char s_currState;
 // Pending event to dispatch, as scan code
-static bit s_isr;
+static __bit s_isr;
 
 #pragma warning disable:1090
 static unsigned char lastPortB;
 
-static char get_state();
+static unsigned char get_state();
 
 void portb_setup() {
     // Enable digital I/O on PORTB

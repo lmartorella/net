@@ -23,9 +23,9 @@ static const int BLINK_TICKS = TICK_PER_SEC / 2;
 static const int ANIMATION_TICKS = TICK_PER_SEC / 15;
 
 static int blinkTimer;
-static bit blink;
-static bit dotBlink;
-static bit s_state;
+static __bit blink;
+static __bit dotBlink;
+static __bit s_state;
 
 static void set_zone_led(char led, char lit);
 
@@ -85,7 +85,7 @@ static void display_on() {
 }
 
 // Common bank
-static unsigned char map @0x7d;
+static unsigned char map __at(0x7d);
 static void next_digit() {
     currDig = (currDig + 1) % 3;
     char dig = digits[currDig];
@@ -112,49 +112,46 @@ static void next_digit() {
     DIGIT_DRIVE_1 = 0;
     DIGIT_DRIVE_0 = 0;
 
-#asm
-        bcf	3,5	;RP0=0, select bank0
-        bcf	3,6	;RP1=0, select bank0
-  
-          //PORTCbits.RC1 = (map & 0x1) ? 1 : 0;
-        bcf	7,1	
-        btfsc	125,0
-        bsf	7,1	
+    asm("bcf	3,5");//	;RP0=0, select bank0
+    asm("bcf	3,6");//	;RP1=0, select bank0
 
-          //PORTAbits.RA0 = (map & 0x2) ? 1 : 0;
-       	bcf	5,0	
-        btfsc	125,1
-       	bsf	5,0	
+      //PORTCbits.RC1 = (map & 0x1) ? 1 : 0;
+    asm("bcf	7,1");//	
+    asm("btfsc	125,0");//
+    asm("bsf	7,1");//	
 
-           // PORTAbits.RA1 = (map & 0x4) ? 1 : 0;
-        bcf	5,1	
-        btfsc	125,2
-        bsf	5,1	
+      //PORTAbits.RA0 = (map & 0x2) ? 1 : 0;
+    asm("bcf	5,0	");//
+    asm("btfsc	125,1");//
+    asm("bsf	5,0	");//
 
-          //PORTAbits.RA2 = (map & 0x8) ? 1 : 0;
-        bcf	5,2	
-        btfsc	125,3
-        bsf	5,2	
+       // PORTAbits.RA1 = (map & 0x4) ? 1 : 0;
+    asm("bcf	5,1");//	
+    asm("btfsc	125,2");//
+    asm("bsf	5,1");//	
 
-            //PORTCbits.RC0 = (map & 0x10) ? 1 : 0;
-        bcf	7,0	
-        btfsc	125,4
-        bsf	7,0	
+      //PORTAbits.RA2 = (map & 0x8) ? 1 : 0;
+    asm("bcf	5,2");//	
+    asm("btfsc	125,3");//
+    asm("bsf	5,2");//	
 
-            // PORTCbits.RC2 = (map & 0x20) ? 1 : 0;
-        bcf	7,2	
-        btfsc	125,5
-        bsf	7,2	
+        //PORTCbits.RC0 = (map & 0x10) ? 1 : 0;
+    asm("bcf	7,0");//	
+    asm("btfsc	125,4");//
+    asm("bsf	7,0");//	
 
-            //PORTAbits.RA4 = (map & 0x40) ? 1 : 0;
-        bcf	5,4	
-        btfsc	125,6
-        bsf	5,4	
+        // PORTCbits.RC2 = (map & 0x20) ? 1 : 0;
+    asm("bcf	7,2");//	
+    asm("btfsc	125,5");//
+    asm("bsf	7,2");//	
 
-            // PORTEbits.RE2 = 0;
-        bcf	9,2	;volatile
+        //PORTAbits.RA4 = (map & 0x40) ? 1 : 0;
+    asm("bcf	5,4");//	
+    asm("btfsc	125,6");//
+    asm("bsf	5,4");//	
 
-#endasm
+        // PORTEbits.RE2 = 0;
+    asm("bcf	9,2");//	;volatile
                 
     INTCONbits.GIE = 1;
                             

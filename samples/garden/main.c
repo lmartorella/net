@@ -13,6 +13,7 @@
 #include "../../src/nodes/appio.h"
 #include "../../src/nodes/persistence.h"
 #include "../../src/nodes/protocol.h"
+#include "../../src/nodes/bus_secondary.h"
 
 // CONFIG1
 #pragma config FOSC = INTRC_NOCLKOUT// Oscillator Selection bits (INTOSCIO oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
@@ -43,7 +44,7 @@ static long s_idleTime;
 #define AUTO_OFF_TICK (3l * TICK_PER_SEC)
 #endif
 
-static void interrupt low_isr() {
+static void __interrupt() low_isr() {
     if (INTCONbits.RBIF) {
         portb_isr();
     }
@@ -120,19 +121,13 @@ int main() {
     while (1) {
         CLRWDT();
         
-#if defined(HAS_RS485_BUS_SECONDARY) || defined(HAS_RS485_BUS_PRIMARY)
-        bus_poll();
-#endif
-#ifdef HAS_RS485_BUS
+        bus_sec_poll();
         prot_poll();
-#endif
-#ifdef HAS_RS485
         rs485_poll();
-#endif
         pers_poll();
 
         // Low-prio task?
-        if (rs485_state == RS485_LINE_RX && bus_isIdle()) {
+        if (rs485_state == RS485_LINE_RX && bus_sec_isIdle()) {
             // Avoid heavy calc when in real-time mode (e.g. implementing bus times)
             // Poll animations
             display_poll();
