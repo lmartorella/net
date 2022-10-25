@@ -4,7 +4,7 @@ project(netmaster-linux VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_definitions(-D_CONF_LINUX)
+add_definitions(-D_CONF_POSIX)
 
 file(GLOB COMMON_SRC "../../src/nodes/*.c")
 file(GLOB LINUX_SRC "../../src/nodes/hardware/linux/*.c")
