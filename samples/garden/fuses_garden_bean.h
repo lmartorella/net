@@ -16,8 +16,6 @@
 
 #undef DEBUGMODE
 
-#define HAS_RS485
-#define HAS_RS485_BUS
 #define HAS_RS485_BUS_SECONDARY
 
 #undef HAS_MAX232_SOFTWARE

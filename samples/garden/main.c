@@ -54,9 +54,7 @@ static void __interrupt() low_isr() {
 
     // Update tick timers at ~Khz freq
     timers_poll();
-#ifdef HAS_RS485
     rs485_interrupt();
-#endif
 }
 
 static void go_immediate(int zone) {
@@ -100,13 +98,9 @@ int main() {
 
     pers_load();
 
-#ifdef HAS_RS485
     rs485_init();
-#endif
 
-#ifdef HAS_RS485_BUS
     prot_init();
-#endif
 
     timer_setup();
     display_setup();
