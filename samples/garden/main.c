@@ -8,7 +8,7 @@
 #include "state.h"
 
 #include "../../src/nodes/pch.h"
-#include "../../src/nodes/hardware/tick.h"
+#include "../../src/nodes/timers.h"
 #include "../../src/nodes/rs485.h"
 #include "../../src/nodes/appio.h"
 #include "../../src/nodes/persistence.h"

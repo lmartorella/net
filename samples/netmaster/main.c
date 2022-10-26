@@ -5,6 +5,8 @@
 #include "../../src/nodes/protocol.h"
 #include "../../src/nodes/sinks.h"
 #include "../../src/nodes/bus_primary.h"
+#include "../../src/nodes/rs485.h"
+#include "../../src/nodes/timers.h"
 
 void main()
 {

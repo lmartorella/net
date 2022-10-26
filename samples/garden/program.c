@@ -6,7 +6,7 @@
 #include "timers.h"
 #include "outputs.h"
 
-#include "../../src/nodes/hardware/eeprom.h"
+#include "../../src/nodes/hardware/pic/eeprom.h"
 
 static const long RELAIS_ON_TIME_TICKS = 3 * TICK_PER_SEC;
 static const long RELAIS_OFF_TIME_TICKS = 3 * TICK_PER_SEC;
