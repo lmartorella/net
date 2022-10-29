@@ -2,20 +2,22 @@
 #include "protocol.h"
 #include "appio.h"
 #include "persistence.h"
-#include "bus.h"
 #include "sinks.h"
-
-#ifdef HAS_BUS
+#include "bus_primary.h"
+#include "bus_secondary.h"
+#include "guid.h"
+#include "timers.h"
+#include "rs485.h"
 
 #ifdef HAS_IP
 #include "ip_client.h"
 #endif
 
 static TICK_TYPE s_slowTimer;
-bit prot_slowTimer;
+__bit prot_slowTimer;
 
-static signed char s_inReadSink;
-static signed char s_inWriteSink;
+static int8_t s_inReadSink;
+static int8_t s_inWriteSink;
 // SORTED IN ORDER OF NEEDED BYTES!
 static enum { 
     CMD_CLOS, // need 0
@@ -28,7 +30,7 @@ static enum {
     CMD_NONE
 } s_commandToRun;
 
-bit prot_registered;
+__bit prot_registered;
 
 void prot_init()
 {
@@ -41,11 +43,13 @@ void prot_init()
     io_println("No IP");
 #endif
 
-#ifdef HAS_RS485
-    bus_init();
+#ifdef HAS_RS485_BUS_PRIMARY
+    bus_prim_init();
+#elif defined HAS_RS485_BUS_SECONDARY
+    bus_sec_init();
 #endif
     
-    prot_registered = FALSE;
+    prot_registered = false;
     
     s_commandToRun = CMD_NONE;
     s_inWriteSink = s_inReadSink = -1;
@@ -71,21 +75,21 @@ static void SELE_command()
     io_printChDbg('s');
 #endif
     // Select subnode. 
-    WORD w;
+    uint16_t w;
     if (!prot_control_readW(&w)) {
         fatal("SE.u");
     }
     
     // Select subnode.
     // Simply ignore when no subnodes
-#ifdef HAS_BUS_SERVER
+#ifdef HAS_RS485_BUS_PRIMARY
     if (w > 0)
     {
         // Otherwise connect the socket
-        bus_connectSocket(w - 1);
+        bus_prim_connectSocket(w - 1);
     }
 #endif
-    prot_registered = TRUE;
+    prot_registered = true;
 }
 
 // 0 bytes to receive
@@ -98,16 +102,16 @@ static void CHIL_command()
     // Send ONLY mine guid. Other GUIDS should be fetched using SELE first.
     prot_control_write(&pers_data.deviceId, sizeof(GUID));
     
-#ifdef HAS_BUS_SERVER
+#ifdef HAS_RS485_BUS_PRIMARY
     // Propagate the request to all children to fetch their GUIDs
-    WORD count = bus_getChildrenMaskSize();
+    uint16_t count = bus_prim_getChildrenMaskSize();
     prot_control_writeW(count);
-    prot_control_write(bus_getChildrenMask(), count);
+    prot_control_write(bus_prim_getChildrenMask(), count);
 
-    bus_resetDirtyChildren();
+    bus_prim_resetDirtyChildren();
 #else    
     // No children
-    WORD count = 0;
+    uint16_t count = 0;
     prot_control_writeW(count);
 #endif
     
@@ -148,12 +152,12 @@ static void READ_command()
 #ifdef DEBUGMODE
     io_printChDbg('r');
 #endif
-    WORD sinkId;
+    uint16_t sinkId;
     if (!prot_control_readW(&sinkId))
     {
         fatal("RD.u");
     }   
-    s_inWriteSink = sinkId;
+    s_inWriteSink = (int8_t)sinkId;
 }
 
 // 2 bytes to receive
@@ -162,24 +166,23 @@ static void WRIT_command()
 #ifdef DEBUGMODE
     io_printChDbg('w');
 #endif
-    WORD sinkId;
+    uint16_t sinkId;
     if (!prot_control_readW(&sinkId))
     {
         fatal("WR.u");
     }
-    s_inReadSink = sinkId;
+    s_inReadSink = (int8_t)sinkId;
 }
 
 // Code-memory optimized for small PIC XC8
-static bit memcmp2(char c1, char c2, char d1, char d2) {
+static __bit memcmp2(char c1, char c2, char d1, char d2) {
     return d1 == c1 && d2 == c2;
 }
 
 /*
     Manage POLLs (read buffers)
 */
-void prot_poll()
-{
+void prot_poll() {
     prot_slowTimer = 0;
     CLRWDT();
 #ifdef HAS_IP
@@ -203,15 +206,15 @@ void prot_poll()
 #endif
     
     if (!prot_control_isConnected()) {
-#ifdef HAS_BUS_SERVER
-        bus_disconnectSocket(SOCKET_ERR_CLOSED_BY_PARENT);
+#ifdef HAS_RS485_BUS_PRIMARY
+        bus_prim_disconnectSocket(SOCKET_ERR_CLOSED_BY_PARENT);
 #endif
         return;
     }
 
-#ifdef HAS_BUS_SERVER
+#ifdef HAS_RS485_BUS_PRIMARY
     // Socket connected?
-    switch (bus_getState()) {
+    switch (bus_prim_getState()) {
         case BUS_STATE_SOCKET_CONNECTED:
             // TCP is still polled by bus
             return;
@@ -219,7 +222,7 @@ void prot_poll()
             // drop the TCP connection        
             prot_control_abort();
             break;
-        case BUS_STATE_SOCKET_FERR:
+        case BUS_STATE_SOCKET_FRAME_ERR:
             // drop the TCP connection        
             prot_control_abort();
             break;
@@ -228,7 +231,7 @@ void prot_poll()
 
     if (s_inReadSink >= 0) {
         // Tolerates empty rx buffer
-        BOOL again = sink_readHandlers[s_inReadSink]();
+        _Bool again = sink_readHandlers[s_inReadSink]();
         if (!again) {
             s_inReadSink = -1;
         }
@@ -236,7 +239,7 @@ void prot_poll()
     }
     if (s_inWriteSink >= 0) {
         // Address sink
-        BOOL again = sink_writeHandlers[s_inWriteSink]();
+        _Bool again = sink_writeHandlers[s_inWriteSink]();
         if (!again){
             s_inWriteSink = -1;
             // end of transmission, over to Master
@@ -245,9 +248,9 @@ void prot_poll()
         return;
     }
 
-    BYTE s = prot_control_readAvail();
+    uint8_t s = prot_control_readAvail();
     if (s_commandToRun != CMD_NONE) {
-        BYTE needed = 2;
+        uint8_t needed = 2;
         if (s_commandToRun <= CMD_CHIL) {
             needed = 0;
         } else if (s_commandToRun == CMD_GUID) {
@@ -313,5 +316,3 @@ void prot_poll()
         // Otherwise wait for data
     }
 }
-
-#endif

@@ -9,9 +9,31 @@
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
             <header-extensions>h</header-extensions>
-            <asminc-extensions>inc</asminc-extensions>
+            <asminc-extensions/>
             <sourceEncoding>ISO-8859-1</sourceEncoding>
             <make-dep-projects/>
+            <sourceRootList>
+                <sourceRootElem>..</sourceRootElem>
+                <sourceRootElem>../../fw</sourceRootElem>
+                <sourceRootElem>../../../src/nodes</sourceRootElem>
+            </sourceRootList>
+            <confList>
+                <confElem>
+                    <name>prod</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>porttest</name>
+                    <type>2</type>
+                </confElem>
+                <confElem>
+                    <name>debug</name>
+                    <type>2</type>
+                </confElem>
+            </confList>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
         </data>
     </configuration>
 </project>

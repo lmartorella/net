@@ -15,8 +15,6 @@
 
 #undef DEBUGMODE
 
-#define HAS_BUS
-
 #define HAS_MAX232_SOFTWARE
 #define RS232_RX_TRIS TRISBbits.TRISB3
 #define RS232_TX_TRIS TRISBbits.TRISB4
@@ -40,7 +38,6 @@
 // ******
 // RS485: use USART1 on 16F628 (PORTB)
 // ******
-#define HAS_RS485
 #define RS485_BUF_SIZE 32
 #define RS485_RCSTA RCSTAbits
 #define RS485_TXSTA TXSTAbits

@@ -3,11 +3,11 @@
 
 // Drives a 2-lines LCD display (CM1602)
 
-#if defined(HAS_BUS) && (defined(HAS_CM1602) || defined(_CONF_RASPBIAN))
+#if (defined(HAS_CM1602) || defined(_CONF_POSIX))
 
 #define SINK_LINE_ID "LINE"
-bit line_read();
-bit line_write();
+__bit line_read();
+__bit line_write();
 
 #endif
 

@@ -2,28 +2,27 @@
 #include "sinks.h"
 #include "appio.h"
 #include "protocol.h"
+#include "bus_primary.h"
+#include "guid.h"
+#include "timers.h"
 
-#ifdef HAS_BUS
-
-const TWOCC ResetCode = { "RS" };
-const TWOCC ExceptionText = { "EX" };
-const TWOCC EndOfMetadataText = { "EN" };
-#ifdef HAS_BUS_SERVER
-const TWOCC BusMasterStats = { "BM" };
-#endif
+static const TWOCC ResetCode = { "RS" };
+static const TWOCC ExceptionText = { "EX" };
+static const TWOCC EndOfMetadataText = { "EN" };
+static const TWOCC BusMasterStats = { "BM" };
 
 enum SYSSINK_CMD {
     SYSSINK_CMD_RESET = 1,
     SYSSINK_CMD_CLRRST = 2,
 };
 
-bit sys_read()
+__bit sys_read()
 {
     if (prot_control_readAvail() < 1) {
         // Wait cmd
         return 1;
     }
-    BYTE cmd;
+    uint8_t cmd;
     prot_control_read(&cmd, 1);
     switch (cmd) {
         case SYSSINK_CMD_RESET:
@@ -36,12 +35,12 @@ bit sys_read()
             break;
     }
     // No more data
-    return FALSE;
+    return false;
 }
 
-bit sys_write()
+__bit sys_write()
 {
-    WORD l = g_resetReason;
+    uint16_t l = g_resetReason;
     // Write reset reason
     prot_control_write(&ResetCode, sizeof(TWOCC));
     prot_control_writeW(l);
@@ -59,15 +58,13 @@ bit sys_write()
         prot_control_write(exc, l);
     }
 
-    #ifdef HAS_BUS_SERVER
+#ifdef HAS_RS485_BUS_PRIMARY
     prot_control_write(&BusMasterStats, sizeof(TWOCC));
-    prot_control_write(&g_busStats, sizeof(BUS_MASTER_STATS));
-    memset(&g_busStats, 0, sizeof(BUS_MASTER_STATS));
-    #endif
+    prot_control_write(&bus_prim_busStats, sizeof(BUS_PRIMARY_STATS));
+    memset(&bus_prim_busStats, 0, sizeof(BUS_PRIMARY_STATS));
+#endif
 
     prot_control_write(&EndOfMetadataText, sizeof(TWOCC));
     // Finish
-    return FALSE;
+    return false;
 }
-
-#endif

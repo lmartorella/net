@@ -15,7 +15,7 @@ typedef enum {
 } UI_STATE;
 
 extern UI_STATE g_state;
-extern bit g_flowDirty;
+extern __bit g_flowDirty;
 extern int g_flow;
 
 #endif	/* STATES_H */

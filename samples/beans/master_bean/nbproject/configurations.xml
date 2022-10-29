@@ -5,14 +5,11 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="hardware" displayName="hardware" projectFiles="true">
-        <itemPath>../../../src/nodes/hardware/eeprom.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/hw.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/ip_raspbian.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/leds.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/tick.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/uart.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/utilities.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/fuses_eth_card.inc</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/eeprom.h</itemPath>
+        <itemPath>../../../src/nodes/leds.h</itemPath>
+        <itemPath>../../../src/nodes/timers.h</itemPath>
+        <itemPath>../../../src/nodes/uart.h</itemPath>
+        <itemPath>../../../src/nodes/wait.h</itemPath>
         <itemPath>../hardware/fuses_mcu_card.h</itemPath>
       </logicalFolder>
       <logicalFolder name="tcpipstack" displayName="tcpipstack" projectFiles="true">
@@ -53,7 +50,7 @@
           <itemPath>../../../src/nodes/tcpipstack/Include/GenericTypeDefs_old.h</itemPath>
           <itemPath>../../../src/nodes/tcpipstack/Include/struct_queue.h</itemPath>
           <itemPath>../../../src/nodes/tcpipstack/Include/TimeDelay.h</itemPath>
-          <itemPath>../../../src/nodes/tcpipstack/Include/timer.h</itemPath>
+          <itemPath>../../../src/nodes/tcpipstack/Include/timers.h</itemPath>
         </logicalFolder>
         <logicalFolder name="TCPIPStack" displayName="TCPIPStack" projectFiles="true">
         </logicalFolder>
@@ -61,7 +58,7 @@
         <itemPath>../../../src/nodes/tcpipstack/TCPIPConfig.h</itemPath>
       </logicalFolder>
       <itemPath>../../../src/nodes/appio.h</itemPath>
-      <itemPath>../../../src/nodes/bus.h</itemPath>
+      <itemPath>../../../src/nodes/bus_primary.h</itemPath>
       <itemPath>../../../src/nodes/guid.h</itemPath>
       <itemPath>../../../src/nodes/ip_client.h</itemPath>
       <itemPath>../../../src/nodes/pch.h</itemPath>
@@ -78,14 +75,12 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="hardware" displayName="hardware" projectFiles="true">
-        <itemPath>../../../src/nodes/hardware/eeprom.c</itemPath>
-        <itemPath>../../../src/nodes/hardware/hw.c</itemPath>
-        <itemPath>../../../src/nodes/hardware/tick_pic16.c</itemPath>
-        <itemPath>../../../src/nodes/hardware/tick_pic18.c</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/eeprom_pic18.c</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/leds.c</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/tick_pic18.c</itemPath>
         <itemPath>../hardware/cm1602.c</itemPath>
-        <itemPath>../hardware/counter.c</itemPath>
-        <itemPath>../hardware/i2c.c</itemPath>
-        <itemPath>../hardware/max232_sw.c</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/fuses_eth_card.c</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/appio.c</itemPath>
       </logicalFolder>
       <logicalFolder name="sinks" displayName="sinks" projectFiles="true">
         <itemPath>../sinks/bmp180.c</itemPath>
@@ -94,6 +89,9 @@
         <itemPath>../sinks/displaySink.c</itemPath>
         <itemPath>../sinks/flowCounter.c</itemPath>
         <itemPath>../sinks/halfduplex.c</itemPath>
+        <itemPath>../hardware/counter.c</itemPath>
+        <itemPath>../hardware/max232_sw.c</itemPath>
+        <itemPath>../hardware/i2c.c</itemPath>
       </logicalFolder>
       <logicalFolder name="tcpipstack" displayName="tcpipstack" projectFiles="true">
         <logicalFolder name="TCPIPStack" displayName="TCPIPStack" projectFiles="true">
@@ -110,12 +108,9 @@
           <itemPath>../../../src/nodes/tcpipstack/TCPIPStack/UDP.c</itemPath>
         </logicalFolder>
       </logicalFolder>
-      <itemPath>../../../src/nodes/main.c</itemPath>
-      <itemPath>../../../src/nodes/persistence.c</itemPath>
-      <itemPath>../../../src/nodes/appio.c</itemPath>
-      <itemPath>../../../src/nodes/bus_client.c</itemPath>
-      <itemPath>../../../src/nodes/bus_server.c</itemPath>
-      <itemPath>../../../src/nodes/lib8.c</itemPath>
+      <itemPath>../main.c</itemPath>
+      <itemPath>../../../src/nodes/hardware/pic/persistence.c</itemPath>
+      <itemPath>../../../src/nodes/bus_primary.c</itemPath>
       <itemPath>../../../src/nodes/ip_client.c</itemPath>
       <itemPath>../../../src/nodes/sinks.c</itemPath>
       <itemPath>../../../src/nodes/rs485.c</itemPath>
@@ -140,14 +135,16 @@
         <targetDevice>PIC18F87J60</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>1.37</languageToolchainVersion>
+        <languageToolchainVersion>2.32</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="PIC18F-J_DFP" vendor="Microchip" version="1.2.31"/>
+        <pack name="PIC18F-J_DFP" vendor="Microchip" version="1.4.41"/>
       </packs>
+      <ScriptingSettings>
+      </ScriptingSettings>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -165,6 +162,7 @@
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeUseCleanTarget>false</makeUseCleanTarget>
         <makeCustomizationPreStep></makeCustomizationPreStep>
         <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
         <makeCustomizationPostStep></makeCustomizationPostStep>
@@ -172,6 +170,62 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../hardware/counter.c" ex="true" overriding="false">
+      </item>
+      <item path="../hardware/i2c.c" ex="true" overriding="false">
+      </item>
+      <item path="../hardware/max232_sw.c" ex="true" overriding="false">
+      </item>
+      <item path="../sinks/bmp180.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-CO>
+        </XC8-CO>
+        <XC8-config-global>
+        </XC8-config-global>
+      </item>
+      <item path="../sinks/dht11.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-CO>
+        </XC8-CO>
+        <XC8-config-global>
+        </XC8-config-global>
+      </item>
+      <item path="../sinks/digio.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-CO>
+        </XC8-CO>
+        <XC8-config-global>
+        </XC8-config-global>
+      </item>
+      <item path="../sinks/flowCounter.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-CO>
+        </XC8-CO>
+        <XC8-config-global>
+        </XC8-config-global>
+      </item>
+      <item path="../sinks/halfduplex.c" ex="true" overriding="false">
+        <HI-TECH-COMP>
+        </HI-TECH-COMP>
+        <HI-TECH-LINK>
+        </HI-TECH-LINK>
+        <XC8-CO>
+        </XC8-CO>
+        <XC8-config-global>
+        </XC8-config-global>
+      </item>
       <HI-TECH-COMP>
         <property key="additional-warnings" value="true"/>
         <property key="asmlist" value="true"/>
@@ -222,10 +276,10 @@
         <property key="code-model-rom" value=""/>
         <property key="create-html-files" value="false"/>
         <property key="data-model-ram" value=""/>
-        <property key="data-model-size-of-double" value="24"/>
-        <property key="data-model-size-of-double-gcc" value="short-double"/>
-        <property key="data-model-size-of-float" value="24"/>
-        <property key="data-model-size-of-float-gcc" value="short-float"/>
+        <property key="data-model-size-of-double" value="32"/>
+        <property key="data-model-size-of-double-gcc" value="no-short-double"/>
+        <property key="data-model-size-of-float" value="32"/>
+        <property key="data-model-size-of-float-gcc" value="no-short-float"/>
         <property key="display-class-usage" value="false"/>
         <property key="display-hex-usage" value="false"/>
         <property key="display-overall-usage" value="true"/>
@@ -260,7 +314,6 @@
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="debugoptions.useswbreakpoints" value="false"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
@@ -300,8 +353,8 @@
       </XC8-CO>
       <XC8-config-global>
         <property key="advanced-elf" value="true"/>
-        <property key="gcc-opt-driver-new" value="false"/>
-        <property key="gcc-opt-std" value="--std=c89"/>
+        <property key="gcc-opt-driver-new" value="true"/>
+        <property key="gcc-opt-std" value="-std=c99"/>
         <property key="gcc-output-file-format" value="dwarf-3"/>
         <property key="omit-pack-options" value="false"/>
         <property key="omit-pack-options-new" value="1"/>
@@ -311,6 +364,7 @@
         <property key="stack-size-main" value="auto"/>
         <property key="stack-type" value="compiled"/>
         <property key="user-pack-device-support" value=""/>
+        <property key="wpo-lto" value="false"/>
       </XC8-config-global>
     </conf>
     <conf name="Prototype" type="2">
@@ -319,14 +373,16 @@
         <targetDevice>PIC18F87J60</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>1.37</languageToolchainVersion>
+        <languageToolchainVersion>2.32</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
-        <pack name="PIC18F-J_DFP" vendor="Microchip" version="1.2.31"/>
+        <pack name="PIC18F-J_DFP" vendor="Microchip" version="1.4.41"/>
       </packs>
+      <ScriptingSettings>
+      </ScriptingSettings>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -344,6 +400,7 @@
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeUseCleanTarget>false</makeUseCleanTarget>
         <makeCustomizationPreStep></makeCustomizationPreStep>
         <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
         <makeCustomizationPostStep></makeCustomizationPostStep>
@@ -401,10 +458,10 @@
         <property key="code-model-rom" value=""/>
         <property key="create-html-files" value="false"/>
         <property key="data-model-ram" value=""/>
-        <property key="data-model-size-of-double" value="24"/>
-        <property key="data-model-size-of-double-gcc" value="short-double"/>
-        <property key="data-model-size-of-float" value="24"/>
-        <property key="data-model-size-of-float-gcc" value="short-float"/>
+        <property key="data-model-size-of-double" value="32"/>
+        <property key="data-model-size-of-double-gcc" value="no-short-double"/>
+        <property key="data-model-size-of-float" value="32"/>
+        <property key="data-model-size-of-float-gcc" value="no-short-float"/>
         <property key="display-class-usage" value="false"/>
         <property key="display-hex-usage" value="false"/>
         <property key="display-overall-usage" value="true"/>
@@ -478,8 +535,8 @@
       </XC8-CO>
       <XC8-config-global>
         <property key="advanced-elf" value="true"/>
-        <property key="gcc-opt-driver-new" value="false"/>
-        <property key="gcc-opt-std" value="--std=c89"/>
+        <property key="gcc-opt-driver-new" value="true"/>
+        <property key="gcc-opt-std" value="-std=c99"/>
         <property key="gcc-output-file-format" value="dwarf-3"/>
         <property key="omit-pack-options" value="false"/>
         <property key="omit-pack-options-new" value="1"/>
@@ -489,6 +546,7 @@
         <property key="stack-size-main" value="auto"/>
         <property key="stack-type" value="compiled"/>
         <property key="user-pack-device-support" value=""/>
+        <property key="wpo-lto" value="false"/>
       </XC8-config-global>
     </conf>
   </confs>

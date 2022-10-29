@@ -5,8 +5,6 @@
  * Module to implement a master node (IP client)
  */
 
-#include "hardware/hw.h"
-
 #ifdef HAS_IP
 
 #if __XC8
@@ -14,8 +12,8 @@
 #include "tcpipstack/Include/TCPIPStack/TCPIP.h"
 #endif
 
-#if _CONF_RASPBIAN
-#include "hardware/ip_raspbian.h"
+#if _CONF_POSIX
+#include "hardware/linux/ip.h"
 #endif
 
 /**
@@ -32,6 +30,13 @@ void ip_prot_init();
  * Called a slow timer (1 sec), for heartbeats
  */
 void ip_prot_slowTimer();
+
+/**
+ * Flush socket data
+ */
+void ip_flush();
+
+__bit ip_isConnected();
 
 #endif
 

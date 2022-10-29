@@ -53,7 +53,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <GenericTypeDefs.h>
 #include "../Compiler.h"
 #include "../../HardwareProfile.h"
 
@@ -217,7 +216,7 @@
 		#if defined(__18CXX) && !defined(HI_TECH_C)
 			#pragma udata TCPSocketMemory
 		#endif
-		static BYTE TCPBufferInPIC[TCP_PIC_RAM_SIZE] __attribute__((far));
+		static uint8_t TCPBufferInPIC[TCP_PIC_RAM_SIZE] __attribute__((far));
 		#if defined(__18CXX) && !defined(HI_TECH_C)
 			#pragma udata
 		#endif
@@ -287,7 +286,6 @@
 #include "StackTsk.h"
 #include "Helpers.h"
 #include "Delay.h"
-#include "../../../hardware/tick.h"
 #include "MAC.h"
 #include "IP.h"
 #include "ARP.h"

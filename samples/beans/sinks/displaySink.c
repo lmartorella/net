@@ -3,23 +3,23 @@
 #include "../../../src/nodes/appio.h"
 #include "displaySink.h"
 
-#if defined(HAS_BUS) && (defined(HAS_CM1602) || defined(_CONF_RASPBIAN))
+#if (defined(HAS_CM1602) || defined(_CONF_POSIX))
 
 #ifdef HAS_CM1602
-#elif defined(_CONF_RASPBIAN)
+#elif defined(_CONF_POSIX)
 #define CM1602_COL_COUNT 80
 #define CM1602_LINE_COUNT 25
 #endif
 
-static BYTE s_buf[CM1602_COL_COUNT];
-static WORD s_length;
-static BYTE s_pos;
+static uint8_t s_buf[CM1602_COL_COUNT];
+static uint16_t s_length;
+static uint8_t s_pos;
 static enum {
     STATE_NONE,
     STATE_LEN_READY,
 } s_state = STATE_NONE;
 
-bit line_read()
+__bit line_read()
 {
     if (s_state == STATE_NONE) {
         if (prot_control_readAvail() < 2) {
@@ -50,10 +50,10 @@ bit line_read()
     return 0;
 }
 
-bit line_write()
+__bit line_write()
 {
     // Num of lines
-    WORD l = CM1602_LINE_COUNT - 1;
+    uint16_t l = CM1602_LINE_COUNT - 1;
     prot_control_writeW(l);
 
     // Num of columns
@@ -61,7 +61,7 @@ bit line_write()
     prot_control_writeW(l);
 
    // Done
-   return FALSE;
+   return false;
 }
 
 #endif

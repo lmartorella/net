@@ -11,16 +11,14 @@
         <itemPath>../hardware/i2c.h</itemPath>
         <itemPath>../hardware/max232.h</itemPath>
         <itemPath>../hardware/an_integrator.h</itemPath>
-        <itemPath>../../../src/nodes/hardware/fuses_pic16f1827.inc</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="sdk" projectFiles="true">
         <logicalFolder name="f1" displayName="hardware" projectFiles="true">
-          <itemPath>../../../src/nodes/hardware/eeprom.h</itemPath>
-          <itemPath>../../../src/nodes/hardware/hw.h</itemPath>
-          <itemPath>../../../src/nodes/hardware/leds.h</itemPath>
-          <itemPath>../../../src/nodes/hardware/tick.h</itemPath>
-          <itemPath>../../../src/nodes/hardware/uart.h</itemPath>
-          <itemPath>../../../src/nodes/hardware/utilities.h</itemPath>
+          <itemPath>../../../src/nodes/hardware/pic/eeprom.h</itemPath>
+          <itemPath>../../../src/nodes/leds.h</itemPath>
+          <itemPath>../../../src/nodes/timers.h</itemPath>
+          <itemPath>../../../src/nodes/uart.h</itemPath>
+          <itemPath>../../../src/nodes/wait.h</itemPath>
         </logicalFolder>
         <itemPath>../../../src/nodes/ip_client.h</itemPath>
         <itemPath>../../../src/nodes/pch.h</itemPath>
@@ -28,7 +26,7 @@
         <itemPath>../../../src/nodes/protocol.h</itemPath>
         <itemPath>../../../src/nodes/rs485.h</itemPath>
         <itemPath>../../../src/nodes/appio.h</itemPath>
-        <itemPath>../../../src/nodes/bus.h</itemPath>
+        <itemPath>../../../src/nodes/bus_secondary.h</itemPath>
         <itemPath>../../../src/nodes/guid.h</itemPath>
         <itemPath>../../../src/nodes/sinks.h</itemPath>
       </logicalFolder>
@@ -58,15 +56,15 @@
       </logicalFolder>
       <logicalFolder name="f1" displayName="sdk" projectFiles="true">
         <logicalFolder name="f1" displayName="hardware" projectFiles="true">
-          <itemPath>../../../src/nodes/hardware/tick_pic16.c</itemPath>
-          <itemPath>../../../src/nodes/hardware/hw.c</itemPath>
-          <itemPath>../../../src/nodes/hardware/eeprom.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/pic/tick_pic16.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/pic/leds.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/pic/eeprom_pic16.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/pic/appio.c</itemPath>
+          <itemPath>../../../src/nodes/hardware/pic/fuses_pic16f1827.c</itemPath>
         </logicalFolder>
-        <itemPath>../../../src/nodes/appio.c</itemPath>
-        <itemPath>../../../src/nodes/bus_client.c</itemPath>
-        <itemPath>../../../src/nodes/lib8.c</itemPath>
-        <itemPath>../../../src/nodes/main.c</itemPath>
-        <itemPath>../../../src/nodes/persistence.c</itemPath>
+        <itemPath>../main.c</itemPath>
+        <itemPath>../../../src/nodes/bus_secondary.c</itemPath>
+        <itemPath>../../../src/nodes/hardware/pic/persistence.c</itemPath>
         <itemPath>../../../src/nodes/protocol.c</itemPath>
         <itemPath>../../../src/nodes/rs485.c</itemPath>
         <itemPath>../../../src/nodes/sinks.c</itemPath>
@@ -100,14 +98,16 @@
         <targetDevice>PIC16F1827</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>1.37</languageToolchainVersion>
+        <languageToolchainVersion>2.32</languageToolchainVersion>
         <platform>3</platform>
       </toolsSet>
       <packs>
         <pack name="PIC12-16F1xxx_DFP" vendor="Microchip" version="1.2.63"/>
       </packs>
+      <ScriptingSettings>
+      </ScriptingSettings>
       <compileType>
         <linkerTool>
           <linkerLibItems>
@@ -125,6 +125,7 @@
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>
+        <makeUseCleanTarget>false</makeUseCleanTarget>
         <makeCustomizationPreStep></makeCustomizationPreStep>
         <makeCustomizationPostStepEnabled>false</makeCustomizationPostStepEnabled>
         <makeCustomizationPostStep></makeCustomizationPostStep>
@@ -259,8 +260,8 @@
       </XC8-CO>
       <XC8-config-global>
         <property key="advanced-elf" value="true"/>
-        <property key="gcc-opt-driver-new" value="false"/>
-        <property key="gcc-opt-std" value="--std=c89"/>
+        <property key="gcc-opt-driver-new" value="true"/>
+        <property key="gcc-opt-std" value="-std=c99"/>
         <property key="gcc-output-file-format" value="dwarf-3"/>
         <property key="omit-pack-options" value="false"/>
         <property key="omit-pack-options-new" value="1"/>
@@ -270,6 +271,7 @@
         <property key="stack-size-main" value="auto"/>
         <property key="stack-type" value="compiled"/>
         <property key="user-pack-device-support" value=""/>
+        <property key="wpo-lto" value="false"/>
       </XC8-config-global>
     </conf>
   </confs>

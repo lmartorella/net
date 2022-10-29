@@ -41,15 +41,15 @@ void imm_load();
 // Reset immediate memory to saved 
 void imm_restart(int zone);
 // Is the immediate modified?
-bit imm_is_modified();
+__bit imm_is_modified();
 
 // Start the program
 void imm_start();
 void imm_stop();
 // Poll
-bit imm_poll();
+__bit imm_poll();
 
-extern bit gsink_start;
+extern __bit gsink_start;
 void gsink_init();
 
 

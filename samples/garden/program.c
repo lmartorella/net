@@ -6,7 +6,7 @@
 #include "timers.h"
 #include "outputs.h"
 
-#include "../../src/nodes/hardware/eeprom.h"
+#include "../../src/nodes/hardware/pic/eeprom.h"
 
 static const long RELAIS_ON_TIME_TICKS = 3 * TICK_PER_SEC;
 static const long RELAIS_OFF_TIME_TICKS = 3 * TICK_PER_SEC;
@@ -21,7 +21,7 @@ IMM_TIMER imm_timers[SUPPORTED_ZONES];
 // Temp buffer to save immediate times when the user changes the program through the UI
 static IMM_TIMER s_savedTimers[SUPPORTED_ZONES];
 static int s_current_zone;
-static bit s_modified;
+static __bit s_modified;
 static int currDispVal;
 
 typedef enum { 
@@ -54,13 +54,13 @@ void imm_init() {
 // Load program to immediate memory
 void program_load() {
     memcpy(s_savedTimers, imm_timers, sizeof(IMM_TIMER) * SUPPORTED_ZONES);
-    rom_read((BYTE)PROGR_DATA_TIMERS, (void*)imm_timers, sizeof(IMM_TIMER) * SUPPORTED_ZONES);
+    rom_read((uint8_t)PROGR_DATA_TIMERS, (void*)imm_timers, sizeof(IMM_TIMER) * SUPPORTED_ZONES);
     s_modified = 0;
 }
 
 // Save program from immediate memory
 void program_save() {
-    rom_write((BYTE)PROGR_DATA_TIMERS, (void*)imm_timers, sizeof(IMM_TIMER) * SUPPORTED_ZONES);
+    rom_write((uint8_t)PROGR_DATA_TIMERS, (void*)imm_timers, sizeof(IMM_TIMER) * SUPPORTED_ZONES);
     s_modified = 0;
 }
 
@@ -158,7 +158,7 @@ static void imm_update_disp() {
     }
 }
 // Is the immediate modified?
-bit imm_is_modified() {
+__bit imm_is_modified() {
     return s_modified; 
 }
 
@@ -198,7 +198,7 @@ void imm_stop() {
 }       
 
 
-bit imm_poll() { 
+__bit imm_poll() { 
     static long s_startOfMinute;
     
     if (s_state == FINISHED) {

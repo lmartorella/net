@@ -5,7 +5,7 @@
 #define _XTAL_FREQ SYSTEM_CLOCK
 #define PRIO_TYPE
 
-#define HAS_BUS
+#define HAS_RS485_BUS_SECONDARY
 
 // *****
 // Tick timer source. Uses TMR0 (8-bit prescales to 1:256), that resolve from 0.25ms to 16.7secs
@@ -23,7 +23,7 @@
 #define TICK_CLOCK_BASE (SYSTEM_CLOCK / 4)
 #define TICK_PRESCALER 256
 
-#define TICK_TYPE WORD
+#define TICK_TYPE uint16_t
 
 #define HAS_LED
 #define LED_PORTBIT PORTAbits.RA7
@@ -32,7 +32,6 @@
 // ******
 // RS485: use USART1 on 16F628 (PORTB)
 // ******
-#define HAS_RS485
 #define RS485_BUF_SIZE 32
 #define RS485_RCSTA RCSTAbits
 #define RS485_TXSTA TXSTAbits
@@ -102,7 +101,7 @@
 #define INIT_DIGIO_IN_PORT() \
      ANSELBbits.ANSB3 = 0;   \
      TRISBbits.TRISB3 = 1;   \
-#define INTERRUPT_VECTOR dcnt_interrupt
+#define BEAN_INTERRUPT_VECTOR dcnt_interrupt
 */
 
 // Analog integrator
@@ -124,7 +123,7 @@
 //#define EXC_TEST
 
 // persistent char* are not supported by xc8 1.37
-#define LAST_EXC_TYPE WORD
+#define LAST_EXC_TYPE uint16_t
 extern __persistent LAST_EXC_TYPE g_exceptionPtr;
 // Reset the device with fatal error
 #define fatal(msg) { g_exceptionPtr = (LAST_EXC_TYPE)msg; RESET(); }
@@ -138,7 +137,7 @@ extern __persistent LAST_EXC_TYPE g_exceptionPtr;
 typedef struct
 {
     // Used by counter
-    DWORD dcnt_counter;
+    uint32_t dcnt_counter;
 } PERSISTENT_SINK_DATA;
 #define PERSISTENT_SINK_DATA_DEFAULT_DATA { 0 }
 

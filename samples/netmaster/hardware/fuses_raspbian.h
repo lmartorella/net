@@ -5,8 +5,7 @@
 
 // Define IP and protocol
 #define HAS_IP
-#define HAS_BUS
-#define HAS_RS485
+#define HAS_RS485_BUS_PRIMARY
 
 #ifdef DEBUG
 // 17008 is the debug port
@@ -22,7 +21,7 @@
 #define RS485_BAUD 19200
 #define RS485_BUF_SIZE 64
 
-typedef DWORD TICK_TYPE;
+typedef uint32_t TICK_TYPE;
 // Using gettime
 #define TICKS_PER_SECOND (1000000u)
 

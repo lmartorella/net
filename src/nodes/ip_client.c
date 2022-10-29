@@ -3,15 +3,15 @@
 #include "appio.h"
 #include "ip_client.h"
 #include "persistence.h"
+#include "bus_primary.h"
 
-#ifdef HAS_IP
 #ifdef __XC8
     #include "tcpipstack/Include/Compiler.h"
     #include "tcpipstack/Include/TCPIPStack/TCPIP.h"
     APP_CONFIG AppConfig;
 #endif
     
-#ifndef HAS_BUS_SERVER
+#ifndef HAS_RS485_BUS_PRIMARY
 #error IP requires bus server
 #endif
 
@@ -19,16 +19,10 @@
 static UDP_SOCKET s_heloSocket;  
 // TCP lister control socket
 static TCP_SOCKET s_controlSocket;
-static bit s_lastDhcpState = FALSE;
-static bit s_sendHelo = 0;
+static __bit s_lastDhcpState = false;
+static __bit s_sendHelo = 0;
 
 static void pollControlPort();
-
-void prot_control_close()
-{
-    TCPFlush(s_controlSocket);
-    // Leave the socket open
-}
 
 // Close the control port listener
 void prot_control_abort()
@@ -38,35 +32,35 @@ void prot_control_abort()
     TCPDisconnect(s_controlSocket);
 }
 
-bit prot_control_readW(WORD* w)
+__bit prot_control_readW(uint16_t* w)
 {
-    WORD l = TCPIsGetReady(s_controlSocket);
+    uint16_t l = TCPIsGetReady(s_controlSocket);
     if (l < 2) { 
-        return FALSE;
+        return false;
     }
-    TCPGetArray(s_controlSocket, (BYTE*)w, sizeof(WORD));
-    return TRUE;
+    TCPGetArray(s_controlSocket, (uint8_t*)w, sizeof(uint16_t));
+    return true;
 }
 
-bit prot_control_read(void* data, WORD size)
+__bit prot_control_read(void* data, uint16_t size)
 {
-    WORD l = TCPIsGetReady(s_controlSocket);
+    uint16_t l = TCPIsGetReady(s_controlSocket);
     if (l < size) {
-        return FALSE;
+        return false;
     }
-    TCPGetArray(s_controlSocket, (BYTE*)data, size);
-    return TRUE;
+    TCPGetArray(s_controlSocket, (uint8_t*)data, size);
+    return true;
 }
 
-void prot_control_writeW(WORD w)
+void prot_control_writeW(uint16_t w)
 {
-    TCPPutArray(s_controlSocket, (BYTE*)&w, sizeof(WORD));
+    TCPPutArray(s_controlSocket, (uint8_t*)&w, sizeof(uint16_t));
 }
 
-void prot_control_write(const void* data, WORD size)
+void prot_control_write(const void* data, uint16_t size)
 {
     // If I remove & from here, ip_control_read stop working!!
-    TCPPutArray(s_controlSocket, (const BYTE*)data, size);
+    TCPPutArray(s_controlSocket, (const uint8_t*)data, size);
 }
 
 // Flush and OVER to other party. TCP is full duplex, so OK to only flush
@@ -75,17 +69,17 @@ void prot_control_over()
     TCPFlush(s_controlSocket);
 }
 
-bit prot_control_isConnected()
+__bit prot_control_isConnected()
 {
     return s_lastDhcpState && TCPIsConnected(s_controlSocket);
 }
 
-WORD prot_control_readAvail()
+uint16_t prot_control_readAvail()
 {
     return TCPIsGetReady(s_controlSocket);
 }
 
-WORD prot_control_writeAvail()
+uint16_t prot_control_writeAvail()
 {
     return TCPIsPutReady(s_controlSocket);
 }
@@ -93,7 +87,7 @@ WORD prot_control_writeAvail()
 void ip_prot_init()
 {
     io_println("IP/DHCP");
-#if defined(__GNU)
+#if defined(_CONF_POSIX)
     printf("Listen port: %d\n", SERVER_CONTROL_UDP_PORT);
 #endif
     
@@ -132,7 +126,7 @@ void ip_prot_init()
 */
 void ip_prot_slowTimer()
 {
-    BOOL dhcpOk = DHCPIsBound(0);
+    _Bool dhcpOk = DHCPIsBound(0);
 
     if (dhcpOk != s_lastDhcpState)
     {
@@ -142,13 +136,13 @@ void ip_prot_slowTimer()
             unsigned char* p = (unsigned char*)(&AppConfig.MyIPAddr);
             sprintf(buffer, "%d.%d.%d.%d", (int)p[0], (int)p[1], (int)p[2], (int)p[3]);
             io_printlnStatus(buffer);
-            s_lastDhcpState = TRUE;
+            s_lastDhcpState = true;
         }
         else
         {
             sprintf(buffer, "DHCP ERR");
             io_printlnStatus(buffer);
-            s_lastDhcpState = FALSE;
+            s_lastDhcpState = false;
             //fatal("DHCP.nok");
         }
     }
@@ -167,7 +161,7 @@ __PACK typedef struct
 	char preamble[4];
 	char messageType[4];
 	GUID device;
-	WORD controlPort;
+	uint16_t controlPort;
 } HOME_REQUEST;
 
 void ip_poll() 
@@ -177,17 +171,17 @@ void ip_poll()
         if (UDPIsPutReady(s_heloSocket) >= (sizeof(HOME_REQUEST) + BUFFER_MASK_SIZE + 2))
         {
             UDPPutString("HOME");
-            UDPPutString(prot_registered ? (bus_hasDirtyChildren ? "CCHN" : "HTB2") : "HEL4");
-            UDPPutArray((BYTE*)(&pers_data.deviceId), sizeof(GUID));
+            UDPPutString(prot_registered ? (bus_prim_hasDirtyChildren ? "CCHN" : "HTB2") : "HEL4");
+            UDPPutArray((uint8_t*)(&pers_data.deviceId), sizeof(GUID));
             UDPPutW(CLIENT_TCP_PORT);
             if (prot_registered) {
                 UDPPutW(BUFFER_MASK_SIZE);
-                if (bus_hasDirtyChildren) {
+                if (bus_prim_hasDirtyChildren) {
                     // CCHN: mask of changed children
-                    UDPPutArray(bus_dirtyChildren, BUFFER_MASK_SIZE);
+                    UDPPutArray(bus_prim_dirtyChildren, BUFFER_MASK_SIZE);
                 } else {
                     // HTB2: list of alive children
-                    UDPPutArray(bus_knownChildren, BUFFER_MASK_SIZE);
+                    UDPPutArray(bus_prim_knownChildren, BUFFER_MASK_SIZE);
                 }
             }
             UDPFlush();
@@ -197,4 +191,7 @@ void ip_poll()
     }
 }
 
-#endif // HAS_IP
+void ip_flush() {
+    TCPFlush(s_controlSocket);
+    // Leave the socket open
+}
