@@ -7,6 +7,7 @@
 #include "../../src/nodes/bus_primary.h"
 #include "../../src/nodes/rs485.h"
 #include "../../src/nodes/timers.h"
+#include "../../src/nodes/leds.h"
 
 void main()
 {
@@ -16,6 +17,7 @@ void main()
     // Init Ticks on timer0 (low prio) module
     timers_init();
     io_init();
+    led_init();
 
     pers_load();
 

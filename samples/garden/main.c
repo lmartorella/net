@@ -95,6 +95,7 @@ int main() {
     // Init Ticks on timer0 (low prio) module
     timers_init();
     io_init();
+    led_init();
 
     pers_load();
 
