@@ -3,6 +3,7 @@
 #include "../../src/nodes/pch.h"
 #include "../../src/nodes/protocol.h"
 #include "../../src/nodes/sinks.h"
+#include "../../src/nodes/rs485.h"
 
 #define GARDEN_SINK_ID "GARD"
 static __bit gardenSink_read();
@@ -16,8 +17,8 @@ const char* const SINK_IDS =
 ;
 const int SINK_IDS_COUNT = 2;
 
-const SinkFunction const sink_readHandlers[] = { sys_read, gardenSink_read };
-const SinkFunction const sink_writeHandlers[] = { sys_write, gardenSink_write };
+const SinkFunction sink_readHandlers[] = { sys_read, gardenSink_read };
+const SinkFunction sink_writeHandlers[] = { sys_write, gardenSink_write };
 
 static enum {
     RS_START,
