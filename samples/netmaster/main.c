@@ -25,22 +25,27 @@ void main()
     rs485_init();
                 
     sinks_init();
+    bus_prim_init();
         
     enableInterrupts();
 
     // I'm alive
-    while (1) {   
-        CLRWDT();
-
+    while (true) {
+        // If something requires strict polling, uses 0.3ms polling for bus operations,
+        // otherwise rest the CPU using 0.1 sec polling
         usleep(300);
         rs485_interrupt();
         
-        bus_prim_poll();
-        prot_poll();
-        rs485_poll();
+        _Bool active = bus_prim_poll();
+        active = prot_poll() || active;
+        active = rs485_poll() || active;
 
-        sinks_poll();
+        active = sinks_poll() || active;
         
-        pers_poll();
+        active = pers_poll() || active;
+
+        if (!active) {
+            ip_waitEvent();
+        }
     }
 }

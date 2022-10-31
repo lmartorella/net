@@ -9,5 +9,6 @@ const SinkFunction const sink_readHandlers[] = { sys_read };
 void sinks_init() {
 }
 
-void sinks_poll() {
+_Bool sinks_poll() {
+    return false;
 }

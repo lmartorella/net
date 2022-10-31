@@ -26,7 +26,6 @@ typedef uint32_t TICK_TYPE;
 #define TICKS_PER_SECOND (1000000u)
 
 void CLRWDT();
-void enableInterrupts();
 void rom_poll();
 #define LAST_EXC_TYPE const char*
 void fatal(const char* str);

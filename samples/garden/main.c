@@ -117,13 +117,13 @@ int main() {
     while (1) {
         CLRWDT();
         
-        bus_sec_poll();
+        __bit isActive = bus_sec_poll();
         prot_poll();
         rs485_poll();
         pers_poll();
 
         // Low-prio task?
-        if (rs485_state == RS485_LINE_RX && bus_sec_isIdle()) {
+        if (rs485_state == RS485_LINE_RX && !isActive) {
             // Avoid heavy calc when in real-time mode (e.g. implementing bus times)
             // Poll animations
             display_poll();
