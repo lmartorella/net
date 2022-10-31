@@ -1,13 +1,4 @@
-#include "../../src/nodes/pch.h"
-#include "../../src/nodes/ip_client.h"
-#include "../../src/nodes/appio.h"
-#include "../../src/nodes/persistence.h"
-#include "../../src/nodes/protocol.h"
-#include "../../src/nodes/sinks.h"
-#include "../../src/nodes/bus_primary.h"
-#include "../../src/nodes/rs485.h"
-#include "../../src/nodes/timers.h"
-#include "../../src/nodes/leds.h"
+#include <net/net.h>
 
 void main()
 {

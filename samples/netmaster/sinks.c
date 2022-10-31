@@ -1,5 +1,4 @@
-#include "../../src/nodes/pch.h"
-#include "../../src/nodes/sinks.h"
+#include <net/net.h>
 
 const char* const SINK_IDS = SINK_SYS_ID;
 const int SINK_IDS_COUNT = 1;

@@ -6,11 +6,8 @@ enable_testing()
 
 add_definitions(-D_CONF_POSIX)
 
-file(GLOB COMMON_SRC "../../src/nodes/*.c")
-file(GLOB LINUX_SRC "../../src/nodes/hardware/posix/*.c")
-file(GLOB RASPBERRY_SRC "../../src/nodes/hardware/posix/raspbian/*.c")
-add_executable(netmaster-linux ${LINUX_SRC} ${COMMON_SRC} ${RASPBERRY_SRC} sinks.c main.c)
-target_link_libraries(netmaster-linux m)
+add_executable(netmaster-linux sinks.c main.c)
+target_link_libraries(netmaster-linux m net)
 target_compile_options(netmaster-linux PRIVATE -Wno-switch -Wno-duplicate-decl-specifier -Wno-main-return-type)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

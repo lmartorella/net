@@ -1,5 +1,5 @@
-#ifndef FUSES_RASPBIAN_H
-#define FUSES_RASPBIAN_H
+#ifndef _FUSES_POSIX_H
+#define _FUSES_POSIX_H
 
 #undef DEBUGMODE
 
