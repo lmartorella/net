@@ -4,6 +4,7 @@
     ],
     "cmake.sourceDirectory": "${workspaceFolder}/samples/netmaster",
     "files.associations": {
-        "timers.h": "c"
+        "timers.h": "c",
+        "net.h": "c"
     }
 }

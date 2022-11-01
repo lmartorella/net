@@ -94,6 +94,7 @@ int main() {
 
     rs485_init();
 
+    bus_sec_init();
     prot_init();
 
     timer_setup();

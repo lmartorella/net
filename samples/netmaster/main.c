@@ -12,11 +12,11 @@ void main()
 
     pers_load();
 
+    bus_prim_init();
     prot_init();
     rs485_init();
                 
     sinks_init();
-    bus_prim_init();
         
     sys_enableInterrupts();
 
