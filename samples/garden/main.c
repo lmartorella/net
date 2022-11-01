@@ -1,4 +1,5 @@
 #include <pic.h>
+#include <net/net.h>
 
 #include "timers.h"
 #include "display.h"
@@ -6,15 +7,6 @@
 #include "outputs.h"
 #include "program.h"
 #include "state.h"
-
-#include "../../src/nodes/pch.h"
-#include "../../src/nodes/timers.h"
-#include "../../src/nodes/rs485.h"
-#include "../../src/nodes/appio.h"
-#include "../../src/nodes/persistence.h"
-#include "../../src/nodes/protocol.h"
-#include "../../src/nodes/bus_secondary.h"
-#include "../../src/nodes/leds.h"
 
 // CONFIG1
 #pragma config FOSC = INTRC_NOCLKOUT// Oscillator Selection bits (INTOSCIO oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
@@ -112,7 +104,7 @@ int main() {
 
     go_off();
     
-    enableInterrupts();
+    sys_enableInterrupts();
    
     while (1) {
         CLRWDT();

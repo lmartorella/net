@@ -4,15 +4,12 @@
 // Set via OSCCON (see garden/timers)
 #define SYSTEM_CLOCK 4000000ul
 #define _XTAL_FREQ SYSTEM_CLOCK
-#define PRIO_TYPE
 
-#undef HAS_CM1602
-#undef HAS_VS1011
-#undef HAS_SPI
-#undef HAS_SPI_RAM
-#undef HAS_IP
-#undef HAS_IO
-#undef HAS_DHT11
+// Internal core clock drives timer with 1:256 prescaler
+#define TICKS_PER_SECOND		(TICK_TYPE)((TICK_CLOCK_BASE + (TICK_PRESCALER / 2ull)) / TICK_PRESCALER)	
+#define TICKS_PER_MILLISECOND		(TICK_TYPE)(TICKS_PER_SECOND / 1000)
+
+#define PRIO_TYPE
 
 #undef DEBUGMODE
 

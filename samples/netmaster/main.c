@@ -18,7 +18,7 @@ void main()
     sinks_init();
     bus_prim_init();
         
-    enableInterrupts();
+    sys_enableInterrupts();
 
     // I'm alive
     while (true) {

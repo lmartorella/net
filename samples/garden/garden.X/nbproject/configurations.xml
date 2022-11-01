@@ -9,9 +9,9 @@
           <itemPath>../../../src/nodes/hardware/pic/eeprom.h</itemPath>
           <itemPath>../../../src/nodes/hardware/pic/fuses_pic16f887.c</itemPath>
         </logicalFolder>
-        <itemPath>../../../src/nodes/pch.h</itemPath>
-        <itemPath>../../../src/nodes/sinks.h</itemPath>
-        <itemPath>../../../src/nodes/rs485.h</itemPath>
+        <itemPath>../../../src/nodes/include/net.h</itemPath>
+        <itemPath>../../../src/nodes/include/sinks.h</itemPath>
+        <itemPath>../../../src/nodes/include/rs485.h</itemPath>
       </logicalFolder>
       <itemPath>../timers.h</itemPath>
       <itemPath>../display.h</itemPath>

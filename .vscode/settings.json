@@ -2,5 +2,8 @@
     "cSpell.words": [
         "Helo"
     ],
-    "cmake.sourceDirectory": "${workspaceFolder}/samples/netmaster"
+    "cmake.sourceDirectory": "${workspaceFolder}/samples/netmaster",
+    "files.associations": {
+        "timers.h": "c"
+    }
 }
