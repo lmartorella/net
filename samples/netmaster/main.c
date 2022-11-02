@@ -28,7 +28,7 @@ void main()
         rs485_interrupt();
         
         _Bool active = bus_prim_poll();
-        active = prot_poll() || active;
+        active = prot_prim_poll() || active;
         active = rs485_poll() || active;
 
         active = sinks_poll() || active;

@@ -7,7 +7,7 @@ enable_testing()
 add_definitions(-D_CONF_POSIX)
 
 add_executable(netmaster-linux sinks.c main.c)
-target_link_libraries(netmaster-linux m net)
+target_link_libraries(netmaster-linux net m)
 target_compile_options(netmaster-linux PRIVATE -Wno-switch -Wno-duplicate-decl-specifier -Wno-main-return-type)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
