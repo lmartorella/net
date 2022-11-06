@@ -4,7 +4,7 @@ project(netmaster-linux VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_definitions(-D_CONF_POSIX)
+add_definitions(-D_CONF_POSIX -DHAS_RS485_BUS_PRIMARY)
 
 add_executable(netmaster-linux sinks.c main.c)
 target_link_libraries(netmaster-linux net m)
