@@ -1,8 +1,16 @@
 #include <net/net.h>
 
+#ifdef DEBUG
+// 17008 is the debug port
+#define SERVER_CONTROL_UDP_PORT 17008
+#else
+// 17007 is the release port
+#define SERVER_CONTROL_UDP_PORT 17007
+#endif
+
 void main()
 {
-    net_init();
+    net_init(SERVER_CONTROL_UDP_PORT);
 
     // I'm alive
     while (true) {
