@@ -74,6 +74,7 @@
     <Compile Include="Services\INotificationService.cs" />
     <Compile Include="Services\JsonIsolatedStorageService.cs" />
     <Compile Include="Services\LoggerExtensions.cs" />
+    <Compile Include="Services\MqttService.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />
     <Compile Include="Protocol\TcpConnectionSessionManager.cs" />
@@ -119,6 +120,14 @@
     <Compile Include="Sinks\SubSink.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="MQTTnet, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\MQTTnet\Source\MQTTnet.Extensions.Rpc\bin\Debug\net472\MQTTnet.dll</HintPath>
+    </Reference>
+    <Reference Include="MQTTnet.Extensions.Rpc, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\MQTTnet\Source\MQTTnet.Extensions.Rpc\bin\Debug\net472\MQTTnet.Extensions.Rpc.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.XML" />
