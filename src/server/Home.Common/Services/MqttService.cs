@@ -18,6 +18,11 @@ namespace Lucky.Home.Services
     [DataContract]
     public class RpcResponse
     {
+    }
+
+    [DataContract]
+    public class RpcErrorResponse : RpcResponse
+    {
         [DataMember(Name = "error")]
         public string Error { get; set; }
     }
@@ -28,8 +33,8 @@ namespace Lucky.Home.Services
         private readonly IMqttClient mqttClient;
         private DataContractJsonSerializer _reqSer;
         private DataContractJsonSerializer _respSer;
-        private readonly List<Type> _reqAdditionalTypes = new List<Type>();
-        private readonly List<Type> _respAdditionalTypes = new List<Type>();
+        private readonly Dictionary<Type, bool> _reqAdditionalTypes = new Dictionary<Type, bool>();
+        private readonly Dictionary<Type, bool> _respAdditionalTypes = new Dictionary<Type, bool>();
 
         public MqttService()
         {
@@ -44,7 +49,7 @@ namespace Lucky.Home.Services
             {
                 lock (this)
                 {
-                    return _reqSer ?? (_reqSer = new DataContractJsonSerializer(typeof(RpcRequest), _reqAdditionalTypes));
+                    return _reqSer ?? (_reqSer = new DataContractJsonSerializer(typeof(RpcRequest), _reqAdditionalTypes.Keys));
                 }
             }
         }
@@ -55,13 +60,14 @@ namespace Lucky.Home.Services
             {
                 lock (this)
                 {
-                    return _respSer ?? (_respSer = new DataContractJsonSerializer(typeof(RpcResponse), _respAdditionalTypes));
+                    return _respSer ?? (_respSer = new DataContractJsonSerializer(typeof(RpcResponse), _respAdditionalTypes.Keys));
                 }
             }
         }
 
         public void SubscribeRpc<TReq, TResp>(string topic, Func<TReq, Task<TResp>> handler) where TReq: RpcRequest where TResp: RpcResponse
         {
+            RegisterAdditionalTypes<TReq, TResp>();
             var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder().WithTopicFilter(f => f.WithTopic(topic)).Build();
             mqttClient.SubscribeAsync(mqttSubscribeOptions);
             mqttClient.ApplicationMessageReceivedAsync += async (MqttApplicationMessageReceivedEventArgs args) =>
@@ -81,7 +87,9 @@ namespace Lucky.Home.Services
                     catch (Exception exc)
                     {
                         // Send back error as string
-                        responsePayload = Encoding.UTF8.GetBytes("EXC: " + exc.Message);
+                        var responseStream = new MemoryStream();
+                        ResponseSerializer.WriteObject(responseStream, new RpcErrorResponse { Error = exc.Message });
+                        responsePayload = responseStream.GetBuffer();
                     }
 
                     var respMsg = new MqttApplicationMessage();
@@ -94,16 +102,18 @@ namespace Lucky.Home.Services
             };
         }
 
-        public void RegisterAdditionalRequestTypes(Type[] additionalTypes)
+        private void RegisterAdditionalTypes<TReq, TResp>() where TReq : RpcRequest where TResp : RpcResponse
         {
-            _reqAdditionalTypes.AddRange(additionalTypes);
-            _reqSer = null;
-        }
-
-        public void RegisterAdditionalResponseTypes(Type[] additionalTypes)
-        {
-            _respAdditionalTypes.AddRange(additionalTypes);
-            _respSer = null;
+            if (!_reqAdditionalTypes.ContainsKey(typeof(TReq)))
+            {
+                _reqAdditionalTypes[typeof(TReq)] = true;
+                _reqSer = null;
+            }
+            if (!_respAdditionalTypes.ContainsKey(typeof(TReq)))
+            {
+                _respAdditionalTypes[typeof(TResp)] = true;
+                _respSer = null;
+            }
         }
     }
 }
