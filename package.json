@@ -1,6 +1,5 @@
 {
   "name": "home.web",
-  "version": "1.0.0",
   "scripts": {
     "buildNet": "node scripts/buildServer.js Release",
     "buildNetDebug": "node scripts/buildServer.js Debug",
@@ -14,21 +13,21 @@
   },
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@types/angular": "^1.6.57",
-    "@types/plotly.js": "^1.44.6",
-    "angular": "^1.7.9",
-    "body-parser": "^1.18.3",
-    "compression": "^1.7.2",
-    "cookie-parser": "^1.4.5",
-    "ejs": "^2.7.4",
-    "express": "^4.17.1",
-    "express-session": "^1.17.0",
-    "moment": "^2.20.0",
-    "msbuild": "^1.1.3",
-    "ncp": "^2.0.0",
-    "passport": "^0.4.1",
-    "passport-local": "^1.0.0",
-    "plotly.js": "^1.53.0",
-    "requirejs": "^2.3.6"
+    "@types/angular": "1.8.5",
+    "@types/plotly.js": "1.54.22",
+    "angular": "1.8.3",
+    "body-parser": "1.20.2",
+    "compression": "1.7.4",
+    "cookie-parser": "1.4.6",
+    "ejs": "3.1.9",
+    "express": "4.18.2",
+    "express-session": "1.17.3",
+    "moment": "2.29.4",
+    "mqtt": "^4.3.7",
+    "msbuild": "1.2.0",
+    "passport": "0.6.0",
+    "passport-local": "1.0.0",
+    "plotly.js": "1.58.5",
+    "requirejs": "2.3.6"
   }
 }
