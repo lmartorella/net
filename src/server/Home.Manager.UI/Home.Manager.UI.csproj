@@ -70,24 +70,13 @@
     <Compile Include="Simulator\SinkMockExtensions.cs" />
     <Compile Include="Simulator\SlaveNode.cs" />
     <Compile Include="UiLibraryAttribute.cs" />
-    <Compile Include="Views\CreateDeviceWindow.xaml.cs">
-      <DependentUpon>CreateDeviceWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DeviceView.xaml.cs">
-      <DependentUpon>DeviceView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Models\SinkNode.cs" />
-    <Compile Include="Models\UiDevice.cs" />
     <Compile Include="Models\UiNode.cs" />
     <Compile Include="Models\UiCommand.cs" />
     <Compile Include="Models\TreeNode.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="Views\DeviceView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\NodeView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -116,10 +105,6 @@
       <DependentUpon>TopologicalView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Views\CreateDeviceWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

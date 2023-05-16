@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Lucky.Home.Devices;
+﻿using System.Threading.Tasks;
 
 namespace Lucky.Home.Admin
 {
@@ -11,9 +9,6 @@ namespace Lucky.Home.Admin
     {
         Task<Node[]> GetTopology();
         Task<bool> RenameNode(string nodeAddress, NodeId oldId, NodeId newId);
-        Task<string> CreateDevice(DeviceDescriptor descriptor);
-        Task<DeviceDescriptor[]> GetDevices();
-        Task DeleteDevice(Guid id);
         Task ResetNode(NodeId id, string nodeAddress);
     }
 }

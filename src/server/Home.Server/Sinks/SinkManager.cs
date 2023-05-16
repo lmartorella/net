@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 
@@ -74,15 +73,6 @@ namespace Lucky.Home.Sinks
             lock (LockObject)
             {
                 CollectionChanged?.Invoke(this, new CollectionChangeEventArgs(CollectionChangeAction.Refresh, null));
-            }
-        }
-
-        public ISink FindOwnerSink(SinkPath sinkPath)
-        {
-            // Find the parent sink instance
-            lock (LockObject)
-            {
-                return _sinks.FirstOrDefault(s => s.Path.Owns(sinkPath));
             }
         }
 

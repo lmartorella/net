@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Sinks;
 using Lucky.Home.Services;
@@ -63,30 +62,6 @@ namespace Lucky.Home.Admin
             {
                 await node.Sink<SystemSink>().Reset();
             }
-        }
-
-        public Task<string> CreateDevice(DeviceDescriptor descriptor)
-        {
-            string err = null;
-            try
-            {
-                Manager.GetService<DeviceManager>().CreateAndLoadDevice(descriptor);
-            }
-            catch (Exception exc)
-            {
-                err = exc.Message;
-            }
-            return Task.FromResult(err);
-        }
-
-        public Task<DeviceDescriptor[]> GetDevices()
-        {
-            return Task.FromResult(Manager.GetService<DeviceManager>().GetDeviceDescriptors());
-        }
-
-        public Task DeleteDevice(Guid id)
-        {
-            return Manager.GetService<DeviceManager>().DeleteDevice(id);
         }
 
         private Node BuildNode(ITcpNode tcpNode)

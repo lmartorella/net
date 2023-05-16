@@ -51,7 +51,6 @@
   <ItemGroup>
     <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
-    <Compile Include="Devices\DeviceManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\E2EStatLogger.cs" />

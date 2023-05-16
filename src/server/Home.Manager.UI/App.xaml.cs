@@ -1,5 +1,4 @@
-﻿using Lucky.Home.Devices;
-using Lucky.Home.Services;
+﻿using Lucky.Home.Services;
 using System.Threading;
 using System.Windows;
 
@@ -24,7 +23,6 @@ namespace Lucky.Home
             Manager.GetService<ILoggerFactory>().Create("App").Log("Started");
 
             Manager.GetService<MockSinkManager>();
-            Manager.GetService<DeviceTypeManager>();
             Manager.GetService<Registrar>().LoadLibraries(new[] { typeof(ApplicationAttribute), typeof(UiLibraryAttribute) });
         }
 

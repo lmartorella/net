@@ -28,9 +28,6 @@
             <TabItem Header="Topological View">
                 <views:TopologicalView Nodes="{Binding Connection.Nodes}" TcpConnection="{Binding Connection}"/>
             </TabItem>
-            <TabItem Header="Devices">
-                <views:DeviceView Devices="{Binding Connection.Devices}" TcpConnection="{Binding Connection}"/>
-            </TabItem>
             <!-- Logs -->
             <TabItem Header="Logs">
                 <Grid>

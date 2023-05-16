@@ -1,5 +1,4 @@
 ﻿using Lucky.Home.Admin;
-using Lucky.Home.Devices;
 using Lucky.Home.Services;
 using System;
 using System.Collections.ObjectModel;
@@ -22,7 +21,6 @@ namespace Lucky.Home.Models
         public Connection(Action connectedHandler)
         {
             Nodes = new ObservableCollection<UiNode>();
-            Devices = new ObservableCollection<UiDevice>();
 
             Connected = false;
             _adminInterface = new AdminClient(() => _client.GetStream(), () => Connected = false);
@@ -46,15 +44,6 @@ namespace Lucky.Home.Models
         {
             get { return (ObservableCollection<UiNode>) GetValue(NodesProperty); }
             set { SetValue(NodesProperty, value); }
-        }
-
-        public static readonly DependencyProperty DevicesProperty = DependencyProperty.Register(
-            "Devices", typeof (ObservableCollection<UiDevice>), typeof (Connection), new PropertyMetadata(default(ObservableCollection<UiDevice>)));
-
-        public ObservableCollection<UiDevice> Devices
-        {
-            get { return (ObservableCollection<UiDevice>) GetValue(DevicesProperty); }
-            set { SetValue(DevicesProperty, value); }
         }
 
         private bool Connected
@@ -87,7 +76,6 @@ namespace Lucky.Home.Models
             // Start listener
             await _client.ConnectAsync(targetHost, Constants.DefaultAdminPort);
             await FetchTree();
-            await FetchDevices();
             Connected = true;
             Application.Current.Dispatcher.Invoke(connectedHandler);
         }
@@ -115,20 +103,6 @@ namespace Lucky.Home.Models
             }
         }
 
-        private async Task<bool> FetchDevices()
-        {
-            var devices = (await _adminInterface.GetDevices())?.Select(desc => new UiDevice(desc));
-            if (devices != null)
-            { 
-                Application.Current.Dispatcher.Invoke(() => Devices = new ObservableCollection<UiDevice>(devices));
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         public async Task<bool> RenameNode(Node node, NodeId newName)
         {
             bool ret = await _adminInterface.RenameNode(node.Address, node.NodeId, newName);
@@ -137,22 +111,6 @@ namespace Lucky.Home.Models
                 ret = await FetchTree();
             }
             return ret;
-        }
-
-        public async void DeleteDevice(UiDevice uiDevice)
-        {
-            await _adminInterface.DeleteDevice(uiDevice.Id);
-        }
-
-        public async Task<string> CreateDevice(SinkPath[] sinks, string deviceTypeName, object[] arguments)
-        {
-            var descriptor = new DeviceDescriptor
-            {
-                SinkPaths = sinks,
-                DeviceTypeName = deviceTypeName,
-                Arguments = arguments
-            };
-            return await _adminInterface.CreateDevice(descriptor);
         }
 
         public async Task ResetNode(Node node)

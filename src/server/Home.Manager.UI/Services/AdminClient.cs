@@ -1,5 +1,4 @@
 ﻿using Lucky.Home.Admin;
-using Lucky.Home.Devices;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -74,21 +73,6 @@ namespace Lucky.Home.Services
         public async Task ResetNode(NodeId id, string nodeAddress)
         {
             await Request("ResetNode", id, nodeAddress);
-        }
-
-        public async Task<string> CreateDevice(DeviceDescriptor descriptor)
-        {
-            return (string)await Request("CreateDevice", descriptor);
-        }
-
-        public async Task<DeviceDescriptor[]> GetDevices()
-        {
-            return (DeviceDescriptor[])await Request();
-        }
-
-        public async Task DeleteDevice(Guid id)
-        {
-            await Request("DeleteDevice", id);
         }
     }
 }

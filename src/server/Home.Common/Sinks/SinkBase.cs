@@ -1,5 +1,4 @@
 ﻿using System;
-using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 using System.Runtime.CompilerServices;
@@ -49,14 +48,6 @@ namespace Lucky.Home.Sinks
 
         public virtual void Dispose()
         { }
-
-        internal SinkPath Path
-        {
-            get
-            {
-                return new SinkPath(Node.NodeId, FourCc);
-            }
-        }
 
         public bool IsOnline
         {

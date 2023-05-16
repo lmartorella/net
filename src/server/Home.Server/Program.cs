@@ -1,5 +1,4 @@
 ﻿using System;
-using Lucky.Home.Devices;
 using Lucky.Home.Sinks;
 using Lucky.Home.Services;
 using Lucky.Home.Protocol;
@@ -38,10 +37,8 @@ namespace Lucky.Home.Lib
             Manager.Register<NodeManager>();
             Manager.Register<SinkManager>();
             Manager.Register<SinkManager>();
-            Manager.Register<DeviceManager, IDeviceManager>();
             Manager.Register<SinkManager, ISinkManager>();
             Manager.GetService<SinkTypeManager>().RegisterType(typeof(SystemSink));
-            Manager.GetService<DeviceTypeManager>();
 
             var logger = Manager.GetService<ILoggerFactory>().Create("Main");
 
@@ -57,8 +54,6 @@ namespace Lucky.Home.Lib
                 applications.Add(Activator.CreateInstance(mainType) as IApplication);
             };
             registrar.LoadLibraries(new[] { typeof(ApplicationAttribute) });
-
-            Manager.GetService<DeviceManager>().Load();
 
             // Start server
             Manager.GetService<Server>();
@@ -94,7 +89,6 @@ namespace Lucky.Home.Lib
             await Manager.Run();
 
             // Safely stop devices
-            await Manager.GetService<DeviceManager>().TerminateAll();
             logger.Log("Exiting.");
         }
     }

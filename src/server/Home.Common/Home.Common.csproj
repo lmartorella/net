@@ -40,7 +40,6 @@
     <Compile Include="Admin\MessageRequest.cs" />
     <Compile Include="Admin\MessageResponse.cs" />
     <Compile Include="Admin\MessageSerializerFactory.cs" />
-    <Compile Include="Devices\OnlineStatus.cs" />
     <Compile Include="IO\FileWatcher.cs" />
     <Compile Include="IO\StreamExt.cs" />
     <Compile Include="ItemEventArgs.cs" />
@@ -50,8 +49,6 @@
     <Compile Include="Protocol\IConnectionReader.cs" />
     <Compile Include="Protocol\IConnectionWriter.cs" />
     <Compile Include="Protocol\NodeStatus.cs" />
-    <Compile Include="Devices\DeviceDescriptor.cs" />
-    <Compile Include="Devices\DeviceTypeDescriptor.cs" />
     <Compile Include="IApplication.cs" />
     <Compile Include="Charting\Chart.cs" />
     <Compile Include="Db\CsvAggregate.cs" />
@@ -59,9 +56,6 @@
     <Compile Include="Db\CsvHelper.cs" />
     <Compile Include="Db\FsTimeSeries.cs" />
     <Compile Include="Db\ITimeSeries.cs" />
-    <Compile Include="Devices\DeviceBase.cs" />
-    <Compile Include="Devices\IDevice.cs" />
-    <Compile Include="Devices\IDeviceManager.cs" />
     <Compile Include="Friends.cs" />
     <Compile Include="NodeId.cs" />
     <Compile Include="ISerializable.cs" />
@@ -69,8 +63,6 @@
     <Compile Include="Admin\IAdminInterface.cs" />
     <Compile Include="Admin\Node.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Devices\DeviceAttribute.cs" />
-    <Compile Include="Devices\SinkPath.cs" />
     <Compile Include="Services\INotificationService.cs" />
     <Compile Include="Services\JsonIsolatedStorageService.cs" />
     <Compile Include="Services\LoggerExtensions.cs" />
