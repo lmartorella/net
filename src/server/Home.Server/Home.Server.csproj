@@ -52,7 +52,6 @@
     <Compile Include="Admin\AdminServer.cs" />
     <Compile Include="Admin\AdminListener.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Services\ConfigurationService.cs" />
     <Compile Include="Services\E2EStatLogger.cs" />
     <Compile Include="Services\E2EStatService.cs" />
     <Compile Include="Protocol\NodeManager.cs" />
@@ -63,11 +62,14 @@
     <Compile Include="Protocol\HeloMessage.cs" />
     <Compile Include="Protocol\Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sinks\ISystemSink.cs" />
     <Compile Include="Sinks\SinkManager.cs" />
     <Compile Include="Sinks\SystemSink.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\samples\server\Home.Samples\Home.Samples.csproj">
+      <Project>{f4c20249-d189-40a9-a7c1-18f15025319a}</Project>
+      <Name>Home.Samples</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Home.Common\Home.Common.csproj">
       <Project>{b13f0047-1cee-4463-baf6-a943e225d875}</Project>
       <Name>Home.Common</Name>

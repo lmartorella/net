@@ -9,7 +9,5 @@ namespace Lucky.Home.Sinks
         object LockObject { get; }
 
         event EventHandler<CollectionChangeEventArgs> CollectionChanged;
-
-        void RaiseResetSink(SinkBase sinkBase);
     }
 }

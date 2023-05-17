@@ -15,9 +15,9 @@ namespace Lucky.Home.Sinks
 
         public SinkTypeManager()
         {
-            Manager.GetService<Registrar>().AssemblyLoaded += (o, e) =>
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in e.Item.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
+                foreach (var type in assembly.GetTypes().Where(type => typeof(SinkBase).IsAssignableFrom(type) && type.GetCustomAttribute<SinkIdAttribute>() != null))
                 {
                     RegisterType(type);
                 }
@@ -31,7 +31,7 @@ namespace Lucky.Home.Sinks
             return type;
         }
 
-        public void RegisterType(Type type)
+        private void RegisterType(Type type)
         {
             // Exception if already registered..
             _sinkTypes.Add(GetSinkFourCc(type), type);

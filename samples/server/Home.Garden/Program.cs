@@ -1,17 +1,15 @@
-﻿using Lucky.Home.Devices.Garden;
+﻿using Lucky.Home;
+using Lucky.Home.Devices.Garden;
 using System.Threading.Tasks;
 
 namespace Home.Garden
 {
     class Program
     {
-        static void Main()
+        public static async Task Main(string[] arguments)
         {
-            _ = Start();
-        }
+            await Bootstrap.Start(arguments, "garden");
 
-        private static async Task Start()
-        {
             var flowSink = new FlowRpc();
             var gardenSink = new GardenRpc();
             var pumpSink = new DigitalInputArrayRpc();

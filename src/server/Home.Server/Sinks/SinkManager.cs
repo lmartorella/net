@@ -90,12 +90,5 @@ namespace Lucky.Home.Sinks
                 this.Sink = sink;
             }
         }
-
-        internal event EventHandler<ResetSinkEventArgs> ResetSink;
-
-        public void RaiseResetSink(SinkBase sink)
-        {
-            ResetSink?.Invoke(this, new ResetSinkEventArgs(sink));
-        }
     }
 }

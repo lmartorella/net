@@ -1,6 +1,4 @@
 ﻿
-using Lucky.Home.Services;
-
 namespace Lucky.Home.Services
 {
     /// <summary>

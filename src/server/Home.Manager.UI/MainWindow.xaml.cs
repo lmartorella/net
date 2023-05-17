@@ -24,8 +24,6 @@ namespace Lucky.Home
                 LogBox.Clear();
             });
 
-            Manager.GetService<GuiLoggerFactory>().Register(this);
-
             var nodes = Manager.GetService<SimulatorNodesService>().Restore(Dispatcher);
             foreach (var node in nodes)
             {
