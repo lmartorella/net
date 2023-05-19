@@ -3,6 +3,7 @@ using MQTTnet.Client;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -28,6 +29,7 @@ namespace Lucky.Home.Services
         private readonly MqttFactory mqttFactory;
         private readonly IMqttClient mqttClient;
         private Task connected;
+        private static readonly TimeSpan TimeoutPeriod = TimeSpan.FromSeconds(5);
 
         public MqttService()
         {
@@ -39,7 +41,7 @@ namespace Lucky.Home.Services
         private async Task Connect()
         {
             var clientOptions = new MqttClientOptionsBuilder()
-              .WithClientId("net")
+              .WithClientId(Assembly.GetEntryAssembly().GetName().Name)
               .WithTcpServer("localhost")
               .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
               .Build();
@@ -132,6 +134,7 @@ namespace Lucky.Home.Services
         /// </summary>
         public async Task RegisterRemoteCalls(string[] topics)
         {
+            await connected;
             foreach (string topic in topics)
             {
                 await SubscribeRawRpcResponse(topic + "/resp", (handler, payload) =>
@@ -146,17 +149,18 @@ namespace Lucky.Home.Services
 
         public async Task<byte[]> RemoteCall(string topic, byte[] payload)
         {
+            await connected;
             var correlationData = Guid.NewGuid();
             var deferred = new TaskCompletionSource<byte[]>();
             requests[correlationData] = new Action<byte[], Exception>((payolad, err) =>
             {
                 if (err == null)
                 {
-                    deferred.SetResult(payolad);
+                    deferred.TrySetResult(payolad);
                 }
                 else
                 {
-                    deferred.SetException(err);
+                    deferred.TrySetException(err);
                 }
             });
             var message = mqttFactory.CreateApplicationMessageBuilder()
@@ -166,6 +170,10 @@ namespace Lucky.Home.Services
                 .WithTopic(topic).
                 Build();
             await mqttClient.PublishAsync(message);
+            _ = Task.Delay(TimeoutPeriod).ContinueWith(task =>
+            {
+                deferred.TrySetException(new TimeoutException("Timeout waiting for response"));
+            });
             return await deferred.Task;
         }
     }
