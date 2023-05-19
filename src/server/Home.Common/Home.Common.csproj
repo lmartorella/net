@@ -77,6 +77,7 @@
     <Compile Include="Services\INotificationService.cs" />
     <Compile Include="Services\JsonIsolatedStorageService.cs" />
     <Compile Include="Services\LoggerExtensions.cs" />
+    <Compile Include="Services\MqttRemoveCallError.cs" />
     <Compile Include="Services\MqttService.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Protocol\ITcpNode.cs" />

@@ -50,7 +50,7 @@ namespace Lucky.Home
             }
 
             // Implements a IPC pipe with web server
-            _ = Manager.GetService<MqttService>().SubscribeRpc(appName + "/kill", async (RpcVoid _) =>
+            _ = Manager.GetService<MqttService>().SubscribeJsonRpc(appName + "/kill", async (RpcVoid _) =>
             {
                 await Task.Delay(1500);
                 Manager.Kill(logger, "killed by parent process");

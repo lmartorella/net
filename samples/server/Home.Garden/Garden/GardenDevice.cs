@@ -86,7 +86,7 @@ namespace Lucky.Home.Devices.Garden
 
             // To receive commands from UI
             var mqttClient = Manager.GetService<MqttService>();
-            _ = mqttClient.SubscribeRpc("garden/getStatus", async (RpcVoid request) =>
+            _ = mqttClient.SubscribeJsonRpc("garden/getStatus", async (RpcVoid request) =>
             {
                 FlowData flowData = await ReadFlow();
 
@@ -118,7 +118,7 @@ namespace Lucky.Home.Devices.Garden
                     IsRunning = _runningProgram != null
                 };
             });
-            _ = mqttClient.SubscribeRpc("garden/setImmediate", async (GardenSetImmediateRpcRequest request) =>
+            _ = mqttClient.SubscribeJsonRpc("garden/setImmediate", async (GardenSetImmediateRpcRequest request) =>
             {
                 var zones = request.ImmediateZone;
                 Logger.Log("setImmediate", "msg", zones.ToString());
@@ -129,7 +129,7 @@ namespace Lucky.Home.Devices.Garden
                 });
                 return new RpcVoid();
             });
-            _ = mqttClient.SubscribeRpc("garden/stop", async (RpcVoid request) =>
+            _ = mqttClient.SubscribeJsonRpc("garden/stop", async (RpcVoid request) =>
             {
                 bool stopped = false;
                 await GardenSink.ResetNode();
@@ -140,7 +140,7 @@ namespace Lucky.Home.Devices.Garden
                 }
                 return new RpcVoid();
             });
-            _ = mqttClient.SubscribeRpc("garden/setConfig", async (GardenSetConfigRpcRequest request) =>
+            _ = mqttClient.SubscribeJsonRpc("garden/setConfig", async (GardenSetConfigRpcRequest request) =>
             {
                 // Set new config value. Verify it before accepting it.
                 var config = request.Configuration;
