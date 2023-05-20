@@ -2,9 +2,9 @@
 
 namespace Lucky.Home.Services
 {
-    public class MqttRemoveCallError : Exception
+    public class MqttRemoteCallError : Exception
     {
-        public MqttRemoveCallError(string message)
+        public MqttRemoteCallError(string message)
             :base(message)
         {
         }

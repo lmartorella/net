@@ -142,12 +142,12 @@ namespace Lucky.Home.Services
                     handler(payload, null);
                 });
                 await SubscribeRawRpcResponse(topic + "/resp_err", (handler, payload) => {
-                    handler(null, new MqttRemoveCallError(Encoding.UTF8.GetString(payload)));
+                    handler(null, new MqttRemoteCallError(Encoding.UTF8.GetString(payload)));
                 });
             }
         }
 
-        public async Task<byte[]> RemoteCall(string topic, byte[] payload)
+        public async Task<byte[]> RemoteCall(string topic, byte[] payload = null)
         {
             await connected;
             var correlationData = Guid.NewGuid();
@@ -172,7 +172,7 @@ namespace Lucky.Home.Services
             await mqttClient.PublishAsync(message);
             _ = Task.Delay(TimeoutPeriod).ContinueWith(task =>
             {
-                deferred.TrySetException(new TimeoutException("Timeout waiting for response"));
+                deferred.TrySetCanceled();
             });
             return await deferred.Task;
         }
