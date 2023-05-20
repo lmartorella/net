@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lucky.Home.Services;
+using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
@@ -21,16 +22,38 @@ namespace Lucky.Home.Devices.Garden
         /// </summary>
         [DataMember(Name = "flowLMin")]
         public double FlowLMin;
+
+        [DataMember(Name = "offline")]
+        public bool Offline;
     }
 
     class FlowRpc : BaseRpc
     {
+        private MqttService mqttService;
+
+        public FlowRpc()
+        {
+            mqttService = Manager.GetService<MqttService>();
+            _ = mqttService.RegisterRemoteCalls(new[] { "flow_meter_0/value" });
+        }
+
         /// <summary>
         /// fq is frequency / L/min (5.5 on sample counter)
         /// </summary>
-        public async Task<FlowData> ReadData(double fq, int timeout = 3000)
+        public async Task<FlowData> ReadData()
         {
-            throw new NotImplementedException();
+            try
+            {
+                FlowData response = await Manager.GetService<MqttService>().JsonRemoteCall<RpcVoid, FlowData>("flow_meter_0/value");
+                IsOnline = !response.Offline;
+                return response;
+            }
+            catch (TaskCanceledException)
+            {
+                // No data
+                IsOnline = false;
+                return null;
+            }
         }
     }
 }

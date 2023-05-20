@@ -8,7 +8,6 @@ namespace Lucky.Home.Devices.Garden
     {
         private FileInfo _pumpFile;
         private readonly DigitalInputArrayRpc _pumpSink;
-        private int _pumpSubIndex;
 
         public PumpOperationObserver(DigitalInputArrayRpc pumpSink)
         {
@@ -21,12 +20,9 @@ namespace Lucky.Home.Devices.Garden
 
         private void HandlePumpSinkData(object sender, DigitalInputArrayRpc.EventReceivedEventArgs e)
         {
-            if (e.SubIndex == _pumpSubIndex)
-            {
-                // Log change
-                // 220v sense is inverted bool
-                Log("{0:u} Pump {1}", e.Timestamp, e.State ? "OFF" : "ON");
-            }
+            // Log change
+            // 220v sense is inverted bool
+            Log("{0:u} Pump {1}", e.Timestamp, e.State ? "OFF" : "ON");
         }
 
         private void Log(string format, params object[] args)

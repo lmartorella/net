@@ -30,6 +30,7 @@ namespace Lucky.Home.Services
         private readonly IMqttClient mqttClient;
         private Task connected;
         private static readonly TimeSpan TimeoutPeriod = TimeSpan.FromSeconds(5);
+        private readonly DataContractJsonSerializer errSerializer = new DataContractJsonSerializer(typeof(RpcErrorResponse));
 
         public MqttService()
         {
@@ -47,6 +48,39 @@ namespace Lucky.Home.Services
               .Build();
             await mqttClient.ConnectAsync(clientOptions);
             Logger.Log("Connected");
+        }
+
+        public async Task SubscribeJsonValue<T>(string topic, Action<T> handler) where T: class, new() 
+        {
+            var deserializer = new DataContractJsonSerializer(typeof(T));
+            await connected;
+            var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder().WithTopicFilter(f => f.WithTopic(topic)).Build();
+            await mqttClient.SubscribeAsync(mqttSubscribeOptions);
+            mqttClient.ApplicationMessageReceivedAsync += async args =>
+            {
+                if (args.ApplicationMessage.Topic == topic)
+                {
+                    T req = null;
+                    if (args.ApplicationMessage.Payload != null)
+                    {
+                        req = (T)deserializer.ReadObject(new MemoryStream(args.ApplicationMessage.Payload));
+                    }
+                    handler(req);
+                }
+            };
+        }
+
+        public async Task JsonPublish<T>(string topic, T value)
+        {
+            var serializer = new DataContractJsonSerializer(typeof(T));
+            var stream = new MemoryStream();
+            serializer.WriteObject(stream, value);
+
+            var message = mqttFactory.CreateApplicationMessageBuilder()
+                .WithPayload(stream.GetBuffer())
+                .WithTopic(topic).
+                Build();
+            await mqttClient.PublishAsync(message);
         }
 
         /// <summary>
@@ -71,7 +105,7 @@ namespace Lucky.Home.Services
                     {
                         // Send back error as string
                         var responseStream = new MemoryStream();
-                        new DataContractJsonSerializer(typeof(RpcErrorResponse)).WriteObject(responseStream, new RpcErrorResponse { Error = exc.Message });
+                        errSerializer.WriteObject(responseStream, new RpcErrorResponse { Error = exc.Message });
                         responsePayload = responseStream.GetBuffer();
                     }
 
@@ -84,6 +118,27 @@ namespace Lucky.Home.Services
                 }
             };
             Logger.Log("Subscribed requests", "topic", topic);
+        }
+
+        /// <summary>
+        /// Subscribe RPC requests in JSON format
+        /// </summary>
+        public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq, Task<TResp>> handler) where TReq: class, new() where TResp: class, new()
+        {
+            var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
+            var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
+            return SubscribeRawRpcRequest(topic, async payload =>
+            {
+                TReq req = null;
+                if (payload != null)
+                {
+                    req = (TReq)reqSerializer.ReadObject(new MemoryStream(payload));
+                }
+                TResp resp = await handler(req);
+                var responseStream = new MemoryStream();
+                respDeserializer.WriteObject(responseStream, resp);
+                return responseStream.ToArray();
+            });
         }
 
         private async Task SubscribeRawRpcResponse(string topic, Action<Action<byte[], Exception>, byte[]> handler)
@@ -110,26 +165,6 @@ namespace Lucky.Home.Services
         }
 
         /// <summary>
-        /// Subscribe RPC requests in JSON format
-        /// </summary>
-        public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq, Task<TResp>> handler) where TReq: new() where TResp: new()
-        {
-            return SubscribeRawRpcRequest(topic, async payload =>
-            {
-                TReq req = new TReq();
-                if (payload != null)
-                {
-                    var deserializer = new DataContractJsonSerializer(typeof(TReq));
-                    req = (TReq)deserializer.ReadObject(new MemoryStream(payload));
-                }
-                TResp resp = await handler(req);
-                var responseStream = new MemoryStream();
-                new DataContractJsonSerializer(typeof(TResp)).WriteObject(responseStream, resp);
-                return responseStream.ToArray();
-            });
-        }
-
-        /// <summary>
         /// Enable reception of RPC calls
         /// </summary>
         public async Task RegisterRemoteCalls(string[] topics)
@@ -147,7 +182,7 @@ namespace Lucky.Home.Services
             }
         }
 
-        public async Task<byte[]> RemoteCall(string topic, byte[] payload = null)
+        public async Task<byte[]> RawRemoteCall(string topic, byte[] payload = null)
         {
             await connected;
             var correlationData = Guid.NewGuid();
@@ -175,6 +210,18 @@ namespace Lucky.Home.Services
                 deferred.TrySetCanceled();
             });
             return await deferred.Task;
+        }
+
+        public async Task<TResp> JsonRemoteCall<TReq, TResp>(string topic, TReq payload = null) where TReq : class, new() where TResp : class, new()
+        {
+            var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
+            var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
+            var requestStream = new MemoryStream();
+            reqSerializer.WriteObject(requestStream, payload);
+
+            var responseData = await RawRemoteCall(topic, requestStream.ToArray());
+            var response = (TResp)respDeserializer.ReadObject(new MemoryStream(responseData));
+            return response;
         }
     }
 }

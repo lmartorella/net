@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Lucky.Home.Services;
+using System;
+using System.Runtime.Serialization;
 
 namespace Lucky.Home.Devices.Garden
 {
@@ -18,11 +20,44 @@ namespace Lucky.Home.Devices.Garden
             /// Single switch state (sub-sink)
             /// </summary>
             public bool State;
+        }
+
+        [DataContract]
+        public class StateValue
+        {
+            /// <summary>
+            /// Event timestamp
+            /// </summary>
+            [DataMember(Name = "timestamp")]
+            public String Timestamp;
 
             /// <summary>
-            /// SubSink index
+            /// Single switch state (sub-sink)
             /// </summary>
-            public int SubIndex;
+            [DataMember(Name = "state")]
+            public bool State;
+
+            [DataMember(Name = "offline")]
+            public bool Offline;
+        }
+
+        private MqttService mqttService;
+
+        public DigitalInputArrayRpc()
+        {
+            mqttService = Manager.GetService<MqttService>();
+            _ = mqttService.SubscribeJsonValue<StateValue>("pump_switch_0/value", state =>
+            {
+                if (state.Offline)
+                {
+                    IsOnline = false;
+                } 
+                else
+                {
+                    IsOnline = true;
+                    EventReceived?.Invoke(this, new EventReceivedEventArgs { State = state.State, Timestamp = DateTime.Parse(state.Timestamp) });
+                }
+            });
         }
 
         /// <summary>

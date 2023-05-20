@@ -27,7 +27,6 @@ namespace Lucky.Home.Devices.Garden
         private readonly Queue<ZoneTime> _immediateQueue = new Queue<ZoneTime>();
         private Configuration _configuration = new Configuration { Program = TimeProgram<GardenCycle>.DefaultProgram };
         private FileWatcher _fileWatcher;
-        private readonly double _counterFq;
         private readonly MailScheduler _executedCyclesMailScheduler;
         private readonly MailScheduler _suspendedCyclesMailScheduler;
         private readonly PumpOperationObserver _pumpOpObserver;
@@ -40,7 +39,7 @@ namespace Lucky.Home.Devices.Garden
 
         public bool InUse { get; private set; }
 
-        public GardenDevice(GardenRpc gardenSink, FlowRpc flowSink, DigitalInputArrayRpc pumpSink, double counterFq = 5.5)
+        public GardenDevice(GardenRpc gardenSink, FlowRpc flowSink, DigitalInputArrayRpc pumpSink)
         {
             Logger = Manager.GetService<ILoggerFactory>().Create("Garden");
             FlowSink = flowSink;
@@ -48,7 +47,6 @@ namespace Lucky.Home.Devices.Garden
             PumpSink = pumpSink;
             _pumpOpObserver = new PumpOperationObserver(pumpSink);
 
-            _counterFq = counterFq;
             _timeProgram = new TimeProgram<GardenCycle>(Logger);
 
             _executedCyclesMailScheduler = new MailScheduler(this, Resources.gardenMailTitle, Resources.gardenMailHeader);
@@ -159,7 +157,7 @@ namespace Lucky.Home.Devices.Garden
             {
                 try
                 {
-                    return await flowSink.ReadData(_counterFq);
+                    return await flowSink.ReadData();
                 }
                 catch (Exception exc)
                 {
