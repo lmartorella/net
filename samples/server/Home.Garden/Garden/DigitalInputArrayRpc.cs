@@ -41,11 +41,8 @@ namespace Lucky.Home.Devices.Garden
             public bool Offline;
         }
 
-        private MqttService mqttService;
-
         public DigitalInputArrayRpc()
         {
-            mqttService = Manager.GetService<MqttService>();
             _ = mqttService.SubscribeJsonValue<StateValue>("pump_switch_0/value", state =>
             {
                 if (state.Offline)

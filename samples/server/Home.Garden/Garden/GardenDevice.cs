@@ -129,9 +129,7 @@ namespace Lucky.Home.Devices.Garden
             });
             _ = mqttClient.SubscribeJsonRpc("garden/stop", async (RpcVoid request) =>
             {
-                bool stopped = false;
-                await GardenSink.ResetNode();
-                stopped = true;
+                bool stopped = await GardenSink.ResetNode();
                 if (!stopped)
                 {
                     throw new ArgumentException("Cannot stop, no sink");
@@ -215,7 +213,7 @@ namespace Lucky.Home.Devices.Garden
                     if (gardenSink != null)
                     {
                         // Wait for a free garden device
-                        var state = await gardenSink.Read(false);
+                        var state = await gardenSink.ReadState();
                         if (state == null)
                         {
                             // Lost connection with garden programmer!
@@ -246,7 +244,7 @@ namespace Lucky.Home.Devices.Garden
                                 lock (_immediateQueue)
                                 {
                                     cycle = _immediateQueue.Dequeue();
-                                    zoneTimes = new GardenRpc.ImmediateZoneTime { Time = (byte)cycle.Minutes, ZoneMask = ToZoneMask(cycle.Zones) };
+                                    zoneTimes = new GardenRpc.ImmediateZoneTime { Minutes = cycle.Minutes, ZoneMask = ToZoneMask(cycle.Zones) };
                                 }
                                 await gardenSink.WriteProgram(new[] { zoneTimes });
 

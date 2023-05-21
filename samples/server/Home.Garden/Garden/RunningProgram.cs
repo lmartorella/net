@@ -67,7 +67,7 @@ namespace Lucky.Home.Devices.Garden
             }
         }
 
-        private string ZoneDetailsToString(byte zoneMask, int minutes)
+        private string ZoneDetailsToString(int zoneMask, int minutes)
         {
             return string.Format("0x{0:X2}={1}", zoneMask, minutes);
         }
@@ -108,7 +108,7 @@ namespace Lucky.Home.Devices.Garden
             var currentCycle = state.ZoneRemTimes
                     .Concat(new GardenRpc.ImmediateZoneTime[1] { null })
                     .Select((t, i) => Tuple.Create(t, i))
-                    .First(t => t.Item1 == null || t.Item1.Time > 0).Item2;
+                    .First(t => t.Item1 == null || t.Item1.Minutes > 0).Item2;
 
             // Calc CSV line with total quantity
             if (_startQtyMc > 0)
@@ -122,7 +122,7 @@ namespace Lucky.Home.Devices.Garden
                     _data.QtyL = (flowData1.TotalMc - _startQtyMc) * 1000.0;
                     _data.TotalQtyMc = flowData1.TotalMc;
                     _data.FlowLMin = flowData1.FlowLMin;
-                    _data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => ZoneDetailsToString(t.ZoneMask, t.Time)));
+                    _data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => ZoneDetailsToString(t.ZoneMask, t.Minutes)));
                     lock (_csvFile)
                     {
                         CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, _data);

@@ -86,7 +86,7 @@ namespace Lucky.Home.Services
         /// <summary>
         /// Subscribe RPC requests in binary format
         /// </summary>
-        public async Task SubscribeRawRpcRequest(string topic, Func<byte[], Task<byte[]>> handler)
+        public async Task SubscribeRawRpc(string topic, Func<byte[], Task<byte[]>> handler)
         {
             await connected;
             var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder().WithTopicFilter(f => f.WithTopic(topic)).Build();
@@ -127,7 +127,7 @@ namespace Lucky.Home.Services
         {
             var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
             var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
-            return SubscribeRawRpcRequest(topic, async payload =>
+            return SubscribeRawRpc(topic, async payload =>
             {
                 TReq req = null;
                 if (payload != null)
@@ -165,7 +165,7 @@ namespace Lucky.Home.Services
         }
 
         /// <summary>
-        /// Enable reception of RPC calls
+        /// Enable reception of RPC calls originated by the current party
         /// </summary>
         public async Task RegisterRemoteCalls(string[] topics)
         {
@@ -176,7 +176,8 @@ namespace Lucky.Home.Services
                 {
                     handler(payload, null);
                 });
-                await SubscribeRawRpcResponse(topic + "/resp_err", (handler, payload) => {
+                await SubscribeRawRpcResponse(topic + "/resp_err", (handler, payload) => 
+                {
                     handler(null, new MqttRemoteCallError(Encoding.UTF8.GetString(payload)));
                 });
             }

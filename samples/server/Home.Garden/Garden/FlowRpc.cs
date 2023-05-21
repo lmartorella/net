@@ -29,11 +29,8 @@ namespace Lucky.Home.Devices.Garden
 
     class FlowRpc : BaseRpc
     {
-        private MqttService mqttService;
-
         public FlowRpc()
         {
-            mqttService = Manager.GetService<MqttService>();
             _ = mqttService.RegisterRemoteCalls(new[] { "flow_meter_0/value" });
         }
 
@@ -44,7 +41,7 @@ namespace Lucky.Home.Devices.Garden
         {
             try
             {
-                FlowData response = await Manager.GetService<MqttService>().JsonRemoteCall<RpcVoid, FlowData>("flow_meter_0/value");
+                FlowData response = await mqttService.JsonRemoteCall<RpcVoid, FlowData>("flow_meter_0/value");
                 IsOnline = !response.Offline;
                 return response;
             }
