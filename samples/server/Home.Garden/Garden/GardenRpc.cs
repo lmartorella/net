@@ -34,16 +34,24 @@ namespace Lucky.Home.Devices.Garden
             public ImmediateZoneTime[] Times;
         }
 
+        private Task<MqttService.RpcOriginator> rpcReset;
+        private Task<MqttService.RpcOriginator> rpcState;
+        private Task<MqttService.RpcOriginator> rpcProgram;
+        private Task<MqttService.RpcOriginator> rpcSetFlow;
+
         public GardenRpc()
         {
-            _ = mqttService.RegisterRemoteCalls(new[] { "garden_timer_0/reset", "garden_timer_0/state", "garden_timer_0/program", "garden_timer_0/setFlow" });
+            rpcReset = mqttService.RegisterRpcOriginator("garden_timer_0/reset");
+            rpcState = mqttService.RegisterRpcOriginator("garden_timer_0/state");
+            rpcProgram = mqttService.RegisterRpcOriginator("garden_timer_0/program");
+            rpcSetFlow = mqttService.RegisterRpcOriginator("garden_timer_0/setFlow");
         }
 
         public async Task<bool> ResetNode()
         {
             try
             {
-                await mqttService.RawRemoteCall("garden_timer_0/reset");
+                await (await rpcReset).RawRemoteCall();
                 IsOnline = true;
                 return true;
             }
@@ -58,7 +66,7 @@ namespace Lucky.Home.Devices.Garden
         {
             try
             {
-                var ret = await mqttService.JsonRemoteCall<RpcVoid, TimerState>("garden_timer_0/state");
+                var ret = await (await rpcState).JsonRemoteCall<RpcVoid, TimerState>();
                 IsOnline = true;
                 return ret;
             }
@@ -73,7 +81,7 @@ namespace Lucky.Home.Devices.Garden
         {
             try
             {
-                await mqttService.JsonRemoteCall<Program, RpcVoid>("garden_timer_0/program", new Program { Times = zoneTimes });
+                await (await rpcProgram).JsonRemoteCall<Program, RpcVoid>(new Program { Times = zoneTimes });
                 IsOnline = true;
             }
             catch (TaskCanceledException)
@@ -86,7 +94,7 @@ namespace Lucky.Home.Devices.Garden
         {
             try
             {
-                await mqttService.RawRemoteCall("garden_timer_0/setFlow", Encoding.UTF8.GetBytes(flow.ToString()));
+                await (await rpcSetFlow).RawRemoteCall(Encoding.UTF8.GetBytes(flow.ToString()));
                 IsOnline = true;
             }
             catch (TaskCanceledException)

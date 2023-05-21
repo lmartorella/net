@@ -116,7 +116,7 @@ namespace Lucky.Home.Devices.Garden
                     IsRunning = _runningProgram != null
                 };
             });
-            _ = mqttClient.SubscribeJsonRpc("garden/setImmediate", async (GardenSetImmediateRpcRequest request) =>
+            _ = mqttClient.SubscribeJsonRpc("garden/setImmediate", (GardenSetImmediateRpcRequest request) =>
             {
                 var zones = request.ImmediateZone;
                 Logger.Log("setImmediate", "msg", zones.ToString());
@@ -125,7 +125,7 @@ namespace Lucky.Home.Devices.Garden
                     Minutes = zones.Time,
                     Zones = zones.Zones
                 });
-                return new RpcVoid();
+                return Task.FromResult(new RpcVoid());
             });
             _ = mqttClient.SubscribeJsonRpc("garden/stop", async (RpcVoid request) =>
             {

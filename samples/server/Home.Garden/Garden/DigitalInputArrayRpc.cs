@@ -43,7 +43,7 @@ namespace Lucky.Home.Devices.Garden
 
         public DigitalInputArrayRpc()
         {
-            _ = mqttService.SubscribeJsonValue<StateValue>("pump_switch_0/value", state =>
+            _ = mqttService.SubscribeJsonTopic<StateValue>("pump_switch_0/value", state =>
             {
                 if (state.Offline)
                 {
