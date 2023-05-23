@@ -126,15 +126,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\MQTTnet\Source\MQTTnet.Extensions.Rpc\bin\Debug\net472\MQTTnet.dll</HintPath>
     </Reference>
-    <Reference Include="MQTTnet.Extensions.Rpc, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\MQTTnet\Source\MQTTnet.Extensions.Rpc\bin\Debug\net472\MQTTnet.Extensions.Rpc.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MQTTnet">
+      <Version>4.2.0.706</Version>
+    </PackageReference>
+    <PackageReference Include="MQTTnet.Extensions.ManagedClient">
+      <Version>4.2.0.706</Version>
+    </PackageReference>
     <PackageReference Include="OxyPlot.Wpf">
       <Version>1.0.0</Version>
     </PackageReference>

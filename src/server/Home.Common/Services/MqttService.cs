@@ -1,9 +1,9 @@
 ﻿using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Extensions.ManagedClient;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Mime;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
@@ -28,27 +28,39 @@ namespace Lucky.Home.Services
     public class MqttService : ServiceBase
     {
         private readonly MqttFactory mqttFactory;
-        private readonly IMqttClient mqttClient;
-        private Task connected;
+        private readonly IManagedMqttClient mqttClient;
         private static readonly TimeSpan TimeoutPeriod = TimeSpan.FromSeconds(5);
         private const string ErrContentType = "application/net_err+text";
 
         public MqttService()
         {
             mqttFactory = new MqttFactory();
-            mqttClient = mqttFactory.CreateMqttClient();
-            connected = Connect();
+            mqttClient = mqttFactory.CreateManagedMqttClient();
+            _ = Connect();
+            mqttClient.ConnectedAsync += (e) =>
+            {
+                Logger.Log("Connected");
+                return Task.CompletedTask;
+            };
+            mqttClient.DisconnectedAsync += (e) =>
+            {
+                Logger.Log("Disconnected, reconnecting", "reason", e.ReasonString);
+                return Task.CompletedTask;
+            };
         }
 
         private async Task Connect()
         {
-            var clientOptions = new MqttClientOptionsBuilder()
-              .WithClientId(Assembly.GetEntryAssembly().GetName().Name)
-              .WithTcpServer("localhost")
-              .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
-              .Build();
-            await mqttClient.ConnectAsync(clientOptions);
-            Logger.Log("Connected");
+            var clientOptions = new ManagedMqttClientOptionsBuilder()
+                .WithAutoReconnectDelay(TimeSpan.FromSeconds(3.5))
+                .WithClientOptions(new MqttClientOptionsBuilder()
+                  .WithClientId(Assembly.GetEntryAssembly().GetName().Name)
+                  .WithTcpServer("localhost")
+                  .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
+                  .Build()).
+                Build();
+            await mqttClient.StartAsync(clientOptions);
+            Logger.Log("Started");
         }
 
         /// <summary>
@@ -58,9 +70,8 @@ namespace Lucky.Home.Services
         public async Task SubscribeJsonTopic<T>(string topic, Action<T> handler) where T: class, new() 
         {
             var deserializer = new DataContractJsonSerializer(typeof(T));
-            await connected;
-            var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder().WithTopicFilter(f => f.WithTopic(topic)).Build();
-            await mqttClient.SubscribeAsync(mqttSubscribeOptions);
+            var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
+            await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
             mqttClient.ApplicationMessageReceivedAsync += args =>
             {
                 var msg = args.ApplicationMessage;
@@ -83,6 +94,11 @@ namespace Lucky.Home.Services
         /// </summary>
         public async Task JsonPublish<T>(string topic, T value)
         {
+            if (!mqttClient.IsConnected)
+            {
+                throw new MqttRemoteCallError("Broker not connected");
+            }
+
             var serializer = new DataContractJsonSerializer(typeof(T));
             var stream = new MemoryStream();
             serializer.WriteObject(stream, value);
@@ -91,7 +107,7 @@ namespace Lucky.Home.Services
                 .WithPayload(stream.GetBuffer())
                 .WithTopic(topic).
                 Build();
-            await mqttClient.PublishAsync(message);
+            await mqttClient.InternalClient.PublishAsync(message);
         }
 
         /// <summary>
@@ -118,10 +134,14 @@ namespace Lucky.Home.Services
 
             public async Task SubscribeRawRpcResponse()
             {
+                if (!owner.mqttClient.IsConnected)
+                {
+                    throw new MqttRemoteCallError("Broker not connected");
+                }
+
                 var responseTopic = this.topic + "/resp";
-                await owner.connected;
-                var mqttSubscribeOptions = owner.mqttFactory.CreateSubscribeOptionsBuilder().WithTopicFilter(f => f.WithTopic(responseTopic)).Build();
-                await owner.mqttClient.SubscribeAsync(mqttSubscribeOptions);
+                var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(responseTopic).Build();
+                await owner.mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
                 owner.mqttClient.ApplicationMessageReceivedAsync += args =>
                 {
                     var msg = args.ApplicationMessage;
@@ -151,7 +171,11 @@ namespace Lucky.Home.Services
 
             public async Task<byte[]> RawRemoteCall(byte[] payload = null)
             {
-                await owner.connected;
+                if (!owner.mqttClient.IsConnected)
+                {
+                    throw new MqttRemoteCallError("Broker not connected");
+                }
+
                 var correlationData = Guid.NewGuid();
                 var deferred = new TaskCompletionSource<byte[]>();
                 requests[correlationData] = new Action<byte[], Exception>((payolad, err) =>
@@ -171,7 +195,7 @@ namespace Lucky.Home.Services
                     .WithResponseTopic(topic + "/resp")
                     .WithTopic(topic).
                     Build();
-                await owner.mqttClient.PublishAsync(message);
+                await owner.mqttClient.InternalClient.PublishAsync(message);
                 _ = Task.Delay(TimeoutPeriod).ContinueWith(task =>
                 {
                     deferred.TrySetCanceled();
@@ -197,9 +221,8 @@ namespace Lucky.Home.Services
         /// </summary>
         public async Task SubscribeRawRpc(string topic, Func<byte[], Task<byte[]>> handler)
         {
-            await connected;
-            var mqttSubscribeOptions = mqttFactory.CreateSubscribeOptionsBuilder().WithTopicFilter(f => f.WithTopic(topic)).Build();
-            await mqttClient.SubscribeAsync(mqttSubscribeOptions);
+            var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
+            await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
             mqttClient.ApplicationMessageReceivedAsync += async args =>
             {
                 var msg = args.ApplicationMessage;
@@ -227,7 +250,7 @@ namespace Lucky.Home.Services
                         Topic = msg.ResponseTopic
                     };
 
-                    await mqttClient.PublishAsync(respMsg);
+                    await mqttClient.InternalClient.PublishAsync(respMsg);
                 }
             };
             Logger.Log("Subscribed requests", "topic", topic);
