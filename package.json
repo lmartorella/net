@@ -6,7 +6,7 @@
     "buildWeb": "cd samples/web/app && tsc",
     "build": "npm run buildNet && npm run buildWeb",
     "dev": "npm run buildNetDebug && npm run buildWeb",
-    "serve": "node src/web/server.js"
+    "serve": "node src/web/server.mjs"
   },
   "repository": {
     "url": "https://github.com/lmartorella/net"
