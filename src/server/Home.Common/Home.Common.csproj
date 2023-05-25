@@ -50,7 +50,6 @@
     <Compile Include="Protocol\IConnectionReader.cs" />
     <Compile Include="Protocol\IConnectionWriter.cs" />
     <Compile Include="Protocol\NodeStatus.cs" />
-    <Compile Include="Charting\Chart.cs" />
     <Compile Include="Db\CsvAggregate.cs" />
     <Compile Include="Db\CsvAttribute.cs" />
     <Compile Include="Db\CsvHelper.cs" />
@@ -136,9 +135,6 @@
     </PackageReference>
     <PackageReference Include="MQTTnet.Extensions.ManagedClient">
       <Version>4.2.0.706</Version>
-    </PackageReference>
-    <PackageReference Include="OxyPlot.Wpf">
-      <Version>1.0.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
