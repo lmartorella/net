@@ -52,6 +52,8 @@ namespace Lucky.Home.Services
         {
             var clientOptions = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(3.5))
+                .WithMaxPendingMessages(1)
+                .WithPendingMessagesOverflowStrategy(MQTTnet.Server.MqttPendingMessagesOverflowStrategy.DropOldestQueuedMessage)
                 .WithClientOptions(new MqttClientOptionsBuilder()
                   .WithClientId(Assembly.GetEntryAssembly().GetName().Name)
                   .WithTcpServer("localhost")
