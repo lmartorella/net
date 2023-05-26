@@ -33,7 +33,7 @@ namespace Lucky.Home.Devices.Garden
 
         public FlowRpc()
         {
-            rpc = mqttService.RegisterRpcOriginator("flow_meter_0/value");
+            rpc = mqttService.RegisterRpcOriginator("flow_meter_0/value", GardenRpc.Timeout);
         }
 
         /// <summary>

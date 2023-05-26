@@ -87,11 +87,9 @@ namespace Lucky.Home.Devices.Garden
             _ = mqttClient.SubscribeJsonRpc("garden/getStatus", async (RpcVoid request) =>
             {
                 FlowData flowData = await ReadFlow();
-
-                // Tactical
                 if (flowData != null)
                 {
-                    await (GardenSink.UpdateFlowData((int)flowData.FlowLMin) ?? Task.FromResult<string>(null));
+                    _ = GardenSink.UpdateFlowData((int)flowData.FlowLMin);
                 }
 
                 NextCycle[] nextCycles;
@@ -150,21 +148,13 @@ namespace Lucky.Home.Devices.Garden
 
         internal async Task<FlowData> ReadFlow()
         {
-            var flowSink = FlowSink;
-            if (flowSink != null)
+            try
             {
-                try
-                {
-                    return await flowSink.ReadData();
-                }
-                catch (Exception exc)
-                {
-                    Logger.Exception(exc);
-                    return null;
-                }
+                return await FlowSink.ReadData();
             }
-            else
+            catch (Exception exc)
             {
+                Logger.Exception(exc);
                 return null;
             }
         }

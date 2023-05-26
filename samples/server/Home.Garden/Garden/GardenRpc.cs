@@ -1,4 +1,5 @@
 ﻿using Lucky.Home.Services;
+using System;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -39,12 +40,14 @@ namespace Lucky.Home.Devices.Garden
         private Task<MqttService.RpcOriginator> rpcProgram;
         private Task<MqttService.RpcOriginator> rpcSetFlow;
 
+        public static TimeSpan Timeout = TimeSpan.FromSeconds(3);
+
         public GardenRpc()
         {
-            rpcReset = mqttService.RegisterRpcOriginator("garden_timer_0/reset");
-            rpcState = mqttService.RegisterRpcOriginator("garden_timer_0/state");
-            rpcProgram = mqttService.RegisterRpcOriginator("garden_timer_0/program");
-            rpcSetFlow = mqttService.RegisterRpcOriginator("garden_timer_0/setFlow");
+            rpcReset = mqttService.RegisterRpcOriginator("garden_timer_0/reset", Timeout);
+            rpcState = mqttService.RegisterRpcOriginator("garden_timer_0/state", Timeout);
+            rpcProgram = mqttService.RegisterRpcOriginator("garden_timer_0/program", Timeout);
+            rpcSetFlow = mqttService.RegisterRpcOriginator("garden_timer_0/setFlow", Timeout);
         }
 
         public async Task<bool> ResetNode()

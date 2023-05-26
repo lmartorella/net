@@ -29,13 +29,13 @@ namespace Lucky.Home.Devices.Garden
             /// Event timestamp
             /// </summary>
             [DataMember(Name = "timestamp")]
-            public String Timestamp;
+            public string Timestamp;
 
             /// <summary>
             /// Single switch state (sub-sink)
             /// </summary>
             [DataMember(Name = "state")]
-            public bool State;
+            public bool? State;
 
             [DataMember(Name = "offline")]
             public bool Offline;
@@ -52,7 +52,10 @@ namespace Lucky.Home.Devices.Garden
                 else
                 {
                     IsOnline = true;
-                    EventReceived?.Invoke(this, new EventReceivedEventArgs { State = state.State, Timestamp = DateTime.Parse(state.Timestamp) });
+                    if (state.State.HasValue && state.Timestamp != null)
+                    {
+                        EventReceived?.Invoke(this, new EventReceivedEventArgs { State = state.State.Value, Timestamp = DateTime.Parse(state.Timestamp) });
+                    }
                 }
             });
         }
