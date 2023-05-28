@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 
@@ -77,15 +76,6 @@ namespace Lucky.Home.Sinks
             }
         }
 
-        public ISink FindOwnerSink(SinkPath sinkPath)
-        {
-            // Find the parent sink instance
-            lock (LockObject)
-            {
-                return _sinks.FirstOrDefault(s => s.Path.Owns(sinkPath));
-            }
-        }
-
         /// <summary>
         /// Raised if a sink is added, removed or it changes state (e.g. zombie)
         /// </summary>
@@ -99,13 +89,6 @@ namespace Lucky.Home.Sinks
             {
                 this.Sink = sink;
             }
-        }
-
-        internal event EventHandler<ResetSinkEventArgs> ResetSink;
-
-        public void RaiseResetSink(SinkBase sink)
-        {
-            ResetSink?.Invoke(this, new ResetSinkEventArgs(sink));
         }
     }
 }

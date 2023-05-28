@@ -54,12 +54,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\IntToStringConverter.cs" />
     <Compile Include="Converters\ResetReasonToEnabledConverter.cs" />
+    <Compile Include="Models\Switch.cs" />
     <Compile Include="Services\AdminClient.cs" />
     <Compile Include="Converters\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\IsZombieToFontStyleConverter.cs" />
     <Compile Include="Services\MockSinkManager.cs" />
-    <Compile Include="Services\GuiLoggerFactory.cs" />
     <Compile Include="Simulator\ISimulatedNode.cs" />
     <Compile Include="Simulator\MasterNode.cs" />
     <Compile Include="Simulator\ClientProtocolNode.cs" />
@@ -70,25 +71,22 @@
     <Compile Include="Simulator\SinkMockExtensions.cs" />
     <Compile Include="Simulator\SlaveNode.cs" />
     <Compile Include="UiLibraryAttribute.cs" />
-    <Compile Include="Views\CreateDeviceWindow.xaml.cs">
-      <DependentUpon>CreateDeviceWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\DeviceView.xaml.cs">
-      <DependentUpon>DeviceView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Models\SinkNode.cs" />
-    <Compile Include="Models\UiDevice.cs" />
     <Compile Include="Models\UiNode.cs" />
     <Compile Include="Models\UiCommand.cs" />
     <Compile Include="Models\TreeNode.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="Views\DeviceView.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Views\DigitalInputArraySinkView.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\NodeView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SamilSinkView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -106,8 +104,17 @@
     </Compile>
     <Compile Include="Models\Connection.cs" />
     <Compile Include="Converters\NodeStatusToTextConverter.cs" />
+    <Compile Include="Views\AnalogIntegratorSinkView.cs" />
+    <Compile Include="Views\DigitalInputArraySinkView.xaml.cs">
+      <DependentUpon>DigitalInputArraySinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FlowSinkMockView.cs" />
+    <Compile Include="Views\GardenSinkView.cs" />
     <Compile Include="Views\NodeView.xaml.cs">
       <DependentUpon>NodeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SamilSinkView.xaml.cs">
+      <DependentUpon>SamilSinkView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SystemSinkView.xaml.cs">
       <DependentUpon>SystemSinkView.xaml</DependentUpon>
@@ -116,10 +123,6 @@
       <DependentUpon>TopologicalView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Views\CreateDeviceWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -135,6 +138,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\samples\server\Home.Samples\Home.Samples.csproj">
+      <Project>{f4c20249-d189-40a9-a7c1-18f15025319a}</Project>
+      <Name>Home.Samples</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Home.Common\Home.Common.csproj">
       <Project>{b13f0047-1cee-4463-baf6-a943e225d875}</Project>
       <Name>Home.Common</Name>

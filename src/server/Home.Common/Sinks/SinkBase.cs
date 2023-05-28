@@ -1,5 +1,4 @@
 ﻿using System;
-using Lucky.Home.Devices;
 using Lucky.Home.Protocol;
 using Lucky.Home.Services;
 using System.Runtime.CompilerServices;
@@ -49,14 +48,6 @@ namespace Lucky.Home.Sinks
 
         public virtual void Dispose()
         { }
-
-        internal SinkPath Path
-        {
-            get
-            {
-                return new SinkPath(Node.NodeId, FourCc);
-            }
-        }
 
         public bool IsOnline
         {
@@ -115,7 +106,11 @@ namespace Lucky.Home.Sinks
         /// </summary>
         public void ResetNode()
         {
-            Manager.GetService<ISinkManager>().RaiseResetSink(this);
+            var systemSink = Node.Sink<ISystemSink>();
+            if (systemSink != null)
+            {
+                systemSink.Reset();
+            }
         }
     }
 }

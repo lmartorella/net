@@ -1,7 +1,4 @@
-﻿using Lucky.Home.Devices;
-using Lucky.Home.Protocol;
-
-namespace Lucky.Home.Sinks
+﻿namespace Lucky.Home.Sinks
 {
     /// <summary>
     /// Interface of a sink

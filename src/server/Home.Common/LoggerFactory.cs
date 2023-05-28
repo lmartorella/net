@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Lucky.Home.Services;
 
 namespace Lucky.Home
@@ -71,8 +72,8 @@ namespace Lucky.Home
 
         public void Init(PersistenceService service)
         {
-            _logFile = Path.Combine(service.GetAppFolderPath(), "log.txt");
-            _errFile = Path.Combine(service.GetAppFolderPath(), "err.txt");
+            _logFile = Path.Combine(service.GetAppFolderPath(), Assembly.GetEntryAssembly().GetName().Name + ".log");
+            _errFile = Path.Combine(service.GetAppFolderPath(), Assembly.GetEntryAssembly().GetName().Name + ".err");
             if (File.Exists(_errFile))
             {
                 LastErrorText = File.ReadAllText(_errFile);

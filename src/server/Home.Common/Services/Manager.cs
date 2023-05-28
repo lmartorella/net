@@ -85,10 +85,16 @@ namespace Lucky.Home.Services
             return _killDefer.Task;
         }
 
-        public static void Kill(ILogger logger, string reason)
+        public static event EventHandler Killed;
+
+        public static void Kill(ILogger logger, string reason, TimeSpan delay)
         {
-            logger.Log("Server killing: + " + reason + ". Stopping devices...");
-            _killDefer.TrySetResult(null);
+            logger.Log("Server killing: " + reason + ". Stopping devices...");
+            Task.Delay(delay).ContinueWith(task => {
+                _killDefer.TrySetResult(null);
+                Killed?.Invoke(null, null);
+                return Task.CompletedTask;
+            });
         }
     }
 }

@@ -1,4 +1,3 @@
-using Lucky.Home.Devices;
 using System.Windows;
 
 namespace Lucky.Home.Models
@@ -55,14 +54,6 @@ namespace Lucky.Home.Models
             get
             {
                 return (Parent is SinkNode) ? int.Parse(Name) : -1;
-            }
-        }
-
-        public SinkPath SinkPath
-        {
-            get
-            {
-                return new SinkPath(ParentUiNode.Node.NodeId, ParentSink.Name, SubIndex);
             }
         }
     }

@@ -1,5 +1,4 @@
 ﻿using Lucky.Home.Simulator;
-using Lucky.Home.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +12,10 @@ namespace Lucky.Home.Services
 
         public MockSinkManager()
         {
-            _mockTypes.Add(GetFourCc(typeof(SystemSinkView)), typeof(SystemSinkView));
-
-            Manager.GetService<Registrar>().AssemblyLoaded += (o, e) =>
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                RegisterAssembly(e.Item);
-            };
+                RegisterAssembly(assembly);
+            }
         }
 
         private void RegisterAssembly(Assembly assembly)

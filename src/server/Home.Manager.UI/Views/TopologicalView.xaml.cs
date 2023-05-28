@@ -1,5 +1,4 @@
-﻿using Lucky.Home.Devices;
-using Lucky.Home.Models;
+﻿using Lucky.Home.Models;
 using Lucky.Home.Services;
 using System;
 using System.Collections.Generic;
@@ -45,15 +44,6 @@ namespace Lucky.Home.Views
             set { SetValue(ResetCommandProperty, value); }
         }
 
-        public static readonly DependencyProperty CreateDeviceCommandProperty = DependencyProperty.Register(
-            "CreateDeviceCommand", typeof (UiCommand), typeof (TopologicalView), new PropertyMetadata(default(UiCommand)));
-
-        public UiCommand CreateDeviceCommand
-        {
-            get { return (UiCommand) GetValue(CreateDeviceCommandProperty); }
-            set { SetValue(CreateDeviceCommandProperty, value); }
-        }
-
         public TopologicalView()
         {
             InitializeComponent();
@@ -76,14 +66,6 @@ namespace Lucky.Home.Views
                     await TcpConnection.ResetNode(SelectedUiNode.Node);
                 }
             }, () => SelectedUiNode != null);
-
-            CreateDeviceCommand = new UiCommand(() =>
-            {
-                if (SelectedSinks.Length > 0)
-                {
-                    CreateDevice(SelectedSinks);
-                }
-            }, () => SelectedSinks.Length > 0);
         }
 
         private SinkNode[] SelectedSinks
@@ -204,25 +186,6 @@ namespace Lucky.Home.Views
         private void UpdateMenuItems()
         {
             RenameCommand.RaiseCanExecuteChanged();
-            CreateDeviceCommand.RaiseCanExecuteChanged();
-        }
-
-        private async void CreateDevice(SinkNode[] sinks)
-        {
-            // Create device
-            CreateDeviceWindow wnd = new CreateDeviceWindow();
-            wnd.DeviceTypes = Manager.GetService<DeviceTypeManager>().DeviceTypes;
-            if (wnd.ShowDialog() == true)
-            {
-                var argumentTypes = wnd.DeviceType.ArgumentTypes.Select(Type.GetType).ToArray();
-                object[] arguments = ParseArguments(wnd.Argument, argumentTypes);
-                var sinkPaths = sinks.Select(n => n.SinkPath).ToArray();
-                string err = await TcpConnection.CreateDevice(sinkPaths, wnd.DeviceType.Name, arguments);
-                if (err != null)
-                {
-                    MessageBox.Show(err, "Error creating the device");
-                }
-            }
         }
 
         private object[] ParseArguments(string argumentStr, Type[] types)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Lucky.Home.Devices;
 
 namespace Lucky.Home.Admin
 {
@@ -13,7 +12,7 @@ namespace Lucky.Home.Admin
 
         static MessageSerializerFactory()
         {
-            KnownTypes = new[] { typeof(Node), typeof(Node[]), typeof(DeviceDescriptor), typeof(DeviceDescriptor[]), typeof(NodeId) };
+            KnownTypes = new[] { typeof(Node), typeof(Node[]), typeof(NodeId) };
         }
 
         public static DataContractSerializer MessageRequestSerialier
