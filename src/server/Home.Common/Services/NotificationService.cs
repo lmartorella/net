@@ -97,6 +97,9 @@ namespace Lucky.Home.Services
 
         private Dictionary<string, Bucket> _statusBuckets = new Dictionary<string, Bucket>();
 
+        public NotificationService() : base(true, false)
+        { }
+
         /// <summary>
         /// Send a text mail
         /// </summary>

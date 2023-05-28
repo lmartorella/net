@@ -8,10 +8,13 @@ namespace Lucky.Home.Services
     public abstract class ServiceBaseWithData<T> : ServiceBase where T : class, new()
     {
         private T _state;
+        private bool useCommonServerRoot;
 
-        protected ServiceBaseWithData(bool verboseLog = false)
+        protected ServiceBaseWithData(bool useCommonServerRoot, bool verboseLog)
             :base(verboseLog)
-        { }
+        {
+            this.useCommonServerRoot = useCommonServerRoot;
+        }
 
         /// <summary>
         /// Serializable state
@@ -22,7 +25,7 @@ namespace Lucky.Home.Services
             {
                 if (_state == null)
                 {
-                    _state = Manager.GetService<IIsolatedStorageService>().GetState<T>(LogName, () => DefaultState);
+                    _state = Manager.GetService<IIsolatedStorageService>().GetState<T>(LogName, useCommonServerRoot, () => DefaultState);
                 }
                 return _state;
             }
@@ -43,7 +46,7 @@ namespace Lucky.Home.Services
 
         protected void Save()
         {
-            Manager.GetService<IIsolatedStorageService>().SetState(LogName, State);
+            Manager.GetService<IIsolatedStorageService>().SetState(LogName, useCommonServerRoot, State);
         }
     }
 }

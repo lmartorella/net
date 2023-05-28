@@ -1,6 +1,5 @@
 ﻿using Lucky.Home.Protocol;
 using Lucky.Home.Services;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -10,6 +9,9 @@ namespace Lucky.Home.Simulator
 {
     class SimulatorNodesService : ServiceBaseWithData<SimulatorNodesService.Data>
     {
+        public SimulatorNodesService() : base(false, false)
+        { }
+
         public MasterNode[] Restore(Dispatcher dispatcher)
         {
             // Restore the nodes

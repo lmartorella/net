@@ -67,7 +67,7 @@ namespace Lucky.Home.Devices.Garden
                     }
                 };
 
-            var cfgColder = Manager.GetService<PersistenceService>().GetAppFolderPath("server");
+            var cfgColder = Manager.GetService<PersistenceService>().GetAppFolderPath("Server");
             _cfgFile = new FileInfo(Path.Combine(cfgColder, "gardenCfg.json"));
             if (!_cfgFile.Exists)
             {
@@ -210,8 +210,8 @@ namespace Lucky.Home.Devices.Garden
                             if (errors++ < 5)
                             {
                                 Logger.Log("Cannot contact garden (2)", "cycleIsWaiting", cycleIsWaiting, "inProgress", _runningProgram != null);
-                                continue;
                             }
+                            continue;
                         }
 
                         errors = 0;
