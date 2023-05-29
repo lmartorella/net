@@ -1,7 +1,7 @@
 {
   "name": "home.web",
   "scripts": {
-    "buildNet": "node scripts/buildServer.js Release",
+    "buildNet": "msbuild home.server.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
     "buildNetDebug": "node scripts/buildServer.js Debug",
     "buildWeb": "cd samples/web/app && tsc",
     "build": "npm run buildNet && npm run buildWeb",
@@ -24,7 +24,6 @@
     "express-session": "1.17.3",
     "moment": "2.29.4",
     "mqtt": "4.3.7",
-    "msbuild": "1.2.0",
     "passport": "0.6.0",
     "passport-local": "1.0.0",
     "plotly.js": "1.58.5",
