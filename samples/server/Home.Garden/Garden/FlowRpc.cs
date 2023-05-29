@@ -15,13 +15,13 @@ namespace Lucky.Home.Devices.Garden
         /// Total counter in m3
         /// </summary>
         [DataMember(Name = "totalMc")]
-        public double TotalMc;
+        public double? TotalMc;
 
         /// <summary>
         /// Current flow in liters/minute
         /// </summary>
         [DataMember(Name = "flowLMin")]
-        public double FlowLMin;
+        public double? FlowLMin;
 
         [DataMember(Name = "offline")]
         public bool Offline;
@@ -33,7 +33,7 @@ namespace Lucky.Home.Devices.Garden
 
         public FlowRpc()
         {
-            rpc = mqttService.RegisterRpcOriginator("flow_meter_0/value", GardenRpc.Timeout);
+            rpc = mqttService.RegisterRpcOriginator("flow_meter_0/value", GardenRpc.FlowTimeout);
         }
 
         /// <summary>

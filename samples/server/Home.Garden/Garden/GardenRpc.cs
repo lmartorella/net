@@ -40,12 +40,14 @@ namespace Lucky.Home.Devices.Garden
         private Task<MqttService.RpcOriginator> rpcProgram;
         private Task<MqttService.RpcOriginator> rpcSetFlow;
 
-        public static TimeSpan Timeout = TimeSpan.FromSeconds(3);
+        public static TimeSpan FlowTimeout = TimeSpan.FromSeconds(1.5);
+        public static TimeSpan StateTimeout = TimeSpan.FromSeconds(3);
+        public static TimeSpan Timeout = TimeSpan.FromSeconds(2);
 
         public GardenRpc()
         {
             rpcReset = mqttService.RegisterRpcOriginator("garden_timer_0/reset", Timeout);
-            rpcState = mqttService.RegisterRpcOriginator("garden_timer_0/state", Timeout);
+            rpcState = mqttService.RegisterRpcOriginator("garden_timer_0/state", StateTimeout);
             rpcProgram = mqttService.RegisterRpcOriginator("garden_timer_0/program", Timeout);
             rpcSetFlow = mqttService.RegisterRpcOriginator("garden_timer_0/setFlow", Timeout);
         }

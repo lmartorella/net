@@ -56,9 +56,9 @@ namespace Lucky.Home.Devices.Garden
             };
 
             var flowData = await _device.ReadFlow();
-            if (flowData != null)
+            if (flowData != null && flowData.TotalMc.HasValue)
             {
-                _startQtyMc = _data.TotalQtyMc = flowData.TotalMc;
+                _startQtyMc = _data.TotalQtyMc = (double)flowData.TotalMc;
             }
 
             lock (_csvFile)
@@ -79,11 +79,11 @@ namespace Lucky.Home.Devices.Garden
             if (_startQtyMc > 0)
             {
                 var flowData1 = await _device.ReadFlow();
-                if (flowData1 != null)
+                if (flowData1 != null && flowData1.TotalMc.HasValue && flowData1.FlowLMin.HasValue)
                 {
-                    _data.QtyL = (flowData1.TotalMc - _startQtyMc) * 1000.0;
-                    _data.TotalQtyMc = flowData1.TotalMc;
-                    _data.FlowLMin = flowData1.FlowLMin;
+                    _data.QtyL = ((double)flowData1.TotalMc - _startQtyMc) * 1000.0;
+                    _data.TotalQtyMc = (double)flowData1.TotalMc;
+                    _data.FlowLMin = (double)flowData1.FlowLMin;
                 }
             }
 
@@ -114,20 +114,20 @@ namespace Lucky.Home.Devices.Garden
             if (_startQtyMc > 0)
             {
                 var flowData1 = await _device.ReadFlow();
-                if (flowData1 != null)
+                if (flowData1 != null && flowData1.TotalMc.HasValue && flowData1.FlowLMin.HasValue)
                 {
                     _data.State = 2;
                     _data.Date = now1.Date;
                     _data.Time = now1.TimeOfDay;
-                    _data.QtyL = (flowData1.TotalMc - _startQtyMc) * 1000.0;
-                    _data.TotalQtyMc = flowData1.TotalMc;
-                    _data.FlowLMin = flowData1.FlowLMin;
+                    _data.QtyL = ((double)flowData1.TotalMc - _startQtyMc) * 1000.0;
+                    _data.TotalQtyMc = (double)flowData1.TotalMc;
+                    _data.FlowLMin = (double)flowData1.FlowLMin;
                     _data.Zones = string.Join(";", state.ZoneRemTimes.Select(t => ZoneDetailsToString(t.ZoneMask, t.Minutes)));
                     lock (_csvFile)
                     {
                         CsvHelper<GardenCsvRecord>.WriteCsvLine(_csvFile, _data);
                     }
-                    _currentQtyMc = flowData1.TotalMc;
+                    _currentQtyMc = (double)flowData1.TotalMc;
                 }
             }
 

@@ -32,8 +32,8 @@ namespace Lucky.Home.Devices.Garden
         private readonly PumpOperationObserver _pumpOpObserver;
         private RunningProgram _runningProgram;
         private readonly ILogger Logger;
-        private readonly FlowRpc FlowSink;
         private readonly GardenRpc GardenSink;
+        private readonly FlowRpc FlowSink;
         private readonly DigitalInputArrayRpc PumpSink;
         private bool IsDisposed = false;
 
@@ -42,8 +42,8 @@ namespace Lucky.Home.Devices.Garden
         public GardenDevice(GardenRpc gardenSink, FlowRpc flowSink, DigitalInputArrayRpc pumpSink)
         {
             Logger = Manager.GetService<ILoggerFactory>().Create("Garden");
-            FlowSink = flowSink;
             GardenSink = gardenSink;
+            FlowSink = flowSink;
             PumpSink = pumpSink;
             _pumpOpObserver = new PumpOperationObserver(pumpSink);
 
@@ -86,6 +86,8 @@ namespace Lucky.Home.Devices.Garden
             var mqttClient = Manager.GetService<MqttService>();
             _ = mqttClient.SubscribeJsonRpc("garden/getStatus", async (RpcVoid request) =>
             {
+                // Read state async to update online state
+                _ = gardenSink.ReadState();
                 FlowData flowData = await ReadFlow();
                 if (flowData != null)
                 {
