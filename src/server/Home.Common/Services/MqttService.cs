@@ -216,6 +216,7 @@ namespace Lucky.Home.Services
             catch (Exception exc)
             {
                 // Send back error as string
+                Logger.Exception(exc);
                 responsePayload = Encoding.UTF8.GetBytes($"{exc.GetType().Name}: {exc.Message}");
                 contentType = ErrContentType;
             }
