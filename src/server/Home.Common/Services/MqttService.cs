@@ -65,12 +65,11 @@ namespace Lucky.Home.Services
         }
 
         /// <summary>
-        /// Subscribe a MQTT topic that talks JSON. 
+        /// Subscribe a raw binary MQTT topic 
         /// Doesn't support errors
         /// </summary>
-        public async Task SubscribeJsonTopic<T>(string topic, Action<T> handler) where T: class, new() 
+        public async Task SubscribeRawTopic(string topic, Action<byte[]> handler)
         {
-            var deserializer = new DataContractJsonSerializer(typeof(T));
             var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
             await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
             mqttClient.ApplicationMessageReceivedAsync += args =>
@@ -78,37 +77,58 @@ namespace Lucky.Home.Services
                 var msg = args.ApplicationMessage;
                 if (msg.Topic == topic)
                 {
-                    T req = null;
-                    if (msg.PayloadSegment.Count > 0)
-                    {
-                        req = (T)deserializer.ReadObject(new MemoryStream(msg.PayloadSegment.Array));
-                    }
-                    handler(req);
+                    handler(msg.PayloadSegment.Array);
                 }
                 return Task.FromResult(null as byte[]);
             };
         }
 
         /// <summary>
-        /// Send MQTT topic that talks JSON. 
+        /// Subscribe a MQTT topic that talks JSON. 
         /// Doesn't support errors
         /// </summary>
-        public async Task JsonPublish<T>(string topic, T value)
+        public Task SubscribeJsonTopic<T>(string topic, Action<T> handler) where T: class, new() 
+        {
+            var deserializer = new DataContractJsonSerializer(typeof(T));
+            return SubscribeRawTopic(topic, msg =>
+            {
+                T req = null;
+                if (msg.Length> 0)
+                {
+                    req = (T)deserializer.ReadObject(new MemoryStream(msg));
+                }
+                handler(req);
+            });
+        }
+
+        /// <summary>
+        /// Send raw MQTT binary topic. 
+        /// Doesn't support errors
+        /// </summary>
+        public async Task RawPublish(string topic, byte[] value)
         {
             if (!mqttClient.IsConnected)
             {
                 throw new MqttRemoteCallError("Broker not connected");
             }
 
-            var serializer = new DataContractJsonSerializer(typeof(T));
-            var stream = new MemoryStream();
-            serializer.WriteObject(stream, value);
-
             var message = mqttFactory.CreateApplicationMessageBuilder()
-                .WithPayload(stream.ToArray())
+                .WithPayload(value)
                 .WithTopic(topic).
                 Build();
             await mqttClient.InternalClient.PublishAsync(message);
+        }
+
+        /// <summary>
+        /// Send MQTT topic that talks JSON. 
+        /// Doesn't support errors
+        /// </summary>
+        public Task JsonPublish<T>(string topic, T value)
+        {
+            var serializer = new DataContractJsonSerializer(typeof(T));
+            var stream = new MemoryStream();
+            serializer.WriteObject(stream, value);
+            return RawPublish(topic, stream.ToArray());
         }
 
         /// <summary>
