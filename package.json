@@ -3,9 +3,10 @@
   "scripts": {
     "buildNet": "msbuild home.server.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
     "buildNetDebug": "msbuild home.server.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
-    "buildWeb": "cd samples/web/app && tsc",
+    "buildWeb": "cd samples/web/app && npx ng build --configuration production",
+    "buildWebDebug": "cd samples/web/app && npx ng build --configuration development",
     "build": "npm run buildNet && npm run buildWeb",
-    "dev": "npm run buildNetDebug && npm run buildWeb",
+    "dev": "npm run buildNetDebug && npm run buildWebDebug",
     "serve": "node src/web/server.mjs"
   },
   "repository": {
