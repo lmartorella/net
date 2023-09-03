@@ -18,8 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Garden", "samples\serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Garden.Tests", "samples\server\Home.Garden.Tests\Home.Garden.Tests.csproj", "{AE0FA97E-450F-4B76-9702-461B79F6408D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Solar.Tests", "samples\server\Home.Solar.Tests\Home.Solar.Tests.csproj", "{8041FC01-6361-40DC-B201-B6DA8281EFE2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,10 +52,6 @@ Global
 		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8041FC01-6361-40DC-B201-B6DA8281EFE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8041FC01-6361-40DC-B201-B6DA8281EFE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8041FC01-6361-40DC-B201-B6DA8281EFE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8041FC01-6361-40DC-B201-B6DA8281EFE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,7 +61,6 @@ Global
 		{56D68DDD-EAFB-4498-A4E8-46EEA18880F4} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
 		{89C7C882-C744-416B-B8B9-881DF6A66194} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
 		{AE0FA97E-450F-4B76-9702-461B79F6408D} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
-		{8041FC01-6361-40DC-B201-B6DA8281EFE2} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A4B3333-EF10-4726-A28C-7B0557132991}
