@@ -5,9 +5,8 @@ packages
 *.user
 *.map
 /target
-/samples/web/app/index.js
-/node_modules
-/package-lock.json
+node_modules
+package-lock.json
 /.vscode/ipch
 /*.tgz
 /build
