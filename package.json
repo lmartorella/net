@@ -2,10 +2,11 @@
   "name": "home.web",
   "scripts": {
     "buildNet": "msbuild home.server.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
-    "buildNetDebug": "node scripts/buildServer.js Debug",
-    "buildWeb": "cd samples/web/app && tsc",
+    "buildNetDebug": "msbuild home.server.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
+    "buildWeb": "cd samples/web/app && npx ng build --configuration production",
+    "buildWebDebug": "cd samples/web/app && npx ng build --configuration development",
     "build": "npm run buildNet && npm run buildWeb",
-    "dev": "npm run buildNetDebug && npm run buildWeb",
+    "dev": "npm run buildNetDebug && npm run buildWebDebug",
     "serve": "node src/web/server.mjs"
   },
   "repository": {
@@ -13,9 +14,17 @@
   },
   "license": "GPL-3.0-or-later",
   "devDependencies": {
-    "@types/angular": "1.8.5",
+    "@angular/cli": "16.2.1",
+    "@angular/compiler-cli": "16.2.3",
+    "@angular-devkit/build-angular": "16.2.1",
+    "@angular/common": "16.2.3",
+    "@angular/compiler": "16.2.3",
+    "@angular/core": "16.2.3",
+    "@angular/forms": "16.2.3",
+    "@angular/platform-browser": "16.2.3",
+    "@angular/platform-browser-dynamic": "16.2.3",
+    "@angular/router": "16.2.3",
     "@types/plotly.js": "1.54.22",
-    "angular": "1.8.3",
     "body-parser": "1.20.2",
     "compression": "1.7.4",
     "cookie-parser": "1.4.6",
@@ -26,8 +35,10 @@
     "mqtt": "4.3.7",
     "passport": "0.6.0",
     "passport-local": "1.0.0",
-    "plotly.js": "1.58.5",
-    "requirejs": "2.3.6",
-    "typescript": "5.0.4"
+    "plotly.js": "npm:plotly.js-dist@2.26.0",
+    "rxjs": "7.8.0",
+    "tslib": "2.3.0",
+    "typescript": "5.1.3",
+    "zone.js": "0.13.0"
   }
 }
