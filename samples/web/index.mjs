@@ -1,5 +1,4 @@
 
-import * as solar from './solar.mjs';
 import * as garden from './garden.mjs';
 import path from 'path';
 import express from 'express';
@@ -15,6 +14,5 @@ export function register(app, privileged) {
     });
     app.use('/app', express.static(path.join(__dirname, '../../target/webapp')));
 
-    solar.register(app, privileged);
     garden.register(app, privileged);
 };
