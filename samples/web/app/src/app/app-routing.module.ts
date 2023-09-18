@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './components/admin';
 import { GardenComponent } from './components/garden';
-import { SolarComponent } from 'solar-lib';
+import { SolarComponent } from '@lucky-home/solar-lib';
 import { LoginComponent } from './components/login';
 
 export const InitialPage = "/solar";

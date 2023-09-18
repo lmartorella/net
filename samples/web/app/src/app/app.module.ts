@@ -11,7 +11,7 @@ import { LoginComponent } from './components/login';
 import { LoginInterceptor } from './services/interceptor';
 import { AlertErrorHandler } from './services/errorHandler';
 
-import { SolarModule } from "solar-lib";
+import { SolarModule } from "@lucky-home/solar-lib";
 
 @NgModule({
   declarations: [

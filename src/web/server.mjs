@@ -1,12 +1,13 @@
-import fs from 'fs';
-import process from 'process';
-import express from 'express';
-import passport from 'passport';
-import compression from 'compression';
-import passportLocal from 'passport-local';
-import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import express from 'express';
 import expressSession from 'express-session';
+import fs from 'fs';
+import passport from 'passport';
+import passportLocal from 'passport-local';
+import path from 'path';
+import process from 'process';
 import { webLogsFile, settings, __dirname, logger } from './settings.mjs';
 import * as samples from '../../samples/web/index.mjs';
 
@@ -65,7 +66,7 @@ if (!secret) {
 app.use(expressSession({ secret, resave: false, saveUninitialized: false }));
 
 // Register custom endpoints
-samples.register(app, ensureLoggedIn);
+samples.register(app, ensureLoggedIn, path.join(__dirname, "../../target/etc/Db/SOLAR"));
 
 app.use(passport.initialize());
 app.use(passport.session());
