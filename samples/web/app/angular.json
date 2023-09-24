@@ -31,7 +31,8 @@
             "allowedCommonJsDependencies": [
               "plotly.js",
               "moment"
-            ]
+            ],
+            "preserveSymlinks": true
           },
           "configurations": {
             "production": {
@@ -63,23 +64,11 @@
             }
           },
           "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": {
-              "browserTarget": "app:build:production"
-            },
-            "development": {
-              "browserTarget": "app:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
         }
       }
     }
   },
   "cli": {
-    "analytics": "9fb546cb-625c-425b-9c85-be54ee07ae77"
+    "analytics": false
   }
 }

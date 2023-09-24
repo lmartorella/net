@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples", "samples\ser
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Solar", "samples\server\Home.Solar\Home.Solar.csproj", "{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Solar", "solar\src\server\Home.Solar\Home.Solar.csproj", "{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Garden", "samples\server\Home.Garden\Home.Garden.csproj", "{89C7C882-C744-416B-B8B9-881DF6A66194}"
 EndProject
