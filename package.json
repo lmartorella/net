@@ -5,8 +5,8 @@
     "buildNetDebug": "msbuild home.server.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
     "buildSolarWeb": "cd solar/src/web/app && npx ng build --configuration production",
     "buildSolarWebDebug": "cd solar/src/web/app && npx ng build --configuration development",
-    "buildWeb": "cd samples/web/app && npx ng build --configuration production",
-    "buildWebDebug": "cd samples/web/app && npx ng build --configuration development",
+    "buildWeb": "npm run buildSolarWeb && cd samples/web/app && npx ng build --configuration production",
+    "buildWebDebug": "npm run buildSolarWebDebug&& cd samples/web/app && npx ng build --configuration development",
     "build": "npm run buildNet && npm run buildSolarWeb && npm run buildWeb",
     "dev": "npm run buildNetDebug && npm run buildSolarWebDebug && npm run buildWebDebug",
     "serve": "node src/web/server.mjs"

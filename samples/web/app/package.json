@@ -1,7 +1,6 @@
 {
     "scripts": {
         "build": "npx ng build --configuration production",
-        "dev": "npx ng build --configuration development",
-        "serve": "npx ng serve"
+        "dev": "npx ng build --configuration development"
     }
 }

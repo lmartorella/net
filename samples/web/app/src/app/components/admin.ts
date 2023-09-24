@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { res } from '../services/resources';
-import { checkXhr } from '../services/xhr';
+import { checkXhr, config } from '../services/xhr';
 
 @Component({
   selector: 'app-admin',
@@ -16,7 +16,7 @@ export class AdminComponent {
     }
 
     public haltMain() {
-        checkXhr<unknown>(this.http.get('/svc/halt/server', { responseType: "text" })).then(data => {
+        checkXhr<unknown>(this.http.get(config.baseUrl + '/svc/halt/server', { responseType: "text" })).then(data => {
             alert(data);
         }).catch(err => {
             alert(err.message);
@@ -24,7 +24,7 @@ export class AdminComponent {
     }
 
     public startMain() {
-        checkXhr<unknown>(this.http.get('/svc/start/server', { responseType: "text" })).then(data => {
+        checkXhr<unknown>(this.http.get(config.baseUrl + '/svc/start/server', { responseType: "text" })).then(data => {
             alert(data);
         }).catch(err => {
             alert(err.message);
@@ -32,7 +32,7 @@ export class AdminComponent {
     }
 
     public restartSolar() {
-        checkXhr<unknown>(this.http.get('/svc/restart/solar', { responseType: "text" })).then(data => {
+        checkXhr<unknown>(this.http.get(config.baseUrl + '/svc/restart/solar', { responseType: "text" })).then(data => {
             alert(data);
         }).catch(err => {
             alert(err.message);
@@ -40,7 +40,7 @@ export class AdminComponent {
     }
 
     public restartGarden() {
-        checkXhr<unknown>(this.http.get('/svc/restart/garden', { responseType: "text" })).then(data => {
+        checkXhr<unknown>(this.http.get(config.baseUrl + '/svc/restart/garden', { responseType: "text" })).then(data => {
             alert(data);
         }).catch(err => {
             alert(err.message);

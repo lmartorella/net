@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { checkXhr } from "../services/xhr";
+import { checkXhr, config } from "../services/xhr";
 import { HttpClient } from "@angular/common/http";
 import { Location } from "@angular/common";
 
@@ -16,7 +16,7 @@ export class LoginComponent {
 
     public async login() {
         try {
-            await checkXhr(this.http.post("/login", {
+            await checkXhr(this.http.post(config.baseUrl + "/login", {
                 username: this.username, 
                 password: this.password 
             }, {
