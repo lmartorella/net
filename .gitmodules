@@ -1,4 +1,4 @@
 [submodule "solar"]
 	path = solar
-	url = git@github.com:lmartorella/solar.git
+	url = https://github.com/lmartorella/solar.git
 	branch = import
