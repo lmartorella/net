@@ -7,9 +7,10 @@ import { rawRemoteCall } from './mqtt.mjs';
  * Manages process health
  */
 export class ManagedProcess {
-    constructor(processName, topic) {
+    constructor(processName, topic, frameworkDir) {
         this.processName = processName;
         this.topic = topic;
+        this.frameworkDir = frameworkDir || "";
         this.logFile = path.join(etcDir, `${this.processName}.log`)
     }
 
@@ -25,7 +26,7 @@ export class ManagedProcess {
             args.push('-sendMailErr');
             args.push(this.restartMailText);
         }
-        this.process = child_process.spawn(path.join(binDir, `${this.processName}.exe`), args, {
+        this.process = child_process.spawn(path.join(binDir, this.frameworkDir, `${this.processName}.exe`), args, {
             stdio: 'ignore'
         });
 

@@ -149,7 +149,7 @@ if (hasProcessManager) {
         const { ManagedProcess } = await import('./procMan.mjs');
         ManagedProcess.enableMail = false;
         serverProcess = new ManagedProcess('Home.Server', 'server');
-        solarProcess = new ManagedProcess('Home.Solar', 'solar');
+        solarProcess = new ManagedProcess('Home.Solar', 'solar', 'net7.0');
         gardenProcess = new ManagedProcess('Home.Garden', 'garden');
         serverProcess._start();
         solarProcess._start();
