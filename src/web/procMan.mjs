@@ -91,7 +91,7 @@ export class ManagedProcess {
     }
 
     async _restart() {
-        await this.kill(res);
+        await this._kill();
         logger(`Server process ${this.processName} killed for restarting...`);
         await new Promise(resolve => setTimeout(resolve, 3500));
         this._start();
