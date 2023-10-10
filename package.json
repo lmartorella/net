@@ -7,8 +7,8 @@
     "buildSolarWebDebug": "cd solar/src/ui/lib && npx ng build --configuration development",
     "buildWeb": "npm run buildSolarWeb && cd samples/web/app && npx ng build --configuration production",
     "buildWebDebug": "npm run buildSolarWebDebug&& cd samples/web/app && npx ng build --configuration development",
-    "build": "npm run buildNet && npm run buildSolarWeb && npm run buildWeb",
-    "dev": "npm run buildNetDebug && npm run buildSolarWebDebug && npm run buildWebDebug",
+    "build": "npm run buildNet && npm run buildWeb",
+    "dev": "npm run buildNetDebug && target/webapp/assets target/webapp/3rdpartylicenses.txt target/webapp/index.html target/webapp/main.js target/webapp/plotly.js target/webapp/polyfills.js target/webapp/runtime.js target/webapp/solar.svg target/webapp/styles.cssnpm run buildWebDebug",
     "serve": "node src/web/server.mjs"
   },
   "repository": {
