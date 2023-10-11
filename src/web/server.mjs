@@ -79,19 +79,32 @@ app.get('/logout', (req, res) => {
     res.sendStatus(401);
 });
 
-let serverProcess;
-let solarProcess;
-let gardenProcess;
+const processesMd = {
+    // server: {
+    //     processName: "Home.Server",
+    //     topic: "server" // to invoke kill
+    // },
+    // garden: {
+    //     processName: "Home.Garden",
+    //     topic: "garden" // to invoke kill
+    // },
+    solar: {
+        processName: "Home.Solar",
+        topic: "solar", // to invoke kill
+        frameworkDir: 'net7.0'
+    },
+};
+
+const processes = {
+    web: {
+        // no kill, start, etc..
+        logFile: webLogsFile
+    }
+};
 
 if (hasProcessManager) {
     app.get('/svc/logs/:id', ensureLoggedIn(), (req, res) => {
-        let file;
-        switch (req.params.id) {
-            case "web": file = webLogsFile; break; 
-            case "server": file = serverProcess.logFile; break; 
-            case "solar": file = solarProcess.logFile; break; 
-            case "garden": file = gardenProcess.logFile; break; 
-        }
+        const file = processes[req.params.id]?.logFile;
         if (file && fs.existsSync(file)) {
             // Stream log file
             res.setHeader("Content-Type", "text/plain");
@@ -101,39 +114,28 @@ if (hasProcessManager) {
         }
     });
 
-    const getProcess = id => {
-        switch (id) {
-            case "server": return serverProcess; 
-            case "solar": return solarProcess; 
-            case "garden": return gardenProcess; 
-        }
-    }
-
     app.get('/svc/halt/:id', ensureLoggedIn(), async (req, res) => {
-        const id = req.params.id;
-        const process = getProcess(id);
-        if (process) {
-            process.kill(res);
+        const kill = processes[req.params.id]?.kill;
+        if (kill) {
+            kill(res);
         } else {
             res.sendStatus(404);
         }
     });
 
     app.get('/svc/start/:id', ensureLoggedIn(), async (req, res) => {
-        const id = req.params.id;
-        const process = getProcess(id);
-        if (process) {
-            process.start(res);
+        const start = processes[req.params.id]?.start;
+        if (start) {
+            start(res);
         } else {
             res.sendStatus(404);
         }
     });
 
     app.get('/svc/restart/:id', ensureLoggedIn(), async (req, res) => {
-        const id = req.params.id;
-        const process = getProcess(id);
-        if (process) {
-            process.restart(res);
+        const restart = processes[req.params.id]?.restart;
+        if (restart) {
+            restart(res);
         } else {
             res.sendStatus(404);
         }
@@ -147,13 +149,10 @@ app.listen(80, () => {
 if (hasProcessManager) {
     const runProcesses = async () => {
         const { ManagedProcess } = await import('./procMan.mjs');
-        ManagedProcess.enableMail = false;
-        serverProcess = new ManagedProcess('Home.Server', 'server');
-        solarProcess = new ManagedProcess('Home.Solar', 'solar', 'net7.0');
-        gardenProcess = new ManagedProcess('Home.Garden', 'garden');
-        serverProcess._start();
-        solarProcess._start();
-        gardenProcess._start();
+        Object.keys(processesMd).forEach(procId => {
+            processes[procId] = new ManagedProcess(processesMd[procId]);
+            processes[procId]._start();
+        });
     };
     void runProcesses();
 }
