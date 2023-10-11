@@ -39,6 +39,20 @@ client.on('message', (topic, payload, packet) => {
     }
 });
 
+export const rawPublish = (topic, payload) => {
+    if (!client.connected) {
+        throw new Error("Broker disconnected");
+    }
+    return new Promise((resolve, reject) => {
+        client.publish(topic, payload, err => {
+            if (err) {
+                reject(new Error(`Can't publish request: ${err.message}`));
+            }
+        });
+        resolve();
+    });
+};
+
 export const rawRemoteCall = (topic, payload) => {
     if (!client.connected) {
         throw new Error("Broker disconnected");

@@ -1,15 +1,15 @@
 import child_process from 'child_process';
 import path from 'path';
 import { binDir, etcDir, logger } from './settings.mjs';
-import { rawRemoteCall } from './mqtt.mjs';
+import { rawPublish } from './mqtt.mjs';
 
 /**
  * Manages process health
  */
 export class ManagedProcess {
-    constructor(processName, topic, frameworkDir) {
+    constructor({ processName, killTopic, frameworkDir }) {
         this.processName = processName;
-        this.topic = topic;
+        this.killTopic = killTopic;
         this.frameworkDir = frameworkDir || "";
         this.logFile = path.join(etcDir, `${this.processName}.log`)
     }
@@ -22,7 +22,7 @@ export class ManagedProcess {
 
         // Launch process
         const args = ['-wrk', etcDir];
-        if (this.restartMailText && ManagedProcess.enableMail) {
+        if (this.restartMailText) {
             args.push('-sendMailErr');
             args.push(this.restartMailText);
         }
@@ -59,6 +59,7 @@ export class ManagedProcess {
 
     start(res) {
         try {
+            logger(`Starting ${this.processName}...`);
             this._start();
             res.send(`${this.processName} started`);
         } catch (err) {
@@ -77,7 +78,12 @@ export class ManagedProcess {
             this.process.once('exit', () => {
                 resolve();
             });
-            rawRemoteCall(`${this.topic}/kill`).catch(err => reject(err));
+            if (this.killTopic) {
+                rawPublish(this.killTopic, "kill").catch(err => reject(err));
+            } else {
+                // Send Ctrl+C
+                throw new Error("Signal killing not available on this platform");
+            }
         });
     };
 

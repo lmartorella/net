@@ -8,20 +8,20 @@ import passport from 'passport';
 import passportLocal from 'passport-local';
 import path from 'path';
 import process from 'process';
-import { webLogsFile, settings, __dirname, logger } from './settings.mjs';
+import { webLogsFile, websSettings, __dirname, logger, processesMd } from './settings.mjs';
 import * as samples from '../../samples/web/index.mjs';
 
 const hasProcessManager = process.argv.indexOf("--no-proc-man") < 0;
 
 passport.use(new passportLocal.Strategy((username, password, done) => { 
-    if (username !== settings.username || password !== settings.password) {
+    if (username !== websSettings.username || password !== websSettings.password) {
         return done("Bad credentials");
     }
     return done(null, username);
 }));
 
 function validateUser(user) {
-    return (user === settings.username);
+    return (user === websSettings.username);
 }
 
 // Configure Passport authenticated session persistence.
@@ -79,19 +79,16 @@ app.get('/logout', (req, res) => {
     res.sendStatus(401);
 });
 
-let serverProcess;
-let solarProcess;
-let gardenProcess;
+const processes = {
+    web: {
+        // no kill, start, etc..
+        logFile: webLogsFile
+    }
+};
 
 if (hasProcessManager) {
     app.get('/svc/logs/:id', ensureLoggedIn(), (req, res) => {
-        let file;
-        switch (req.params.id) {
-            case "web": file = webLogsFile; break; 
-            case "server": file = serverProcess.logFile; break; 
-            case "solar": file = solarProcess.logFile; break; 
-            case "garden": file = gardenProcess.logFile; break; 
-        }
+        const file = processes[req.params.id]?.logFile;
         if (file && fs.existsSync(file)) {
             // Stream log file
             res.setHeader("Content-Type", "text/plain");
@@ -101,39 +98,28 @@ if (hasProcessManager) {
         }
     });
 
-    const getProcess = id => {
-        switch (id) {
-            case "server": return serverProcess; 
-            case "solar": return solarProcess; 
-            case "garden": return gardenProcess; 
-        }
-    }
-
     app.get('/svc/halt/:id', ensureLoggedIn(), async (req, res) => {
-        const id = req.params.id;
-        const process = getProcess(id);
-        if (process) {
-            process.kill(res);
+        const proc = processes[req.params.id];
+        if (proc?.kill) {
+            proc.kill(res);
         } else {
             res.sendStatus(404);
         }
     });
 
     app.get('/svc/start/:id', ensureLoggedIn(), async (req, res) => {
-        const id = req.params.id;
-        const process = getProcess(id);
-        if (process) {
-            process.start(res);
+        const proc = processes[req.params.id];
+        if (proc?.start) {
+            proc.start(res);
         } else {
             res.sendStatus(404);
         }
     });
 
     app.get('/svc/restart/:id', ensureLoggedIn(), async (req, res) => {
-        const id = req.params.id;
-        const process = getProcess(id);
-        if (process) {
-            process.restart(res);
+        const proc = processes[req.params.id];
+        if (proc?.restart) {
+            proc.restart(res);
         } else {
             res.sendStatus(404);
         }
@@ -147,13 +133,10 @@ app.listen(80, () => {
 if (hasProcessManager) {
     const runProcesses = async () => {
         const { ManagedProcess } = await import('./procMan.mjs');
-        ManagedProcess.enableMail = false;
-        serverProcess = new ManagedProcess('Home.Server', 'server');
-        solarProcess = new ManagedProcess('Home.Solar', 'solar', 'net7.0');
-        gardenProcess = new ManagedProcess('Home.Garden', 'garden');
-        serverProcess._start();
-        solarProcess._start();
-        gardenProcess._start();
+        Object.keys(processesMd).forEach(procId => {
+            processes[procId] = new ManagedProcess(processesMd[procId]);
+            processes[procId]._start();
+        });
     };
     void runProcesses();
 }
