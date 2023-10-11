@@ -1,7 +1,7 @@
 import child_process from 'child_process';
 import path from 'path';
 import { binDir, etcDir, logger } from './settings.mjs';
-import { rawRemoteCall } from './mqtt.mjs';
+import { rawPublish } from './mqtt.mjs';
 
 /**
  * Manages process health
@@ -59,6 +59,7 @@ export class ManagedProcess {
 
     start(res) {
         try {
+            logger(`Starting ${this.processName}...`);
             this._start();
             res.send(`${this.processName} started`);
         } catch (err) {
@@ -78,7 +79,7 @@ export class ManagedProcess {
                 resolve();
             });
             if (this.killTopic) {
-                rawPublish(`${this.topic}/kill`, "kill").catch(err => reject(err));
+                rawPublish(this.killTopic, "kill").catch(err => reject(err));
             } else {
                 // Send Ctrl+C
                 throw new Error("Signal killing not available on this platform");

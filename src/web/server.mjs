@@ -99,27 +99,27 @@ if (hasProcessManager) {
     });
 
     app.get('/svc/halt/:id', ensureLoggedIn(), async (req, res) => {
-        const kill = processes[req.params.id]?.kill;
-        if (kill) {
-            kill(res);
+        const proc = processes[req.params.id];
+        if (proc?.kill) {
+            proc.kill(res);
         } else {
             res.sendStatus(404);
         }
     });
 
     app.get('/svc/start/:id', ensureLoggedIn(), async (req, res) => {
-        const start = processes[req.params.id]?.start;
-        if (start) {
-            start(res);
+        const proc = processes[req.params.id];
+        if (proc?.start) {
+            proc.start(res);
         } else {
             res.sendStatus(404);
         }
     });
 
     app.get('/svc/restart/:id', ensureLoggedIn(), async (req, res) => {
-        const restart = processes[req.params.id]?.restart;
-        if (restart) {
-            restart(res);
+        const proc = processes[req.params.id];
+        if (proc?.restart) {
+            proc.restart(res);
         } else {
             res.sendStatus(404);
         }

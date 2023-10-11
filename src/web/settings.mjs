@@ -27,15 +27,15 @@ export const logger = (msg) => {
 export const processesMd = {
     // server: {
     //     processName: "Home.Server",
-    //     topic: "server" // to invoke kill
+    //     killTopic: "server/kill"
     // },
     // garden: {
     //     processName: "Home.Garden",
-    //     topic: "garden" // to invoke kill
+    //     killTopic: "garden/kill"
     // },
     solar: {
         processName: "Home.Solar",
-        topic: "solar", // to invoke kill
+        killTopic: "solar/kill",
         frameworkDir: 'net7.0'
     },
 };
