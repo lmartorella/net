@@ -8,18 +8,34 @@ export const binDir = path.join(__dirname, '../../target/bin');
 export const etcDir = path.join(__dirname, '../../target/etc');
 
 export const webLogsFile = path.join(etcDir, 'webLog.txt');
-let serverCfgFile = path.join(etcDir, 'server/webCfg.json');
+let webServerCfgFile = path.join(etcDir, 'server/webCfg.json');
 
-if (!fs.existsSync(serverCfgFile)) {
-    fs.writeFileSync(serverCfgFile, JSON.stringify({
+if (!fs.existsSync(webServerCfgFile)) {
+    fs.writeFileSync(webServerCfgFile, JSON.stringify({
         username: "user",
         password: "pa$$word"
     }, null, 3));
 }
 
-export const settings = JSON.parse(fs.readFileSync(serverCfgFile, 'utf8'));
+export const websSettings = JSON.parse(fs.readFileSync(webServerCfgFile, 'utf8'));
 
 export const logger = (msg) => {
     msg = new Date().toISOString() + " " + msg;
     fs.appendFileSync(webLogsFile, msg + '\n');
 }
+
+export const processesMd = {
+    // server: {
+    //     processName: "Home.Server",
+    //     topic: "server" // to invoke kill
+    // },
+    // garden: {
+    //     processName: "Home.Garden",
+    //     topic: "garden" // to invoke kill
+    // },
+    solar: {
+        processName: "Home.Solar",
+        topic: "solar", // to invoke kill
+        frameworkDir: 'net7.0'
+    },
+};

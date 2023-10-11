@@ -8,20 +8,20 @@ import passport from 'passport';
 import passportLocal from 'passport-local';
 import path from 'path';
 import process from 'process';
-import { webLogsFile, settings, __dirname, logger } from './settings.mjs';
+import { webLogsFile, websSettings, __dirname, logger, processesMd } from './settings.mjs';
 import * as samples from '../../samples/web/index.mjs';
 
 const hasProcessManager = process.argv.indexOf("--no-proc-man") < 0;
 
 passport.use(new passportLocal.Strategy((username, password, done) => { 
-    if (username !== settings.username || password !== settings.password) {
+    if (username !== websSettings.username || password !== websSettings.password) {
         return done("Bad credentials");
     }
     return done(null, username);
 }));
 
 function validateUser(user) {
-    return (user === settings.username);
+    return (user === websSettings.username);
 }
 
 // Configure Passport authenticated session persistence.
@@ -78,22 +78,6 @@ app.get('/logout', (req, res) => {
     req.logout();
     res.sendStatus(401);
 });
-
-const processesMd = {
-    // server: {
-    //     processName: "Home.Server",
-    //     topic: "server" // to invoke kill
-    // },
-    // garden: {
-    //     processName: "Home.Garden",
-    //     topic: "garden" // to invoke kill
-    // },
-    solar: {
-        processName: "Home.Solar",
-        topic: "solar", // to invoke kill
-        frameworkDir: 'net7.0'
-    },
-};
 
 const processes = {
     web: {
