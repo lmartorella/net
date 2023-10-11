@@ -7,9 +7,9 @@ import { rawRemoteCall } from './mqtt.mjs';
  * Manages process health
  */
 export class ManagedProcess {
-    constructor({ processName, topic, frameworkDir }) {
+    constructor({ processName, killTopic, frameworkDir }) {
         this.processName = processName;
-        this.topic = topic;
+        this.killTopic = killTopic;
         this.frameworkDir = frameworkDir || "";
         this.logFile = path.join(etcDir, `${this.processName}.log`)
     }
@@ -77,7 +77,12 @@ export class ManagedProcess {
             this.process.once('exit', () => {
                 resolve();
             });
-            rawRemoteCall(`${this.topic}/kill`).catch(err => reject(err));
+            if (this.killTopic) {
+                rawPublish(`${this.topic}/kill`, "kill").catch(err => reject(err));
+            } else {
+                // Send Ctrl+C
+                throw new Error("Signal killing not available on this platform");
+            }
         });
     };
 
