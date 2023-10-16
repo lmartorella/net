@@ -1,4 +1,0 @@
-[submodule "solar"]
-	path = solar
-	url = https://github.com/lmartorella/solar.git
-	branch = import

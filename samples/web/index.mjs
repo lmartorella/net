@@ -3,7 +3,7 @@ import * as garden from './garden.mjs';
 import path from 'path';
 import express from 'express';
 import { fileURLToPath } from 'url';
-import { register as solarRegister } from "../../solar/src/ui/lib/webserver/index.mjs";
+import { register as solarRegister } from "../../target/solar-lib/webserver/index.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
