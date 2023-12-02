@@ -6,20 +6,20 @@ namespace Lucky.Home.Solar;
 
 class CurrentSensorDevice(MqttService mqttService) : BackgroundService
 {
-    private double? lastData;
+    private double? lastHomeData;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // The ammeter uses will to send zero byte packet when disconnected
-        await mqttService.SubscribeRawTopic(Constants.CurrentSensorDataTopicId, async data =>
+        await mqttService.SubscribeRawTopic(Constants.CurrentSensorHomeDataTopicId, async data =>
         {
             if (data == null || data.Length == 0)
             {
-                LastData = null;
+                LastHomeData = null;
             }
             else
             {
-                LastData = double.Parse(Encoding.UTF8.GetString(data));
+                LastHomeData = double.Parse(Encoding.UTF8.GetString(data));
             }
         });
         await mqttService.SubscribeRawTopic(Constants.CurrentSensorStateTopicId, async data => 
@@ -32,22 +32,22 @@ class CurrentSensorDevice(MqttService mqttService) : BackgroundService
     }
 
     /// <summary>
-    /// Event raised when new data comes from the inverter, or the state changes
+    /// Event raised when new home usage data comes from the inverter
     /// </summary>
-    public event EventHandler DataChanged;
+    public event EventHandler HomeDataChanged;
 
     /// <summary>
-    /// Last sample. Null means offline
+    /// Last sample of home usage. Null means offline
     /// </summary>
-    public double? LastData
+    public double? LastHomeData
     {
-        get => lastData;
+        get => lastHomeData;
         set
         {
-            if (lastData != value)
+            if (lastHomeData != value)
             {
-                lastData = value;
-                DataChanged?.Invoke(this, EventArgs.Empty);
+                lastHomeData = value;
+                HomeDataChanged?.Invoke(this, EventArgs.Empty);
             }
         }
     }

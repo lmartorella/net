@@ -11,7 +11,6 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
     private int modbusNodeId;
     private ModbusClient modbusClient;
     private static readonly TimeSpan Period = TimeSpan.FromSeconds(1.5);
-    private double? lastData = double.MaxValue;
     private DeviceState? deviceState = null;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -19,7 +18,7 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
         modbusNodeId = configuration.AmmeterStationId;
         if (configuration.AmmeterHostName != "")
         {
-            modbusClient = modbusClientFactory.Get(configuration.AmmeterHostName, FluentModbus.ModbusEndianness.BigEndian);
+            modbusClient = modbusClientFactory.Get(configuration.AmmeterHostName, FluentModbus.ModbusEndianness.LittleEndian);
         }
         logger.LogInformation("Start: host {0}:{1}", configuration.AmmeterHostName, modbusNodeId);
 
@@ -44,39 +43,39 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
         }
     }
 
-    private async Task<double?> GetData()
+    /// <summary>
+    /// Get both channel values, as ampere
+    /// </summary>
+    private async Task<float[]> GetData()
     {
-        var buffer = await modbusClient.ReadHoldingRegistriesFloat(modbusNodeId, 0, 1);
-        if (buffer.Length > 0)
+        // PIC ammeter specs, little endian
+        var buffer = await modbusClient.ReadHoldingRegistries(modbusNodeId, 0x200, 4);
+        float[] ret = new float[2];
+        for (int i = 0; i < 2; i++)
         {
-            return buffer[0];
-        }
-        else
-        {
-            return null;
-        }
+            float value = ((uint)(buffer[i * 2] + (buffer[i * 2 + 1] << 16))) / 65536f;
+            // full-scale = 1024, 50A sensor
+            ret[i] = value / 1024f * 50f;
+        }                        
+        return ret;
     }
 
-    private async Task PublishData(double? data)
+    private async Task PublishData(float[] data)
     {
-        if (!data.HasValue && !lastData.HasValue)
+        if (data == null && State == DeviceState.Offline)
         {
             return;
         }
-        if (data.HasValue && lastData.HasValue && Math.Abs(data.Value - lastData.Value) < double.Epsilon)
-        {
-            return;
-        }
-        lastData = data;
-
         if (data != null)
         {
-            await mqttService.RawPublish(Constants.CurrentSensorDataTopicId, Encoding.UTF8.GetBytes(data.ToString()));
+            await mqttService.RawPublish(Constants.CurrentSensorHomeDataTopicId, Encoding.UTF8.GetBytes(data[0].ToString()));
+            await mqttService.RawPublish(Constants.CurrentSensorExportDataTopicId, Encoding.UTF8.GetBytes(data[1].ToString()));
             State = DeviceState.Online;
         }
         else
         {
-            await mqttService.RawPublish(Constants.CurrentSensorDataTopicId, new byte[0]);
+            await mqttService.RawPublish(Constants.CurrentSensorHomeDataTopicId, new byte[0]);
+            await mqttService.RawPublish(Constants.CurrentSensorExportDataTopicId, new byte[0]);
             State = DeviceState.Offline;
         }
     }
