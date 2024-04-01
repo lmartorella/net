@@ -1,16 +1,15 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"type": "cmake",
-			"label": "CMake: build",
-			"command": "build",
-			"targets": [
-				"all"
-			],
-			"group": "build",
-			"problemMatcher": [],
-			"detail": "CMake template build task"
-		}
+        {
+            "label": "Build: Garden C# server",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/garden/garden.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
 	]
 }

@@ -5,16 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
             "request": "launch",
-            "name": "Launch Web Server",
-            "program": "${workspaceFolder}\\src\\web\\server.mjs"
+            "program": "${workspaceFolder}/src/garden/bin/Debug/net8.0/garden.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Current File",
-            "program": "${file}"
+            "name": "Launch Web Server",
+            "program": "${workspaceFolder}\\src\\web\\server.mjs"
         }
     ]
 }
