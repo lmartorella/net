@@ -4,12 +4,21 @@
         {
             "label": "Build: Garden C# server",
             "command": "dotnet",
+            "group": "build",
             "type": "process",
             "args": [
                 "build",
                 "${workspaceFolder}/src/garden/garden.csproj"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "npm",
+            "script": "buildWeb",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: buildWeb",
+            "detail": "cd samples/web/app && npx ng cache clean && npx ng build --configuration production"
         }
-	]
+    ]
 }

@@ -1,9 +1,9 @@
 ﻿namespace garden;
 
-class Program
+class Lucky.Home
 {
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        ServiceCollection services = new ();
     }
 }
