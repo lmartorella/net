@@ -1,14 +1,12 @@
-﻿using MQTTnet;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Lucky.Home.Services
 {
@@ -25,25 +23,29 @@ namespace Lucky.Home.Services
     /// Errors are sent using the content-type "application/net_err+text"
     /// Both typed JSON messages and raw supports null/empty payload to transfer nulls/void.
     /// </summary>
-    public class MqttService : ServiceBase
+    public class MqttService
     {
+        private readonly ILogger<MqttService> logger;
+        private readonly IHostEnvironment hostEnvironment;
         private readonly MqttFactory mqttFactory;
         private readonly IManagedMqttClient mqttClient;
         private const string ErrContentType = "application/net_err+text";
 
-        public MqttService()
+        public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment)
         {
+            this.logger = logger;
+            this.hostEnvironment = hostEnvironment;
             mqttFactory = new MqttFactory();
             mqttClient = mqttFactory.CreateManagedMqttClient();
             _ = Connect();
             mqttClient.ConnectedAsync += (e) =>
             {
-                Logger.Log("Connected");
+                logger.LogInformation("Connected");
                 return Task.CompletedTask;
             };
             mqttClient.DisconnectedAsync += (e) =>
             {
-                Logger.Log("Disconnected, reconnecting", "reason", e.ReasonString);
+                logger.LogInformation("Disconnected, reconnecting: {0}", e.ReasonString);
                 return Task.CompletedTask;
             };
         }
@@ -55,13 +57,13 @@ namespace Lucky.Home.Services
                 .WithMaxPendingMessages(1)
                 .WithPendingMessagesOverflowStrategy(MQTTnet.Server.MqttPendingMessagesOverflowStrategy.DropOldestQueuedMessage)
                 .WithClientOptions(new MqttClientOptionsBuilder()
-                  .WithClientId(Assembly.GetEntryAssembly().GetName().Name)
+                  .WithClientId(hostEnvironment.ApplicationName)
                   .WithTcpServer("localhost")
                   .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                   .Build()).
                 Build();
             await mqttClient.StartAsync(clientOptions);
-            Logger.Log("Started");
+            logger.LogInformation("Started");
         }
 
         /// <summary>
@@ -71,11 +73,11 @@ namespace Lucky.Home.Services
         public async Task SubscribeRawTopic(string topic, Action<byte[]> handler)
         {
             var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-            await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
+            await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
             mqttClient.ApplicationMessageReceivedAsync += args =>
             {
                 var msg = args.ApplicationMessage;
-                if (msg.Topic == topic)
+                if (msg.Topic == topic && msg.PayloadSegment.Array != null)
                 {
                     handler(msg.PayloadSegment.Array);
                 }
@@ -87,15 +89,15 @@ namespace Lucky.Home.Services
         /// Subscribe a MQTT topic that talks JSON. 
         /// Doesn't support errors
         /// </summary>
-        public Task SubscribeJsonTopic<T>(string topic, Action<T> handler) where T: class, new() 
+        public Task SubscribeJsonTopic<T>(string topic, Action<T?> handler) where T: class, new() 
         {
             var deserializer = new DataContractJsonSerializer(typeof(T));
             return SubscribeRawTopic(topic, msg =>
             {
-                T req = null;
+                T? req = null;
                 if (msg.Length> 0)
                 {
-                    req = (T)deserializer.ReadObject(new MemoryStream(msg));
+                    req = (T?)deserializer.ReadObject(new MemoryStream(msg));
                 }
                 handler(req);
             });
@@ -157,7 +159,7 @@ namespace Lucky.Home.Services
 
             public async Task SubscribeRawRpcResponse()
             {
-                var responseTopic = this.topic + "/resp";
+                var responseTopic = topic + "/resp";
                 var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(responseTopic).Build();
                 await owner.mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
                 owner.mqttClient.ApplicationMessageReceivedAsync += args =>
@@ -165,29 +167,29 @@ namespace Lucky.Home.Services
                     var msg = args.ApplicationMessage;
                     if (msg.Topic == responseTopic && msg.CorrelationData != null)
                     {
-                        TaskCompletionSource<byte[]> request;
+                        TaskCompletionSource<byte[]?> request;
                         var correlationData = new Guid(msg.CorrelationData);
-                        if (requests.TryGetValue(correlationData, out request))
+                        if (requests.TryGetValue(correlationData, out request!))
                         {
                             requests.Remove(correlationData);
                             args.IsHandled = true;
 
                             if (msg.ContentType == ErrContentType)
                             {
-                                request.TrySetException(new MqttRemoteCallError(Encoding.UTF8.GetString(msg.PayloadSegment.Array)));
+                                request.TrySetException(new MqttRemoteCallError(Encoding.UTF8.GetString(msg.PayloadSegment.Array!)));
                             }
                             else
                             {
-                                request.TrySetResult(msg.PayloadSegment.Count > 0 ? msg.PayloadSegment.Array : null);
+                                request.TrySetResult(msg.PayloadSegment.Count > 0 ? msg.PayloadSegment.Array! : null);
                             }
                         }
                     }
                     return Task.CompletedTask;
                 };
-                owner.Logger.Log("Subscribed responses", "topic", responseTopic);
+                owner.logger.LogInformation("Subscribed responses, topic {0}", responseTopic);
             }
 
-            public async Task<byte[]> RawRemoteCall(byte[] payload = null)
+            public async Task<byte[]> RawRemoteCall(byte[]? payload = null)
             {
                 if (!owner.mqttClient.IsConnected)
                 {
@@ -197,10 +199,13 @@ namespace Lucky.Home.Services
                 var correlationData = Guid.NewGuid();
                 var request = new TaskCompletionSource<byte[]>();
                 requests[correlationData] = request;
-                var message = owner.mqttFactory.CreateApplicationMessageBuilder()
-                    .WithCorrelationData(correlationData.ToByteArray())
-                    .WithPayload(payload)
-                    .WithResponseTopic(topic + "/resp")
+                var builder = owner.mqttFactory.CreateApplicationMessageBuilder()
+                    .WithCorrelationData(correlationData.ToByteArray());
+                if (payload != null)
+                {
+                    builder.WithPayload(payload);
+                }
+                var message = builder.WithResponseTopic(topic + "/resp")
                     .WithTopic(topic).
                     Build();
                 await owner.mqttClient.InternalClient.PublishAsync(message);
@@ -212,7 +217,7 @@ namespace Lucky.Home.Services
                 return await request.Task;
             }
 
-            public async Task<TResp> JsonRemoteCall<TReq, TResp>(TReq payload = null) where TReq : class, new() where TResp : class, new()
+            public async Task<TResp> JsonRemoteCall<TReq, TResp>(TReq? payload = null) where TReq : class, new() where TResp : class, new()
             {
                 var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
                 var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
@@ -220,15 +225,14 @@ namespace Lucky.Home.Services
                 reqSerializer.WriteObject(requestStream, payload);
 
                 var responseData = await RawRemoteCall(requestStream.ToArray());
-                var response = (TResp)respDeserializer.ReadObject(new MemoryStream(responseData));
-                return response;
+                return (TResp)respDeserializer.ReadObject(new MemoryStream(responseData))!;
             }
         }
 
-        private async Task ProcessRpc(MqttApplicationMessage msg, Func<byte[], Task<byte[]>> handler)
+        private async Task ProcessRpc(MqttApplicationMessage msg, Func<byte[]?, Task<byte[]>> handler)
         {
-            byte[] responsePayload = null;
-            string contentType = null;
+            byte[] responsePayload;
+            string? contentType = null;
             try
             {
                 responsePayload = await handler(msg.PayloadSegment.Array);
@@ -236,14 +240,14 @@ namespace Lucky.Home.Services
             catch (Exception exc)
             {
                 // Send back error as string
-                Logger.Exception(exc);
+                logger.LogError(exc, "Handling RPC");
                 responsePayload = Encoding.UTF8.GetBytes($"{exc.GetType().Name}: {exc.Message}");
                 contentType = ErrContentType;
             }
 
             var respMsg = new MqttApplicationMessage()
             {
-                PayloadSegment = new ArraySegment<byte>(responsePayload ?? new byte[0]),
+                PayloadSegment = new ArraySegment<byte>(responsePayload ?? []),
                 ContentType = contentType,
                 CorrelationData = msg.CorrelationData,
                 Topic = msg.ResponseTopic
@@ -255,7 +259,7 @@ namespace Lucky.Home.Services
         /// <summary>
         /// Subscribe RPC requests in binary format
         /// </summary>
-        public async Task SubscribeRawRpc(string topic, Func<byte[], Task<byte[]>> handler)
+        public async Task SubscribeRawRpc(string topic, Func<byte[]?, Task<byte[]>> handler)
         {
             var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
             await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
@@ -269,22 +273,22 @@ namespace Lucky.Home.Services
                 }
                 return Task.CompletedTask;
             };
-            Logger.Log("Subscribed requests", "topic", topic);
+            logger.LogInformation("Subscribed requests, topic {0}", topic);
         }
 
         /// <summary>
         /// Subscribe RPC requests in JSON format
         /// </summary>
-        public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq, Task<TResp>> handler) where TReq: class, new() where TResp: class, new()
+        public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq?, Task<TResp>> handler) where TReq: class, new() where TResp: class, new()
         {
             var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
             var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
             return SubscribeRawRpc(topic, async payload =>
             {
-                TReq req = null;
+                TReq? req = null;
                 if (payload != null)
                 {
-                    req = (TReq)reqSerializer.ReadObject(new MemoryStream(payload));
+                    req = (TReq)reqSerializer.ReadObject(new MemoryStream(payload))!;
                 }
                 TResp resp = await handler(req);
                 var responseStream = new MemoryStream();

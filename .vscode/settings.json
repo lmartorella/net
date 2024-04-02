@@ -6,5 +6,6 @@
     "files.associations": {
         "timers.h": "c",
         "net.h": "c"
-    }
+    },
+    "dotnet.preferCSharpExtension": true
 }

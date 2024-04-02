@@ -9,10 +9,12 @@
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/src/garden/bin/Debug/net8.0/garden.exe",
-            "args": [],
+            "args": ["--wrk", "C:\\Users\\lucia\\Documents\\net\\target\\etc"],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
-            "console": "internalConsole"
+            "console": "internalConsole",
+            "preLaunchTask": "Build: Garden C# server",
+            "justMyCode": false
         },
         {
             "type": "node",

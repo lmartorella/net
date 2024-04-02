@@ -1,9 +1,15 @@
-﻿namespace garden;
+﻿using Lucky.Home;
+using Lucky.Home.Services;
 
-class Lucky.Home
+namespace Lucky.Net;
+
+class Program
 {
     static void Main(string[] args)
     {
-        ServiceCollection services = new ();
+        var manager = new Manager(args);
+        manager.Register<MqttService>();
+        manager.RegisterHostedService<ShellyLogger>();
+        manager.Start();
     }
 }
