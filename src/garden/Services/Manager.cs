@@ -9,21 +9,21 @@ namespace Lucky.Home.Services
     /// </summary>
     public class Manager
     {
-        private readonly ServiceProvider serviceProvider;
         private readonly HostApplicationBuilder hostAppBuilder;
         
         public Manager(string[] args)
         {
             hostAppBuilder = Host.CreateApplicationBuilder(args);
             hostAppBuilder.Services.AddLogging();
-            serviceProvider = hostAppBuilder.Services.BuildServiceProvider();
 
             var wrkPath = hostAppBuilder.Configuration["wrk"];
             if (wrkPath != null) 
             {
-                hostAppBuilder.Configuration.SetBasePath(wrkPath);
+                Environment.CurrentDirectory = wrkPath;
             }
-            var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server.json", optional: true).Build();
+            hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
+            
+            var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/gardenConfiguration.json", optional: false).Build();
             hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
         }
 
