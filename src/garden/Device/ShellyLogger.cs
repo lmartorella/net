@@ -1,24 +1,15 @@
 using System.Text;
 using Lucky.Home.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Home 
+namespace Lucky.Home.Device 
 {
     /// <summary>
-    /// Store sys log of Shelly device to a .log file. Supports rotation
+    /// Store sys log of Shelly device to a .log file. TODO: supports rotation
     /// </summary>
-    class ShellyLogger(ILogger<ShellyLogger> logger, IConfiguration configuration, MqttService mqttService) : BackgroundService
+    class ShellyLogger(ILogger<ShellyLogger> logger, Configuration configuration, MqttService mqttService) : BackgroundService
     {
-        private string DeviceId
-        {
-            get
-            {
-                return configuration["deviceId"] ?? "garden-device";
-            }
-        }
-
         private FileInfo LogFilePath
         {
             get
@@ -29,7 +20,7 @@ namespace Lucky.Home
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var topic = $"{DeviceId}/debug/log";
+            var topic = $"{configuration.DeviceId}/debug/log";
             logger.LogInformation($"Subscribing {topic}");
             await mqttService.SubscribeRawTopic(topic, data => 
             {

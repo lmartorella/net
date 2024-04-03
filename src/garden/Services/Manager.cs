@@ -33,18 +33,18 @@ namespace Lucky.Home.Services
             host.Run();
         }
 
-        public void Register<TC, TI>() where TI : class 
+        public void AddSingleton<TC, TI>() where TI : class 
                                               where TC : class, TI
         {
             hostAppBuilder.Services.AddSingleton<TI, TC>();
         }
 
-        public void Register<TC>() where TC : class
+        public void AddSingleton<TC>() where TC : class
         {
             hostAppBuilder.Services.AddSingleton<TC>();
         }
 
-        public void RegisterHostedService<TC>() where TC : class, IHostedService
+        public void AddHostedService<TC>() where TC : class, IHostedService
         {
             hostAppBuilder.Services.AddSingleton<TC>();
             hostAppBuilder.Services.AddHostedService<TC>();
