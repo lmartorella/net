@@ -36,14 +36,14 @@
   </div>
 
   <!-- Editor to edit program cycle -->
-  <div *ngIf="loaded && !!config?.program?.cycles?.length" class="garden-section">
+  <div *ngIf="loaded && !!config?.programCycles?.length" class="garden-section">
     <div>
       <button [hidden]="editProgramMode" (click)="startEdit()">{{res["Garden_EditProgram"]}}</button>
     </div>
     <h4 *ngIf="editProgramMode">{{res["Garden_EditProgram"]}}</h4>
     <!-- List program cycles -->
     <div *ngIf="editProgramMode">
-      <div *ngFor="let cycle of config.program!.cycles" class="program-cycle">
+      <div *ngFor="let cycle of config.programCycles" class="program-cycle">
         <div>
           <label><em>{{cycle.name}}</em></label>
         </div>

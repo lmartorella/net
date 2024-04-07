@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lucky.Home.Services
+﻿namespace Lucky.Garden.Services
 {
     public class MqttRemoteCallError : Exception
     {

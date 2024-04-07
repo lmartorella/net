@@ -8,9 +8,7 @@ moment.locale("it-IT");
 
 interface IConfig {
     zones?: string[];
-    program?: {
-        cycles?: ICycle[];
-    }
+    programCycles?: ICycle[];
 }
 
 interface ICycle {
@@ -128,8 +126,7 @@ export class GardenComponent implements OnInit {
 
             this.config = resp.config || { };
             this.zoneNames = this.config.zones = this.config.zones || [];
-            this.config.program = this.config.program || { };
-            this.config.program.cycles = this.config.program.cycles || [];
+            this.config.programCycles = this.config.programCycles || [];
             this.updateProgram();
         }, err => {
             this.error = format("Garden_ErrorConf", err.message);
@@ -139,8 +136,8 @@ export class GardenComponent implements OnInit {
     }
 
     private updateProgram(): void {
-        this.canResumeAll = this.config.program!.cycles!.length > 0 && this.config.program!.cycles!.some(c => c.suspended);
-        this.canSuspendAll = this.config.program!.cycles!.length > 0 && this.config.program!.cycles!.some(c => !c.suspended);
+        this.canResumeAll = this.config.programCycles!.length > 0 && this.config.programCycles!.some(c => c.suspended);
+        this.canSuspendAll = this.config.programCycles!.length > 0 && this.config.programCycles!.some(c => !c.suspended);
     }
 
     public stop() {
@@ -176,7 +173,7 @@ export class GardenComponent implements OnInit {
 
     public resumeAll(): void {
         const now = moment().toISOString(true);
-        this.config.program!.cycles!.forEach(c => {
+        this.config.programCycles!.forEach(c => {
             c.start = now;
             c.suspended = false;
         });
@@ -184,7 +181,7 @@ export class GardenComponent implements OnInit {
     }
 
     public suspendAll(): void {
-        this.config.program!.cycles!.forEach(c => c.suspended = true);
+        this.config.programCycles!.forEach(c => c.suspended = true);
         this.saveProgram();
     }
 

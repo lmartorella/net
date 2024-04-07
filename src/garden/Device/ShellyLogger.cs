@@ -1,9 +1,9 @@
 using System.Text;
-using Lucky.Home.Services;
+using Lucky.Garden.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Home.Device 
+namespace Lucky.Garden.Device 
 {
     /// <summary>
     /// Store sys log of Shelly device to a .log file. TODO: supports rotation

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace Lucky.Home.Device 
+namespace Lucky.Garden.Device 
 {
     class Configuration(IConfiguration configuration) {
         public string DeviceId

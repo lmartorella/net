@@ -1,9 +1,9 @@
 using System.Runtime.Serialization;
-using Lucky.Home.Services;
+using Lucky.Garden.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Home.Device 
+namespace Lucky.Garden.Device 
 {
     /// <summary>
     /// Subscribe device events to .NET

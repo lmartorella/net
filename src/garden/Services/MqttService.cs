@@ -3,12 +3,10 @@ using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Extensions.ManagedClient;
-using System.Reflection;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace Lucky.Home.Services
+namespace Lucky.Garden.Services
 {
     /// <summary>
     /// Used for empty JSON messages types
@@ -27,14 +25,19 @@ namespace Lucky.Home.Services
     {
         private readonly ILogger<MqttService> logger;
         private readonly IHostEnvironment hostEnvironment;
+        private readonly IMqttWillProvider? mqttWillProvider;
+        private readonly SerializerFactory serializerFactory;
         private readonly MqttFactory mqttFactory;
         private readonly IManagedMqttClient mqttClient;
         private const string ErrContentType = "application/net_err+text";
 
-        public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment)
+        public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider? mqttWillProvider)
         {
             this.logger = logger;
             this.hostEnvironment = hostEnvironment;
+            this.mqttWillProvider = mqttWillProvider;
+            this.serializerFactory = serializerFactory;
+            
             mqttFactory = new MqttFactory();
             mqttClient = mqttFactory.CreateManagedMqttClient();
             _ = Connect();
@@ -52,17 +55,23 @@ namespace Lucky.Home.Services
 
         private async Task Connect()
         {
-            var clientOptions = new ManagedMqttClientOptionsBuilder()
+            var clientOptionsBuilder = new MqttClientOptionsBuilder()
+                  .WithClientId(hostEnvironment.ApplicationName)
+                  .WithTcpServer("localhost")
+                  .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500);
+            if (mqttWillProvider != null) 
+            {
+                clientOptionsBuilder
+                    .WithWillTopic(mqttWillProvider.WillTopic)
+                    .WithWillPayload(mqttWillProvider.WillPayload);
+            }
+            var managedClientOptions = new ManagedMqttClientOptionsBuilder()
                 .WithAutoReconnectDelay(TimeSpan.FromSeconds(3.5))
                 .WithMaxPendingMessages(1)
                 .WithPendingMessagesOverflowStrategy(MQTTnet.Server.MqttPendingMessagesOverflowStrategy.DropOldestQueuedMessage)
-                .WithClientOptions(new MqttClientOptionsBuilder()
-                  .WithClientId(hostEnvironment.ApplicationName)
-                  .WithTcpServer("localhost")
-                  .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
-                  .Build()).
+                .WithClientOptions(clientOptionsBuilder.Build()).
                 Build();
-            await mqttClient.StartAsync(clientOptions);
+            await mqttClient.StartAsync(managedClientOptions);
             logger.LogInformation("Started");
         }
 
@@ -91,16 +100,8 @@ namespace Lucky.Home.Services
         /// </summary>
         public Task SubscribeJsonTopic<T>(string topic, Action<T?> handler) where T: class, new() 
         {
-            var deserializer = new DataContractJsonSerializer(typeof(T));
-            return SubscribeRawTopic(topic, msg =>
-            {
-                T? req = null;
-                if (msg.Length> 0)
-                {
-                    req = (T?)deserializer.ReadObject(new MemoryStream(msg));
-                }
-                handler(req);
-            });
+            var deserializer = serializerFactory.Create<T>();
+            return SubscribeRawTopic(topic, msg => handler(deserializer.Deserialize(msg)));
         }
 
         /// <summary>
@@ -127,10 +128,8 @@ namespace Lucky.Home.Services
         /// </summary>
         public Task JsonPublish<T>(string topic, T value)
         {
-            var serializer = new DataContractJsonSerializer(typeof(T));
-            var stream = new MemoryStream();
-            serializer.WriteObject(stream, value);
-            return RawPublish(topic, stream.ToArray());
+            var serializer = serializerFactory.Create<T>();
+            return RawPublish(topic, serializer.Serialize(value));
         }
 
         /// <summary>
@@ -147,12 +146,14 @@ namespace Lucky.Home.Services
         {
             private readonly Dictionary<Guid, TaskCompletionSource<byte[]>> requests = new Dictionary<Guid, TaskCompletionSource<byte[]>>();
             private readonly MqttService owner;
+            private readonly SerializerFactory serializerFactory;
             private readonly string topic;
             private readonly TimeSpan timeout;
 
             public RpcOriginator(MqttService owner, string topic, TimeSpan timeout)
             {
                 this.owner = owner;
+                this.serializerFactory = owner.serializerFactory;
                 this.topic = topic;
                 this.timeout = timeout;
             }
@@ -217,15 +218,12 @@ namespace Lucky.Home.Services
                 return await request.Task;
             }
 
-            public async Task<TResp> JsonRemoteCall<TReq, TResp>(TReq? payload = null) where TReq : class, new() where TResp : class, new()
+            public async Task<TResp?> JsonRemoteCall<TReq, TResp>(TReq? payload = null) where TReq : class, new() where TResp : class, new()
             {
-                var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
-                var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
-                var requestStream = new MemoryStream();
-                reqSerializer.WriteObject(requestStream, payload);
-
-                var responseData = await RawRemoteCall(requestStream.ToArray());
-                return (TResp)respDeserializer.ReadObject(new MemoryStream(responseData))!;
+                var reqSerializer = serializerFactory.Create<TReq>();
+                var respDeserializer = serializerFactory.Create<TResp>();
+                var responseData = await RawRemoteCall(reqSerializer.Serialize(payload));
+                return respDeserializer.Deserialize(responseData);
             }
         }
 
@@ -281,19 +279,12 @@ namespace Lucky.Home.Services
         /// </summary>
         public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq?, Task<TResp>> handler) where TReq: class, new() where TResp: class, new()
         {
-            var reqSerializer = new DataContractJsonSerializer(typeof(TReq));
-            var respDeserializer = new DataContractJsonSerializer(typeof(TResp));
+            var reqSerializer = serializerFactory.Create<TReq>();
+            var respDeserializer = serializerFactory.Create<TResp>();
             return SubscribeRawRpc(topic, async payload =>
             {
-                TReq? req = null;
-                if (payload != null)
-                {
-                    req = (TReq)reqSerializer.ReadObject(new MemoryStream(payload))!;
-                }
-                TResp resp = await handler(req);
-                var responseStream = new MemoryStream();
-                respDeserializer.WriteObject(responseStream, resp);
-                return responseStream.ToArray();
+                TResp resp = await handler(reqSerializer.Deserialize(payload));
+                return respDeserializer.Serialize(resp);
             });
         }
     }
