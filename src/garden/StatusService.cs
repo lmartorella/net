@@ -1,5 +1,6 @@
 
 using System.Runtime.Serialization;
+using Lucky.Garden.Device;
 using Lucky.Garden.Services;
 
 namespace Lucky.Garden
@@ -13,60 +14,54 @@ namespace Lucky.Garden
         [DataMember(Name = "status")]
         public StatusCode StatusCode;
 
-        [DataMember(Name = "isRunning")]
-        public bool isRunning;
+        // [DataMember(Name = "isRunning")]
+        // public bool isRunning;
 
         [DataMember(Name = "config")]
-        public ProgramConfig Config;
-    }
-
-    [DataContract]
-    public class ProgramConfig
-    {
-        [DataMember(Name = "zones")]
-        public string[] Zones;
-
-        [DataMember(Name = "programCycles")]
-        public ProgramCycle[] ProgramCycles;
-    }
-
-    ///          name: string;
-    ///          start: ISO-string;
-    ///          startTime: HH:mm:ss;
-    ///          suspended: boolean;
-    ///          disabled: boolean;
-    ///          minutes: number;
-    [DataContract]
-    public class ProgramCycle
-    {
-
+        public ProgramConfig? Config;
     }
 
     public enum StatusCode
     {
         Online = 1,
         Offline = 2,
-        PartiallyOnline = 3
+        //PartiallyOnline = 3
     }
 
-    public class StatusService
+    class StatusService
     {
-        public StatusService(MqttService mqttService)
+        private readonly MqttService mqttService;
+        private readonly ConfigService configService;
+        private readonly ShellyStatus shellyStatus;
+
+        public StatusService(MqttService mqttService, ConfigService configService, ShellyStatus shellyStatus)
         {
-            mqttService.JsonPublish("garden/status", Status);
+            this.mqttService = mqttService;
+            this.configService = configService;
+            this.shellyStatus = shellyStatus;
+            _ = Init();
         }
 
-        public StatusType Status
+        private async Task Init()
         {
-            get
+            await mqttService.JsonPublish("garden/status", await GetStatus());
+        }
+
+        public async Task<StatusType> GetStatus()
+        {
+            try
             {
                 return new StatusType
                 {
-                    StatusCode = StatusCode.Offline,
-                    Config = new ProgramConfig
-                    {
-                        ProgramCycles = []
-                    }
+                    StatusCode = shellyStatus.Online ? StatusCode.Online : StatusCode.Offline,
+                    Config = await configService.GetConfig()
+                };
+            }
+            catch (Exception exc)
+            {
+                return new StatusType
+                {
+                    Error = exc.Message
                 };
             }
         }

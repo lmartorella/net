@@ -8,8 +8,20 @@ namespace Lucky.Garden.Device
     /// <summary>
     /// Subscribe device events to .NET
     /// </summary>
-    class ShellyEvents(ILogger<ShellyLogger> logger, Configuration configuration, MqttService mqttService) : BackgroundService
+    class ShellyEvents
     {
+        private readonly ILogger<ShellyLogger> logger;
+        private readonly Configuration configuration;
+        private readonly MqttService mqttService;
+
+        public ShellyEvents(ILogger<ShellyLogger> logger, Configuration configuration, MqttService mqttService)
+        {
+            this.logger = logger;
+            this.configuration = configuration;
+            this.mqttService = mqttService;
+            _ = Init();
+        }
+        
         [DataContract]
         public class OutputEvent
         {
@@ -29,7 +41,7 @@ namespace Lucky.Garden.Device
             public double TimerDuration = -1;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        private async Task Init()
         {
             logger.LogInformation($"Subscribing switch events");
             for (int i = 0; i < 3; i++) {
@@ -43,8 +55,6 @@ namespace Lucky.Garden.Device
                     }
                 });
             }
-            // Never ending
-            await new TaskCompletionSource().Task;
         }
 
         public event EventHandler<OutputEvent>? OutputChanged;

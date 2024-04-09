@@ -1,7 +1,7 @@
-﻿using Lucky.Home.Device;
-using Lucky.Home.Services;
+﻿using Lucky.Garden.Device;
+using Lucky.Garden.Services;
 
-namespace Lucky.Net;
+namespace Lucky.Garden;
 
 class Program
 {
@@ -11,7 +11,6 @@ class Program
         manager.AddSingleton<MqttService>();
         manager.AddSingleton<Configuration>();
         manager.AddHostedService<ShellyLogger>();
-        manager.AddHostedService<ShellyEvents>();
         manager.Start();
     }
 }

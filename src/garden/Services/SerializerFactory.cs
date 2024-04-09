@@ -1,4 +1,5 @@
 using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace Lucky.Garden.Services
 {
@@ -27,6 +28,18 @@ namespace Lucky.Garden.Services
                 if (msg != null && msg.Length> 0)
                 {
                     return (T?)serializer.ReadObject(new MemoryStream(msg));
+                }
+                else
+                {
+                    return default;
+                }
+            }
+
+            public T? Deserialize(string? msg)
+            {
+                if (msg != null && msg.Length> 0)
+                {
+                    return Deserialize(Encoding.UTF8.GetBytes(msg));
                 }
                 else
                 {
