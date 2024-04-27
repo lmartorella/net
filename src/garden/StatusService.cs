@@ -15,8 +15,8 @@ public class StatusType
     [DataMember(Name = "status")]
     public StatusCode StatusCode;
 
-    // [DataMember(Name = "isRunning")]
-    // public bool isRunning;
+    [DataMember(Name = "isRunning")]
+    public bool isRunning;
 
     [DataMember(Name = "config")]
     public ProgramConfig? Config;

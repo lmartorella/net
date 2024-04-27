@@ -23,6 +23,11 @@ public class SerializerFactory
             }
         }
 
+        public string ToString(T? value)
+        {
+            return Encoding.UTF8.GetString(Serialize(value));
+        }
+
         public T? Deserialize(byte[]? msg)
         {
             if (msg != null && msg.Length> 0)

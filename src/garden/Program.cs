@@ -16,6 +16,7 @@ class Program
         manager.AddHostedService<ShellyStatus>();
         manager.AddHostedService<ShellyEvents>();
         manager.AddHostedService<StatusService>();
+        manager.AddHostedService<ConfigService>();
         manager.Start();
     }
 }

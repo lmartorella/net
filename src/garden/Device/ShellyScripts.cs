@@ -14,12 +14,7 @@ public class Script
     public string Name;
 }
 
-public class ScriptWithCode : Script
-{
-    public string Code;
-}
-
-class ShellyScrips(ILogger<ShellyScrips> logger, Configuration configuration, RestService restService, SerializerFactory serializerFactory)
+class ShellyScripts(ILogger<ShellyScripts> logger, Configuration configuration, RestService restService, SerializerFactory serializerFactory)
 {
     [DataContract]
     private class ScriptListResp
@@ -28,22 +23,78 @@ class ShellyScrips(ILogger<ShellyScrips> logger, Configuration configuration, Re
         public Script[] Scripts;
     }
     
-    private Uri BaseUri
+    [DataContract]
+    private class ScriptGetCodeReq
+    {
+        [DataMember(Name = "id")]
+        public int Id;
+    }
+
+    [DataContract]
+    private class ScriptGetCodeResp
+    {
+        [DataMember(Name = "data")]
+        public string Data;
+
+        [DataMember(Name = "left")]
+        public int Left;
+    }
+
+    [DataContract]
+    private class ScriptPutCodeReq
+    {
+        [DataMember(Name = "id")]
+        public int Id;
+
+        [DataMember(Name = "code")]
+        public string Code;
+
+        [DataMember(Name = "append")]
+        public bool Append;
+    }
+
+    [DataContract]
+    private class ScriptPutCodeResp
+    {
+        [DataMember(Name = "len")]
+        public int Len;
+    }
+
+    private string BaseUri
     {
         get
         {
-            return new Uri($"{configuration.DeviceRest}/rpc/Script.List");
+            return $"{configuration.DeviceRest}/rpc/";
         }
     }
 
     public async Task<Script[]> GetScripts()
     {
-        string json = await restService.AsyncRest(BaseUri, HttpMethod.Get);
+        logger.LogInformation("FetchingScriptList");
+        string json = await restService.AsyncRest(BaseUri + "Script.List", HttpMethod.Get);
         return serializerFactory.Create<ScriptListResp>().Deserialize(json).Scripts;
     }
 
-    internal Task<ScriptWithCode> GetScript(int id)
+    internal async Task<string> GetScriptCode(int id)
     {
-        throw new NotImplementedException();
+        logger.LogInformation("FetchingConfCode: ID {0}", id);
+        string json = await restService.AsyncRest(BaseUri + "Script.GetCode", HttpMethod.Get, serializerFactory.Create<ScriptGetCodeReq>().ToString(new ScriptGetCodeReq { Id = id }));
+        var resp = serializerFactory.Create<ScriptGetCodeResp>().Deserialize(json);
+        if (resp.Left > 0)
+        {
+            throw new InvalidOperationException("Script data truncated, to implement chunked read");
+        }
+        return resp.Data;
+    }
+
+    internal async Task SetScriptCode(int id, string code)
+    {
+        logger.LogInformation("SettingConfCode: ID {0}", id);
+        string json = await restService.AsyncRest(BaseUri + "Script.PutCode", HttpMethod.Get, serializerFactory.Create<ScriptPutCodeReq>().ToString(new ScriptPutCodeReq { Id = id, Code = code, Append = false }));
+        var resp = serializerFactory.Create<ScriptPutCodeResp>().Deserialize(json);
+        if (resp.Len != code.Length)
+        {
+            throw new InvalidOperationException("Script length different from the set value");
+        }
     }
 }
