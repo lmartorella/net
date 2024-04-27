@@ -68,8 +68,6 @@ export function register(app, privileged) {
     // Init default gardenCfg.json file (before starting the native server)
     if (!fs.existsSync(gardenCfgFile)) {
         // Example of configuration (without programs)
-        fs.writeFileSync(gardenCfgFile, JSON.stringify({
-            "zones": ["Grass (North)", "Grass (South)", "Flowerbeds"]
-        }, null, 3));
+        fs.writeFileSync(gardenCfgFile, JSON.stringify({ "zones": [] }, null, 3));
     } 
 }

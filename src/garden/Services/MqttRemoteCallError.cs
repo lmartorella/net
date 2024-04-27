@@ -1,10 +1,9 @@
-﻿namespace Lucky.Garden.Services
+﻿namespace Lucky.Garden.Services;
+
+public class MqttRemoteCallError : Exception
 {
-    public class MqttRemoteCallError : Exception
+    public MqttRemoteCallError(string message)
+        :base(message)
     {
-        public MqttRemoteCallError(string message)
-            :base(message)
-        {
-        }
     }
 }

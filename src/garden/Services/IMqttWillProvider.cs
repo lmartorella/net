@@ -1,8 +1,7 @@
-namespace Lucky.Garden.Services
+namespace Lucky.Garden.Services;
+
+public interface IMqttWillProvider
 {
-    public interface IMqttWillProvider
-    {
-        string WillTopic { get; }
-        byte[] WillPayload { get; }
-    }
+    string WillTopic { get; }
+    byte[] WillPayload { get; }
 }

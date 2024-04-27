@@ -2,49 +2,48 @@ using System.Runtime.Serialization;
 using Lucky.Garden.Services;
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Garden.Device 
+namespace Lucky.Garden.Device;
+
+[DataContract]
+public class Script
+{
+    [DataMember(Name = "id")]
+    public int Id;
+
+    [DataMember(Name = "name")]
+    public string Name;
+}
+
+public class ScriptWithCode : Script
+{
+    public string Code;
+}
+
+class ShellyScrips(ILogger<ShellyScrips> logger, Configuration configuration, RestService restService, SerializerFactory serializerFactory)
 {
     [DataContract]
-    public class Script
+    private class ScriptListResp
     {
-        [DataMember(Name = "id")]
-        public int Id;
-
-        [DataMember(Name = "name")]
-        public string Name;
+        [DataMember(Name = "scripts")]
+        public Script[] Scripts;
+    }
+    
+    private Uri BaseUri
+    {
+        get
+        {
+            return new Uri($"{configuration.DeviceRest}/rpc/Script.List");
+        }
     }
 
-    public class ScriptWithCode : Script
+    public async Task<Script[]> GetScripts()
     {
-        public string Code;
+        string json = await restService.AsyncRest(BaseUri, HttpMethod.Get);
+        return serializerFactory.Create<ScriptListResp>().Deserialize(json).Scripts;
     }
 
-    class ShellyScrips(ILogger<ShellyScrips> logger, Configuration configuration, RestService restService, SerializerFactory serializerFactory)
+    internal Task<ScriptWithCode> GetScript(int id)
     {
-        [DataContract]
-        private class ScriptListResp
-        {
-            [DataMember(Name = "scripts")]
-            public Script[] Scripts;
-        }
-        
-        private Uri BaseUri
-        {
-            get
-            {
-                return new Uri($"{configuration.DeviceRest}/rpc/Script.List");
-            }
-        }
-
-        public async Task<Script[]> GetScripts()
-        {
-            string json = await restService.AsyncRest(BaseUri, HttpMethod.Get);
-            return serializerFactory.Create<ScriptListResp>().Deserialize(json).Scripts;
-        }
-
-        internal Task<ScriptWithCode> GetScript(int id)
-        {
-            throw new NotImplementedException();
-        }
+        throw new NotImplementedException();
     }
 }

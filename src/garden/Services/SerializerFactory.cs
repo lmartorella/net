@@ -1,57 +1,55 @@
 using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace Lucky.Garden.Services
+namespace Lucky.Garden.Services;
+
+public class SerializerFactory
 {
-    public class SerializerFactory
+    public class TypeSerializer<T>
     {
-        public class TypeSerializer<T>
+        private readonly DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
+        
+        public byte[] Serialize(T? value)
         {
-            private readonly DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
-            
-            public byte[] Serialize(T? value)
+            if (value == null)
             {
-                if (value == null)
-                {
-                    return [];
-                }
-                else
-                {
-                    var stream = new MemoryStream();
-                    serializer.WriteObject(stream, value);
-                    return stream.ToArray();
-                }
+                return [];
             }
-
-            public T? Deserialize(byte[]? msg)
+            else
             {
-                if (msg != null && msg.Length> 0)
-                {
-                    return (T?)serializer.ReadObject(new MemoryStream(msg));
-                }
-                else
-                {
-                    return default;
-                }
-            }
-
-            public T? Deserialize(string? msg)
-            {
-                if (msg != null && msg.Length> 0)
-                {
-                    return Deserialize(Encoding.UTF8.GetBytes(msg));
-                }
-                else
-                {
-                    return default;
-                }
+                var stream = new MemoryStream();
+                serializer.WriteObject(stream, value);
+                return stream.ToArray();
             }
         }
 
-        public TypeSerializer<T> Create<T>()
+        public T? Deserialize(byte[]? msg)
         {
-            return new TypeSerializer<T>();
+            if (msg != null && msg.Length> 0)
+            {
+                return (T?)serializer.ReadObject(new MemoryStream(msg));
+            }
+            else
+            {
+                return default;
+            }
+        }
+
+        public T? Deserialize(string? msg)
+        {
+            if (msg != null && msg.Length> 0)
+            {
+                return Deserialize(Encoding.UTF8.GetBytes(msg));
+            }
+            else
+            {
+                return default;
+            }
         }
     }
 
+    public TypeSerializer<T> Create<T>()
+    {
+        return new TypeSerializer<T>();
+    }
 }

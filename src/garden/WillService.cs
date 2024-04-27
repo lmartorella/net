@@ -1,24 +1,23 @@
 using Lucky.Garden.Services;
 
-namespace Lucky.Garden
-{
-    public class WillService(SerializerFactory serializerFactory) : IMqttWillProvider
-    {
-        public string WillTopic => "garden/status";
+namespace Lucky.Garden;
 
-        public byte[] WillPayload
+public class WillService(SerializerFactory serializerFactory) : IMqttWillProvider
+{
+    public string WillTopic => "garden/status";
+
+    public byte[] WillPayload
+    {
+        get
         {
-            get
+            return serializerFactory.Create<StatusType>().Serialize(new StatusType
             {
-                return serializerFactory.Create<StatusType>().Serialize(new StatusType
+                StatusCode = StatusCode.Offline,
+                Config = new ProgramConfig
                 {
-                    StatusCode = StatusCode.Offline,
-                    Config = new ProgramConfig
-                    {
-                        ProgramCycles = []
-                    }
-                });
-            }
+                    ProgramCycles = []
+                }
+            });
         }
     }
 }
