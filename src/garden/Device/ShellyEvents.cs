@@ -25,8 +25,8 @@ namespace Lucky.Garden.Device
             /// <summary>
             /// In seconds
             /// </summary>
-            [DataMember(Name = "timer_duration")]
-            public double TimerDuration = -1;
+            [DataMember(Name = "timer_duration", IsRequired = false)]
+            public double? TimerDuration;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,7 +38,14 @@ namespace Lucky.Garden.Device
                 {
                     if (data != null)
                     {
-                        logger.LogInformation($"Output {data.Id} changed to {data.Output} for {data.TimerDuration} seconds");
+                        if (data.TimerDuration.HasValue)
+                        {
+                            logger.LogInformation($"Output {data.Id} changed to {data.Output} for {data.TimerDuration} seconds");
+                        }
+                        else
+                        {
+                            logger.LogInformation($"Output {data.Id} changed to {data.Output}");
+                        }
                         OutputChanged?.Invoke(this, data);
                     }
                 });

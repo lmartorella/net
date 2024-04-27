@@ -14,6 +14,7 @@ class Program
         manager.AddSingleton<WillService, IMqttWillProvider>();
         manager.AddHostedService<ShellyLogger>();
         manager.AddHostedService<ShellyStatus>();
+        manager.AddHostedService<ShellyEvents>();
         manager.Start();
     }
 }

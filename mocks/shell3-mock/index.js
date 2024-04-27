@@ -2,7 +2,11 @@ import express from 'express';
 import mqtt from "mqtt";
 
 const mqttClient = mqtt.connect("mqtt://localhost", { will: { topic: "shelly3-mock/status/sys", payload: Buffer.alloc(0), }});
+
 mqttClient.publish("shelly3-mock/status/sys", JSON.stringify({ mac: "123456" }), { retain: true });
+mqttClient.publish("shelly3-mock/status/switch:0", JSON.stringify({ id: 0, output: false }), { retain: true });
+mqttClient.publish("shelly3-mock/status/switch:1", JSON.stringify({ id: 1, output: false }), { retain: true });
+mqttClient.publish("shelly3-mock/status/switch:2", JSON.stringify({ id: 2, output: false }), { retain: true });
 
 const expressApp = express();
 
