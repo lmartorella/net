@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using Lucky.Garden.Device;
 using Lucky.Garden.Services;
+using Microsoft.Extensions.Hosting;
 
 namespace Lucky.Garden;
 
@@ -25,29 +26,17 @@ public enum StatusCode
 {
     Online = 1,
     Offline = 2,
-    //PartiallyOnline = 3
+    PartiallyOnline = 3
 }
 
-class StatusService
+class StatusService(MqttService mqttService, ConfigService configService, ShellyStatus shellyStatus) : BackgroundService
 {
-    private readonly MqttService mqttService;
-    private readonly ConfigService configService;
-    private readonly ShellyStatus shellyStatus;
-
-    public StatusService(MqttService mqttService, ConfigService configService, ShellyStatus shellyStatus)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        this.mqttService = mqttService;
-        this.configService = configService;
-        this.shellyStatus = shellyStatus;
-        _ = Init();
+        await mqttService.SubscribeJsonRpc<RpcVoid, StatusType>("garden/getStatus", (_) => GetStatus());
     }
 
-    private async Task Init()
-    {
-        await mqttService.JsonPublish("garden/status", await GetStatus());
-    }
-
-    public async Task<StatusType> GetStatus()
+    private async Task<StatusType> GetStatus()
     {
         try
         {
