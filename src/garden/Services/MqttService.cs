@@ -86,9 +86,16 @@ namespace Lucky.Garden.Services
             mqttClient.ApplicationMessageReceivedAsync += args =>
             {
                 var msg = args.ApplicationMessage;
-                if (msg.Topic == topic && msg.PayloadSegment.Array != null)
+                if (msg.Topic == topic)
                 {
-                    handler(msg.PayloadSegment.Array);
+                    if (msg.PayloadSegment.Array != null)
+                    {
+                        handler(msg.PayloadSegment.Array);
+                    }
+                    else 
+                    {
+                        handler([]);
+                    }
                 }
                 return Task.FromResult(null as byte[]);
             };

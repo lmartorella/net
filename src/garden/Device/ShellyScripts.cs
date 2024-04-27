@@ -32,7 +32,7 @@ namespace Lucky.Garden.Device
         {
             get
             {
-                return new Uri($"http://{configuration.DeviceName}/rpc/Script.List");
+                return new Uri($"{configuration.DeviceRest}/rpc/Script.List");
             }
         }
 

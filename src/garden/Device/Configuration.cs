@@ -17,14 +17,14 @@ namespace Lucky.Garden.Device
         }
 
         /// <summary>
-        /// Used by REST for DNS name
+        /// Used by REST. E.g. http://deviceName:port
         /// </summary>
-        public string DeviceName
+        public string DeviceRest
         {
             get
             {
                 // Mandatory
-                return configuration["deviceName"]!;
+                return configuration["deviceRest"]!;
             }
         }
     }

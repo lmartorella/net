@@ -1,23 +1,12 @@
 using System.Runtime.Serialization;
 using Lucky.Garden.Services;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Lucky.Garden.Device 
 {
-    class ShellyStatus
+    class ShellyStatus(ILogger<ShellyLogger> logger, Configuration configuration, MqttService mqttService) : BackgroundService
     {
-        private readonly ILogger<ShellyLogger> logger;
-        private readonly Configuration configuration;
-        private readonly MqttService mqttService;
-
-        public ShellyStatus(ILogger<ShellyLogger> logger, Configuration configuration, MqttService mqttService)
-        {
-            this.logger = logger;
-            this.configuration = configuration;
-            this.mqttService = mqttService;
-            _ = Init();
-        }
-
         [DataContract]
         private class Status
         {
@@ -25,14 +14,21 @@ namespace Lucky.Garden.Device
             public string Mac;
         }
         
-        private async Task Init()
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             logger.LogInformation($"Subscribing status");
             var topic = $"{configuration.DeviceId}/status/sys";
             await mqttService.SubscribeJsonTopic<Status>(topic, data => 
             {
-                logger.LogInformation($"Status: MAC address {data?.Mac}");
                 Online = data != null && data.Mac != null;
+                if (data != null)
+                {
+                    logger.LogInformation($"Status: Online. MAC address {data?.Mac}");
+                }
+                else
+                {
+                    logger.LogInformation($"Status: Offline");
+                }
             });
         }
 
