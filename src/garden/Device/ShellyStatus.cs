@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Lucky.Garden.Device 
 {
-    class ShellyStatus(ILogger<ShellyLogger> logger, Configuration configuration, MqttService mqttService) : BackgroundService
+    class ShellyStatus(ILogger<ShellyStatus> logger, Configuration configuration, MqttService mqttService) : BackgroundService
     {
         [DataContract]
         private class Status
