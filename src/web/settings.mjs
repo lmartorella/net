@@ -29,10 +29,10 @@ export const processesMd = {
         processName: "Home.Server",
         killTopic: "server/kill"
     },
-    garden: {
-        processName: "Home.Garden",
-        killTopic: "garden/kill"
-    },
+    // garden: {
+    //     processName: "Home.Garden",
+    //     killTopic: "garden/kill"
+    // },
     solar: {
         processName: "Home.Solar",
         killTopic: "solar/kill",

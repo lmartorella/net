@@ -2,19 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.33423.256
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Server", "src\server\Home.Server\Home.Server.csproj", "{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Common", "src\server\Home.Common\Home.Common.csproj", "{B13F0047-1CEE-4463-BAF6-A943E225D875}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Manager.UI", "src\server\Home.Manager.UI\Home.Manager.UI.csproj", "{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Samples", "samples\server\Home.Samples\Home.Samples.csproj", "{F4C20249-D189-40A9-A7C1-18F15025319A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Garden", "samples\server\Home.Garden\Home.Garden.csproj", "{89C7C882-C744-416B-B8B9-881DF6A66194}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Garden.Tests", "samples\server\Home.Garden.Tests\Home.Garden.Tests.csproj", "{AE0FA97E-450F-4B76-9702-461B79F6408D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,38 +10,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9DA13C11-2457-42B0-8E6E-DB1B0D3317BF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B13F0047-1CEE-4463-BAF6-A943E225D875}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B13F0047-1CEE-4463-BAF6-A943E225D875}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B13F0047-1CEE-4463-BAF6-A943E225D875}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B13F0047-1CEE-4463-BAF6-A943E225D875}.Release|Any CPU.Build.0 = Release|Any CPU
-		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{331BDBFC-A2BC-483A-A9A6-89CE570E6B81}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F4C20249-D189-40A9-A7C1-18F15025319A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F4C20249-D189-40A9-A7C1-18F15025319A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F4C20249-D189-40A9-A7C1-18F15025319A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F4C20249-D189-40A9-A7C1-18F15025319A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{89C7C882-C744-416B-B8B9-881DF6A66194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{89C7C882-C744-416B-B8B9-881DF6A66194}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{89C7C882-C744-416B-B8B9-881DF6A66194}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{89C7C882-C744-416B-B8B9-881DF6A66194}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AE0FA97E-450F-4B76-9702-461B79F6408D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{F4C20249-D189-40A9-A7C1-18F15025319A} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
-		{89C7C882-C744-416B-B8B9-881DF6A66194} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
-		{AE0FA97E-450F-4B76-9702-461B79F6408D} = {F63A70DD-2AC4-4FD1-85BA-9B28D3D88E35}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A4B3333-EF10-4726-A28C-7B0557132991}
