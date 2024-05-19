@@ -17,36 +17,29 @@ class ActivityNotifier(ShellyEvents shellyEvents, INotificationService notificat
     {
         shellyEvents.OutputChanged += (o, e) =>
         {
-            if (e.Id == 0)
-            {
-                MasterOutput = e.Output;
-            }
-            else
-            {
-                RecordEvent(e.Id, e.Output);
-            }
+            e.Waiters.Add(ProcessMessage(e));
         };
         return Task.CompletedTask;
     }
 
-    private bool MasterOutput
+    private async Task ProcessMessage(ShellyEvents.OutputEvent e)
     {
-        get
+        if (e.Id == 0)
         {
-            return masterOutput;
-        }
-        set
-        {
-            masterOutput = value;
+            masterOutput = e.Output;
             if (!masterOutput)
             {
-                _ = SendNotification();
+                await SendNotification();
             }
             else
             {
                 // Reset cycle
                 events.Clear();
             }
+        }
+        else
+        {
+            RecordEvent(e.Id, e.Output);
         }
     }
 

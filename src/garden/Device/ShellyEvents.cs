@@ -27,6 +27,8 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
         /// </summary>
         [DataMember(Name = "timer_duration", IsRequired = false)]
         public double? TimerDuration;
+
+        public List<Task> Waiters = new List<Task>();
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,7 +36,7 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
         logger.LogInformation($"Subscribing switch events");
         for (int i = 0; i < 3; i++) {
             var topic = $"{configuration.DeviceId}/status/switch:{i}";
-            await mqttService.SubscribeJsonTopic<OutputEvent>(topic, data => 
+            await mqttService.SubscribeJsonTopic<OutputEvent>(topic, async data => 
             {
                 if (data != null)
                 {
@@ -47,6 +49,7 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
                         logger.LogInformation($"Output {data.Id} changed to {data.Output}");
                     }
                     OutputChanged?.Invoke(this, data);
+                    await Task.WhenAll(data.Waiters);
                 }
             });
         }

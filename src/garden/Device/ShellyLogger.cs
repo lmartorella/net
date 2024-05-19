@@ -22,7 +22,7 @@ class ShellyLogger(ILogger<ShellyLogger> logger, Configuration configuration, Mq
     {
         var topic = $"{configuration.DeviceId}/debug/log";
         logger.LogInformation($"Subscribing {topic}");
-        await mqttService.SubscribeRawTopic(topic, data => 
+        await mqttService.SubscribeRawTopic(topic, async data => 
         {
             using (StreamWriter writer = LogFilePath.AppendText())
             {

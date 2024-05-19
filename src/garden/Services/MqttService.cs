@@ -79,25 +79,32 @@ public class MqttService
     /// Subscribe a raw binary MQTT topic 
     /// Doesn't support errors
     /// </summary>
-    public async Task SubscribeRawTopic(string topic, Action<byte[]> handler)
+    public async Task SubscribeRawTopic(string topic, Func<byte[], Task> handler)
     {
         var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
         await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
-        mqttClient.ApplicationMessageReceivedAsync += args =>
+        mqttClient.ApplicationMessageReceivedAsync += async args =>
         {
             var msg = args.ApplicationMessage;
             if (msg.Topic == topic)
             {
-                if (msg.PayloadSegment.Array != null)
+                try
                 {
-                    handler(msg.PayloadSegment.Array);
+                    if (msg.PayloadSegment.Array != null)
+                    {
+                        await handler(msg.PayloadSegment.Array);
+                    }
+                    else 
+                    {
+                        await handler([]);
+                    }
                 }
-                else 
+                catch (Exception err)
                 {
-                    handler([]);
+                    Console.Error.WriteLine("Exception: " + err.ToString());
+                    Environment.Exit(1);
                 }
             }
-            return Task.FromResult(null as byte[]);
         };
     }
 
@@ -105,7 +112,7 @@ public class MqttService
     /// Subscribe a MQTT topic that talks JSON. 
     /// Doesn't support errors
     /// </summary>
-    public Task SubscribeJsonTopic<T>(string topic, Action<T?> handler) where T: class, new() 
+    public Task SubscribeJsonTopic<T>(string topic, Func<T?, Task> handler) where T: class, new() 
     {
         var deserializer = serializerFactory.Create<T>();
         return SubscribeRawTopic(topic, msg => handler(deserializer.Deserialize(msg)));

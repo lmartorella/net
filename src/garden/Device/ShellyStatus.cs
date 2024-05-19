@@ -18,7 +18,7 @@ class ShellyStatus(ILogger<ShellyStatus> logger, Configuration configuration, Mq
     {
         logger.LogInformation($"Subscribing status");
         var topic = $"{configuration.DeviceId}/status/sys";
-        await mqttService.SubscribeJsonTopic<Status>(topic, data => 
+        await mqttService.SubscribeJsonTopic<Status>(topic, async data => 
         {
             Online = data != null && data.Mac != null;
             if (data != null)
