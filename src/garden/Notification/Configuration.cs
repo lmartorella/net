@@ -6,11 +6,19 @@ using Microsoft.Extensions.Configuration;
 /// </summary>
 class Configuration(IConfiguration configuration)
 {
+    private IConfigurationSection Section
+    {
+        get
+        {
+            return configuration.GetSection("notification");
+        }
+    }
+
     public string SmtpHost
     {
         get
         {
-            return configuration["smtpHost"] ?? "smtp.host.com";
+            return Section["smtpHost"] ?? "smtp.host.com";
         }
     }
 
@@ -18,7 +26,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return int.Parse(configuration["smtpPort"] ?? "25");
+            return int.Parse(Section["smtpPort"] ?? "25");
         }
     }
 
@@ -26,7 +34,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return configuration["sender"] ?? "net@mail.com";
+            return Section["sender"] ?? "net@mail.com";
         }
     }
     
@@ -34,8 +42,8 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            var user = configuration["user"] ?? "user";
-            var password = configuration["password"] ?? "password";
+            var user = Section["user"] ?? "user";
+            var password = Section["password"] ?? "password";
             return new NetworkCredential(user, password);
         }
     }
@@ -44,7 +52,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return bool.Parse(configuration["enableSsl"] ?? "false");
+            return bool.Parse(Section["enableSsl"] ?? "false");
         }
     }
 
@@ -52,7 +60,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return configuration["notificationRecipient"] ?? "user@mail.com";
+            return Section["notificationRecipient"] ?? "user@mail.com";
         }
     }
 
@@ -60,7 +68,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return configuration["adminNotificationRecipient"] ?? "admin@mail.com";
+            return Section["adminNotificationRecipient"] ?? "admin@mail.com";
         }
     }
 }
