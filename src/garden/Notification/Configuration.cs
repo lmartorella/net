@@ -1,6 +1,8 @@
 using System.Net;
 using Microsoft.Extensions.Configuration;
 
+namespace Lucky.Garden.Notification;
+
 /// <summary>
 /// Configuration for email SMTP service
 /// </summary>
@@ -11,6 +13,14 @@ class Configuration(IConfiguration configuration)
         get
         {
             return configuration.GetSection("notification");
+        }
+    }
+
+    public bool UseConsole
+    {
+        get
+        {
+            return bool.Parse(Section["console"] ?? "false");
         }
     }
 

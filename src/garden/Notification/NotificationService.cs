@@ -98,20 +98,30 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
     {
         logger.LogInformation($"SendingMail, title '{title}'");
 
-        // Specify the message content.
-        MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
+        if (configuration.UseConsole)
         {
-            Subject = title,
-            Body = body
-        };
-
-        bool sent = false;
-        while (!sent)
+            Console.WriteLine($"Mock of mail to be send: '${title}'");
+            Console.WriteLine();
+            Console.WriteLine(body);
+            Console.WriteLine();
+        }
+        else
         {
-            sent = await TrySendMail(message);
-            if (!sent)
+            // Specify the message content.
+            MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
             {
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                Subject = title,
+                Body = body
+            };
+
+            bool sent = false;
+            while (!sent)
+            {
+                sent = await TrySendMail(message);
+                if (!sent)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30));
+                }
             }
         }
     }
