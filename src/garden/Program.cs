@@ -10,12 +10,15 @@ class Program
     {
         var manager = new Manager(args);
         manager.AddSingleton<MqttService>();
-        manager.AddSingleton<Configuration>();
+        manager.AddSingleton<Device.Configuration>();
+        manager.AddSingleton<Notification.Configuration>();
         manager.AddSingleton<SerializerFactory>();
         manager.AddSingleton<WillService, IMqttWillProvider>();
         manager.AddHostedService<ShellyLogger>();
         manager.AddHostedService<ShellyStatus>();
         manager.AddHostedService<ShellyEvents>();
+        manager.AddSingleton<ShellyScripts>();
+        manager.AddSingleton<RestService>();
         manager.AddHostedService<StatusService>();
         manager.AddHostedService<ConfigService>();
         manager.AddSingleton<NotificationService, INotificationService>();
