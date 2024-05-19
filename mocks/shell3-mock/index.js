@@ -1,12 +1,20 @@
 import express from 'express';
 import mqtt from "mqtt";
 
-const mqttClient = mqtt.connect("mqtt://localhost", { will: { topic: "shelly3-mock/status/sys", payload: Buffer.alloc(0), }});
+const topicRoot = "shelly3-mock";
 
-mqttClient.publish("shelly3-mock/status/sys", JSON.stringify({ mac: "123456" }), { retain: true });
-mqttClient.publish("shelly3-mock/status/switch:0", JSON.stringify({ id: 0, output: false }), { retain: true });
-mqttClient.publish("shelly3-mock/status/switch:1", JSON.stringify({ id: 1, output: false }), { retain: true });
-mqttClient.publish("shelly3-mock/status/switch:2", JSON.stringify({ id: 2, output: false }), { retain: true });
+const mqttClient = mqtt.connect("mqtt://localhost", { will: { topic: `${topicRoot}/status/sys`, payload: Buffer.alloc(0), }});
+
+mqttClient.publish(`${topicRoot}/status/sys`, JSON.stringify({ mac: "123456" }), { retain: true });
+
+const outputs = [false, false, false];
+const publishOutput = id => {
+  mqttClient.publish(`${topicRoot}/status/switch:${id}`, JSON.stringify({ id, output: outputs[id] }), { retain: true });
+};
+
+for (let id = 0; id < 3; id++) {
+  publishOutput(id);
+}
 
 const expressApp = express();
 expressApp.use(express.json()); 
@@ -114,3 +122,27 @@ expressApp.post('/rpc/Script.GetCode', function (req, res) {
 
 expressApp.listen(3000);
 console.log("Shelly 3 mock server started. MQTT connection to localhost, web server exposed at port 3000");
+
+console.log("Press 1, 2 and 3 to simulate switch of the output, and q to quit");
+
+const stdin = process.stdin;
+stdin.setRawMode( true );
+stdin.resume();
+stdin.setEncoding('utf8');
+stdin.on('data', key => {
+  // ctrl-c ( end of text )
+  if (key === '\u0003' || key === 'q') {
+    process.exit();
+  }
+  switch (key) {
+    case '1': switchOut(0); break;
+    case '2': switchOut(1); break;
+    case '3': switchOut(2); break;
+  }
+});
+
+const switchOut = id => {
+  outputs[id] = !outputs[id];
+  publishOutput(id);
+  console.log(`Output ${id} switched to ${outputs[id]}`);
+};
