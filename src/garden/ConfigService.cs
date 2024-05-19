@@ -59,7 +59,11 @@ class ConfigService : BackgroundService
 
     public async Task<ProgramConfig> GetConfig() 
     {
-        throw new NotImplementedException();
+        return new ProgramConfig {
+            ProgramCycles = new ProgramCycle[0],
+            Zones = new string[0]
+        };
+
         // var scripts = await shellyScripts.GetScripts();
         // var configScript = scripts.FirstOrDefault(script => script.Name == "config");
         // if (configScript != null)

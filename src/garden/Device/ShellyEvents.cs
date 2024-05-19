@@ -28,7 +28,7 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
         [DataMember(Name = "timer_duration", IsRequired = false)]
         public double? TimerDuration;
 
-        public List<Task> Waiters = new List<Task>();
+        internal List<Task> Waiters;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -48,6 +48,7 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
                     {
                         logger.LogInformation($"Output {data.Id} changed to {data.Output}");
                     }
+                    data.Waiters = new List<Task>();
                     OutputChanged?.Invoke(this, data);
                     await Task.WhenAll(data.Waiters);
                 }

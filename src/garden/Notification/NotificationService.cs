@@ -100,7 +100,7 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
 
         if (configuration.UseConsole)
         {
-            Console.WriteLine($"Mock of mail to be send: '${title}'");
+            Console.WriteLine($"Mock of mail to be send: '{title}'");
             Console.WriteLine();
             Console.WriteLine(body);
             Console.WriteLine();
