@@ -1,4 +1,5 @@
 ﻿using Lucky.Garden.Device;
+using Lucky.Garden.Notification;
 using Lucky.Garden.Services;
 
 namespace Lucky.Garden;
@@ -17,6 +18,7 @@ class Program
         manager.AddHostedService<ShellyEvents>();
         manager.AddHostedService<StatusService>();
         manager.AddHostedService<ConfigService>();
+        manager.AddSingleton<NotificationService, INotificationService>();
         manager.Start();
     }
 }
