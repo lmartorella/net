@@ -29,6 +29,9 @@ public enum StatusCode
     PartiallyOnline = 3
 }
 
+/// <summary>
+/// Get/set the current garden timer configuration
+/// </summary>
 class StatusService(MqttService mqttService, ConfigService configService, ShellyStatus shellyStatus) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

@@ -19,6 +19,7 @@ class Program
         manager.AddHostedService<StatusService>();
         manager.AddHostedService<ConfigService>();
         manager.AddSingleton<NotificationService, INotificationService>();
+        manager.AddHostedService<ActivityNotifier>();
         manager.Start();
     }
 }
