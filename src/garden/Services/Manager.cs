@@ -47,6 +47,6 @@ public class Manager
     public void AddHostedService<TC>() where TC : class, IHostedService
     {
         hostAppBuilder.Services.AddSingleton<TC>();
-        hostAppBuilder.Services.AddHostedService<TC>();
+        hostAppBuilder.Services.AddHostedService<TC>(services => services.GetService<TC>()!);
     }
 }
