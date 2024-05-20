@@ -301,4 +301,12 @@ public class MqttService
             return respDeserializer.Serialize(resp);
         });
     }
+
+    /// <summary>
+    /// Perform a RPC call with JSON-serialized arguments
+    /// </summary>
+    public Task<TResp> JsonRpc<TReq, TResp>(string topic, TReq req) where TReq: class, new() where TResp: class, new()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\common\common.csproj" />
-    <ProjectReference Include="..\notification\notification.csproj" />
   </ItemGroup>
 
 </Project>

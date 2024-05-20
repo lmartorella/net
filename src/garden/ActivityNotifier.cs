@@ -1,6 +1,7 @@
 using System.Text;
 using Lucky.Garden.Device;
 using Lucky.Home.Notification;
+using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
 
 namespace Lucky.Garden;
@@ -8,7 +9,7 @@ namespace Lucky.Garden;
 /// <summary>
 /// Send notifications when the garden does a cycle
 /// </summary>
-class ActivityNotifier(ShellyEvents shellyEvents, INotificationService notificationService, ConfigService configService) : BackgroundService
+class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService) : BackgroundService
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
@@ -96,7 +97,7 @@ class ActivityNotifier(ShellyEvents shellyEvents, INotificationService notificat
 
         if (builder.Length > 0)
         {
-            await notificationService.SendMail("Activity", builder.ToString(), false);
+            await mqttService.JsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", new SendMailRequestMqttPayload { Title = "Activity", Body = builder.ToString(), IsAdminReport = false });
         }
     }
 }
