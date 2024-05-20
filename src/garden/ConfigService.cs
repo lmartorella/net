@@ -1,7 +1,7 @@
 
 using System.Runtime.Serialization;
 using Lucky.Garden.Device;
-using Lucky.Garden.Services;
+using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
 
 namespace Lucky.Garden;

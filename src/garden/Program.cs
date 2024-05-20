@@ -1,6 +1,5 @@
 ﻿using Lucky.Garden.Device;
-using Lucky.Garden.Notification;
-using Lucky.Garden.Services;
+using Lucky.Home.Services;
 
 namespace Lucky.Garden;
 
@@ -10,8 +9,7 @@ class Program
     {
         var manager = new Manager(args);
         manager.AddSingleton<MqttService>();
-        manager.AddSingleton<Device.Configuration>();
-        manager.AddSingleton<Notification.Configuration>();
+        manager.AddSingleton<Configuration>();
         manager.AddSingleton<SerializerFactory>();
         manager.AddSingleton<WillService, IMqttWillProvider>();
         manager.AddHostedService<ShellyLogger>();
@@ -21,7 +19,6 @@ class Program
         manager.AddSingleton<RestService>();
         manager.AddHostedService<StatusService>();
         manager.AddHostedService<ConfigService>();
-        manager.AddSingleton<NotificationService, INotificationService>();
         manager.AddHostedService<ActivityNotifier>();
         manager.Start();
     }

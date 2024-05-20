@@ -1,5 +1,5 @@
 using System.Runtime.Serialization;
-using Lucky.Garden.Services;
+using Lucky.Home.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Lucky.Garden.Device;

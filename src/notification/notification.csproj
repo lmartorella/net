@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Lucky.Garden</RootNamespace>
+    <RootNamespace>Lucky.Home</RootNamespace>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\common\common.csproj" />
-    <ProjectReference Include="..\notification\notification.csproj" />
   </ItemGroup>
 
 </Project>

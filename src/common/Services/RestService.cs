@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Garden.Services;
+namespace Lucky.Home.Services;
 
 public class RestService(ILogger<RestService> logger)
 {

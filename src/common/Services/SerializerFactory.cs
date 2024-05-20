@@ -1,7 +1,7 @@
 using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace Lucky.Garden.Services;
+namespace Lucky.Home.Services;
 
 public class SerializerFactory
 {

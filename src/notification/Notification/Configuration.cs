@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.Extensions.Configuration;
 
-namespace Lucky.Garden.Notification;
+namespace Lucky.Home.Notification;
 
 /// <summary>
 /// Configuration for email SMTP service

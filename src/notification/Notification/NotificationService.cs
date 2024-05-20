@@ -2,7 +2,7 @@
 using System.Net.Mime;
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Garden.Notification;
+namespace Lucky.Home.Notification;
 
 class NotificationService(ILogger<NotificationService> logger, Configuration configuration) : INotificationService
 {

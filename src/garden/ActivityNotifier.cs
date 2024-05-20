@@ -1,6 +1,6 @@
 using System.Text;
 using Lucky.Garden.Device;
-using Lucky.Garden.Notification;
+using Lucky.Home.Notification;
 using Microsoft.Extensions.Hosting;
 
 namespace Lucky.Garden;

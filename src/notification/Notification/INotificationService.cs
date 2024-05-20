@@ -1,6 +1,6 @@
 ﻿using System.Net.Mime;
 
-namespace Lucky.Garden.Notification;
+namespace Lucky.Home.Notification;
 
 /// <summary>
 /// A status message that will be aggregated in a single message

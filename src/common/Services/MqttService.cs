@@ -6,7 +6,7 @@ using MQTTnet.Extensions.ManagedClient;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace Lucky.Garden.Services;
+namespace Lucky.Home.Services;
 
 /// <summary>
 /// Used for empty JSON messages types

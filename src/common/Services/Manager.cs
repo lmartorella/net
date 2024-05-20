@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Lucky.Garden.Services;
+namespace Lucky.Home.Services;
 
 /// <summary>
 /// Service manager
