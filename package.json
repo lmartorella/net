@@ -1,8 +1,8 @@
 {
   "name": "home.web",
   "scripts": {
-    "buildNet": "msbuild home.server.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
-    "buildNetDebug": "msbuild home.server.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild home.server.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
+    "buildNet": "msbuild src\\net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src\\net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
+    "buildNetDebug": "msbuild src\\net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src\\net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
     "buildWeb": "cd samples/web/app && npx ng cache clean && npx ng build --configuration production",
     "buildWebDebug": "cd samples/web/app && npx ng cache clean && npx ng build --configuration development",
     "build": "npm run buildNet && npm run buildWeb",
