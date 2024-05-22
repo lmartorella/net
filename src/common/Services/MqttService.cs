@@ -147,7 +147,15 @@ public class MqttService
     }
 
     /// <summary>
-    /// Enable reception of RPC calls originated by the current party
+    /// Enable reception of RPC response originated by the called party
+    /// </summary>
+    public Task<RpcOriginator> RegisterRpcOriginator(string topic)
+    {
+        return RegisterRpcOriginator(topic, TimeSpan.Zero);
+    }
+
+    /// <summary>
+    /// Enable reception of RPC response originated by the called party
     /// </summary>
     public async Task<RpcOriginator> RegisterRpcOriginator(string topic, TimeSpan timeout)
     {
@@ -224,11 +232,13 @@ public class MqttService
                 .WithTopic(topic).
                 Build();
             await owner.mqttClient.InternalClient.PublishAsync(message);
-            _ = Task.Delay(timeout).ContinueWith(task =>
-            {
-                requests.Remove(correlationData);
-                request.TrySetCanceled();
-            });
+            if (timeout > TimeSpan.Zero) {
+                _ = Task.Delay(timeout).ContinueWith(task =>
+                {
+                    requests.Remove(correlationData);
+                    request.TrySetCanceled();
+                });
+            }
             return await request.Task;
         }
 
@@ -300,13 +310,5 @@ public class MqttService
             TResp resp = await handler(reqSerializer.Deserialize(payload));
             return respDeserializer.Serialize(resp);
         });
-    }
-
-    /// <summary>
-    /// Perform a RPC call with JSON-serialized arguments
-    /// </summary>
-    public Task<TResp> JsonRpc<TReq, TResp>(string topic, TReq req) where TReq: class, new() where TResp: class, new()
-    {
-        throw new NotImplementedException();
     }
 }

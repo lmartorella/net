@@ -1,10 +1,9 @@
 {
-  "name": "shell3-mock",
+  "name": "mail-sender",
   "scripts": {},
   "type": "module",
   "private": true,
   "dependencies": {
-    "express": "^4.19.2",
     "mqtt": "^5.5.4"
   }
 }

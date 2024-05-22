@@ -13,14 +13,16 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
+    private MqttService.RpcOriginator rpcCaller = null!;
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         shellyEvents.OutputChanged += (o, e) =>
         {
             e.Waiters.Add(ProcessMessage(e));
         };
-        return Task.CompletedTask;
+
+        rpcCaller = await mqttService.RegisterRpcOriginator("notification/send_mail");
     }
 
     private async Task ProcessMessage(ShellyEvents.OutputEvent e)
@@ -97,7 +99,7 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
 
         if (builder.Length > 0)
         {
-            await mqttService.JsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", new SendMailRequestMqttPayload { Title = "Activity", Body = builder.ToString(), IsAdminReport = false });
+            await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload { Title = "Activity", Body = builder.ToString(), IsAdminReport = false });
         }
     }
 }
