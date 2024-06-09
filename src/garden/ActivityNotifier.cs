@@ -3,13 +3,14 @@ using Lucky.Garden.Device;
 using Lucky.Home.Notification;
 using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Lucky.Garden;
 
 /// <summary>
 /// Send notifications when the garden does a cycle
 /// </summary>
-class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService) : BackgroundService
+class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService) : BackgroundService
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
@@ -99,7 +100,15 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
 
         if (builder.Length > 0)
         {
-            await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload { Title = "Activity", Body = builder.ToString(), IsAdminReport = false });
+            logger.LogInformation("SendNotification: {0} at {1}", builder.ToString(), DateTime.Now);
+            await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(
+                new SendMailRequestMqttPayload { Title = "Activity", Body = builder.ToString(), IsAdminReport = false },
+                true  // Don't wait for response
+            );
+        }
+        else
+        {
+            logger.LogInformation("SendNotification, zero events");
         }
     }
 }

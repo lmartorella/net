@@ -212,7 +212,7 @@ public class MqttService
             owner.logger.LogInformation("Subscribed responses, topic {0}", responseTopic);
         }
 
-        public async Task<byte[]> RawRemoteCall(byte[]? payload = null)
+        public async Task<byte[]> RawRemoteCall(byte[]? payload = null, bool post = false)
         {
             if (!owner.mqttClient.IsConnected)
             {
@@ -232,21 +232,29 @@ public class MqttService
                 .WithTopic(topic).
                 Build();
             await owner.mqttClient.InternalClient.PublishAsync(message);
-            if (timeout > TimeSpan.Zero) {
-                _ = Task.Delay(timeout).ContinueWith(task =>
-                {
-                    requests.Remove(correlationData);
-                    request.TrySetCanceled();
-                });
+            if (!post)
+            {
+                // Send: wait for response
+                if (timeout > TimeSpan.Zero) {
+                    _ = Task.Delay(timeout).ContinueWith(task =>
+                    {
+                        requests.Remove(correlationData);
+                        request.TrySetCanceled();
+                    });
+                }
+                return await request.Task;
             }
-            return await request.Task;
+            else
+            {
+                return [];
+            }
         }
 
-        public async Task<TResp?> JsonRemoteCall<TReq, TResp>(TReq? payload = null) where TReq : class, new() where TResp : class, new()
+        public async Task<TResp?> JsonRemoteCall<TReq, TResp>(TReq? payload = null, bool post = false) where TReq : class, new() where TResp : class, new()
         {
             var reqSerializer = serializerFactory.Create<TReq>();
             var respDeserializer = serializerFactory.Create<TResp>();
-            var responseData = await RawRemoteCall(reqSerializer.Serialize(payload));
+            var responseData = await RawRemoteCall(reqSerializer.Serialize(payload), post);
             return respDeserializer.Deserialize(responseData);
         }
     }
