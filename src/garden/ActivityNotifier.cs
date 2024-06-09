@@ -69,9 +69,9 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
         {
             int id = entry.Key - 1;
             string zoneName = $"{entry.Key}";
-            if (id >= 0 && id < config.Zones.Length)
+            if (id >= 0 && id < config.ZoneNames.Length)
             {
-                zoneName = config.Zones[id];
+                zoneName = config.ZoneNames[id];
             }
 
             bool lastState = false;

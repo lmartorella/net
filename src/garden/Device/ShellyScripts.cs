@@ -60,6 +60,20 @@ class ShellyScripts(ILogger<ShellyScripts> logger, Configuration configuration, 
         public int Len;
     }
 
+    [DataContract]
+    private class ScriptCreateReq
+    {
+        [DataMember(Name = "name")]
+        public string Name;
+    }
+
+    [DataContract]
+    private class ScriptCreateResp
+    {
+        [DataMember(Name = "id")]
+        public int Id;
+    }
+
     private string BaseUri
     {
         get
@@ -96,5 +110,13 @@ class ShellyScripts(ILogger<ShellyScripts> logger, Configuration configuration, 
         {
             throw new InvalidOperationException("Script length different from the set value");
         }
+    }
+
+    internal async Task<int> CreateScript(string name)
+    {
+        logger.LogInformation("CreateConfCode: name {0}", name);
+        string json = await restService.AsyncRest(BaseUri + "Script.Create", HttpMethod.Get, serializerFactory.Create<ScriptCreateReq>().ToString(new ScriptCreateReq { Name = name }));
+        var resp = serializerFactory.Create<ScriptCreateResp>().Deserialize(json);
+        return resp!.Id;
     }
 }

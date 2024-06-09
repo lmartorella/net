@@ -5,7 +5,7 @@ namespace Lucky.Home.Services;
 
 public class SerializerFactory
 {
-    public class TypeSerializer<T>
+    public class TypeSerializer<T>(bool indent = false)
     {
         private readonly DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(T));
         
@@ -17,9 +17,14 @@ public class SerializerFactory
             }
             else
             {
-                var stream = new MemoryStream();
-                serializer.WriteObject(stream, value);
-                return stream.ToArray();
+                using (var stream = new MemoryStream())
+                {
+                    using (var writer = JsonReaderWriterFactory.CreateJsonWriter(stream, Encoding.UTF8, false, indent, "  "))
+                    {
+                        serializer.WriteObject(writer, value);
+                    }
+                    return stream.ToArray();
+                }
             }
         }
 
@@ -53,8 +58,8 @@ public class SerializerFactory
         }
     }
 
-    public TypeSerializer<T> Create<T>()
+    public TypeSerializer<T> Create<T>(bool indent = false)
     {
-        return new TypeSerializer<T>();
+        return new TypeSerializer<T>(indent);
     }
 }
