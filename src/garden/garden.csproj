@@ -20,5 +20,17 @@
   <ItemGroup>
     <ProjectReference Include="..\common\common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+      <EmbeddedResource Update="Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+      <EmbeddedResource Update="Resources-it-IT.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources-it-IT.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+  </ItemGroup>
 
 </Project>
