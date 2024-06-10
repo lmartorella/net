@@ -17,6 +17,7 @@ interface IProgramCycle {
     startTime: string; // HH:mm:ss format
     disabled: boolean;
     minutes: number;
+    everyDays: number;  // 0 is invalid, 1 every day, etc...
 }
 
 // interface INextCycle extends ICycle {
@@ -64,7 +65,6 @@ export class GardenComponent implements OnInit {
     public loaded!: boolean;
     public message!: string;
     public error!: string;
-    private zoneNames: string[] = [];
 //    public immediateCycle!: ImmediateCycle | null;
     public config!: IConfig;
     public status1!: string;
@@ -81,6 +81,8 @@ export class GardenComponent implements OnInit {
 //    public isRunning!: boolean;
     // To anticipate login request at beginning of an operation flow
     private _hasPrivilege!: boolean;
+
+    public inEditName: boolean[] = [];
 
     public readonly res: { [key: string]: string };
     public readonly format: (str: string, args?: any) => string;
@@ -124,7 +126,7 @@ export class GardenComponent implements OnInit {
             // }
 
             this.config = resp.config || { };
-            this.zoneNames = this.config.zones = this.config.zones || [];
+            this.config.zones = this.config.zones || [];
             this.config.programCycles = this.config.programCycles || [];
             this.updateProgram();
         }, err => {
@@ -181,6 +183,7 @@ export class GardenComponent implements OnInit {
     }
 
     public startEdit(): void {
+        this.inEditName = [];
         this.preCheckPrivilege().then(() => {
             this.editProgramMode = true;
             //this.clearImmediate();
@@ -188,16 +191,35 @@ export class GardenComponent implements OnInit {
     }
 
     public saveProgram(): Promise<void> {
+        this.inEditName = [];
         return checkXhr(this.http.put(config.baseUrl + "/svc/gardenCfg", this.config)).then(() => {
             this.loadConfigAndStatus();
         }, err => {
             this.error = format("Garden_ErrorSetConf", err.message);
         }).finally(() => {
-            this.clearProgram();
+            this.cancelEditProgram();
         })
     }
 
-    public clearProgram(): void {
+    public cancelEditProgram(): void {
+        this.inEditName = [];
         this.editProgramMode = false;
+    }
+
+    public addCycle() {
+        this.inEditName = [];
+        // Add default 
+        this.config.programCycles?.push({
+            name: "Name",
+            minutes: 5,
+            startTime: "10:00:00",
+            disabled: false,
+            everyDays: 2
+        });
+    }
+
+    public deleteCycle(index: number) {
+        this.inEditName = [];
+        this.config.programCycles!.splice(index, 1);
     }
 }

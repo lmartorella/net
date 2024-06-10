@@ -31,7 +31,12 @@ export const Strings = {
     "Garden_StartAt": "Inizio:",
     "Garden_Duration": "Durata (min):",
     "Garden_SaveProgram": "Salva Programma",
-    "Garden_ClearProgram": "Cancella",
+    "Garden_CancelEditProgram": "Annulla",
+    "Garden_EveryDays": "Ogni quanti giorni",
+    "Garden_EditName": "Edit",
+    "Garden_SaveName": "Salva",
+    "Garden_DeleteCycle": "Cancella ciclo",
+    "Garden_AddCycle": "Aggiungi ciclo",
 
     "Solar_ChartToday": "Andamento oggi",
     "Solar_Chart4days": "Andamento 4 giorni",

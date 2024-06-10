@@ -36,34 +36,62 @@
   </div>
 
   <!-- Editor to edit program cycle -->
-  <div *ngIf="loaded && !!config?.programCycles?.length" class="garden-section">
-    <div>
-      <button [hidden]="editProgramMode" (click)="startEdit()">{{res["Garden_EditProgram"]}}</button>
+  <div *ngIf="loaded && config?.programCycles?.length" class="garden-section">
+
+    <div *ngIf="!editProgramMode">
+      <button (click)="startEdit()">{{res["Garden_EditProgram"]}}</button>
     </div>
-    <h4 *ngIf="editProgramMode">{{res["Garden_EditProgram"]}}</h4>
-    <!-- List program cycles -->
+
     <div *ngIf="editProgramMode">
-      <div *ngFor="let cycle of config.programCycles" class="program-cycle">
-        <div>
-          <label><em>{{cycle.name}}</em></label>
-        </div>
-        <div>
-          <label>{{res["Garden_StartAt"]}}</label>
-          <input type="string" [(ngModel)]="cycle.startTime">
-        </div>
-        <div>
-          <label>{{res["Garden_Duration"]}}</label>
-          <input type="number" [(ngModel)]="cycle.minutes">
-        </div>
-        <div>
-          <label>{{res["Garden_DisabledCheckbox"]}}</label>
-          <input type="checkbox" [(ngModel)]="cycle.disabled">
+      <h4>{{res["Garden_EditProgram"]}}</h4>
+      <!-- List program cycles -->
+      <div>
+        <div *ngFor="let cycle of config.programCycles; index as i" class="program-cycle">
+
+          <!-- Name / editor -->
+          <div *ngIf="!inEditName[i]">
+            <label><em>{{cycle.name}}</em></label>
+            <button (click="inEditName[i] = true")>{{res["Garden_EditName"]}}</button>
+          </div>
+          <div *ngIf="inEditName[i]">
+            <input type="string" [(ngModel)]="cycle.name">
+            <button (click="inEditName[i] = false")>{{res["Garden_SaveName"]}}</button>
+          </div>
+
+          <div>
+            <label>{{res["Garden_StartAt"]}}</label>
+            <input type="string" [(ngModel)]="cycle.startTime">
+          </div>
+
+          <div>
+            <label>{{res["Garden_Duration"]}}</label>
+            <input type="number" [(ngModel)]="cycle.minutes">
+          </div>
+
+          <div>
+            <label>{{res["Garden_EveryDays"]}}</label>
+            <input type="number" [(ngModel)]="cycle.everyDays">
+          </div>
+
+          <div>
+            <label>{{res["Garden_DisabledCheckbox"]}}</label>
+            <input type="checkbox" [(ngModel)]="cycle.disabled">
+          </div>
+
+          <div>
+            <button (click)="deleteCycle(i)">{{res["Garden_DeleteCycle"]}}</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div *ngIf="editProgramMode">
-      <button (click)="saveProgram()">{{res["Garden_SaveProgram"]}}</button>
-      <button (click)="clearProgram()">{{res["Garden_ClearProgram"]}}</button>
+
+      <div>
+        <button (click)="addCycle()">{{res["Garden_AddCycle"]}}</button>
+      </div>
+
+      <div>
+        <button (click)="saveProgram()">{{res["Garden_SaveProgram"]}}</button>
+        <button (click)="cancelEditProgram()">{{res["Garden_CancelEditProgram"]}}</button>
+      </div>
     </div>
   </div>
   
