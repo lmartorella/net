@@ -94,6 +94,8 @@ expressApp.post('/rpc/Script.PutCode', function (req, res) {
     try {
       const { data } = setScriptCode(id, code, append);
       res.send(JSON.stringify({ len: data.length }));
+      console.log(`Set script ${id} with:`);
+      console.log(JSON.stringify(JSON.parse(data), null, "  "));
     } catch (err) { 
       res.status(500);
       res.statusMessage = `EXC: ${err.message}`;
