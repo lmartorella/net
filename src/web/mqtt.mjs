@@ -2,7 +2,7 @@ import mqtt from 'mqtt';
 import { logger } from './settings.mjs';
 
 logger("Connecting to MQTT...");
-const client  = mqtt.connect({ clientId: "webserver", protocolVersion: 5 });
+const client  = mqtt.connect({ host: "127.0.0.1", clientId: "webserver", protocolVersion: 5 });
 
 client.on('connect', () => {
     logger("Connected to MQTT");
