@@ -1,6 +1,6 @@
 import mqtt from "mqtt";
 
-const mqttClient = mqtt.connect("mqtt://localhost", { protocolVersion: 5 });
+const mqttClient = mqtt.connect({ host: "127.0.0.1", protocolVersion: 5 });
 
 mqttClient.subscribe("notification/send_mail");
 mqttClient.on("message", (_topic, payload, packet) => {

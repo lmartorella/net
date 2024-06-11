@@ -57,7 +57,7 @@ public class MqttService
     {
         var clientOptionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(hostEnvironment.ApplicationName)
-                .WithTcpServer("localhost")
+                .WithTcpServer("127.0.0.1")
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500);
         if (mqttWillProvider != null) 
         {
