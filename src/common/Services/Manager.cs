@@ -11,7 +11,7 @@ public class Manager
 {
     private readonly HostApplicationBuilder hostAppBuilder;
     
-    public Manager(string[] args)
+    public Manager(string[] args, string jsonFileName)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
         hostAppBuilder.Services.AddLogging();
@@ -23,7 +23,7 @@ public class Manager
         }
         hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
         
-        var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/gardenConfiguration.json", optional: false).Build();
+        var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();
         hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
     }
 

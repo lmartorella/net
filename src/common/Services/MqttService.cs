@@ -31,7 +31,7 @@ public class MqttService
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
 
-    public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider? mqttWillProvider)
+    public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
     {
         this.logger = logger;
         this.hostEnvironment = hostEnvironment;

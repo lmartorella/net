@@ -7,7 +7,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var manager = new Manager(args);
+        var manager = new Manager(args, "gardenConfiguration.json");
         manager.AddSingleton<MqttService>();
         manager.AddSingleton<Configuration>();
         manager.AddSingleton<SerializerFactory>();

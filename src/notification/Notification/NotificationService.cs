@@ -1,95 +1,22 @@
 ﻿using System.Net.Mail;
 using System.Net.Mime;
+using Lucky.Home.Services;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Lucky.Home.Notification;
 
-class NotificationService(ILogger<NotificationService> logger, Configuration configuration) : INotificationService
+class NotificationService(ILogger<NotificationService> logger, Configuration configuration, MqttService mqttService) : BackgroundService
 {
-    private class Message : IStatusUpdate
-    {
-        private bool _sent;
-
-        public DateTime TimeStamp { get; set; }
-
-        public string Text { get; set; }
-
-        public object LockObject { get; set; }
-
-        public string Send()
-        {
-            lock(this)
-            {
-                _sent = true;
-                return ToString();
-            }
-        }
-
-        public bool Update(Action updateHandler)
-        {
-            lock (LockObject)
-            {
-                if (_sent)
-                {
-                    return false;
-                }
-                else
-                {
-                    updateHandler();
-                    return true;
-                }
-            }
-        }
-
-        public override string ToString()
-        {
-            return TimeStamp.ToString("HH:mm:ss") + ": " + Text;
-        }
-    }
-
-    private class Bucket
-    {
-        private readonly string _groupTitle;
-        private readonly NotificationService _svc;
-        private List<Message> _messages = new List<Message>();
-        private Timer _timer;
-
-        public Bucket(NotificationService svc, string groupTitle)
-        {
-            _svc = svc;
-            _groupTitle = groupTitle;
-        }
-
-        internal void Enqueue(Message message)
-        {
-            lock (this)
-            {
-                message.LockObject = this;
-                _messages.Add(message);
-                // Start timer
-                if (_timer == null)
-                {
-                    _timer = new Timer(_ =>
-                    {
-                        string msg;
-                        lock (this)
-                        {
-                            // Send a single mail with all the content
-                            msg = string.Join(Environment.NewLine, _messages.Select(m => m.Send()));
-                            _messages.Clear();
-                            _timer = null;
-                        }
-                        if (msg.Trim().Length > 0)
-                        {
-                            _ = _svc.SendMail(_groupTitle, msg, true);
-                        }
-                    }, null, (int)TimeSpan.FromHours(1).TotalMilliseconds, Timeout.Infinite);
-                }
-            }
-        }
-    }
-
     private Dictionary<string, Bucket> _statusBuckets = new Dictionary<string, Bucket>();
+
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        await mqttService.SubscribeJsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", async req => {
+            await SendMail(req.Title, req.Body, req.IsAdminReport);
+            return new RpcVoid();
+        });
+    }
 
     /// <summary>
     /// Send a text mail
@@ -98,30 +25,20 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
     {
         logger.LogInformation($"SendingMail, title '{title}'");
 
-        if (configuration.UseConsole)
+        // Specify the message content.
+        MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
         {
-            Console.WriteLine($"Mock of mail to be send: '{title}'");
-            Console.WriteLine();
-            Console.WriteLine(body);
-            Console.WriteLine();
-        }
-        else
-        {
-            // Specify the message content.
-            MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
-            {
-                Subject = title,
-                Body = body
-            };
+            Subject = title,
+            Body = body
+        };
 
-            bool sent = false;
-            while (!sent)
+        bool sent = false;
+        while (!sent)
+        {
+            sent = await TrySendMail(message);
+            if (!sent)
             {
-                sent = await TrySendMail(message);
-                if (!sent)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(30));
-                }
+                await Task.Delay(TimeSpan.FromSeconds(30));
             }
         }
     }
@@ -135,7 +52,7 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
         {
             attachments = Array.Empty<Tuple<Stream, ContentType, string>>();
         }
-        logger.LogInformation($"SendingHtmlMail, title '{title}', attch {attachments.Count()}");
+        logger.LogInformation($"SendingHtmlMail, title '{title}', attachments {attachments.Count()}");
 
         // Specify the message content.
         MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
