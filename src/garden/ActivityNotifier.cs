@@ -26,7 +26,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
         rpcCaller = await mqttService.RegisterRpcOriginator("notification/send_mail");
     }
 
-    private async Task ProcessMessage(ShellyEvents.OutputEvent e)
+    private async Task ProcessMessage(ShellyEvents.OutputTopicEvent e)
     {
         if (e.Id == 0)
         {
