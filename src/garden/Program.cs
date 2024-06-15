@@ -8,6 +8,7 @@ class Program
     static void Main(string[] args)
     {
         var manager = new Manager(args);
+        manager.AddSingleton<ResourceService>();
         manager.AddSingleton<MqttService>();
         manager.AddSingleton<Configuration>();
         manager.AddSingleton<SerializerFactory>();

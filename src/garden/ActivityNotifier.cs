@@ -9,7 +9,7 @@ namespace Lucky.Garden;
 /// <summary>
 /// Send notifications when the garden does a cycle
 /// </summary>
-class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService) : BackgroundService
+class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService, ResourceService resourceService) : BackgroundService
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
@@ -91,7 +91,8 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
                 {
                     // Switched off and lasted
                     var duration = ev.Item2 - lastTimeStamp;
-                    builder.Append($"Zone {zoneName} ran for {duration}");
+                    builder.Append(resourceService.GetString(GetType(), "gardenMailHeader"));
+                    builder.Append(string.Format(resourceService.GetString(GetType(), "gardenMailBody"), zoneName, duration.TotalMinutes, 0));
                     builder.Append(Environment.NewLine);
                 }
             }
@@ -99,7 +100,12 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
 
         if (builder.Length > 0)
         {
-            await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload { Title = "Activity", Body = builder.ToString(), IsAdminReport = false });
+            await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload
+                {
+                    Title = resourceService.GetString(GetType(), "gardenMailTitle"),
+                    Body = builder.ToString(),
+                    IsAdminReport = false
+                });
         }
     }
 }
