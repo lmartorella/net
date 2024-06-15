@@ -10,7 +10,7 @@ namespace Lucky.Garden;
 /// <summary>
 /// Send notifications when the garden does a cycle
 /// </summary>
-class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService) : BackgroundService
+class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEvents, MqttService mqttService/*, ConfigService configService */) : BackgroundService
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
@@ -26,11 +26,11 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
         rpcCaller = await mqttService.RegisterRpcOriginator("notification/send_mail");
     }
 
-    private async Task ProcessMessage(ShellyEvents.OutputTopicEvent e)
+    private async Task ProcessMessage(ShellyEvents.OutputEventArgs e)
     {
         if (e.Id == 0)
         {
-            masterOutput = e.Output;
+            masterOutput = e.State.Output.Value;
             if (!masterOutput)
             {
                 await SendNotification();
@@ -43,7 +43,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
         }
         else
         {
-            RecordEvent(e.Id, e.Output);
+            RecordEvent(e.Id, e.State.Output.Value);
         }
     }
 
@@ -62,17 +62,17 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
     private async Task SendNotification()
     {
         StringBuilder builder = new StringBuilder();
-        var config = await configService.GetConfig();
+        //var config = await configService.GetConfig();
 
         // Generates the list of the areas run
         foreach (var entry in events)
         {
             int id = entry.Key - 1;
             string zoneName = $"{entry.Key}";
-            if (id >= 0 && id < config.ZoneNames.Length)
-            {
-                zoneName = config.ZoneNames[id];
-            }
+            // if (id >= 0 && id < config.ZoneNames.Length)
+            // {
+            //     zoneName = config.ZoneNames[id];
+            // }
 
             bool lastState = false;
             DateTime lastTimeStamp = DateTime.MinValue;

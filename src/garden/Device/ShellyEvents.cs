@@ -38,7 +38,7 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
         public double? TimerDuration;
     }
 
-    public class OutputEventEventArgs(int id, OutputState state) 
+    public class OutputEventArgs(int id, OutputState state) 
     {
         public int Id { get; } = id;
         public OutputState State { get; } = state;
@@ -68,7 +68,7 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
                     return;
                 }
 
-                var args = new OutputEventEventArgs(id, new OutputState { Output = data.Output, TimerDuration = data.TimerDuration });
+                var args = new OutputEventArgs(id, new OutputState { Output = data.Output, TimerDuration = data.TimerDuration });
                 if (data.TimerDuration.HasValue)
                 {
                     logger.LogInformation($"Output {data.Id} changed to {data.Output} for {data.TimerDuration} seconds");
@@ -83,5 +83,5 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
         }
     }
 
-    public event EventHandler<OutputEventEventArgs>? OutputChanged;
+    public event EventHandler<OutputEventArgs>? OutputChanged;
 }
