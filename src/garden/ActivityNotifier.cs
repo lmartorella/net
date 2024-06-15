@@ -3,13 +3,14 @@ using Lucky.Garden.Device;
 using Lucky.Home.Notification;
 using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Lucky.Garden;
 
 /// <summary>
 /// Send notifications when the garden does a cycle
 /// </summary>
-class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService, ResourceService resourceService) : BackgroundService
+class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEvents, MqttService mqttService, /* ConfigService configService, */ ResourceService resourceService) : BackgroundService
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
@@ -25,11 +26,11 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
         rpcCaller = await mqttService.RegisterRpcOriginator("notification/send_mail");
     }
 
-    private async Task ProcessMessage(ShellyEvents.OutputEvent e)
+    private async Task ProcessMessage(ShellyEvents.OutputEventArgs e)
     {
         if (e.Id == 0)
         {
-            masterOutput = e.Output;
+            masterOutput = e.State.Output.Value;
             if (!masterOutput)
             {
                 await SendNotification();
@@ -42,7 +43,7 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
         }
         else
         {
-            RecordEvent(e.Id, e.Output);
+            RecordEvent(e.Id, e.State.Output.Value);
         }
     }
 
@@ -61,17 +62,17 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
     private async Task SendNotification()
     {
         StringBuilder builder = new StringBuilder();
-        var config = await configService.GetConfig();
+        //var config = await configService.GetConfig();
 
         // Generates the list of the areas run
         foreach (var entry in events)
         {
             int id = entry.Key - 1;
             string zoneName = $"{entry.Key}";
-            if (id >= 0 && id < config.Zones.Length)
-            {
-                zoneName = config.Zones[id];
-            }
+            // if (id >= 0 && id < config.ZoneNames.Length)
+            // {
+            //     zoneName = config.ZoneNames[id];
+            // }
 
             bool lastState = false;
             DateTime lastTimeStamp = DateTime.MinValue;
@@ -100,12 +101,19 @@ class ActivityNotifier(ShellyEvents shellyEvents, MqttService mqttService, Confi
 
         if (builder.Length > 0)
         {
+            logger.LogInformation("SendNotification: {0} at {1}", builder.ToString(), DateTime.Now);
             await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload
                 {
                     Title = resourceService.GetString(GetType(), "gardenMailTitle"),
                     Body = builder.ToString(),
                     IsAdminReport = false
-                });
+                },
+                true  // Don't wait for response
+            );
+        }
+        else
+        {
+            logger.LogInformation("SendNotification, zero events");
         }
     }
 }

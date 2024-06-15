@@ -8,22 +8,22 @@ moment.locale("it-IT");
 
 interface IConfig {
     zones?: string[];
-    programCycles?: ICycle[];
+    programCycles?: IProgramCycle[];
+    suspended: boolean;
 }
 
-interface ICycle {
+interface IProgramCycle {
     name: string;
-    start: string; // ISO format
     startTime: string; // HH:mm:ss format
-    suspended: boolean;
     disabled: boolean;
     minutes: number;
+    everyDays: number;  // 0 is invalid, 1 every day, etc...
 }
 
-interface IScheduledCycle extends ICycle {
-    scheduledTime: string;
-    running: boolean;
-}
+// interface INextCycle extends ICycle {
+//     scheduledTime: string;
+//     running: boolean;
+// }
 
 interface IGardenResponse {
     error?: string;
@@ -32,29 +32,29 @@ interface IGardenResponse {
 interface IGardenStatusResponse extends IGardenResponse {
     config: IConfig;
     status: number;
-    isRunning: boolean;
-    flowData: { 
-        totalMc: number;
-        flowLMin: number;
-    };
-    nextCycles: IScheduledCycle[];
+    //isRunning: boolean;
+    // flowData: { 
+    //     totalMc: number;
+    //     flowLMin: number;
+    // };
+    //nextCycles: INextCycle[];
 }
 
-interface IGardenStartStopResponse extends IGardenResponse {
-    error: string;
-}
+// interface IGardenStartStopResponse extends IGardenResponse {
+//     error: string;
+// }
 
-class ImmediateCycle {
-    constructor(zoneNames: string[], public time: string) {
-        this.zones = zoneNames.map((name, index) => ({ name, index }))
-    }
+// class ImmediateCycle {
+//     constructor(zoneNames: string[], public time: string) {
+//         this.zones = zoneNames.map((name, index) => ({ name, index }))
+//     }
 
-    zones: { 
-        name: string;
-        enabled?: boolean;
-        index: number;
-    }[];
-}
+//     zones: { 
+//         name: string;
+//         enabled?: boolean;
+//         index: number;
+//     }[];
+// }
 
 @Component({
     selector: 'app-garden',
@@ -65,8 +65,7 @@ export class GardenComponent implements OnInit {
     public loaded!: boolean;
     public message!: string;
     public error!: string;
-    private zoneNames: string[] = [];
-    public immediateCycle!: ImmediateCycle | null;
+//    public immediateCycle!: ImmediateCycle | null;
     public config!: IConfig;
     public status1!: string;
     public status2!: string;
@@ -74,14 +73,16 @@ export class GardenComponent implements OnInit {
         totalMc: number;
         flowLMin: number;
     };
-    public nextCycles!: { name: string, scheduledTime: string, suspended: boolean, running: boolean }[];
-    public immediateStarted!: boolean;
-    public canSuspendAll!: boolean;
-    public canResumeAll!: boolean;
+//    public nextCycles!: { name: string, scheduledTime: string, suspended: boolean, running: boolean }[];
+//    public immediateStarted!: boolean;
+    public canSuspend!: boolean;
+    public canResume!: boolean;
     public editProgramMode!: boolean;
-    public isRunning!: boolean;
+//    public isRunning!: boolean;
     // To anticipate login request at beginning of an operation flow
     private _hasPrivilege!: boolean;
+
+    public inEditName: boolean[] = [];
 
     public readonly res: { [key: string]: string };
     public readonly format: (str: string, args?: any) => string;
@@ -113,19 +114,19 @@ export class GardenComponent implements OnInit {
                 case 3: this.status1 = res["Device_StatusPartiallyOnline"]; break;
             }
             this.status2 = (!resp.config && res["Garden_MissingConf"]) || "";
-            this.flow = resp.flowData;
-            this.isRunning = resp.isRunning;
+            // this.flow = resp.flowData;
+            // this.isRunning = resp.isRunning;
 
-            let now = moment.now();
-            if (resp.nextCycles) {
-                this.nextCycles = resp.nextCycles;
-                this.nextCycles.forEach(cycle => {
-                    cycle.scheduledTime = cycle.scheduledTime && moment.duration(moment(cycle.scheduledTime).diff(now)).humanize(true)
-                })
-            }
+            //let now = moment.now();
+            // if (resp.nextCycles) {
+            //     this.nextCycles = resp.nextCycles;
+            //     this.nextCycles.forEach(cycle => {
+            //         cycle.scheduledTime = cycle.scheduledTime && moment.duration(moment(cycle.scheduledTime).diff(now)).humanize(true)
+            //     })
+            // }
 
             this.config = resp.config || { };
-            this.zoneNames = this.config.zones = this.config.zones || [];
+            this.config.zones = this.config.zones || [];
             this.config.programCycles = this.config.programCycles || [];
             this.updateProgram();
         }, err => {
@@ -136,73 +137,89 @@ export class GardenComponent implements OnInit {
     }
 
     private updateProgram(): void {
-        this.canResumeAll = this.config.programCycles!.length > 0 && this.config.programCycles!.some(c => c.suspended);
-        this.canSuspendAll = this.config.programCycles!.length > 0 && this.config.programCycles!.some(c => !c.suspended);
+        this.canResume = this.config.programCycles!.length > 0 && this.config.suspended;
+        this.canSuspend = this.config.programCycles!.length > 0 && !this.config.suspended;
     }
 
-    public stop() {
-        checkXhr(this.http.post<IGardenStartStopResponse>(config.baseUrl + "/svc/gardenStop", "")).then(() => {
-            this.message = res["Garden_Stopped"];  
-            this.immediateStarted = false;
-        }, err => {
-            this.error = format("Garden_StopError", err.message);
-        });
-    }
+    // public stop() {
+    //     checkXhr(this.http.post<IGardenStartStopResponse>(config.baseUrl + "/svc/gardenStop", "")).then(() => {
+    //         this.message = res["Garden_Stopped"];  
+    //         this.immediateStarted = false;
+    //     }, err => {
+    //         this.error = format("Garden_StopError", err.message);
+    //     });
+    // }
 
-    public startImmediate() {
-        var body = { zones: this.immediateCycle!.zones.filter(z => z.enabled).map(z => z.index), time: new Number(this.immediateCycle!.time) };
-        checkXhr(this.http.post<IGardenStartStopResponse>(config.baseUrl + "/svc/gardenStart", body)).then(() => {
-            this.message = res["Garden_StartedImmediate"];  
-            this.immediateStarted = true;
-            this.loadConfigAndStatus();
-        }, err => {
-            this.error = format("Garden_ImmediateError", err.message);
-        });
-    }
+    // public startImmediate() {
+    //     var body = { zones: this.immediateCycle!.zones.filter(z => z.enabled).map(z => z.index), time: new Number(this.immediateCycle!.time) };
+    //     checkXhr(this.http.post<IGardenStartStopResponse>(config.baseUrl + "/svc/gardenStart", body)).then(() => {
+    //         this.message = res["Garden_StartedImmediate"];  
+    //         this.immediateStarted = true;
+    //         this.loadConfigAndStatus();
+    //     }, err => {
+    //         this.error = format("Garden_ImmediateError", err.message);
+    //     });
+    // }
 
-    public async addImmediateCycle() {
-        await this.preCheckPrivilege();
-        // Mutually exclusive
-        this.clearProgram();
-        this.immediateCycle = new ImmediateCycle(this.zoneNames, "5");
-    }
+    // public async addImmediateCycle() {
+    //     await this.preCheckPrivilege();
+    //     // Mutually exclusive
+    //     this.clearProgram();
+    //     this.immediateCycle = new ImmediateCycle(this.zoneNames, "5");
+    // }
 
-    public clearImmediate(): void {
-        this.immediateCycle = null;
-    }
+    // public clearImmediate(): void {
+    //     this.immediateCycle = null;
+    // }
 
-    public resumeAll(): void {
-        const now = moment().toISOString(true);
-        this.config.programCycles!.forEach(c => {
-            c.start = now;
-            c.suspended = false;
-        });
+    public resume(): void {
+        this.config.suspended = false;
         this.saveProgram();
     }
 
-    public suspendAll(): void {
-        this.config.programCycles!.forEach(c => c.suspended = true);
+    public suspend(): void {
+        this.config.suspended = true;
         this.saveProgram();
     }
 
     public startEdit(): void {
+        this.inEditName = [];
         this.preCheckPrivilege().then(() => {
             this.editProgramMode = true;
-            this.clearImmediate();
+            //this.clearImmediate();
         }, () => { });
     }
 
     public saveProgram(): Promise<void> {
+        this.inEditName = [];
         return checkXhr(this.http.put(config.baseUrl + "/svc/gardenCfg", this.config)).then(() => {
             this.loadConfigAndStatus();
         }, err => {
             this.error = format("Garden_ErrorSetConf", err.message);
         }).finally(() => {
-            this.clearProgram();
+            this.cancelEditProgram();
         })
     }
 
-    public clearProgram(): void {
+    public cancelEditProgram(): void {
+        this.inEditName = [];
         this.editProgramMode = false;
+    }
+
+    public addCycle() {
+        this.inEditName = [];
+        // Add default 
+        this.config.programCycles?.push({
+            name: "Name",
+            minutes: 5,
+            startTime: "10:00:00",
+            disabled: false,
+            everyDays: 2
+        });
+    }
+
+    public deleteCycle(index: number) {
+        this.inEditName = [];
+        this.config.programCycles!.splice(index, 1);
     }
 }

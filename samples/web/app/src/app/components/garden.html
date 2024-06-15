@@ -5,13 +5,13 @@
   <span class="message" *ngIf="status2"> {{status2}} </span>
 
   <!-- Editor to add immediate cycle -->
-  <div [hidden]="!loaded || immediateStarted" class="garden-section">
+  <!-- <div [hidden]="!loaded || immediateStarted" class="garden-section">
     <div [hidden]="immediateCycle">
       <button (click)="addImmediateCycle()">{{res["Garden_AddImmediate"]}}</button>
     </div>
-    <h4 *ngIf="immediateCycle">{{res["Garden_QuickCycle"]}}</h4>
+    <h4 *ngIf="immediateCycle">{{res["Garden_QuickCycle"]}}</h4> -->
     <!-- List immediate program cycles -->
-    <div class="program-cycle" *ngIf="immediateCycle">
+    <!-- <div class="program-cycle" *ngIf="immediateCycle">
       <div class="program-zones">
           <div *ngFor="let zone of immediateCycle!.zones">
              <label>{{zone.name}}</label>
@@ -27,59 +27,83 @@
       <button (click)="startImmediate()">{{res["Garden_StartImmediate"]}}</button>
       <button (click)="clearImmediate()">{{res["Garden_ClearImmediate"]}}</button>
     </div>
-  </div>
+  </div> -->
 
   <!-- Section to suspend/resume for rain -->
   <div [hidden]="!loaded" class="garden-section">
-    <button (click)="resumeAll()" [hidden]="!canResumeAll">{{res["Garden_ResumeAll"]}}</button>
-    <button (click)="suspendAll()" [hidden]="!canSuspendAll">{{res["Garden_SuspendAll"]}}</button>
+    <button (click)="resume()" [hidden]="!canResume">{{res["Garden_Resume"]}}</button>
+    <button (click)="suspend()" [hidden]="!canSuspend">{{res["Garden_Suspend"]}}</button>
   </div>
 
   <!-- Editor to edit program cycle -->
-  <div *ngIf="loaded && !!config?.programCycles?.length" class="garden-section">
-    <div>
-      <button [hidden]="editProgramMode" (click)="startEdit()">{{res["Garden_EditProgram"]}}</button>
+  <div *ngIf="loaded && config?.programCycles?.length" class="garden-section">
+
+    <div *ngIf="!editProgramMode">
+      <button (click)="startEdit()">{{res["Garden_EditProgram"]}}</button>
     </div>
-    <h4 *ngIf="editProgramMode">{{res["Garden_EditProgram"]}}</h4>
-    <!-- List program cycles -->
+
     <div *ngIf="editProgramMode">
-      <div *ngFor="let cycle of config.programCycles" class="program-cycle">
-        <div>
-          <label><em>{{cycle.name}}</em></label>
-        </div>
-        <div>
-          <label>{{res["Garden_StartAt"]}}</label>
-          <input type="string" [(ngModel)]="cycle.startTime">
-        </div>
-        <div>
-          <label>{{res["Garden_Duration"]}}</label>
-          <input type="number" [(ngModel)]="cycle.minutes">
-        </div>
-        <div>
-          <label>{{res["Garden_SuspendedCheckbox"]}}</label>
-          <input type="checkbox" [(ngModel)]="cycle.suspended">
-        </div>
-        <div>
-          <label>{{res["Garden_DisabledCheckbox"]}}</label>
-          <input type="checkbox" [(ngModel)]="cycle.disabled">
+      <h4>{{res["Garden_EditProgram"]}}</h4>
+      <!-- List program cycles -->
+      <div>
+        <div *ngFor="let cycle of config.programCycles; index as i" class="program-cycle">
+
+          <!-- Name / editor -->
+          <div *ngIf="!inEditName[i]">
+            <label><em>{{cycle.name}}</em></label>
+            <button (click="inEditName[i] = true")>{{res["Garden_EditName"]}}</button>
+          </div>
+          <div *ngIf="inEditName[i]">
+            <input type="string" [(ngModel)]="cycle.name">
+            <button (click="inEditName[i] = false")>{{res["Garden_SaveName"]}}</button>
+          </div>
+
+          <div>
+            <label>{{res["Garden_StartAt"]}}</label>
+            <input type="string" [(ngModel)]="cycle.startTime">
+          </div>
+
+          <div>
+            <label>{{res["Garden_Duration"]}}</label>
+            <input type="number" [(ngModel)]="cycle.minutes">
+          </div>
+
+          <div>
+            <label>{{res["Garden_EveryDays"]}}</label>
+            <input type="number" [(ngModel)]="cycle.everyDays">
+          </div>
+
+          <div>
+            <label>{{res["Garden_DisabledCheckbox"]}}</label>
+            <input type="checkbox" [(ngModel)]="cycle.disabled">
+          </div>
+
+          <div>
+            <button (click)="deleteCycle(i)">{{res["Garden_DeleteCycle"]}}</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div *ngIf="editProgramMode">
-      <button (click)="saveProgram()">{{res["Garden_SaveProgram"]}}</button>
-      <button (click)="clearProgram()">{{res["Garden_ClearProgram"]}}</button>
+
+      <div>
+        <button (click)="addCycle()">{{res["Garden_AddCycle"]}}</button>
+      </div>
+
+      <div>
+        <button (click)="saveProgram()">{{res["Garden_SaveProgram"]}}</button>
+        <button (click)="cancelEditProgram()">{{res["Garden_CancelEditProgram"]}}</button>
+      </div>
     </div>
   </div>
   
   <div class="bot" *ngIf="loaded"> 
-    <h3>{{res["Garden_NextCycles"]}}</h3>
-      <p *ngFor="let cycle of nextCycles">
-        <span [ngClass]="{ 'suspended': cycle.suspended, 'running': cycle.running }">
-          {{format(cycle.scheduledTime ? "Garden_ScheduledProgram" : (cycle.running ? "Garden_RunningProgram" : "Garden_QueuedProgram"), cycle)}}
-          <span *ngIf="cycle.suspended"> {{format("Garden_Suspended")}}</span>
-          <button [hidden]="!cycle.running" (click)="stop()">{{res["Garden_Stop"]}}</button>
-        </span>
-      </p>
+    <!-- <h3>{{res["Garden_NextCycles"]}}</h3>
+    <p *ngFor="let cycle of nextCycles">
+      <span [ngClass]="{ 'suspended': cycle.suspended, 'running': cycle.running }">
+        {{format(cycle.scheduledTime ? "Garden_ScheduledProgram" : (cycle.running ? "Garden_RunningProgram" : "Garden_QueuedProgram"), cycle)}}
+        <span *ngIf="cycle.suspended"> {{format("Garden_Suspended")}}</span>
+        <button [hidden]="!cycle.running" (click)="stop()">{{res["Garden_Stop"]}}</button>
+      </span>
+    </p> -->
     <p *ngIf="flow"> {{res["Garden_FlowInfo"]}} {{flow.flowLMin | number:'1' }} <small><sup>Lit</sup>/<sub>min</sub></small>, {{flow.totalMc | number:'3' }} <small>M<sup>3</sup></small> </p>
   </div>
 </div>

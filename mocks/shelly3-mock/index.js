@@ -3,7 +3,7 @@ import mqtt from "mqtt";
 
 const topicRoot = "shelly3-mock";
 
-const mqttClient = mqtt.connect("mqtt://localhost", { will: { topic: `${topicRoot}/status/sys`, payload: Buffer.alloc(0), }});
+const mqttClient = mqtt.connect({ host: "127.0.0.1", will: { topic: `${topicRoot}/status/sys`, payload: Buffer.alloc(0), }});
 
 mqttClient.publish(`${topicRoot}/status/sys`, JSON.stringify({ mac: "123456" }), { retain: true });
 
@@ -94,6 +94,8 @@ expressApp.post('/rpc/Script.PutCode', function (req, res) {
     try {
       const { data } = setScriptCode(id, code, append);
       res.send(JSON.stringify({ len: data.length }));
+      console.log(`Set script ${id} with:`);
+      console.log(JSON.stringify(JSON.parse(data), null, "  "));
     } catch (err) { 
       res.status(500);
       res.statusMessage = `EXC: ${err.message}`;

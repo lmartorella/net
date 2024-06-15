@@ -8,27 +8,11 @@ namespace Lucky.Home.Notification;
 /// </summary>
 class Configuration(IConfiguration configuration)
 {
-    private IConfigurationSection Section
-    {
-        get
-        {
-            return configuration.GetSection("notification");
-        }
-    }
-
-    public bool UseConsole
-    {
-        get
-        {
-            return bool.Parse(Section["console"] ?? "false");
-        }
-    }
-
     public string SmtpHost
     {
         get
         {
-            return Section["smtpHost"] ?? "smtp.host.com";
+            return configuration["smtpHost"] ?? "smtp.host.com";
         }
     }
 
@@ -36,7 +20,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return int.Parse(Section["smtpPort"] ?? "25");
+            return int.Parse(configuration["smtpPort"] ?? "25");
         }
     }
 
@@ -44,7 +28,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return Section["sender"] ?? "net@mail.com";
+            return configuration["sender"] ?? "net@mail.com";
         }
     }
     
@@ -52,8 +36,8 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            var user = Section["user"] ?? "user";
-            var password = Section["password"] ?? "password";
+            var user = configuration["user"] ?? "user";
+            var password = configuration["password"] ?? "password";
             return new NetworkCredential(user, password);
         }
     }
@@ -62,7 +46,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return bool.Parse(Section["enableSsl"] ?? "false");
+            return bool.Parse(configuration["enableSsl"] ?? "false");
         }
     }
 
@@ -70,7 +54,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return Section["notificationRecipient"] ?? "user@mail.com";
+            return configuration["notificationRecipient"] ?? "user@mail.com";
         }
     }
 
@@ -78,7 +62,7 @@ class Configuration(IConfiguration configuration)
     {
         get
         {
-            return Section["adminNotificationRecipient"] ?? "admin@mail.com";
+            return configuration["adminNotificationRecipient"] ?? "admin@mail.com";
         }
     }
 }

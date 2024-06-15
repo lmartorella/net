@@ -2,7 +2,7 @@ import mqtt from 'mqtt';
 import { logger } from './settings.mjs';
 
 logger("Connecting to MQTT...");
-const client  = mqtt.connect({ clientId: "webserver", protocolVersion: 5 });
+const client  = mqtt.connect({ host: "127.0.0.1", clientId: "webserver", protocolVersion: 5 });
 
 client.on('connect', () => {
     logger("Connected to MQTT");
@@ -83,6 +83,8 @@ export const jsonRemoteCall = async (res, topic, json) => {
         const resp = JSON.parse(await rawRemoteCall(topic, JSON.stringify(json)));
         res.send(resp);
     } catch (err) {
-        res.status(500).send(err.message);
+        res.status(500);
+        res.statusMessage = err.message;
+        res.send(err.message);
     }
 };
