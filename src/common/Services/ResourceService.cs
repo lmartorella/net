@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using System.Resources;
 
@@ -9,8 +10,9 @@ public class ResourceService
 
     public ResourceService()
     {
-        // Thread.CurrentThread.CurrentCulture = culture;
-        // Thread.CurrentThread.CurrentUICulture = culture;
+        var culture = CultureInfo.GetCultureInfo("it-IT");
+        Thread.CurrentThread.CurrentCulture = culture;
+        Thread.CurrentThread.CurrentUICulture = culture;
     }
     
     public string GetString(Type type, string key)
