@@ -98,6 +98,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
                 }
             }
         }
+        events.Clear();
 
         if (builder.Length > 0)
         {

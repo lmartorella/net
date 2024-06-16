@@ -31,10 +31,9 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
         public double? TimerDuration;
     }
 
-    public class OutputState
+    public struct OutputState
     {
         public bool? Output;
-
         public double? TimerDuration;
     }
 
@@ -63,12 +62,14 @@ class ShellyEvents(ILogger<ShellyEvents> logger, Configuration configuration, Mq
                 }
 
                 int id = data.Id;
-                if (lastStates[id].Output == data.Output && lastStates[id].TimerDuration == data.TimerDuration)
+                var state = new OutputState { Output = data.Output, TimerDuration = data.TimerDuration };
+                if (lastStates[id].Equals(state))
                 {
                     return;
                 }
+                lastStates[id] = state; 
 
-                var args = new OutputEventArgs(id, new OutputState { Output = data.Output, TimerDuration = data.TimerDuration });
+                var args = new OutputEventArgs(id, state);
                 if (data.TimerDuration.HasValue)
                 {
                     logger.LogInformation($"Output {data.Id} changed to {data.Output} for {data.TimerDuration} seconds");

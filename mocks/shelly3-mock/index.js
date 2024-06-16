@@ -125,7 +125,7 @@ expressApp.post('/rpc/Script.GetCode', function (req, res) {
 expressApp.listen(3000);
 console.log("Shelly 3 mock server started. MQTT connection to localhost, web server exposed at port 3000");
 
-console.log("Press 1, 2 and 3 to simulate switch of the output, and q to quit");
+console.log("Press 1, 2 and 3 to simulate switch of the output, space to resend state, and q to quit");
 
 const stdin = process.stdin;
 stdin.setRawMode( true );
@@ -140,6 +140,7 @@ stdin.on('data', key => {
     case '1': switchOut(0); break;
     case '2': switchOut(1); break;
     case '3': switchOut(2); break;
+    case ' ': resendState(); break;
   }
 });
 
@@ -147,4 +148,11 @@ const switchOut = id => {
   outputs[id] = !outputs[id];
   publishOutput(id);
   console.log(`Output ${id} switched to ${outputs[id]}`);
+};
+
+const resendState = id => {
+  for (let id = 0; id < 3; id++) {
+    console.log(`Resend output ${id}: to ${outputs[id]}`);
+    publishOutput(id);
+  }
 };
