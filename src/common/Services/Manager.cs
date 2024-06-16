@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Lucky.Home.Services;
 
@@ -14,7 +15,13 @@ public class Manager
     public Manager(string[] args, string jsonFileName)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
-        hostAppBuilder.Services.AddLogging();
+        hostAppBuilder.Services.AddLogging(options => 
+        {
+            options.AddSimpleConsole(c =>
+            {
+                c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+            });
+        });
 
         var wrkPath = hostAppBuilder.Configuration["wrk"];
         if (wrkPath != null) 
