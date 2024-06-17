@@ -5,16 +5,34 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
+            "name": "Launch Garden Server",
+            "type": "coreclr",
             "request": "launch",
-            "name": "Launch Web Server",
-            "program": "${workspaceFolder}\\src\\web\\server.mjs"
+            "program": "${workspaceFolder}/src/garden/bin/Debug/net8.0/garden.exe",
+            "args": ["--wrk", "${workspaceFolder}\\target\\etc"],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "Build: Garden C# server",
+            "justMyCode": false
+        },
+        {
+            "name": "Launch Notification Server",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/notification/bin/Debug/net8.0/notification.exe",
+            "args": ["--wrk", "${workspaceFolder}\\target\\etc"],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "Build: Notification server",
+            "justMyCode": false
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Current File",
-            "program": "${file}"
+            "name": "Launch Web Server",
+            "program": "${workspaceFolder}\\src\\web\\server.mjs"
         }
     ]
 }

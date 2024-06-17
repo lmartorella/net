@@ -26,13 +26,15 @@ export const logger = (msg) => {
 
 export const processesMd = {
     server: {
-        processName: "Home.Server",
-        killTopic: "server/kill"
+        processName: "Home.Notification",
+        killTopic: "server/kill",
+        frameworkDir: 'net8.0'
     },
-    // garden: {
-    //     processName: "Home.Garden",
-    //     killTopic: "garden/kill"
-    // },
+    garden: {
+        processName: "Home.Garden",
+        killTopic: "garden/kill",
+        frameworkDir: 'net8.0'
+    },
     solar: {
         processName: "Home.Solar",
         killTopic: "solar/kill",

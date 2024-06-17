@@ -1,16 +1,35 @@
 {
 	"version": "2.0.0",
 	"tasks": [
-		{
-			"type": "cmake",
-			"label": "CMake: build",
-			"command": "build",
-			"targets": [
-				"all"
-			],
-			"group": "build",
-			"problemMatcher": [],
-			"detail": "CMake template build task"
-		}
-	]
+        {
+            "label": "Build: Garden C# server",
+            "command": "dotnet",
+            "group": "build",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/garden/garden.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build: Notification server",
+            "command": "dotnet",
+            "group": "build",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/notification/notification.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "type": "npm",
+            "script": "buildWeb",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: buildWeb",
+            "detail": "cd samples/web/app && npx ng cache clean && npx ng build --configuration production"
+        }
+    ]
 }

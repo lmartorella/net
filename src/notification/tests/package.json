@@ -1,0 +1,9 @@
+{
+  "name": "notification-manual-test",
+  "scripts": {},
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "mqtt": "5.5.4"
+  }
+}
