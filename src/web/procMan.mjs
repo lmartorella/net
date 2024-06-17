@@ -26,7 +26,10 @@ export class ManagedProcess {
             args.push('-sendMailErr');
             args.push(this.restartMailText);
         }
-        this.process = child_process.spawn(path.join(binDir, this.frameworkDir, `${this.processName}.exe`), args, {
+
+        const exe = path.join(binDir, this.frameworkDir, `${this.processName}.exe`);
+        logger(`Starting ${exe} ${args.map(a => `"${a}"`).join(" ")}...`);
+        this.process = child_process.spawn(exe, args, {
             stdio: 'ignore'
         });
 
@@ -59,7 +62,6 @@ export class ManagedProcess {
 
     start(res) {
         try {
-            logger(`Starting ${this.processName}...`);
             this._start();
             res.send(`${this.processName} started`);
         } catch (err) {
