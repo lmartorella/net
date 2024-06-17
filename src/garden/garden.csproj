@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <OutputPath>..\..\target\bin\</OutputPath>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Lucky.Garden</RootNamespace>
+    <AssemblyName>Home.Garden</AssemblyName>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 
