@@ -21,11 +21,11 @@
     <ProjectReference Include="..\common\common.csproj" />
   </ItemGroup>
   <ItemGroup>
-      <EmbeddedResource Include="Resources.restext">
+      <EmbeddedResource Include="Strings.restext">
         <LogicalName>Strings.resources</LogicalName>
       </EmbeddedResource>
-      <EmbeddedResource Include="Resources.it-IT.restext">
-        <LogicalName>Strings.resources</LogicalName>
+      <EmbeddedResource Include="Strings.it-IT.restext">
+        <LogicalName>Strings.it-IT.resources</LogicalName>
       </EmbeddedResource>
   </ItemGroup>
 
