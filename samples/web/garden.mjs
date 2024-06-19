@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { etcDir, logger } from '../../src/web/settings.mjs';
-import { jsonRemoteCall } from '../../src/web/mqtt.mjs';
+import { jsonRestRemoteCall } from '../../src/web/mqtt.mjs';
 
 const gardenCfgFile = path.join(etcDir, 'server/gardenCfg.json');
 const gardenCsvFile = path.join(etcDir, 'DB/GARDEN/garden.csv');
@@ -12,7 +12,7 @@ export function register(app, privileged) {
     });
 
     app.get('/svc/gardenStatus', async (_req, res) => {
-        jsonRemoteCall(res, "garden/getStatus");
+        jsonRestRemoteCall(res, "garden/getStatus");
     });
     
     app.post('/svc/gardenStart', privileged(), async (req, res) => {
@@ -24,11 +24,11 @@ export function register(app, privileged) {
             logger("r/gardenStart: incompatible request: " + JSON.stringify(req.body));
             return;
         }
-        jsonRemoteCall(res, "garden/setImmediate", { immediate });
+        jsonRestRemoteCall(res, "garden/setImmediate", { immediate });
     });
     
     app.post('/svc/gardenStop', privileged(), async (_req, res) => {
-        jsonRemoteCall(res, "garden/stop");
+        jsonRestRemoteCall(res, "garden/stop");
     });
     
     app.get('/svc/gardenCfg', privileged(), async (_req, res) => {
@@ -59,7 +59,7 @@ export function register(app, privileged) {
             fs.writeFileSync(gardenCfgFile, req.body);
             res.sendStatus(200);
         } else if ((req.headers["content-type"] || '').indexOf("application/json") === 0) {
-            jsonRemoteCall(res, "garden/setConfig", { config: req.body });
+            jsonRestRemoteCall(res, "garden/setConfig", { config: req.body });
         } else {
             res.sendStatus(500);
         }

@@ -1,7 +1,8 @@
 import child_process from 'child_process';
+import fs from 'fs';
 import path from 'path';
 import { binDir, etcDir, logger } from './settings.mjs';
-import { rawPublish } from './mqtt.mjs';
+import { rawPublish, jsonRemoteCall } from './mqtt.mjs';
 
 /**
  * Manages process health
@@ -11,10 +12,11 @@ export class ManagedProcess {
         this.processName = processName;
         this.killTopic = killTopic;
         this.frameworkDir = frameworkDir || "";
-        this.logFile = path.join(etcDir, `${this.processName}.log`)
+        this.logFile = path.join(etcDir, `${this.processName}.log`);
+        this.errLogFile = path.join(etcDir, `${this.processName}.err`);
     }
 
-    _start() {
+    #start() {
         // Already started
         if (this.process && this.process.pid) {
             throw new Error(`Server process ${this.processName} already started`);
@@ -22,11 +24,6 @@ export class ManagedProcess {
 
         // Launch process
         const args = ['--wrk', etcDir];
-        if (this.restartMailText) {
-            args.push('--sendMailErr');
-            args.push(this.restartMailText);
-        }
-
         const exe = path.join(binDir, this.frameworkDir, `${this.processName}.exe`);
         logger(`Starting ${exe} ${args.map(a => `"${a}"`).join(" ")}...`);
         this.process = child_process.spawn(exe, args, {
@@ -43,9 +40,10 @@ export class ManagedProcess {
                 logger(msg, true);
 
                 // Store fail reason to send mail after restart
-                this.restartMailText = `${msg}. Restarting`;
+                await this.#sendMail(`${msg}. Restarting`);
+
                 await new Promise(resolve => setTimeout(resolve, 3500));
-                this._start();
+                this.#start();
             } else {
                 logger(`Server process ${this.processName} killed`);
             }
@@ -62,14 +60,26 @@ export class ManagedProcess {
 
     start(res) {
         try {
-            this._start();
+            this.#start();
             res.send(`${this.processName} started`);
         } catch (err) {
             res.status(500).send(err.message);
         }
     }
 
-    async _kill() {
+    async #sendMail(body) {
+        if (fs.existsSync(this.errLogFile)) {
+            body += `\n\n${fs.readFileSync(this.errLogFile)}`;
+        }
+        console.error(`Sending restart mail: ${body}`);
+        await jsonRemoteCall("notification/send_mail", {
+            title: `Server Restarted: ${processName}`,
+            body,
+            isAdminReport: true
+        }, 0, true);
+    }
+
+    async #kill() {
         logger(`Server process ${this.processName} killing...`);
         await new Promise((resolve, reject) => {
             // Already started
@@ -91,7 +101,7 @@ export class ManagedProcess {
 
     async kill(res) {
         try {
-            await this._kill();
+            await this.#kill();
             res.send(`${this.processName} killed`);
         } catch (err) {
             res.status(500).send(err.message);
@@ -99,10 +109,10 @@ export class ManagedProcess {
     }
 
     async _restart() {
-        await this._kill();
+        await this.#kill();
         logger(`Server process ${this.processName} killed for restarting...`);
         await new Promise(resolve => setTimeout(resolve, 3500));
-        this._start();
+        this.#start();
     };
 
     async restart(res) {

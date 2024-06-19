@@ -53,34 +53,45 @@ export const rawPublish = (topic, payload) => {
     });
 };
 
-export const rawRemoteCall = (topic, payload) => {
+export const rawRemoteCall = async (topic, payload, timeoutMs, post) => {
     if (!client.connected) {
         throw new Error("Broker disconnected");
     }
     // Make request to server
     const correlationData = Buffer.from(`C${msgIdx++}`);
-    let msg;
+    let deferred;
     const promise = new Promise((resolve, reject) => {
-        msg = { resolve, reject };
+        deferred = { resolve, reject };
     });
-    msgs[correlationData] = msg;
+    msgs[correlationData] = deferred;
     
     client.publish(topic, payload, { properties: { responseTopic: "ui/resp", correlationData } }, err => {
         if (err) {
-            msg.reject(new Error(`Can't publish request: ${err.message}`));
+            deferred.reject(new Error(`Can't publish request: ${err.message}`));
+            delete msgs[correlationData];
         }
     });
 
-    const timeout = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Timeout contacting the remote process")), 3500);
-    });
-
-    return Promise.race([promise, timeout]);
+    if (!post) {
+        const timeoutPromise = timeoutMs && new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error("Timeout contacting the remote process"));
+                delete msgs[correlationData];
+            }, timeoutMs);
+        });
+        return await Promise.race([promise, timeoutPromise]);
+    } else {
+        return "";
+    }
 };
 
-export const jsonRemoteCall = async (res, topic, json) => {
+export const jsonRemoteCall = (topic, payload, timeoutMs, post) => {
+    return rawRemoteCall(topic, JSON.stringify(payload), timeoutMs, post);
+};
+    
+export const jsonRestRemoteCall = async (res, topic, json) => {
     try {
-        const resp = JSON.parse(await rawRemoteCall(topic, JSON.stringify(json)));
+        const resp = JSON.parse(await rawRemoteCall(topic, JSON.stringify(json), 3500));
         res.send(resp);
     } catch (err) {
         res.status(500);
