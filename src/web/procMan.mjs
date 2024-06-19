@@ -26,8 +26,12 @@ export class ManagedProcess {
         const args = ['--wrk', etcDir];
         const exe = path.join(binDir, this.frameworkDir, `${this.processName}.exe`);
         logger(`Starting ${exe} ${args.map(a => `"${a}"`).join(" ")}...`);
+
+        const logConsoleStream = fs.createWriteStream(this.logFile, { flags: 'a' });
+        const logErrorStream = fs.createWriteStream(this.errLogFile, { flags: 'w' });
+
         this.process = child_process.spawn(exe, args, {
-            stdio: 'ignore'
+            stdio: ['ignore', logConsoleStream, logErrorStream]
         });
 
         this.process.once('exit', async (code, signal) => {

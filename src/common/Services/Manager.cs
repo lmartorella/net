@@ -37,6 +37,10 @@ public class Manager
     public void Start() 
     {
         var host = hostAppBuilder!.Build();
+        AppDomain.CurrentDomain.UnhandledException += (o, e) => 
+        {
+            host.Services.GetService<ILogger<Manager>>()!.LogError(e.ExceptionObject as Exception, "UnhandledException");
+        };
         host.Run();
     }
 
