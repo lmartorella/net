@@ -93,7 +93,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
                     // Switched off and lasted
                     var duration = ev.Item2 - lastTimeStamp;
                     builder.Append(resourceService.GetString(GetType(), "gardenMailHeader"));
-                    builder.Append(string.Format(resourceService.GetString(GetType(), "gardenMailBody"), zoneName, duration.TotalMinutes, 0));
+                    builder.Append(string.Format(resourceService.GetString(GetType(), "gardenMailBody"), zoneName, duration.TotalMinutes));
                     builder.Append(Environment.NewLine);
                 }
             }
