@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Diagnostics;
 using MQTTnet.Extensions.ManagedClient;
 using System.Runtime.Serialization;
 using System.Text;
@@ -31,6 +32,20 @@ public class MqttService
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
 
+    private sealed class ExceptionForwarderLogger(ILogger<MqttService> logger) : IMqttNetLogger
+    {
+        public bool IsEnabled { get; set; } = true;
+
+        public void Publish(MqttNetLogLevel logLevel, string source, string message, object[] parameters, Exception exception)
+        {
+            if (logLevel == MqttNetLogLevel.Error && exception != null)
+            {
+                logger.LogError(exception, "MqttPublish");
+                Environment.Exit(1);
+            }
+        }
+    }
+
     public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
     {
         this.logger = logger;
@@ -39,7 +54,7 @@ public class MqttService
         this.serializerFactory = serializerFactory;
         
         mqttFactory = new MqttFactory();
-        mqttClient = mqttFactory.CreateManagedMqttClient();
+        mqttClient = mqttFactory.CreateManagedMqttClient(new ExceptionForwarderLogger(logger));
         _ = Connect();
         mqttClient.ConnectedAsync += (e) =>
         {
@@ -88,21 +103,13 @@ public class MqttService
             var msg = args.ApplicationMessage;
             if (msg.Topic == topic)
             {
-                try
+                if (msg.PayloadSegment.Array != null)
                 {
-                    if (msg.PayloadSegment.Array != null)
-                    {
-                        await handler(msg.PayloadSegment.Array);
-                    }
-                    else 
-                    {
-                        await handler([]);
-                    }
+                    await handler(msg.PayloadSegment.Array);
                 }
-                catch (Exception err)
+                else 
                 {
-                    Console.Error.WriteLine("Exception: " + err.ToString());
-                    Environment.Exit(1);
+                    await handler([]);
                 }
             }
         };
