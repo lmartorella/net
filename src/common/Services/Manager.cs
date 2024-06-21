@@ -11,15 +11,16 @@ namespace Lucky.Home.Services;
 public class Manager
 {
     private readonly HostApplicationBuilder hostAppBuilder;
-    
+
     public Manager(string[] args, string jsonFileName)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
-        hostAppBuilder.Services.AddLogging(options => 
+        hostAppBuilder.Services.AddLogging(options =>
         {
-            options.AddSimpleConsole(c =>
+            options.AddConsole(c =>
             {
                 c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+                c.LogToStandardErrorThreshold = LogLevel.Error;
             });
         });
 
