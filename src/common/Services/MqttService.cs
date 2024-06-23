@@ -316,13 +316,18 @@ public class MqttService
     /// <summary>
     /// Subscribe RPC requests in JSON format
     /// </summary>
-    public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq?, Task<TResp>> handler) where TReq: class, new() where TResp: class, new()
+    public Task SubscribeJsonRpc<TReq, TResp>(string topic, Func<TReq, Task<TResp>> handler) where TReq: class, new() where TResp: class, new()
     {
         var reqSerializer = serializerFactory.Create<TReq>();
         var respDeserializer = serializerFactory.Create<TResp>();
         return SubscribeRawRpc(topic, async payload =>
         {
-            TResp resp = await handler(reqSerializer.Deserialize(payload));
+            var msg = reqSerializer.Deserialize(payload);
+            TResp? resp = default;
+            if (msg != null)
+            {
+                resp = await handler(msg);
+            }
             return respDeserializer.Serialize(resp);
         });
     }

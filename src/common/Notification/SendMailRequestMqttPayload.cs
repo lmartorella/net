@@ -20,3 +20,21 @@ public class SendMailRequestMqttPayload
     [DataMember(Name = "isAdminReport")]
     public bool IsAdminReport;
 }
+
+/// <summary>
+/// Topic ID: notification/enqueue_status_update
+/// </summary>
+[DataContract]
+public class EnqueueStatusUpdateRequestMqttPayload
+{
+    [NotNull]
+    [DataMember(Name = "groupTitle")]
+    public string GroupTitle = null!;
+
+    [NotNull]
+    [DataMember(Name = "messageToAppend")]
+    public string MessageToAppend = null!;
+
+    [DataMember(Name = "altMessageToAppendIfStillInQueue")]
+    public string? AltMessageToAppendIfStillInQueue;
+}

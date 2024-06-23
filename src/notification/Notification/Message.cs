@@ -1,42 +1,16 @@
 namespace Lucky.Home.Notification;
 
-internal class Message : IStatusUpdate
+internal class Message
 {
-    private bool _sent;
-
-    public DateTime TimeStamp { get; set; }
-
     public string Text { get; set; }
 
     public object LockObject { get; set; }
 
-    public string Send()
-    {
-        lock(this)
-        {
-            _sent = true;
-            return ToString();
-        }
-    }
-
-    public bool Update(Action updateHandler)
+    public void Update(string appendText)
     {
         lock (LockObject)
         {
-            if (_sent)
-            {
-                return false;
-            }
-            else
-            {
-                updateHandler();
-                return true;
-            }
+            Text += appendText;
         }
-    }
-
-    public override string ToString()
-    {
-        return TimeStamp.ToString("HH:mm:ss") + ": " + Text;
     }
 }

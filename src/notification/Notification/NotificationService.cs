@@ -1,5 +1,4 @@
 ﻿using System.Net.Mail;
-using System.Net.Mime;
 using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,9 +11,16 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await mqttService.SubscribeJsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", async req => {
+        await mqttService.SubscribeJsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", async req => 
+        {
             await SendMail(req.Title, req.Body, req.IsAdminReport);
             return new RpcVoid();
+        });
+
+        await mqttService.SubscribeJsonRpc<EnqueueStatusUpdateRequestMqttPayload, RpcVoid>("notification/enqueue_status_update", req =>
+        {
+            EnqueueStatusUpdate(req.GroupTitle, req.MessageToAppend, req.AltMessageToAppendIfStillInQueue);
+            return Task.FromResult(new RpcVoid());
         });
     }
 
@@ -31,48 +37,6 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
             Subject = title,
             Body = body
         };
-
-        bool sent = false;
-        while (!sent)
-        {
-            sent = await TrySendMail(message);
-            if (!sent)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(30));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Send a HTML mail
-    /// </summary>
-    public async Task SendHtmlMail(string title, string htmlBody, bool isAdminReport, IEnumerable<Tuple<Stream, ContentType, string>> attachments = null)
-    {
-        if (attachments == null)
-        {
-            attachments = Array.Empty<Tuple<Stream, ContentType, string>>();
-        }
-        logger.LogInformation($"SendingHtmlMail, title '{title}', attachments {attachments.Count()}");
-
-        // Specify the message content.
-        MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
-        {
-            Subject = title
-        };
-
-        var alternateView = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
-
-        foreach (var attInfo in attachments)
-        {
-            LinkedResource resource = new LinkedResource(attInfo.Item1, attInfo.Item2)
-            {
-                ContentId = attInfo.Item3
-            };
-            alternateView.LinkedResources.Add(resource);
-        }
-
-        message.AlternateViews.Add(alternateView);
-        message.IsBodyHtml = true;
 
         bool sent = false;
         while (!sent)
@@ -118,24 +82,17 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
         }
     }
 
-    public IStatusUpdate EnqueueStatusUpdate(string groupTitle, string text)
-    {
-        var message = new Message { TimeStamp = DateTime.Now, Text = text };
-        EnqueueInStatusBucket(groupTitle, message);
-        return message;
-    }
-
-    private void EnqueueInStatusBucket(string groupTitle, Message message)
+    public void EnqueueStatusUpdate(string groupTitle, string messageToAppend, string? altMessageToAppendIfStillInQueue)
     {
         lock (_statusBuckets)
         {
-            Bucket bucket;
-            if (!_statusBuckets.TryGetValue(groupTitle, out bucket!))
+            Bucket? bucket;
+            if (!_statusBuckets.TryGetValue(groupTitle, out bucket))
             {
                 bucket = new Bucket(this, groupTitle);
                 _statusBuckets.Add(groupTitle, bucket);
             }
-            bucket.Enqueue(message);
+            bucket!.Enqueue(messageToAppend, altMessageToAppendIfStillInQueue);
         }
     }
 }
