@@ -47,7 +47,7 @@ export class AdminComponent {
         });
     }
 
-    public sendButton() {
+    public uploadGardenConfig() {
         var req = new XMLHttpRequest();
         req.open("PUT", "/svc/gardenCfg");
         req.setRequestHeader("Content-type", "application/octect-stream");
