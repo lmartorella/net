@@ -15,6 +15,12 @@ export class AdminComponent {
         this.res = res as unknown as { [key: string]: string };
     }
 
+    public login() {
+        checkXhr<unknown>(this.http.get(config.baseUrl + '/svc/checkLogin', { responseType: "text" })).catch(err => {
+            alert(err.message);
+        });
+    }
+
     public haltMain() {
         checkXhr<unknown>(this.http.get(config.baseUrl + '/svc/halt/server', { responseType: "text" })).then(data => {
             alert(data);
