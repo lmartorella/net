@@ -96,7 +96,7 @@ export const jsonRestRemoteCall = async (res, topic, json) => {
         res.status(200).send(resp);
     } catch (err) {
         res.status(500);
-        res.statusMessage = err.message;
+        res.statusMessage = "Exception";
         res.send(err.message);
     }
 };

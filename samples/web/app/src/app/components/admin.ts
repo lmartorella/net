@@ -53,13 +53,22 @@ export class AdminComponent {
         });
     }
 
-    public uploadGardenConfig() {
-        var req = new XMLHttpRequest();
-        req.open("PUT", "/svc/gardenCfg");
-        req.setRequestHeader("Content-type", "application/octect-stream");
-        req.onload = () => {
+    public async uploadGardenConfig() {
+        try {
+            const response = await fetch("/svc/gardenCfg", {
+                method: "PUT",
+                headers: [
+                    ["Content-type", "application/json"]
+                ],
+                body: this.fileElement.nativeElement.files![0]
+            });
+            const resp = await response;
+            if (resp.status !== 200) {
+                throw new Error(`Err ${resp.status}: ${resp.statusText}.\n${await resp.text()}`);
+            }
             alert('Done');
-        };
-        req.send(this.fileElement.nativeElement.files![0]);
+        } catch (err) {
+            alert('Error: ' + err);
+        }
       }
 }

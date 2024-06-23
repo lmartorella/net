@@ -33,7 +33,9 @@ export function register(app, privileged) {
         if ((req.headers["content-type"] || '').startsWith("application/json")) {
             jsonRestRemoteCall(res, "garden/setConfiguration", { config: req.body });
         } else {
-            res.status(500).send("Invalid content type");
+            res.status(500);
+            res.statusMessage = "Invalid content type";
+            res.send("Invalid content type");
         }
     });
 }
