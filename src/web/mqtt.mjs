@@ -92,7 +92,8 @@ export const jsonRemoteCall = (topic, payload, timeoutMs, post) => {
 export const jsonRestRemoteCall = async (res, topic, json) => {
     try {
         const resp = JSON.parse(await rawRemoteCall(topic, JSON.stringify(json), 3500));
-        res.send(resp);
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).send(resp);
     } catch (err) {
         res.status(500);
         res.statusMessage = err.message;

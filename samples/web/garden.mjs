@@ -25,10 +25,8 @@ export function register(app, privileged) {
     //     jsonRestRemoteCall(res, "garden/stop");
     // });
     
-    app.get('/svc/gardenCfg', privileged(), async (_req, res) => {
-        const body = await jsonRestRemoteCall(res, "garden/getConfiguration", { });
-        res.setHeader("Content-Type", "application/json");
-        res.status(200).send(body);
+    app.get('/svc/gardenCfg', privileged(), (_req, res) => {
+        jsonRestRemoteCall(res, "garden/getConfiguration", { });
     });
         
     app.put('/svc/gardenCfg', privileged(), async (req, res) => {
