@@ -135,7 +135,7 @@ if (hasProcessManager) {
         const { ManagedProcess } = await import('./procMan.mjs');
         Object.keys(processesMd).forEach(procId => {
             processes[procId] = new ManagedProcess(processesMd[procId]);
-            processes[procId]._start();
+            processes[procId].start();
         });
     };
     void runProcesses();

@@ -7,7 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Lucky.Home</RootNamespace>
-    <AssemblyTitle>Home.Notification</AssemblyTitle>
+    <AssemblyName>Home.Notification</AssemblyName>
     <DebugType>portable</DebugType>
   </PropertyGroup>
 

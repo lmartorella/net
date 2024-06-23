@@ -5,7 +5,7 @@ internal class Bucket
     private readonly string _groupTitle;
     private readonly NotificationService _svc;
     private List<Message> _messages = new List<Message>();
-    private Timer _timer;
+    private Timer? _timer;
 
     public Bucket(NotificationService svc, string groupTitle)
     {
@@ -13,10 +13,20 @@ internal class Bucket
         _groupTitle = groupTitle;
     }
 
-    internal void Enqueue(Message message)
+    internal void Enqueue(string messageToAppend, string? altMessageToAppendIfStillInQueue = null)
     {
         lock (this)
         {
+            if (altMessageToAppendIfStillInQueue != null)
+            {
+                if (_messages.Count > 0)
+                {
+                    _messages.Last().Update(altMessageToAppendIfStillInQueue);
+                    return;
+                }
+                messageToAppend = altMessageToAppendIfStillInQueue;
+            }
+            var message = new Message();
             message.LockObject = this;
             _messages.Add(message);
             // Start timer
@@ -28,7 +38,7 @@ internal class Bucket
                     lock (this)
                     {
                         // Send a single mail with all the content
-                        msg = string.Join(Environment.NewLine, _messages.Select(m => m.Send()));
+                        msg = string.Join(Environment.NewLine, _messages.Select(m => m.Text));
                         _messages.Clear();
                         _timer = null;
                     }

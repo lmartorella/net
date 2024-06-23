@@ -11,15 +11,16 @@ namespace Lucky.Home.Services;
 public class Manager
 {
     private readonly HostApplicationBuilder hostAppBuilder;
-    
+
     public Manager(string[] args, string jsonFileName)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
-        hostAppBuilder.Services.AddLogging(options => 
+        hostAppBuilder.Services.AddLogging(options =>
         {
-            options.AddSimpleConsole(c =>
+            options.AddConsole(c =>
             {
                 c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
+                c.LogToStandardErrorThreshold = LogLevel.Error;
             });
         });
 
@@ -37,6 +38,10 @@ public class Manager
     public void Start() 
     {
         var host = hostAppBuilder!.Build();
+        AppDomain.CurrentDomain.UnhandledException += (o, e) => 
+        {
+            host.Services.GetService<ILogger<Manager>>()!.LogError(e.ExceptionObject as Exception, "UnhandledException");
+        };
         host.Run();
     }
 
