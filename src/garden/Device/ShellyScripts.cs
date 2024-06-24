@@ -92,7 +92,7 @@ class ShellyScripts(ILogger<ShellyScripts> logger, Configuration configuration, 
     internal async Task<string> GetScriptCode(int id)
     {
         logger.LogInformation("FetchingConfCode: ID {0}", id);
-        string json = await restService.AsyncRest(BaseUri + "Script.GetCode", HttpMethod.Get, serializerFactory.Create<ScriptGetCodeReq>().ToString(new ScriptGetCodeReq { Id = id }));
+        string json = await restService.AsyncRest(BaseUri + "Script.GetCode", HttpMethod.Post, serializerFactory.Create<ScriptGetCodeReq>().ToString(new ScriptGetCodeReq { Id = id }));
         var resp = serializerFactory.Create<ScriptGetCodeResp>().Deserialize(json);
         if (resp.Left > 0)
         {
@@ -104,7 +104,7 @@ class ShellyScripts(ILogger<ShellyScripts> logger, Configuration configuration, 
     internal async Task SetScriptCode(int id, string code)
     {
         logger.LogInformation("SettingConfCode: ID {0}", id);
-        string json = await restService.AsyncRest(BaseUri + "Script.PutCode", HttpMethod.Get, serializerFactory.Create<ScriptPutCodeReq>().ToString(new ScriptPutCodeReq { Id = id, Code = code, Append = false }));
+        string json = await restService.AsyncRest(BaseUri + "Script.PutCode", HttpMethod.Post, serializerFactory.Create<ScriptPutCodeReq>().ToString(new ScriptPutCodeReq { Id = id, Code = code, Append = false }));
         var resp = serializerFactory.Create<ScriptPutCodeResp>().Deserialize(json);
         if (resp.Len != code.Length)
         {
@@ -115,8 +115,9 @@ class ShellyScripts(ILogger<ShellyScripts> logger, Configuration configuration, 
     internal async Task<int> CreateScript(string name)
     {
         logger.LogInformation("CreateConfCode: name {0}", name);
-        string json = await restService.AsyncRest(BaseUri + "Script.Create", HttpMethod.Get, serializerFactory.Create<ScriptCreateReq>().ToString(new ScriptCreateReq { Name = name }));
+        string json = await restService.AsyncRest(BaseUri + "Script.Create", HttpMethod.Post, serializerFactory.Create<ScriptCreateReq>().ToString(new ScriptCreateReq { Name = name }));
         var resp = serializerFactory.Create<ScriptCreateResp>().Deserialize(json);
+        logger.LogInformation("CreateConfCode_ret: id {0}", resp!.Id);
         return resp!.Id;
     }
 }

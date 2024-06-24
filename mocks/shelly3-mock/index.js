@@ -36,6 +36,7 @@ const createScript = name => {
   if (scriptsMd.some(script => script.name === name)) {
     throw new Error("Script with the same name already exists");
   }
+  console.log(`Create script ${name} with ID ${scriptsMd.length}`);
   const script = {
     id: scriptsMd.length,
     name,
@@ -55,13 +56,15 @@ expressApp.post('/rpc/Script.Create', function (req, res) {
   if (!name) {
     res.status(500);
     res.statusMessage = "Missing name";
+    res.send(res.statusMessage);
   } else {
     try {
       const { id } = createScript(name);
       res.send(JSON.stringify({ id }));
     } catch (err) { 
       res.status(500);
-      res.statusMessage = `EXC: ${err.message}`;
+      res.statusMessage = "Exception";
+      res.send(err.message);
     }
   }
 });
@@ -90,6 +93,7 @@ expressApp.post('/rpc/Script.PutCode', function (req, res) {
   if (!id || !code) {
     res.status(500);
     res.statusMessage = "Missing args";
+    res.send(res.statusMessage);
   } else {
     try {
       const { data } = setScriptCode(id, code, append);
@@ -98,7 +102,8 @@ expressApp.post('/rpc/Script.PutCode', function (req, res) {
       console.log(JSON.stringify(JSON.parse(data), null, "  "));
     } catch (err) { 
       res.status(500);
-      res.statusMessage = `EXC: ${err.message}`;
+      res.statusMessage = `Exception`;
+      res.send(err.message);
     }
   }
 });
@@ -108,16 +113,19 @@ expressApp.post('/rpc/Script.GetCode', function (req, res) {
   if (!id) {
     res.status(500);
     res.statusMessage = "Missing args";
+    res.send(res.statusMessage);
   } else if (!!offset || !!len) {
     res.status(500);
     res.statusMessage = "Not supported";
+    res.send(res.statusMessage);
   } else {
     try {
       const { data } = getScriptCode(id);
-      return { data, left: 0 };
+      res.send({ data, left: 0 });
     } catch (err) { 
       res.status(500);
-      res.statusMessage = `EXC: ${err.message}`;
+      res.statusMessage = `Exception`;
+      res.send(err.message);
     }
   }
 });
