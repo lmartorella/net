@@ -25,7 +25,7 @@ export class ManagedProcess {
         // Launch process
         const args = ['--wrk', etcDir];
         const exe = path.join(binDir, this.frameworkDir, `${this.processName}.exe`);
-        logger(`Starting ${exe} ${args.map(a => `"${a}"`).join(" ")}...`);
+        logger(`Starting ${exe} ${args.map(a => `"${a}"`).join(" ")} from ${etcDir}`);
 
         const logConsoleStream = fs.createWriteStream(this.logFile, { flags: 'a' });
         const logErrorStream = fs.createWriteStream(this.errLogFile, { flags: 'w' });
