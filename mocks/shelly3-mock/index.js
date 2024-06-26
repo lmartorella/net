@@ -19,36 +19,29 @@ for (let id = 0; id < 3; id++) {
 const expressApp = express();
 expressApp.use(express.json()); 
 
-const scriptsMd = [
-  {
-    id: 0,
-    name: "first",
-    enable: false,
-    running: false
-  }
-];
-
-const scriptCode = [
-  "<empty>"
-];
+// Allocate index 0 as placeholder, scripts indexes start from 1
+const scriptsMd = [{}];
+const scriptCode = [null];
 
 const createScript = name => {
   if (scriptsMd.some(script => script.name === name)) {
     throw new Error("Script with the same name already exists");
   }
-  console.log(`Create script ${name} with ID ${scriptsMd.length}`);
+  const id = scriptsMd.length;
+  console.log(`Create script ${name} with ID ${id}`);
   const script = {
-    id: scriptsMd.length,
+    id,
     name,
     enable: false,
     running: false
   };
-  scriptsMd.push(script);
+  scriptsMd[id] = script;
   return script;
 };
 
-expressApp.get('/rpc/Script.List', function (req, res) {
-  res.send(JSON.stringify({ scripts: scriptsMd }));
+expressApp.get('/rpc/Script.List', function (_req, res) {
+  // Don't send the 0-pos
+  res.send(JSON.stringify({ scripts: scriptsMd.slice(1) }));
 });
 
 expressApp.post('/rpc/Script.Create', function (req, res) {
@@ -70,7 +63,7 @@ expressApp.post('/rpc/Script.Create', function (req, res) {
 });
 
 const setScriptCode = (id, code, append) => {
-  if (id >= scriptCode.length) {
+  if (scriptsMd[id]?.id !== id) {
     throw new Error("ID not found");
   }
   if (append) {
@@ -82,7 +75,7 @@ const setScriptCode = (id, code, append) => {
 }
 
 const getScriptCode = (id) => {
-  if (id >= scriptCode.length) {
+  if (scriptsMd[id]?.id !== id) {
     throw new Error("ID not found");
   }
   return { data: scriptCode[id] };
@@ -97,9 +90,9 @@ expressApp.post('/rpc/Script.PutCode', function (req, res) {
   } else {
     try {
       const { data } = setScriptCode(id, code, append);
-      res.send(JSON.stringify({ len: data.length }));
       console.log(`Set script ${id} with:`);
-      console.log(JSON.stringify(JSON.parse(data), null, "  "));
+      console.log(data);
+      res.send(JSON.stringify({ len: data.length }));
     } catch (err) { 
       res.status(500);
       res.statusMessage = `Exception`;

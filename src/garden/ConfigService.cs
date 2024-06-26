@@ -123,6 +123,6 @@ class ConfigService : BackgroundService
 
     private string Comment(string code)
     {
-        return "*/" + Environment.NewLine + code + Environment.NewLine + "/*";
+        return "/*" + Environment.NewLine + code + Environment.NewLine + "*/";
     }
 }
