@@ -44,7 +44,11 @@ export class ManagedProcess {
                 logger(msg, true);
 
                 // Store fail reason to send mail after restart
-                await this.#sendMail(`${msg}. Restarting`);
+                try {
+                    await this.#sendMail(`${msg}. Restarting`);
+                } catch (err) {
+                    logger(`Exception sending mail: ${err.message}`);
+                }
 
                 await new Promise(resolve => setTimeout(resolve, 3500));
                 this.start();
@@ -85,21 +89,19 @@ export class ManagedProcess {
 
     async #kill() {
         logger(`Server process ${this.processName} killing...`);
-        await new Promise((resolve, reject) => {
-            // Already started
-            if (!this.process || !this.process.pid) {
-                throw new Error(`Server process ${this.processName} killed`);
-            }
-            this.killing = true;
+        if (!this.process || !this.process.pid) {
+            throw new Error(`Server process ${this.processName} killed`);
+        }
+        if (!this.killTopic) {
+            throw new Error("Signal killing not available on this platform");
+        }
+        // Already started
+        this.killing = true;
+        await new Promise(async (resolve, reject) => {
             this.process.once('exit', () => {
                 resolve();
             });
-            if (this.killTopic) {
-                rawPublish(this.killTopic, "kill").catch(err => reject(err));
-            } else {
-                // Send Ctrl+C
-                throw new Error("Signal killing not available on this platform");
-            }
+            void rawPublish(this.killTopic, "kill").catch(err => reject(err));
         });
     };
 
@@ -112,7 +114,7 @@ export class ManagedProcess {
         }
     }
 
-    async _restart() {
+    async #restart() {
         await this.#kill();
         logger(`Server process ${this.processName} killed for restarting...`);
         await new Promise(resolve => setTimeout(resolve, 3500));
@@ -121,7 +123,7 @@ export class ManagedProcess {
 
     async restart(res) {
         try {
-            await this._restart();
+            await this.#restart();
             res.send(`${this.processName} restarted`);
         } catch (err) {
             res.status(500).send(err.message);

@@ -53,7 +53,7 @@ export const rawPublish = (topic, payload) => {
     });
 };
 
-export const rawRemoteCall = async (topic, payload, timeoutMs, post) => {
+const rawRemoteCall = async (topic, payload, timeoutMs, post) => {
     if (!client.connected) {
         throw new Error("Broker disconnected");
     }
