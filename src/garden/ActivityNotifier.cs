@@ -108,8 +108,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
                     Title = resourceService.GetString(GetType(), "gardenMailTitle"),
                     Body = builder.ToString(),
                     IsAdminReport = false
-                },
-                true  // Don't wait for response
+                }
             );
         }
         else

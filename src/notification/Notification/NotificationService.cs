@@ -11,10 +11,10 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        await mqttService.SubscribeJsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", async req => 
+        await mqttService.SubscribeJsonRpc<SendMailRequestMqttPayload, RpcVoid>("notification/send_mail", req => 
         {
-            await SendMail(req.Title, req.Body, req.IsAdminReport);
-            return new RpcVoid();
+            SendMail(req.Title, req.Body, req.IsAdminReport);
+            return Task.FromResult(new RpcVoid());
         });
 
         await mqttService.SubscribeJsonRpc<EnqueueStatusUpdateRequestMqttPayload, RpcVoid>("notification/enqueue_status_update", req =>
@@ -27,10 +27,15 @@ class NotificationService(ILogger<NotificationService> logger, Configuration con
     /// <summary>
     /// Send a text mail
     /// </summary>
-    public async Task SendMail(string title, string body, bool isAdminReport)
+    public void SendMail(string title, string body, bool isAdminReport)
     {
         logger.LogInformation($"SendingMail, title '{title}'");
+        // Don't wait for mail to be sent
+        _ = SendMailLoop(title, body, isAdminReport);
+    }
 
+    private async Task SendMailLoop(string title, string body, bool isAdminReport)
+    {
         // Specify the message content.
         MailMessage message = new MailMessage(configuration.Sender, isAdminReport ? configuration.AdminNotificationRecipient : configuration.NotificationRecipient)
         {

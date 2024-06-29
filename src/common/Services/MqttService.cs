@@ -219,7 +219,7 @@ public class MqttService
             owner.logger.LogInformation("Subscribed responses, topic {0}", responseTopic);
         }
 
-        public async Task<byte[]> RawRemoteCall(byte[]? payload = null, bool post = false)
+        public async Task<byte[]> RawRemoteCall(byte[]? payload = null)
         {
             if (!owner.mqttClient.IsConnected)
             {
@@ -239,29 +239,22 @@ public class MqttService
                 .WithTopic(topic).
                 Build();
             await owner.mqttClient.InternalClient.PublishAsync(message);
-            if (!post)
-            {
-                // Send: wait for response
-                if (timeout > TimeSpan.Zero) {
-                    _ = Task.Delay(timeout).ContinueWith(task =>
-                    {
-                        requests.Remove(correlationData);
-                        request.TrySetCanceled();
-                    });
-                }
-                return await request.Task;
+            // Send: wait for response
+            if (timeout > TimeSpan.Zero) {
+                _ = Task.Delay(timeout).ContinueWith(task =>
+                {
+                    requests.Remove(correlationData);
+                    request.TrySetCanceled();
+                });
             }
-            else
-            {
-                return [];
-            }
+            return await request.Task;
         }
 
-        public async Task<TResp?> JsonRemoteCall<TReq, TResp>(TReq? payload = null, bool post = false) where TReq : class, new() where TResp : class, new()
+        public async Task<TResp?> JsonRemoteCall<TReq, TResp>(TReq? payload = null) where TReq : class, new() where TResp : class, new()
         {
             var reqSerializer = serializerFactory.Create<TReq>();
             var respDeserializer = serializerFactory.Create<TResp>();
-            var responseData = await RawRemoteCall(reqSerializer.Serialize(payload), post);
+            var responseData = await RawRemoteCall(reqSerializer.Serialize(payload));
             return respDeserializer.Deserialize(responseData);
         }
     }

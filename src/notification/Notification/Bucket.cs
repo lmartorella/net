@@ -44,7 +44,7 @@ internal class Bucket
                     }
                     if (msg.Trim().Length > 0)
                     {
-                        _ = _svc.SendMail(_groupTitle, msg, true);
+                        _svc.SendMail(_groupTitle, msg, true);
                     }
                 }, null, (int)TimeSpan.FromHours(1).TotalMilliseconds, Timeout.Infinite);
             }
