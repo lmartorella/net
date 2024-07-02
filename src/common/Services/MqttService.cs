@@ -40,7 +40,7 @@ public class MqttService
         {
             if (logLevel == MqttNetLogLevel.Error && exception != null)
             {
-                logger.LogError(exception, "MqttPublish");
+                logger.LogCritical(exception, "MqttPublish");
                 Environment.Exit(1);
             }
         }
@@ -64,6 +64,11 @@ public class MqttService
         mqttClient.DisconnectedAsync += (e) =>
         {
             logger.LogInformation("Disconnected, reconnecting: {0}", e.ReasonString);
+            return Task.CompletedTask;
+        };
+        mqttClient.ConnectingFailedAsync += (e) =>
+        {
+            logger.LogInformation("Connecting Failed");
             return Task.CompletedTask;
         };
     }

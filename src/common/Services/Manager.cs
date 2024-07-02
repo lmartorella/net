@@ -20,7 +20,7 @@ public class Manager
             options.AddConsole(c =>
             {
                 c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
-                c.LogToStandardErrorThreshold = LogLevel.Error;
+                c.LogToStandardErrorThreshold = LogLevel.Critical;
             });
         });
 
@@ -40,7 +40,15 @@ public class Manager
         var host = hostAppBuilder!.Build();
         AppDomain.CurrentDomain.UnhandledException += (o, e) => 
         {
-            host.Services.GetService<ILogger<Manager>>()!.LogError(e.ExceptionObject as Exception, "UnhandledException");
+            var logger = host.Services.GetService<ILogger<Manager>>()!;
+            if (e.IsTerminating)
+            {
+                logger.LogCritical(e.ExceptionObject as Exception, "UnhandledException");
+            }
+            else
+            {
+                logger.LogError(e.ExceptionObject as Exception, "UnhandledException");
+            }
         };
         host.Run();
     }
