@@ -31,6 +31,7 @@ public class MqttService
     private readonly MqttFactory mqttFactory;
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
+    private readonly Dictionary<string, bool> subscribedTopics = new Dictionary<string, bool>();
 
     private sealed class ExceptionForwarderLogger(ILogger<MqttService> logger) : IMqttNetLogger
     {
@@ -56,10 +57,10 @@ public class MqttService
         mqttFactory = new MqttFactory();
         mqttClient = mqttFactory.CreateManagedMqttClient(new ExceptionForwarderLogger(logger));
         _ = Connect();
-        mqttClient.ConnectedAsync += (e) =>
+        mqttClient.ConnectedAsync += async (e) =>
         {
             logger.LogInformation("Connected");
-            return Task.CompletedTask;
+            await ResubscribeAllTopics();
         };
         mqttClient.DisconnectedAsync += (e) =>
         {
@@ -71,6 +72,18 @@ public class MqttService
             logger.LogInformation("Connecting Failed");
             return Task.CompletedTask;
         };
+        mqttClient.ConnectionStateChangedAsync += (e) =>
+        {
+            logger.LogInformation("ConnectionStateChangedAsync: {0}", mqttClient.IsConnected);
+            return Task.CompletedTask;
+        };
+        mqttClient.SynchronizingSubscriptionsFailedAsync += (e) => 
+        {
+            logger.LogInformation("SynchronizingSubscriptionsFailedAsync: {0}. Added: {1}, Removed {2}", e.Exception?.Message, e.AddedSubscriptions?.Count, e.RemovedSubscriptions?.Count);
+            logger.LogCritical(e.Exception, "SynchronizingSubscriptionsFailedAsync");
+            Environment.Exit(1);
+            return Task.CompletedTask;
+        };
     }
 
     private async Task Connect()
@@ -78,7 +91,9 @@ public class MqttService
         var clientOptionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(hostEnvironment.ApplicationName)
                 .WithTcpServer("127.0.0.1")
-                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500);
+                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
+                .WithCleanSession(true)
+                .WithCleanStart(true);
         if (mqttWillProvider != null) 
         {
             clientOptionsBuilder
@@ -87,12 +102,38 @@ public class MqttService
         }
         var managedClientOptions = new ManagedMqttClientOptionsBuilder()
             .WithAutoReconnectDelay(TimeSpan.FromSeconds(3.5))
-            .WithMaxPendingMessages(1)
-            .WithPendingMessagesOverflowStrategy(MQTTnet.Server.MqttPendingMessagesOverflowStrategy.DropOldestQueuedMessage)
             .WithClientOptions(clientOptionsBuilder.Build()).
             Build();
         await mqttClient.StartAsync(managedClientOptions);
         logger.LogInformation("Started");
+    }
+
+    private async Task ResubscribeAllTopics()
+    {
+        if (subscribedTopics.Count > 0)
+        {
+            logger.LogInformation("Resubscribing {0} topics", subscribedTopics.Count);
+            foreach (string topic in subscribedTopics.Keys)
+            {
+                var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
+                await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
+            }
+        }
+    }
+    
+    private async Task SubscribeTopic(string topic)
+    {
+        if (mqttClient.IsConnected)
+        {
+            logger.LogInformation("Subscribing topic {0}", topic);
+            var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
+            await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
+        }
+        else
+        {
+            logger.LogInformation("Enqueued subscription to topic {0}", topic);
+        }
+        subscribedTopics[topic] = true;
     }
 
     /// <summary>
@@ -101,8 +142,7 @@ public class MqttService
     /// </summary>
     public async Task SubscribeRawTopic(string topic, Func<byte[], Task> handler)
     {
-        var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-        await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
+        await SubscribeTopic(topic);
         mqttClient.ApplicationMessageReceivedAsync += async args =>
         {
             var msg = args.ApplicationMessage;
@@ -195,8 +235,7 @@ public class MqttService
         public async Task SubscribeRawRpcResponse()
         {
             var responseTopic = topic + "/resp";
-            var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(responseTopic).Build();
-            await owner.mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
+            await owner.SubscribeTopic(responseTopic);
             owner.mqttClient.ApplicationMessageReceivedAsync += args =>
             {
                 var msg = args.ApplicationMessage;
@@ -296,8 +335,7 @@ public class MqttService
     /// </summary>
     public async Task SubscribeRawRpc(string topic, Func<byte[]?, Task<byte[]>> handler)
     {
-        var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-        await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
+        await SubscribeTopic(topic);
         mqttClient.ApplicationMessageReceivedAsync += args =>
         {
             var msg = args.ApplicationMessage;
@@ -308,7 +346,7 @@ public class MqttService
             }
             return Task.CompletedTask;
         };
-        logger.LogInformation("Subscribed requests, topic {0}", topic);
+        logger.LogInformation("Created RPC endpoint, topic {0}", topic);
     }
 
     /// <summary>
