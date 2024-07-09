@@ -198,6 +198,7 @@ namespace Lucky.Home.Services
             {
                 var responseTopic = topic + "/resp";
                 var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(responseTopic).Build();
+                owner.Logger.LogFormat("Subscribing responses, topic {0}", responseTopic);
                 await owner.mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
                 owner.mqttClient.ApplicationMessageReceivedAsync += args =>
                 {

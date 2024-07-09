@@ -1,4 +1,5 @@
-﻿using Lucky.Db;
+﻿using System.Threading.Tasks;
+using Lucky.Db;
 using Lucky.Home.Device.Sofar;
 using Lucky.Home.Services;
 
@@ -28,7 +29,7 @@ namespace Lucky.Home.Solar
                 // Skip the first migration from day to night at startup during night
                 if (summary != null && !_isSummarySent)
                 {
-                    SendSummaryMail(summary);
+                    _ = SendSummaryMail(summary);
                     _isSummarySent = true;
                 }
             }
@@ -39,7 +40,7 @@ namespace Lucky.Home.Solar
             _isSummarySent = false;
         }
 
-        private void SendSummaryMail(DayPowerData day)
+        private async Task SendSummaryMail(DayPowerData day)
         {
             var title = string.Format(Resources.solar_daily_summary_title, day.PowerKWh);
             var body = Resources.solar_daily_summary
@@ -50,7 +51,8 @@ namespace Lucky.Home.Solar
                     .Replace("{PeakVoltageTimestamp}", day.FromInvariantTime(day.PeakVoltageTimestamp).ToString("hh\\:mm\\:ss"))
                     .Replace("{SunTime}", (day.Last - day.First).ToString(Resources.solar_daylight_format));
 
-            Manager.GetService<INotificationService>().SendMail(title, body, false);
+            Logger.Log("DailyMailSending", "Power", day.PowerKWh);
+            await Manager.GetService<INotificationService>().SendMail(title, body, false);
             Logger.Log("DailyMailSent", "Power", day.PowerKWh);
         }
     }
