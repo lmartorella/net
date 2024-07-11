@@ -12,6 +12,11 @@ namespace Lucky.Home.Services
         private const string INFO = "info";
         private const string EXC = "EXC ";
 
+        public static void LogInfoFormat(this ILogger logger, string message, params object[] args)
+        {
+            logger.LogFormat(INFO, message, args);
+        }
+
         public static void Log(this ILogger logger, string message)
         {
             logger.LogFormat(INFO, message);
