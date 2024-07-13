@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
@@ -28,10 +29,12 @@ public class MqttService
     private readonly IHostEnvironment hostEnvironment;
     private readonly IMqttWillProvider? mqttWillProvider;
     private readonly SerializerFactory serializerFactory;
+    private readonly string host;
     private readonly MqttFactory mqttFactory;
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
     private readonly Dictionary<string, bool> subscribedTopics = new Dictionary<string, bool>();
+    private event EventHandler? Connected;
 
     private sealed class ExceptionForwarderLogger(ILogger<MqttService> logger) : IMqttNetLogger
     {
@@ -47,20 +50,22 @@ public class MqttService
         }
     }
 
-    public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
+    public MqttService(ILogger<MqttService> logger, IConfiguration configuration, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
     {
         this.logger = logger;
         this.hostEnvironment = hostEnvironment;
         this.mqttWillProvider = mqttWillProvider;
         this.serializerFactory = serializerFactory;
+        host = configuration["mqttHost"] ?? "127.0.0.1";
         
         mqttFactory = new MqttFactory();
         mqttClient = mqttFactory.CreateManagedMqttClient(new ExceptionForwarderLogger(logger));
         _ = Connect();
         mqttClient.ConnectedAsync += async (e) =>
         {
-            logger.LogInformation("Connected");
+            logger.LogInformation("Connected to {0} as {1}", host, e.ConnectResult.AssignedClientIdentifier);
             await ResubscribeAllTopics();
+            Connected?.Invoke(this, EventArgs.Empty);
         };
         mqttClient.DisconnectedAsync += (e) =>
         {
@@ -90,7 +95,7 @@ public class MqttService
     {
         var clientOptionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(hostEnvironment.ApplicationName)
-                .WithTcpServer("127.0.0.1")
+                .WithTcpServer(host)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                 .WithCleanSession(true)
                 .WithCleanStart(true);
@@ -106,6 +111,23 @@ public class MqttService
             Build();
         await mqttClient.StartAsync(managedClientOptions);
         logger.LogInformation("Started");
+    }
+
+    public async Task WaitConnected()
+    {
+        if (mqttClient.IsConnected)
+        {
+            return;
+        }
+        var source = new TaskCompletionSource();
+        EventHandler? handler = null;
+        handler = (o, e) =>
+        {
+            source.SetResult();
+            Connected -= handler!;
+        };
+        Connected += handler;
+        await source.Task;
     }
 
     private async Task ResubscribeAllTopics()

@@ -33,6 +33,16 @@
             "request": "launch",
             "name": "Launch Web Server",
             "program": "${workspaceFolder}\\src\\web\\server.mjs"
-        }
+        },
+        {
+            "name": "Launch Notification Tester",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/mocks/notification-tester/bin/debug/net8.0/notification.tester.exe",
+            "args": ["--mqttHost", "192.168.1.40"],
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "justMyCode": false
+        },
     ]
 }
