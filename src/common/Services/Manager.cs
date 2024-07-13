@@ -30,12 +30,24 @@ public class Manager
             Environment.CurrentDirectory = wrkPath;
         }
         hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
-        
-        if (jsonFileName != null)
+        PrepareConfig(jsonFileName != null ? ("server/" + jsonFileName) : null);
+    }
+
+    private void PrepareConfig(string? jsonPath)
+    {
+        var values = new Dictionary<string, string?>();
+        var mqttHost = hostAppBuilder.Configuration["mqttHost"];
+        if (mqttHost != null)
         {
-            var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();
-            hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
+            values["mqttHost"] = mqttHost;
         }
+        var configurationBuilder = hostAppBuilder.Configuration.AddInMemoryCollection(values);
+
+        if (jsonPath != null)
+        {
+            configurationBuilder.AddJsonFile(jsonPath, optional: false);
+        }
+        hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configurationBuilder.Build());
     }
 
     public void Start() 
