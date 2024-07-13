@@ -12,7 +12,7 @@ public class Manager
 {
     private readonly HostApplicationBuilder hostAppBuilder;
 
-    public Manager(string[] args, string jsonFileName)
+    public Manager(string[] args, string jsonFileName = null)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
         hostAppBuilder.Services.AddLogging(options =>
@@ -31,8 +31,11 @@ public class Manager
         }
         hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
         
-        var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();
-        hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
+        if (jsonFileName != null)
+        {
+            var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();
+            hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
+        }
     }
 
     public void Start() 
