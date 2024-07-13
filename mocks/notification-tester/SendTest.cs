@@ -10,7 +10,6 @@ class SendTest(ILogger<SendTest> logger, MqttService mqttService) : BackgroundSe
 {
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await mqttService.WaitConnected();
         var rpcCaller = await mqttService.RegisterRpcOriginator("notification/send_mail");
 
         for (int i = 0; i < 3; i++)

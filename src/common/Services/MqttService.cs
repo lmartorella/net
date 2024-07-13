@@ -113,12 +113,13 @@ public class MqttService
         logger.LogInformation("Started");
     }
 
-    public async Task WaitConnected()
+    private async Task WaitConnected()
     {
         if (mqttClient.IsConnected)
         {
             return;
         }
+        logger.LogInformation("Waiting for connection");
         var source = new TaskCompletionSource();
         EventHandler? handler = null;
         handler = (o, e) =>
@@ -164,6 +165,7 @@ public class MqttService
     /// </summary>
     public async Task SubscribeRawTopic(string topic, Func<byte[], Task> handler)
     {
+        await WaitConnected();
         await SubscribeTopic(topic);
         mqttClient.ApplicationMessageReceivedAsync += async args =>
         {
@@ -198,10 +200,7 @@ public class MqttService
     /// </summary>
     public async Task RawPublish(string topic, byte[] value)
     {
-        if (!mqttClient.IsConnected)
-        {
-            throw new MqttRemoteCallError("Broker not connected");
-        }
+        await WaitConnected();
 
         var message = mqttFactory.CreateApplicationMessageBuilder()
             .WithPayload(value)
@@ -234,6 +233,7 @@ public class MqttService
     public async Task<RpcOriginator> RegisterRpcOriginator(string topic, TimeSpan timeout)
     {
         var originator = new RpcOriginator(this, topic, timeout);
+        await WaitConnected();
         await originator.SubscribeRawRpcResponse();
         return originator;
     }
@@ -357,6 +357,7 @@ public class MqttService
     /// </summary>
     public async Task SubscribeRawRpc(string topic, Func<byte[]?, Task<byte[]>> handler)
     {
+        await WaitConnected();
         await SubscribeTopic(topic);
         mqttClient.ApplicationMessageReceivedAsync += args =>
         {
