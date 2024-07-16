@@ -32,20 +32,6 @@ public class MqttService
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
 
-    private sealed class ExceptionForwarderLogger(ILogger<MqttService> logger) : IMqttNetLogger
-    {
-        public bool IsEnabled { get; set; } = true;
-
-        public void Publish(MqttNetLogLevel logLevel, string source, string message, object[] parameters, Exception exception)
-        {
-            if (logLevel == MqttNetLogLevel.Error && exception != null)
-            {
-                logger.LogCritical(exception, "MqttPublish");
-                Environment.Exit(1);
-            }
-        }
-    }
-
     public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
     {
         this.logger = logger;
@@ -53,8 +39,11 @@ public class MqttService
         this.mqttWillProvider = mqttWillProvider;
         this.serializerFactory = serializerFactory;
         
-        mqttFactory = new MqttFactory();
-        mqttClient = mqttFactory.CreateManagedMqttClient(new ExceptionForwarderLogger(logger));
+        var mqttLogger = new MqttNetEventLogger();
+        mqttLogger.LogMessagePublished += (_, e) => OnMessagePublished(e.LogMessage);
+
+        mqttFactory = new MqttFactory(mqttLogger);
+        mqttClient = mqttFactory.CreateManagedMqttClient();
         _ = Connect();
         mqttClient.ConnectedAsync += (e) =>
         {
@@ -83,6 +72,19 @@ public class MqttService
             Environment.Exit(1);
             return Task.CompletedTask;
         };
+    }
+
+    private void OnMessagePublished(MqttNetLogMessage message)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug(message.ToString());
+        }
+        if (message.Level == MqttNetLogLevel.Error && message.Exception != null)
+        {
+            logger.LogCritical(message.Exception, "MqttPublish");
+            Environment.Exit(1);
+        }
     }
 
     private async Task Connect()

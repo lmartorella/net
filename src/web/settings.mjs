@@ -28,12 +28,14 @@ export const processesMd = {
     server: {
         processName: "Home.Notification",
         killTopic: "server/kill",
-        frameworkDir: 'net8.0'
+        frameworkDir: 'net8.0',
+        debug: true
     },
     garden: {
         processName: "Home.Garden",
         killTopic: "garden/kill",
-        frameworkDir: 'net8.0'
+        frameworkDir: 'net8.0',
+        debug: true
     },
     solar: {
         processName: "Home.Solar",

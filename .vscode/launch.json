@@ -21,7 +21,7 @@
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/target/bin/net8.0/home.notification.exe",
-            "args": ["--wrk", "${workspaceFolder}\\target\\etc"],
+            "args": ["--wrk", "${workspaceFolder}\\target\\etc", "--debug", "true"],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole",

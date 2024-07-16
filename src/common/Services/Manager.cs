@@ -15,6 +15,9 @@ public class Manager
     public Manager(string[] args, string jsonFileName)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
+
+        var debug = hostAppBuilder.Configuration["debug"];
+
         hostAppBuilder.Services.AddLogging(options =>
         {
             options.AddConsole(c =>
@@ -22,6 +25,7 @@ public class Manager
                 c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
                 c.LogToStandardErrorThreshold = LogLevel.Critical;
             });
+            options.SetMinimumLevel(debug != null ? LogLevel.Debug : LogLevel.Information);
         });
 
         var wrkPath = hostAppBuilder.Configuration["wrk"];
