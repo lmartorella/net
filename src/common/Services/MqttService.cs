@@ -31,7 +31,6 @@ public class MqttService
     private readonly MqttFactory mqttFactory;
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
-    private readonly Dictionary<string, bool> subscribedTopics = new Dictionary<string, bool>();
 
     private sealed class ExceptionForwarderLogger(ILogger<MqttService> logger) : IMqttNetLogger
     {
@@ -57,10 +56,10 @@ public class MqttService
         mqttFactory = new MqttFactory();
         mqttClient = mqttFactory.CreateManagedMqttClient(new ExceptionForwarderLogger(logger));
         _ = Connect();
-        mqttClient.ConnectedAsync += async (e) =>
+        mqttClient.ConnectedAsync += (e) =>
         {
             logger.LogInformation("Connected");
-            await ResubscribeAllTopics();
+            return Task.CompletedTask;
         };
         mqttClient.DisconnectedAsync += (e) =>
         {
@@ -107,33 +106,12 @@ public class MqttService
         await mqttClient.StartAsync(managedClientOptions);
         logger.LogInformation("Started");
     }
-
-    private async Task ResubscribeAllTopics()
-    {
-        if (subscribedTopics.Count > 0)
-        {
-            logger.LogInformation("Resubscribing {0} topics", subscribedTopics.Count);
-            foreach (string topic in subscribedTopics.Keys)
-            {
-                var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-                await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
-            }
-        }
-    }
     
     private async Task SubscribeTopic(string topic)
     {
-        if (mqttClient.IsConnected)
-        {
-            logger.LogInformation("Subscribing topic {0}", topic);
-            var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-            await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
-        }
-        else
-        {
-            logger.LogInformation("Enqueued subscription to topic {0}", topic);
-        }
-        subscribedTopics[topic] = true;
+        logger.LogInformation("Subscribing topic {0}", topic);
+        var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
+        await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
     }
 
     /// <summary>
