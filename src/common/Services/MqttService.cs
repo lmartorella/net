@@ -131,16 +131,22 @@ public class MqttService
         await source.Task;
     }
 
+    private async Task SubscribeAndWait(IEnumerable<string> topics)
+    {
+        Dictionary<string, bool> waiting = 
+        mqttClient.SubscriptionsChangedAsync += args => 
+        {
+        };
+        await mqttClient.SubscribeAsync(topics.Select(topic => new MqttTopicFilterBuilder().WithTopic(topic).Build()).ToArray());
+        SpinWait.SpinUntil(() => subscribed, 1000);
+    }
+
     private async Task ResubscribeAllTopics()
     {
         if (subscribedTopics.Count > 0)
         {
             logger.LogInformation("Resubscribing {0} topics", subscribedTopics.Count);
-            foreach (string topic in subscribedTopics.Keys)
-            {
-                var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-                await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
-            }
+            await SubscribeAndWait(subscribedTopics.Keys);
         }
     }
     
@@ -149,8 +155,7 @@ public class MqttService
         if (mqttClient.IsConnected)
         {
             logger.LogInformation("Subscribing topic {0}", topic);
-            var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-            await mqttClient.SubscribeAsync([mqttSubscribeOptions]);
+            await SubscribeAndWait([topic]);
         }
         else
         {
