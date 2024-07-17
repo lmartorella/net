@@ -15,7 +15,7 @@ namespace Home.Solar
     {
         private static event Action _dayRotation;
         private static DateTime _nextPeriodStart;
-        private static readonly TimeSpan PeriodLenght = TimeSpan.FromDays(1);
+        private static readonly TimeSpan PeriodLength = TimeSpan.FromDays(1);
         private static Timer _timerMinute;
 
         private const string DeviceHostName = "localhost";
@@ -44,7 +44,7 @@ namespace Home.Solar
             var periodStart = _nextPeriodStart = DateTime.Now.Date;
             while (DateTime.Now >= _nextPeriodStart)
             {
-                _nextPeriodStart += PeriodLenght;
+                _nextPeriodStart += PeriodLength;
             }
             _timerMinute = new Timer(s =>
             {
@@ -52,7 +52,7 @@ namespace Home.Solar
                 {
                     while (DateTime.Now >= _nextPeriodStart)
                     {
-                        _nextPeriodStart += PeriodLenght;
+                        _nextPeriodStart += PeriodLength;
                     }
                     _dayRotation?.Invoke();
                 }
@@ -61,7 +61,7 @@ namespace Home.Solar
 
             var ammeter = new AnalogIntegrator();
             var inverter = new InverterDevice();
-            var notificationSeder = new NotificationSender(inverter, db);
+            var notificationSeder = new NotificationSender(inverter, db, Manager.GetService<INotificationService>());
             var dataLogger = new DataLogger(inverter, ammeter, notificationSeder, db);
             var userInterface = new UserInterface(dataLogger, inverter, ammeter);
 

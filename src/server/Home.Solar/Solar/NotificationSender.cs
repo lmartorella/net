@@ -11,10 +11,12 @@ namespace Lucky.Home.Solar
         private readonly ITimeSeries<PowerData, DayPowerData> database;
 
         private ILogger Logger { get; }
+        private INotificationService notificationService;
 
-        public NotificationSender(InverterDevice inverterDevice, ITimeSeries<PowerData, DayPowerData> database)
+        public NotificationSender(InverterDevice inverterDevice, ITimeSeries<PowerData, DayPowerData> database, INotificationService notificationService)
         {
             this.database = database;
+            this.notificationService = notificationService;
             Logger = Manager.GetService<ILoggerFactory>().Create("NotifSvc");
             inverterDevice.NightStateChanged += (o, e) => HandleStateChanged(inverterDevice.NightState);
         }
@@ -52,7 +54,7 @@ namespace Lucky.Home.Solar
                     .Replace("{SunTime}", (day.Last - day.First).ToString(Resources.solar_daylight_format));
 
             Logger.Log("DailyMailSending", "Power", day.PowerKWh);
-            await Manager.GetService<INotificationService>().SendMail(title, body, false);
+            await notificationService.SendMail(title, body, false);
             Logger.Log("DailyMailSent", "Power", day.PowerKWh);
         }
     }
