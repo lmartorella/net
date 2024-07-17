@@ -41,10 +41,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="MQTTnet">
-      <Version>4.2.0.706</Version>
+      <Version>4.3.6.1152</Version>
     </PackageReference>
     <PackageReference Include="MQTTnet.Extensions.ManagedClient">
-      <Version>4.2.0.706</Version>
+      <Version>4.3.6.1152</Version>
     </PackageReference>
     <!--<PackageReference Include="FluentModbus">
       <Version>5.0.3</Version>
