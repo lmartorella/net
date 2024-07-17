@@ -34,7 +34,6 @@ public class MqttService : ServiceBase
     private readonly MqttFactory mqttFactory;
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
-    private readonly Dictionary<string, bool> subscribedTopics = new Dictionary<string, bool>();
 
     private sealed class ExceptionForwarderLogger : IMqttNetLogger
     {
@@ -62,10 +61,10 @@ public class MqttService : ServiceBase
         mqttFactory = new MqttFactory();
         mqttClient = mqttFactory.CreateManagedMqttClient(new ExceptionForwarderLogger(Logger));
         _ = Connect();
-        mqttClient.ConnectedAsync += async (e) =>
+        mqttClient.ConnectedAsync += (e) =>
         {
             Logger.Log("Connected");
-            await ResubscribeAllTopics();
+            return Task.CompletedTask;
         };
         mqttClient.DisconnectedAsync += (e) =>
         {
@@ -112,19 +111,6 @@ public class MqttService : ServiceBase
         Logger.Log("Started");
     }
 
-    private async Task ResubscribeAllTopics()
-    {
-        if (subscribedTopics.Count > 0)
-        {
-            Logger.LogInfoFormat("Resubscribing {0} topics", subscribedTopics.Count);
-            foreach (string topic in subscribedTopics.Keys)
-            {
-                var mqttSubscribeOptions = new MqttTopicFilterBuilder().WithTopic(topic).Build();
-                await mqttClient.SubscribeAsync(new[] { mqttSubscribeOptions });
-            }
-        }
-    }
-
     private async Task SubscribeTopic(string topic)
     {
         if (mqttClient.IsConnected)
@@ -137,7 +123,6 @@ public class MqttService : ServiceBase
         {
             Logger.LogInfoFormat("Enqueued subscription to topic {0}", topic);
         }
-        subscribedTopics[topic] = true;
     }
 
     /// <summary>
