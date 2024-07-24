@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Lucky.Home</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <OutputPath>${WorkspaceFolder}..\..\..\..\..\target\bin\</OutputPath>
+    <OutputPath>${WorkspaceFolder}..\..\..\..\..\..\target\bin\</OutputPath>
     <AssemblyTitle>Home.Solar</AssemblyTitle>
     <Product>Home.Solar</Product>
     <Copyright>Copyright ©  2023</Copyright>
@@ -53,7 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FluentModbus">
-      <HintPath>..\..\..\..\FluentModbus\artifacts\bin\FluentModbus\Release\netstandard2.1\FluentModbus.dll</HintPath>
+      <HintPath>..\..\..\..\..\FluentModbus\artifacts\bin\FluentModbus\Release\netstandard2.1\FluentModbus.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

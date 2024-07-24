@@ -7,6 +7,6 @@
     "serve-rest": "node sampleServer.mjs"
   },
   "devDependencies": {
-    "@lucky-home/solar-lib": "../../../target/solar-lib"
+    "@lucky-home/solar-lib": "../../../../target/solar-lib"
   }
 }
