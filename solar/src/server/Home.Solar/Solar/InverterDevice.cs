@@ -29,11 +29,11 @@ namespace Lucky.Home.Solar
         private async Task Subscribe()
         {
             // Send inverter data to the data logger and notification server
-            await Manager.GetService<MqttService>().SubscribeJsonTopic(SolarDataTopicId, (PowerData data) =>
+            await Manager.GetService<MqttService>().SubscribeJsonTopic(SolarDataTopicId, async (PowerData data) =>
             {
                 NewData?.Invoke(this, data);
             });
-            await Manager.GetService<MqttService>().SubscribeRawTopic(SolarStateTopicId, data =>
+            await Manager.GetService<MqttService>().SubscribeRawTopic(SolarStateTopicId, async data =>
             {
                 if (Enum.TryParse(Encoding.UTF8.GetString(data), out NightState))
                 {

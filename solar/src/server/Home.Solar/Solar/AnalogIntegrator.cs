@@ -1,6 +1,7 @@
 ﻿using Lucky.Home.Services;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Lucky.Home.Solar
 {
@@ -21,7 +22,7 @@ namespace Lucky.Home.Solar
             _ = mqttService.SubscribeRawTopic(DataTopicId, HandleData);
         }
 
-        private void HandleData(byte[] data)
+        private async Task HandleData(byte[] data)
         {
             if (data == null || data.Length == 0)
             {
