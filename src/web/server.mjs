@@ -9,7 +9,7 @@ import passportLocal from 'passport-local';
 import path from 'path';
 import process from 'process';
 import { webLogsFile, websSettings, __dirname, logger, processesMd } from './settings.mjs';
-import * as samples from '../../samples/web/index.mjs';
+import { register } from './solar.mjs';
 
 const hasProcessManager = process.argv.indexOf("--no-proc-man") < 0;
 
@@ -66,7 +66,7 @@ if (!secret) {
 app.use(expressSession({ secret, resave: false, saveUninitialized: false }));
 
 // Register custom endpoints
-samples.register(app, ensureLoggedIn, path.join(__dirname, "../../target/etc/Db/SOLAR"));
+register(app, path.join(__dirname, "../../target/etc/Db/SOLAR"));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -128,7 +128,7 @@ if (hasProcessManager) {
 
 app.listen(80, () => {
   logger('Webserver started at port 80');
-})
+});
 
 if (hasProcessManager) {
     const runProcesses = async () => {

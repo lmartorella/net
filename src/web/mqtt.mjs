@@ -3,6 +3,24 @@ import { logger } from './settings.mjs';
 
 logger("Connecting to MQTT...");
 const client  = mqtt.connect({ host: "127.0.0.1", clientId: "webserver", protocolVersion: 5 });
+const topics = { };
+const msgs = { };
+let msgIdx = 0;
+
+const subscribeAllTopics = () => {
+    Object.keys(topics).forEach(topic => {
+        if (!topics[topic].subscribed) {
+            logger("Subscribing " + topic);
+            topics[topic].subscribed = true;
+            client.subscribe(topic, err => {
+                if (err) {
+                    console.error("Can't subscribe: " + err.message);
+                    topics[topic].errHandler(new Error("Can't subscribe: " + err.message));
+                }
+            });
+        }
+    });
+};
 
 client.on('connect', () => {
     logger("Connected to MQTT");
@@ -17,14 +35,12 @@ client.on('connect', () => {
 client.on('disconnect', () => {
     logger("Disconnected from MQTT, reconnecting...");
     setTimeout(() => {
+        logger("Reconnecting...");
         client.reconnect();
     }, 4000);
 });
 
-const msgs = { };
-let msgIdx = 0;
-
-client.on('message', (topic, payload, packet) => {
+client.on('message', (topic, payload) => {
     if (topic === "ui/resp") {
         const correlationData = packet.properties?.correlationData.toString();
         const msg = msgs[correlationData];
@@ -35,6 +51,18 @@ client.on('message', (topic, payload, packet) => {
             } else {
                 msg.resolve(payload.toString());
             }
+        }
+    } else {
+        const handlers = topics[topic];
+        if (handlers) {
+            let data;
+            try {
+                data = JSON.parse(payload.toString());
+            } catch (err) {
+                handlers.errHandler(new Error("Invalid data received"));
+                return;
+            }
+            handlers.dataHandler(data);
         }
     }
 });
@@ -97,5 +125,14 @@ export const jsonRestRemoteCall = async (res, topic, json) => {
         res.status(500);
         res.statusMessage = err.message;
         res.send(err.message);
+    }
+};
+
+export const subscribeJsonTopic = (topic, dataHandler, errHandler) => {
+    topics[topic] = { dataHandler, errHandler };
+    if (client.connected) {
+        subscribeAllTopics();
+    } else {
+        logger("Parked subscription " + topic);
     }
 };
