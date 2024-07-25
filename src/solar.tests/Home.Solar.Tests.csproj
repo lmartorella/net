@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Home.Solar\Home.Solar.csproj" />
+    <ProjectReference Include="..\solar\Home.Solar.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,0 @@
-{
-  "scripts": {
-    "build": "msbuild Home.Solar.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild Home.Solar.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true"
-  }
-}

@@ -1,8 +1,8 @@
 {
   "name": "home.web",
   "scripts": {
-    "buildNet": "msbuild src\\net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src\\net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
-    "buildNetDebug": "msbuild src\\net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src\\net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
+    "buildNet": "msbuild src/net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
+    "buildNetDebug": "msbuild src/net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
     "buildWebLib": "cd src/ui-solar/lib && npx ng cache clean && npx ng build",
     "buildWeb": "cd src/ui/app && npx ng cache clean && npx ng build --configuration production",
     "buildWebDebug": "cd src/ui/app && npx ng cache clean && npx ng build --configuration development",
