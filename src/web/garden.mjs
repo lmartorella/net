@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import { etcDir, logger } from '../../src/web/settings.mjs';
-import { jsonRestRemoteCall } from '../../src/web/mqtt.mjs';
+import { etcDir, logger } from './settings.mjs';
+import { jsonRestRemoteCall } from './mqtt.mjs';
 
 const gardenCfgFile = path.join(etcDir, 'server/gardenCfg.json');
 const gardenCsvFile = path.join(etcDir, 'DB/GARDEN/garden.csv');

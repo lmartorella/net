@@ -24,6 +24,7 @@ const subscribeAllTopics = () => {
 
 client.on('connect', () => {
     logger("Connected to MQTT");
+    subscribeAllTopics();
     client.subscribe('ui/resp', err => {
         if (err) {
             console.error("Can't subscribe: " + err.message);
