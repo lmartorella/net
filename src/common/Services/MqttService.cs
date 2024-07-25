@@ -74,6 +74,11 @@ public class MqttService
         };
     }
 
+    private void ReportException(Exception exc)
+    {
+        logger.LogError(exc, "Unhandled Exception");
+    }
+
     private void OnMessagePublished(MqttNetLogMessage message)
     {
         if (logger.IsEnabled(LogLevel.Debug))
@@ -123,19 +128,29 @@ public class MqttService
     public async Task SubscribeRawTopic(string topic, Func<byte[], Task> handler)
     {
         await SubscribeTopic(topic);
-        mqttClient.ApplicationMessageReceivedAsync += async args =>
+        mqttClient.ApplicationMessageReceivedAsync += args =>
         {
-            var msg = args.ApplicationMessage;
-            if (msg.Topic == topic)
+            try
             {
-                if (msg.PayloadSegment.Array != null)
+                var msg = args.ApplicationMessage;
+                if (msg.Topic == topic)
                 {
-                    await handler(msg.PayloadSegment.Array);
+                    args.IsHandled = true;
+                    if (msg.PayloadSegment.Array != null)
+                    {
+                        _ = handler(msg.PayloadSegment.Array);
+                    }
+                    else 
+                    {
+                        _ = handler([]);
+                    }
                 }
-                else 
-                {
-                    await handler([]);
-                }
+                return Task.CompletedTask;
+            }
+            catch (Exception exc)
+            {
+                ReportException(exc);
+                return Task.CompletedTask;
             }
         };
     }
@@ -218,27 +233,35 @@ public class MqttService
             await owner.SubscribeTopic(responseTopic);
             owner.mqttClient.ApplicationMessageReceivedAsync += args =>
             {
-                var msg = args.ApplicationMessage;
-                if (msg.Topic == responseTopic && msg.CorrelationData != null)
+                try
                 {
-                    TaskCompletionSource<byte[]?> request;
-                    var correlationData = new Guid(msg.CorrelationData);
-                    if (requests.TryGetValue(correlationData, out request!))
+                    var msg = args.ApplicationMessage;
+                    if (msg.Topic == responseTopic && msg.CorrelationData != null)
                     {
-                        requests.Remove(correlationData);
-                        args.IsHandled = true;
+                        TaskCompletionSource<byte[]?> request;
+                        var correlationData = new Guid(msg.CorrelationData);
+                        if (requests.TryGetValue(correlationData, out request!))
+                        {
+                            requests.Remove(correlationData);
+                            args.IsHandled = true;
 
-                        if (msg.ContentType == ErrContentType)
-                        {
-                            request.TrySetException(new MqttRemoteCallError(Encoding.UTF8.GetString(msg.PayloadSegment.Array!)));
-                        }
-                        else
-                        {
-                            request.TrySetResult(msg.PayloadSegment.Count > 0 ? msg.PayloadSegment.Array! : null);
+                            if (msg.ContentType == ErrContentType)
+                            {
+                                request.TrySetException(new MqttRemoteCallError(Encoding.UTF8.GetString(msg.PayloadSegment.Array!)));
+                            }
+                            else
+                            {
+                                request.TrySetResult(msg.PayloadSegment.Count > 0 ? msg.PayloadSegment.Array! : null);
+                            }
                         }
                     }
+                    return Task.CompletedTask;
                 }
-                return Task.CompletedTask;
+                catch (Exception exc)
+                {
+                    owner.ReportException(exc);
+                    return Task.CompletedTask;
+                }
             };
             owner.logger.LogInformation("Subscribed responses, topic {0}", responseTopic);
         }
@@ -318,13 +341,21 @@ public class MqttService
         await SubscribeTopic(topic);
         mqttClient.ApplicationMessageReceivedAsync += args =>
         {
-            var msg = args.ApplicationMessage;
-            if (msg.Topic == topic && msg.ResponseTopic != null)
+            try
             {
-                args.IsHandled = true;
-                _ = ProcessRpc(msg, handler);
+                var msg = args.ApplicationMessage;
+                if (msg.Topic == topic && msg.ResponseTopic != null)
+                {
+                    args.IsHandled = true;
+                    _ = ProcessRpc(msg, handler);
+                }
+                return Task.CompletedTask;
             }
-            return Task.CompletedTask;
+            catch (Exception exc)
+            {
+                ReportException(exc);
+                return Task.CompletedTask;
+            }
         };
         logger.LogInformation("Created RPC endpoint, topic {0}", topic);
     }
