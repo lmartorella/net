@@ -40,6 +40,6 @@ export const processesMd = {
     solar: {
         processName: "Home.Solar",
         killTopic: "solar/kill",
-        frameworkDir: 'net7.0'
+        frameworkDir: 'net8.0'
     },
 };
