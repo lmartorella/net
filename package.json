@@ -3,11 +3,10 @@
   "scripts": {
     "buildNet": "msbuild src/net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
     "buildNetDebug": "msbuild src/net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
-    "buildWebLib": "cd src/ui-solar/lib && npx ng cache clean && npx ng build",
-    "buildWeb": "cd src/ui/app && npx ng cache clean && npx ng build --configuration production",
-    "buildWebDebug": "cd src/ui/app && npx ng cache clean && npx ng build --configuration development",
-    "build": "npm run buildNet && npm run buildWebLib && npm run buildWeb",
-    "dev": "npm run buildNetDebug && npm run buildWebLib &&npm run buildWebDebug",
+    "buildWeb": "cd src/ui && npx ng cache clean && npx ng build --configuration production",
+    "buildWebDebug": "cd src/ui && npx ng cache clean && npx ng build --configuration development",
+    "build": "npm run buildNet && npm run buildWeb",
+    "dev": "npm run buildNetDebug && npm run buildWebDebug",
     "start": "node src/web/server.mjs"
   },
   "repository": {

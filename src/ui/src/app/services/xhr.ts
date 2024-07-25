@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { Observable, catchError, of } from "rxjs";
+import { Injectable } from "@angular/core";
 
 export interface IModuleConfig {
     baseUrl?: string;
@@ -25,3 +26,17 @@ export const checkXhr = <T>(observable: Observable<T>): Promise<T> => {
         });
     });
 };
+
+
+@Injectable({ 
+    providedIn: 'root'
+})
+export class XhrService {
+    public get baseUrl(): string {
+        return config.baseUrl || "";
+    }
+
+    public check<T>(observable: Observable<T>): Promise<T> {
+        return checkXhr(observable);
+    };
+}
