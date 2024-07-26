@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 
-export const binDir = path.join(__dirname, '../../target/bin');
-export const etcDir = path.join(__dirname, '../../target/etc');
+export const binDir = path.join(__dirname, '../');
+export const etcDir = path.join(__dirname, '../../etc');
 
 export const webLogsFile = path.join(etcDir, 'webServer.log');
 let webServerCfgFile = path.join(etcDir, 'server/webCfg.json');

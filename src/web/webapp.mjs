@@ -10,5 +10,5 @@ export function register(app) {
     app.get('/', (_req, res) => {
         res.redirect('/app/index.html');
     });
-    app.use('/app', express.static(path.join(__dirname, '../../target/webapp')));
+    app.use('/app', express.static(path.join(__dirname, '../webapp')));
 };
