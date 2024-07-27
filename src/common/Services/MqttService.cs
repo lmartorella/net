@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MQTTnet;
 using MQTTnet.Client;
@@ -28,16 +29,18 @@ public class MqttService
     private readonly IHostEnvironment hostEnvironment;
     private readonly IMqttWillProvider? mqttWillProvider;
     private readonly SerializerFactory serializerFactory;
+    private readonly string host;
     private readonly MqttFactory mqttFactory;
     private readonly IManagedMqttClient mqttClient;
     private const string ErrContentType = "application/net_err+text";
 
-    public MqttService(ILogger<MqttService> logger, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
+    public MqttService(ILogger<MqttService> logger, IConfiguration configuration, IHostEnvironment hostEnvironment, SerializerFactory serializerFactory, IMqttWillProvider mqttWillProvider = null)
     {
         this.logger = logger;
         this.hostEnvironment = hostEnvironment;
         this.mqttWillProvider = mqttWillProvider;
         this.serializerFactory = serializerFactory;
+        host = configuration["mqttHost"] ?? "127.0.0.1";
         
         var mqttLogger = new MqttNetEventLogger();
         mqttLogger.LogMessagePublished += (_, e) => OnMessagePublished(e.LogMessage);
@@ -96,7 +99,7 @@ public class MqttService
     {
         var clientOptionsBuilder = new MqttClientOptionsBuilder()
                 .WithClientId(hostEnvironment.ApplicationName)
-                .WithTcpServer("127.0.0.1")
+                .WithTcpServer(host)
                 .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V500)
                 .WithCleanSession(true)
                 .WithCleanStart(true);

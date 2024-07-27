@@ -12,7 +12,7 @@ public class Manager
 {
     private readonly HostApplicationBuilder hostAppBuilder;
 
-    public Manager(string[] args, string jsonFileName)
+    public Manager(string[] args, string jsonFileName = null)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
 
@@ -29,9 +29,24 @@ public class Manager
         });
 
         hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
-        
-        var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();
-        hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
+        PrepareConfig(jsonFileName != null ? ("server/" + jsonFileName) : null);
+    }
+
+    private void PrepareConfig(string? jsonPath)
+    {
+        var values = new Dictionary<string, string?>();
+        var mqttHost = hostAppBuilder.Configuration["mqttHost"];
+        if (mqttHost != null)
+        {
+            values["mqttHost"] = mqttHost;
+        }
+        var configurationBuilder = hostAppBuilder.Configuration.AddInMemoryCollection(values);
+
+        if (jsonPath != null)
+        {
+            configurationBuilder.AddJsonFile(jsonPath, optional: false);
+        }
+        hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configurationBuilder.Build());
     }
 
     public void Start() 
