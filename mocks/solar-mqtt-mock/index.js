@@ -25,6 +25,6 @@ setInterval(() => {
     TotalEnergyKWh: 5618.5
   }));
 
-  mqttClient.publish(`solar/state`, "Running");
+  mqttClient.publish(`solar/state`, "Online");
 }, 5000);
 

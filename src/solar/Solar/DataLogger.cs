@@ -8,30 +8,29 @@ namespace Lucky.Home.Solar;
 /// Logs solar power immediate readings and stats.
 /// Manages csv files as DB.
 /// </summary>
-class DataLogger(InverterDevice inverterDevice, NotificationService notificationService, NotificationSender notificationSender, FsTimeSeries<PowerData, DayPowerData> database, ResourceService resourceService) : BackgroundService
+class DataLogger(InverterDevice inverterDevice, NotificationService notificationService, NotificationSender notificationSender, FsTimeSeries<PowerData, DayPowerData> database, ResourceService resourceService, CurrentSensorDevice currentSensorDevice) : BackgroundService
 {
     private string _lastFault = null;
+    private double? _lastAmmeterValue;
     private DateTime? _lastFaultMessageTimeStamp;
-    private NightState nightState;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         inverterDevice.NewData += (o, e) => HandleNewData(e);
-        inverterDevice.NightStateChanged += (o, e) => HandleNightStateChanged(e);
-        nightState = inverterDevice.NightState;
-    }
-
-    private void HandleNightStateChanged(NightState e)
-    {
-        nightState = e;
+        currentSensorDevice.DataChanged += (o, e) => UpdateCurrentValue(currentSensorDevice.LastData);
     }
 
     private void HandleNewData(PowerData data)
     {
         // Don't log OFF states
-        if (nightState == NightState.Night)
+        if (inverterDevice.DeviceState == DeviceState.Offline)
         {
             return;
+        }
+        // Use the current grid voltage to calculate Net Energy Metering
+        if (data.GridVoltageV > 0)
+        {
+            data.HomeUsageCurrentA = _lastAmmeterValue ?? -1;
         }
         database.AddNewSample(data);
         if (data.PowerW > 0)
@@ -41,6 +40,11 @@ class DataLogger(InverterDevice inverterDevice, NotificationService notification
         }
 
         CheckFault(data.InverterState);
+    }
+
+    private void UpdateCurrentValue(double? data)
+    {
+        _lastAmmeterValue = data;
     }
 
     public PowerData ImmediateData { get; private set; }

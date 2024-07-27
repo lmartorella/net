@@ -54,7 +54,12 @@ export const processesMd = {
     },
     sofarBridge: {
         processName: "Home.Sofar.Bridge",
-        //killTopic: "solar/kill",
+        //killTopic: "sofar-bridge/kill",
+        frameworkDir: 'net8.0'
+    },
+    currentBridge: {
+        processName: "Home.Current.Bridge",
+        //killTopic: "current-bridge/kill",
         frameworkDir: 'net8.0'
     },
 };

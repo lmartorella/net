@@ -11,13 +11,13 @@ internal class NotificationSender(ILogger<NotificationSender> logger, InverterDe
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        inverterDevice.NightStateChanged += (o, e) => HandleStateChanged(inverterDevice.NightState);
+        inverterDevice.DeviceStateChanged += (o, e) => HandleInverterStateChanged(inverterDevice.DeviceState);
     }
 
-    private void HandleStateChanged(NightState state)
+    private void HandleInverterStateChanged(DeviceState state)
     {
         // From connected/connecting to OFF mean end of the day
-        if (state == NightState.Night)
+        if (state == DeviceState.Offline)
         {
             // Send summary
             var summary = database.GetAggregatedData();

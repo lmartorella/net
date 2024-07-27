@@ -29,7 +29,8 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
     private async Task PullData(PollStrategyManager.PullDataEventArgs args)
     {
         // Publish the state machine state
-        await mqttService.RawPublish(Constants.SolarStateTopicId, Encoding.UTF8.GetBytes(args.NightState.ToString()));
+        var deviceState = args.NightState == NightState.Running ? DeviceState.Online : DeviceState.Offline;
+        await mqttService.RawPublish(Constants.SolarStateTopicId, Encoding.UTF8.GetBytes(deviceState.ToString()));
 
         // Check TCP MODBUS connection
         if (!modbusClient.CheckConnected())

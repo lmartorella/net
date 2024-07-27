@@ -8,7 +8,17 @@ public static class Constants
     public const string SolarDataTopicId = "solar/data";
 
     /// <summary>
-    /// String enum published by the inverter, <see cref="PollStrategyManager.StateEnum"/>
+    /// String enum published by the inverter, <see cref="DeviceState"/>
     /// </summary>
     public const string SolarStateTopicId = "solar/state";
+
+    /// <summary>
+    /// Double value as string published by the current sensor, in A
+    /// </summary>
+    public const string CurrentSensorDataTopicId = "currentSensor/data";
+
+    /// <summary>
+    /// String enum published by the inverter, <see cref="DeviceState"/>
+    /// </summary>
+    public const string CurrentSensorStateTopicId = "currentSensor/state";
 }

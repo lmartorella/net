@@ -3,13 +3,13 @@ using Microsoft.Extensions.Hosting;
 
 namespace Lucky.Home.Solar;
 
-class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevice inverterDevice) : BackgroundService
+class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevice inverterDevice, CurrentSensorDevice currentSensorDevice) : BackgroundService
 {
     /// <summary>
     /// This will never resets, and keep track of the last sampled grid voltage. Used even during night by home ammeter
     /// </summary>s
     private double _lastPanelVoltageV = -1.0;
-    private NightState inverterNightState;
+    private double? _lastAmmeterValue = null;
 
     public const string Topic = "ui/solar";
     public const string WillPayload = "null";
@@ -17,13 +17,19 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         inverterDevice.NewData += (o, e) => HandleNewInverterData(e);
-        inverterDevice.NightStateChanged += (o, e) => UpdateInverterState(inverterDevice.NightState);
-        UpdateInverterState(inverterDevice.NightState);
+        inverterDevice.DeviceStateChanged += (o, e) => UpdateInverterState();
+        currentSensorDevice.DataChanged += (o, e) => UpdateCurrentValue(currentSensorDevice.LastData);
+        UpdateInverterState();
     }
 
-    private void UpdateInverterState(NightState state)
+    private void UpdateInverterState()
     {
-        inverterNightState = state;
+        PublishUpdate();
+    }
+
+    private void UpdateCurrentValue(double? data)
+    {
+        _lastAmmeterValue = data;
         PublishUpdate();
     }
 
@@ -52,7 +58,7 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
             packet.CurrentTs = lastSample.FromInvariantTime(lastSample.TimeStamp).ToString("F");
             packet.TotalDayWh = lastSample.EnergyTodayWh;
             packet.TotalKwh = lastSample.TotalEnergyKWh;
-            packet.InverterState = lastSample.InverterState.ToUserInterface(inverterNightState);
+            packet.InverterState = lastSample.InverterState.ToUserInterface(inverterDevice.DeviceState);
 
             // From a recover boot 
             if (_lastPanelVoltageV <= 0 && lastSample.GridVoltageV > 0)
@@ -76,6 +82,12 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
             packet.GridV = lastSample.GridVoltageV;
             packet.UsageA = lastSample.HomeUsageCurrentA;
         }
+        else if (_lastPanelVoltageV > 0)
+        {
+            // APPROX: Use last panel voltage with up-to-date home power usage
+            packet.GridV = _lastPanelVoltageV;
+            packet.UsageA = _lastAmmeterValue ?? -1.0;
+        }
         else
         {
             packet.GridV = -1;
@@ -90,11 +102,11 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
         get
         {
             // InverterState.ModbusConnecting means modbus server down. Other states means modbus up
-            if (inverterNightState == NightState.Running)
+            if (inverterDevice.DeviceState == DeviceState.Online && currentSensorDevice.DeviceState == DeviceState.Online)
             {
                 return OnlineStatus.Online;
             }
-            if (inverterNightState != NightState.Running)
+            if (inverterDevice.DeviceState == DeviceState.Offline && currentSensorDevice.DeviceState == DeviceState.Offline)
             {
                 return OnlineStatus.Offline;
             }

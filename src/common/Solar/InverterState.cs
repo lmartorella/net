@@ -100,9 +100,9 @@ public class InverterState
         }
     }
 
-    public string ToUserInterface(NightState inverterNightState) 
+    public string ToUserInterface(DeviceState inverterDeviceState) 
     {
-        if (inverterNightState == NightState.Night)
+        if (inverterDeviceState == DeviceState.Offline)
         {
             return "Off";
         }

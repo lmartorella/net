@@ -18,9 +18,9 @@ class InverterDevice(MqttService mqttService) : BackgroundService
         });
         await mqttService.SubscribeRawTopic(Constants.SolarStateTopicId, async data =>
         {
-            if (Enum.TryParse(Encoding.UTF8.GetString(data), out NightState))
+            if (Enum.TryParse(Encoding.UTF8.GetString(data), out DeviceState))
             {
-                NightStateChanged?.Invoke(this, NightState);
+                DeviceStateChanged?.Invoke(this, DeviceState);
             }
         });
     }
@@ -31,12 +31,12 @@ class InverterDevice(MqttService mqttService) : BackgroundService
     public event EventHandler<PowerData> NewData;
 
     /// <summary>
-    /// Event raised when <see cref="NightState"/> changes.
-    /// </summary>
-    public event EventHandler<NightState> NightStateChanged;
-
-    /// <summary>
     /// The low-level inverter state
     /// </summary>
-    public NightState NightState;
+    public DeviceState DeviceState;
+
+    /// <summary>
+    /// Event raised when <see cref="DeviceState"/> changes.
+    /// </summary>
+    public event EventHandler<DeviceState> DeviceStateChanged;
 }
