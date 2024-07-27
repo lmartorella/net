@@ -28,11 +28,6 @@ public class Manager
             options.SetMinimumLevel(debug != null ? LogLevel.Debug : LogLevel.Information);
         });
 
-        var wrkPath = hostAppBuilder.Configuration["wrk"];
-        if (wrkPath != null) 
-        {
-            Environment.CurrentDirectory = wrkPath;
-        }
         hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
         
         var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();

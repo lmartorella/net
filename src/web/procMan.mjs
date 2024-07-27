@@ -30,7 +30,7 @@ export class ManagedProcess {
         }
 
         // Launch process
-        const args = ['--wrk', etcDir];
+        const args = [];
         if (this.#debug) {
             args.push("--debug", "true");
         }
@@ -40,7 +40,9 @@ export class ManagedProcess {
         const logConsoleStream = fs.createWriteStream(this.logFile, { flags: 'a' });
         const logErrorStream = fs.createWriteStream(this.#errLogFile, { flags: 'w' });
 
-        this.process = child_process.spawn(exe, args);
+        this.process = child_process.spawn(exe, args, {
+            cwd: etcDir
+        });
         this.process.stdout.pipe(logConsoleStream);
         this.process.stderr.pipe(logErrorStream);
 
