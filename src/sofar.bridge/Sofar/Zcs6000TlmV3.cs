@@ -39,7 +39,7 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
         }
         else
         {
-            var data = await GetData(args.NightState == NightState.Night);
+            var data = await GetData();
             args.CommunicationError = data.Item2;
             args.IsModbusConnected = true;
             if (data.Item2 == CommunicationError.None)
@@ -61,8 +61,8 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
 
     private class GridRegistryValues : RegistryValues
     {
-        public GridRegistryValues(int modbusNodeId, ILogger<Zcs6000TlmV3> logger)
-            :base(new AddressRange { Start = 0x484, End = 0x48e }, modbusNodeId, logger)
+        public GridRegistryValues(int modbusNodeId)
+            :base(new AddressRange { Start = 0x484, End = 0x48e }, modbusNodeId)
         {
         }
 
@@ -101,8 +101,8 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
 
     private class StringsRegistryValues : RegistryValues
     {
-        public StringsRegistryValues(int modbusNodeId, ILogger<Zcs6000TlmV3> logger)
-            :base(new AddressRange { Start = 0x584, End = 0x589 }, modbusNodeId, logger)
+        public StringsRegistryValues(int modbusNodeId)
+            :base(new AddressRange { Start = 0x584, End = 0x589 }, modbusNodeId)
         {
         }
 
@@ -157,8 +157,8 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
 
     private class ProductionRegistryValues : RegistryValues
     {
-        public ProductionRegistryValues(int modbusNodeId, ILogger<Zcs6000TlmV3> logger)
-            : base(new AddressRange { Start = 0x684, End = 0x687 }, modbusNodeId, logger)
+        public ProductionRegistryValues(int modbusNodeId)
+            : base(new AddressRange { Start = 0x684, End = 0x687 }, modbusNodeId)
         {
         }
 
@@ -187,8 +187,8 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
         /// </summary>
         private const int LikelyFaultBitsWindowSize = 6;
 
-        public StateRegistryValues(int modbusNodeId, ILogger<Zcs6000TlmV3> logger)
-            : base(new AddressRange { Start = 0x404, End = 0x405 + LikelyFaultBitsWindowSize - 1 }, modbusNodeId, logger)
+        public StateRegistryValues(int modbusNodeId)
+            : base(new AddressRange { Start = 0x404, End = 0x405 + LikelyFaultBitsWindowSize - 1 }, modbusNodeId)
         {
         }
 
@@ -251,24 +251,24 @@ class Zcs6000TlmV3(ILogger<Zcs6000TlmV3> logger, ModbusClientFactory modbusClien
     /// <summary>
     /// In night mode, silence timeout errors
     /// </summary>
-    private async Task<Tuple<PowerData, CommunicationError>> GetData(bool nightMode)
+    private async Task<Tuple<PowerData, CommunicationError>> GetData()
     {
         var data = new PowerData();
         CommunicationError error = CommunicationError.None;
 
-        var gridData = new GridRegistryValues(modbusNodeId, logger);
-        var stringsData = new StringsRegistryValues(modbusNodeId, logger);
-        var stateData = new StateRegistryValues(modbusNodeId, logger);
-        var prodData = new ProductionRegistryValues(modbusNodeId, logger);
+        var gridData = new GridRegistryValues(modbusNodeId);
+        var stringsData = new StringsRegistryValues(modbusNodeId);
+        var stateData = new StateRegistryValues(modbusNodeId);
+        var prodData = new ProductionRegistryValues(modbusNodeId);
 
         try
         {
             var errors = 0;
             // Aggregate data in order to minimize the block readings
-            errors += (await gridData.ReadData(modbusClient, nightMode)) ? 0 : 1;
-            errors += (await stringsData.ReadData(modbusClient, nightMode)) ? 0 : 1;
-            errors += (await stateData.ReadData(modbusClient, nightMode)) ? 0 : 1;
-            errors += (await prodData.ReadData(modbusClient, nightMode)) ? 0 : 1;
+            errors += (await gridData.ReadData(modbusClient)) ? 0 : 1;
+            errors += (await stringsData.ReadData(modbusClient)) ? 0 : 1;
+            errors += (await stateData.ReadData(modbusClient)) ? 0 : 1;
+            errors += (await prodData.ReadData(modbusClient)) ? 0 : 1;
 
             if (errors == 4)
             {

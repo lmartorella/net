@@ -19,7 +19,7 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
         modbusNodeId = configuration.AmmeterStationId;
         if (configuration.AmmeterHostName != "")
         {
-            modbusClient = modbusClientFactory.Get(configuration.AmmeterHostName, FluentModbus.ModbusEndianness.LittleEndian);
+            modbusClient = modbusClientFactory.Get(configuration.AmmeterHostName, ModbusEndianness.LittleEndian);
         }
         logger.LogInformation("Start: host {0}:{1}", configuration.AmmeterHostName, modbusNodeId);
 
@@ -27,20 +27,17 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
         while (true)
         {
             await Task.Delay(Period);
-            await PullData();
-        }
-    }
-
-    private async Task PullData()
-    {
-        // Check TCP MODBUS connection
-        if (modbusClient == null || !modbusClient.CheckConnected())
-        {
-            await PublishData(null);
-        }
-        else
-        {
-            await PublishData(await GetData());
+            // Check TCP MODBUS connection
+            if (modbusClient == null || !modbusClient.CheckConnected())
+            {
+                // Put state offline as well
+                await PublishData(null);
+            }
+            else
+            {
+                // If GetData() fails, propagate the Offline state
+                await PublishData(await GetData());
+            }
         }
     }
 
@@ -49,29 +46,20 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
     /// </summary>
     private async Task<float[]> GetData()
     {
-        try
+        // PIC ammeter specs, little endian fixed point 16+16
+        var buffer = await modbusClient.ReadHoldingRegistries<ushort>(modbusNodeId, 0x200, 4);
+        if (buffer == null)
         {
-            // PIC ammeter specs, little endian
-            var buffer = await modbusClient.ReadHoldingRegistries(modbusNodeId, 0x200, 4);
-            float[] ret = new float[2];
-            for (int i = 0; i < 2; i++)
-            {
-                float value = ((uint)(buffer[i * 2] + (buffer[i * 2 + 1] << 16))) / 65536f;
-                // full-scale = 1024, 50A sensor
-                ret[i] = value / 1024f * 50f;
-            }                        
-            return ret;
-        }
-        catch (ModbusException exc)
-        {
-            if (exc.ExceptionCode != ModbusExceptionCode.GatewayTargetDeviceFailedToRespond)
-            {
-                logger.LogError(exc, "ModbusExc");
-            }
-            // The bridge RTU-to-TCP responded with some error that is not managed, so it is alive
-            // Even the RTU timeout is managed by the gateway and translated to a modbus error
             return null;
         }
+        float[] ret = new float[2];
+        for (int i = 0; i < 2; i++)
+        {
+            float value = ((uint)(buffer[i * 2] + (buffer[i * 2 + 1] << 16))) / 65536f;
+            // full-scale = 1024, 50A sensor
+            ret[i] = value / 1024f * 50f;
+        }                        
+        return ret;
     }
 
     private async Task PublishData(float[] data)

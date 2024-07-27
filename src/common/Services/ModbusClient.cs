@@ -1,5 +1,4 @@
 ﻿using FluentModbus;
-using Lucky.Home.Services.FluentModbus;
 using Microsoft.Extensions.Logging;
 using System.Data;
 using System.Net;
@@ -88,27 +87,31 @@ public class ModbusClient(ILogger<ModbusClientFactory> logger, string deviceHost
         }
     }
 
-    public async Task<ushort[]> ReadHoldingRegistries(int unitId, int addressStart, int count)
+    /// <summary>
+    /// Wraps ModbusClient.ReadHoldingRegistries and catch communication exceptions and return null
+    /// </summary>
+    public async Task<T[]> ReadHoldingRegistries<T>(int unitId, int addressStart, int count) where T : unmanaged
     {
-        // Buggy API not passing cancellation token. Switch to ReadHoldingRegistersAsync<T>
-        // after https://github.com/Apollo3zehn/FluentModbus/pull/100 merge
-        var dataset = SpanExtensions.Cast<byte, ushort>(await client.ReadHoldingRegistersAsync((byte)unitId, (ushort)addressStart, (ushort)count, Timeout));
-        if (/*client.SwapBytes*/ true)
+        try
         {
-            ModbusUtils.SwitchEndianness(dataset);
+            var dataset = await client.ReadHoldingRegistersAsync<T>(unitId, addressStart, count, Timeout);
+            return dataset.ToArray();
         }
-        return dataset.ToArray();
-    }
-
-    public async Task<float[]> ReadHoldingRegistriesFloat(int unitId, int addressStart, int count)
-    {
-        // Buggy API not passing cancellation token. Switch to ReadHoldingRegistersAsync<T>
-        // after https://github.com/Apollo3zehn/FluentModbus/pull/100 merge
-        var dataset = SpanExtensions.Cast<byte, float>(await client.ReadHoldingRegistersAsync((byte)unitId, (ushort)addressStart, (ushort)count, Timeout));
-        if (/*client.SwapBytes*/ true)
+        catch (OperationCanceledException exc)
         {
-            ModbusUtils.SwitchEndianness(dataset);
+            // Bridge gone down?
+            logger.LogError(exc, "canceled");
+            return null;
         }
-        return dataset.ToArray();
+        catch (ModbusException exc)
+        {
+            if (exc.ExceptionCode != ModbusExceptionCode.GatewayTargetDeviceFailedToRespond)
+            {
+                logger.LogError(exc, "ModbusExc");
+            }
+            // The bridge RTU-to-TCP responded with some error that is not managed, so it is alive
+            // Even the RTU timeout is managed by the gateway and translated to a modbus error
+            return null;
+        }
     }
 }
