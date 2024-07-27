@@ -41,7 +41,7 @@ client.on('disconnect', () => {
     }, 4000);
 });
 
-client.on('message', (topic, payload) => {
+client.on('message', (topic, payload, packet) => {
     if (topic === "ui/resp") {
         const correlationData = packet.properties?.correlationData.toString();
         const msg = msgs[correlationData];

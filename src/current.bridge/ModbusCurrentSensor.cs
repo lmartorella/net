@@ -2,6 +2,8 @@
 using System.Text;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ModbusClient = Lucky.Home.Services.ModbusClient;
+using FluentModbus;
 
 namespace Lucky.Home.Solar;
 
@@ -47,16 +49,29 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
     /// </summary>
     private async Task<float[]> GetData()
     {
-        // PIC ammeter specs, little endian
-        var buffer = await modbusClient.ReadHoldingRegistries(modbusNodeId, 0x200, 4);
-        float[] ret = new float[2];
-        for (int i = 0; i < 2; i++)
+        try
         {
-            float value = ((uint)(buffer[i * 2] + (buffer[i * 2 + 1] << 16))) / 65536f;
-            // full-scale = 1024, 50A sensor
-            ret[i] = value / 1024f * 50f;
-        }                        
-        return ret;
+            // PIC ammeter specs, little endian
+            var buffer = await modbusClient.ReadHoldingRegistries(modbusNodeId, 0x200, 4);
+            float[] ret = new float[2];
+            for (int i = 0; i < 2; i++)
+            {
+                float value = ((uint)(buffer[i * 2] + (buffer[i * 2 + 1] << 16))) / 65536f;
+                // full-scale = 1024, 50A sensor
+                ret[i] = value / 1024f * 50f;
+            }                        
+            return ret;
+        }
+        catch (ModbusException exc)
+        {
+            if (exc.ExceptionCode != ModbusExceptionCode.GatewayTargetDeviceFailedToRespond)
+            {
+                logger.LogError(exc, "ModbusExc");
+            }
+            // The bridge RTU-to-TCP responded with some error that is not managed, so it is alive
+            // Even the RTU timeout is managed by the gateway and translated to a modbus error
+            return null;
+        }
     }
 
     private async Task PublishData(float[] data)
@@ -86,6 +101,7 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
         {
             if (!Equals(deviceState, value)) 
             {
+                logger.LogInformation("DeviceState changed to {0}", value);
                 deviceState = value;
                 _ = mqttService.RawPublish(Constants.CurrentSensorStateTopicId, Encoding.UTF8.GetBytes(value!.ToString()));
             }
