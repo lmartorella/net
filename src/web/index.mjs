@@ -8,7 +8,7 @@ import passport from 'passport';
 import passportLocal from 'passport-local';
 import path from 'path';
 import process from 'process';
-import { webLogsFile, websSettings, __dirname, logger, processesMd } from './settings.mjs';
+import { webLogsFile, websSettings, etcDir, logger, processesMd } from './settings.mjs';
 import { register as solarRegister } from './solar.mjs';
 import { register as gardenRegister } from './garden.mjs';
 import { register as webappRegister } from './webapp.mjs';
@@ -68,7 +68,7 @@ if (!secret) {
 app.use(expressSession({ secret, resave: false, saveUninitialized: false }));
 
 // Register custom endpoints
-solarRegister(app, path.join(__dirname, "../../target/etc/Db/SOLAR"));
+solarRegister(app, path.join(etcDir, "Db/SOLAR"));
 gardenRegister(app, ensureLoggedIn);
 webappRegister(app);
 

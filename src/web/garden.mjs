@@ -3,7 +3,7 @@ import path from 'path';
 import { etcDir, logger } from './settings.mjs';
 import { jsonRestRemoteCall } from './mqtt.mjs';
 
-const gardenCfgFile = path.join(etcDir, 'server/gardenCfg.json');
+const gardenCfgFile = path.join(etcDir, 'server/gardenConfiguration.json');
 const gardenCsvFile = path.join(etcDir, 'DB/GARDEN/garden.csv');
 
 export function register(app, privileged) {
