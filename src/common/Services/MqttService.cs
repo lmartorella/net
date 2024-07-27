@@ -68,15 +68,15 @@ public class MqttService
         mqttClient.SynchronizingSubscriptionsFailedAsync += (e) => 
         {
             logger.LogInformation("SynchronizingSubscriptionsFailedAsync: {0}. Added: {1}, Removed {2}", e.Exception?.Message, e.AddedSubscriptions?.Count, e.RemovedSubscriptions?.Count);
-            logger.LogCritical(e.Exception, "SynchronizingSubscriptionsFailedAsync");
-            Environment.Exit(1);
+            ReportException(e.Exception, "SynchronizingSubscriptionsFailedAsync");
             return Task.CompletedTask;
         };
     }
 
-    private void ReportException(Exception exc)
+    private void ReportException(Exception exc, string context)
     {
-        logger.LogError(exc, "Unhandled Exception");
+        logger.LogCritical(exc, context);
+        Environment.Exit(1);
     }
 
     private void OnMessagePublished(MqttNetLogMessage message)
@@ -149,7 +149,7 @@ public class MqttService
             }
             catch (Exception exc)
             {
-                ReportException(exc);
+                ReportException(exc, "SubscribeRawTopic:ApplicationMessageReceivedAsync");
                 return Task.CompletedTask;
             }
         };
@@ -259,7 +259,7 @@ public class MqttService
                 }
                 catch (Exception exc)
                 {
-                    owner.ReportException(exc);
+                    owner.ReportException(exc, "SubscribeRawRpcResponse:ApplicationMessageReceivedAsync");
                     return Task.CompletedTask;
                 }
             };
@@ -353,7 +353,7 @@ public class MqttService
             }
             catch (Exception exc)
             {
-                ReportException(exc);
+                ReportException(exc, "SubscribeRawRpc:ApplicationMessageReceivedAsync");
                 return Task.CompletedTask;
             }
         };
