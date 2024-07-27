@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "notification", "notificatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Home.Solar.Tests", "solar.tests\Home.Solar.Tests.csproj", "{E53796B3-819D-4500-979A-23D80EA01733}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Home.Solar", "solar\Home.Solar.csproj", "{8B9D7775-805F-4D62-87DE-597825BED748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "solar", "solar\solar.csproj", "{8B9D7775-805F-4D62-87DE-597825BED748}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sofar-modbus-mqtt-bridge", "sofar-modbus-mqtt-bridge\sofar-modbus-mqtt-bridge.csproj", "{822D5576-CB56-4F18-91D0-6BB3DC6108C2}"
 EndProject

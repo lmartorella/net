@@ -40,6 +40,17 @@
             "justMyCode": false
         },
         {
+            "name": "Launch Solar Server",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/target/bin/net8.0/Home.Solar.exe",
+            "cwd": "${workspaceFolder}\\target\\etc",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "preLaunchTask": "Build: Solar Server",
+            "justMyCode": false
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Web Server",

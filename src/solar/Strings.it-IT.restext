@@ -1,0 +1,7 @@
+﻿solar_daily_summary=Energia totale: {PowerKWh} kWh\ncon un picco di {PeakPowerW}W alle {PeakPowerTimestamp}.\n\nDurata del giorno: {SunTime}\n\nPicco del voltaggio di rete di {PeakVoltageV}V alle {PeakVoltageTimestamp}.
+solar_daily_summary_title=Energia solare oggi: {0:0.0} kWh
+solar_daylight_format=h' ore e 'mm' minuti'
+solar_error_mail_error=Errore: {0}
+solar_error_mail_error_solved=, risolto dopo {0} secondi.
+solar_error_mail_normal=Normale
+solar_error_mail_title=Errori Inverter

@@ -5,7 +5,7 @@ const mqttClient = mqtt.connect({ host: "127.0.0.1" });
 setInterval(() => {
   console.log("Publish update...");
   mqttClient.publish(`solar/data`, JSON.stringify({
-    TimeStamp: "\/Date(1722067796177+0200)\/",
+    TimeStamp: `\/Date(${new Date().getTime()}+0200)\/`,
     EnergyTodayWh: 4380,
     Fault: 0,
     GridCurrentA: 10.79,
@@ -22,7 +22,9 @@ setInterval(() => {
     String1VoltageV: 310.1,
     String2CurrentA: 7.23,
     String2VoltageV: 240.4,
-    TotalEnergyKWh:5618.5
+    TotalEnergyKWh: 5618.5
   }));
+
+  mqttClient.publish(`solar/state`, "Running");
 }, 5000);
 

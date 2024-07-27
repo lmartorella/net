@@ -1,108 +1,85 @@
-﻿using Lucky.Db;
-using Lucky.Home.Solar;
+﻿using Lucky.Home.Db;
 using Lucky.Home.Services;
-using System;
+using Microsoft.Extensions.Hosting;
 
-namespace Lucky.Home.Solar
+namespace Lucky.Home.Solar;
+
+/// <summary>
+/// Logs solar power immediate readings and stats.
+/// Manages csv files as DB.
+/// </summary>
+class DataLogger(InverterDevice inverterDevice, NotificationService notificationService, NotificationSender notificationSender, FsTimeSeries<PowerData, DayPowerData> database, ResourceService resourceService) : BackgroundService
 {
-    /// <summary>
-    /// Logs solar power immediate readings and stats.
-    /// Manages csv files as DB.
-    /// </summary>
-    class DataLogger
+    private string _lastFault = null;
+    private DateTime? _lastFaultMessageTimeStamp;
+    private NightState nightState;
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        private readonly ITimeSeries<PowerData, DayPowerData> Database;
-        private string _lastFault = null;
-        private DateTime? _lastFaultMessageTimeStamp;
-        private readonly NotificationSender notificationSender;
-        private double? _lastAmmeterValue = null;
-        private NightState nightState;
+        inverterDevice.NewData += (o, e) => HandleNewData(e);
+        inverterDevice.NightStateChanged += (o, e) => HandleNightStateChanged(e);
+        nightState = inverterDevice.NightState;
+    }
 
-        public DataLogger(InverterDevice inverterDevice, AnalogIntegrator ammeterSink, NotificationSender notificationSender, ITimeSeries<PowerData, DayPowerData> database)
+    private void HandleNightStateChanged(NightState e)
+    {
+        nightState = e;
+    }
+
+    private void HandleNewData(PowerData data)
+    {
+        // Don't log OFF states
+        if (nightState == NightState.Night)
         {
-            this.notificationSender = notificationSender;
-            Database = database;
-            inverterDevice.NewData += (o, e) => HandleNewData(e);
-            inverterDevice.NightStateChanged += (o, e) => HandleNightStateChanged(e);
-            nightState = inverterDevice.NightState;
-            ammeterSink.DataChanged += (o, e) => UpdateAmmeterValue(ammeterSink.Data);
+            return;
+        }
+        database.AddNewSample(data);
+        if (data.PowerW > 0)
+        {
+            // New data, unlock next mail
+            notificationSender.OnNewData();
         }
 
-        private void HandleNightStateChanged(NightState e)
-        {
-            nightState = e;
-        }
+        CheckFault(data.InverterState);
+    }
 
-        private void UpdateAmmeterValue(double? data)
-        {
-            _lastAmmeterValue = data;
-        }
+    public PowerData ImmediateData { get; private set; }
 
-        private void HandleNewData(PowerData data)
+    private void CheckFault(InverterState inverterState)
+    {
+        var fault = inverterState.IsFaultToNotify();
+        if (_lastFault != fault)
         {
-            // Don't log OFF states
-            if (nightState == NightState.Night)
+            DateTime ts = DateTime.Now;
+            if (fault != null)
             {
-                return;
+                // Enter fault
+                notificationService.EnqueueStatusUpdate(resourceService.GetString<DataLogger>("solar_error_mail_title"), ts.ToString("HH:mm:ss") + ": " + string.Format(resourceService.GetString<DataLogger>("solar_error_mail_error"), fault));
+                _lastFaultMessageTimeStamp = ts;
             }
-            // Use the current grid voltage to calculate Net Energy Metering
-            if (data.GridVoltageV > 0)
+            else
             {
-                data.HomeUsageCurrentA = _lastAmmeterValue ?? -1;
+                // Recover
+                // Try to recover last message update
+                notificationService.EnqueueStatusUpdate(
+                    resourceService.GetString<DataLogger>("solar_error_mail_title"), 
+                    ts.ToString("HH:mm:ss") + ": " + resourceService.GetString<DataLogger>("solar_error_mail_normal"),
+                    _lastFaultMessageTimeStamp.HasValue ?
+                        string.Format(resourceService.GetString<DataLogger>("solar_error_mail_error_solved"), (int)(ts - _lastFaultMessageTimeStamp.Value).TotalSeconds) :
+                        null
+                );
             }
-            var db = Database;
-            if (db != null)
-            {
-                db.AddNewSample(data);
-                if (data.PowerW > 0)
-                {
-                    // New data, unlock next mail
-                    notificationSender.OnNewData();
-                }
-
-                CheckFault(data.InverterState);
-            }
+            _lastFault = fault;
         }
+    }
 
-        public PowerData ImmediateData { get; private set; }
+    public PowerData GetLastSample()
+    {
+        return database.GetLastSample();
+    }
 
-        private void CheckFault(InverterState inverterState)
-        {
-            var fault = inverterState.IsFaultToNotify();
-            if (_lastFault != fault)
-            {
-                var notification = Manager.GetService<INotificationService>();
-                DateTime ts = DateTime.Now;
-                if (fault != null)
-                {
-                    // Enter fault
-                    notification.EnqueueStatusUpdate(Resources.solar_error_mail_title, ts.ToString("HH:mm:ss") + ": " + string.Format(Resources.solar_error_mail_error, fault));
-                    _lastFaultMessageTimeStamp = ts;
-                }
-                else
-                {
-                    // Recover
-                    // Try to recover last message update
-                    notification.EnqueueStatusUpdate(
-                        Resources.solar_error_mail_title, 
-                        ts.ToString("HH:mm:ss") + ": " + Resources.solar_error_mail_normal,
-                        _lastFaultMessageTimeStamp.HasValue ?
-                            string.Format(Resources.solar_error_mail_error_solved, (int)(ts - _lastFaultMessageTimeStamp.Value).TotalSeconds) :
-                            null
-                    );
-                }
-                _lastFault = fault;
-            }
-        }
-
-        public PowerData GetLastSample()
-        {
-            return Database?.GetLastSample();
-        }
-
-        public DayPowerData GetAggregatedData()
-        {
-            return Database?.GetAggregatedData();
-        }
+    public DayPowerData GetAggregatedData()
+    {
+        return database.GetAggregatedData();
     }
 }

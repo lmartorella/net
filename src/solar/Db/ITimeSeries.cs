@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Lucky.Home;
 
 namespace Lucky.Db;
 
@@ -42,25 +40,4 @@ public interface ITimeSeries
     /// Called at the end of a day to open a new csv file
     /// </summary>
     Task Rotate(DateTime start);
-}
-
-/// <summary>
-/// Typed time series
-/// </summary>
-public interface ITimeSeries<T, Taggr> : ITimeSeries where T : TimeSample where Taggr : DayTimeSample<T>
-{
-    /// <summary>
-    /// Register new sample
-    /// </summary>
-    void AddNewSample(T sample);
-
-    /// <summary>
-    /// Retrieve the last sample, if one
-    /// </summary>
-    T GetLastSample();
-
-    /// <summary>
-    /// Get the current period data aggregated with the Taggr logic.
-    /// </summary>
-    Taggr GetAggregatedData();
 }

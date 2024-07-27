@@ -58,7 +58,7 @@ public class Manager
     }
 
     public void AddSingleton<TC, TI>() where TI : class 
-                                            where TC : class, TI
+                                       where TC : class, TI
     {
         hostAppBuilder.Services.AddSingleton<TI, TC>();
     }
