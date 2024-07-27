@@ -1,7 +1,5 @@
 ﻿using Lucky.Home;
 using Lucky.Home.Db;
-using Lucky.Home.Device;
-using Lucky.Home.Device.Sofar;
 using Lucky.Home.Services;
 using Lucky.Home.Solar;
 using System;
@@ -73,21 +71,8 @@ namespace Home.Solar
         /// </summary>
         private static async Task StartModbusBridges()
         {
-            var configuration = Manager.GetService<SolarConfigurationService>().State;
-
-            var pollStrategyManager = new PollStrategyManager();
-            var inverterBridge = new Zcs6000TlmV3(pollStrategyManager, configuration.InverterHostName, configuration.InverterStationId);
-            var ammeter = new ModbusAmmeter(configuration.AmmeterHostName, configuration.AmmeterStationId);
-
-            var waitTasks = new[]
-            {
-                Tuple.Create(inverterBridge.StartLoop(), "Inverter"),
-                Tuple.Create(ammeter.StartLoop(), "Ammeter"),
-                Tuple.Create(Manager.Run(), "killed")
-            };
-            var finishedTask = await Task.WhenAny(waitTasks.Select(t => t.Item1));
-            Manager.GetService<LoggerFactory>().Create("Main").Log("LoopExited", "task#", waitTasks.First(t => t.Item1 == finishedTask).Item2);
-            await finishedTask;
+            await Manager.Run();
+            Manager.GetService<LoggerFactory>().Create("Main").Log("LoopExited: killed");
         }
     }
 }

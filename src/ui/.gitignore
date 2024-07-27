@@ -7,5 +7,5 @@
 /bazel-out
 
 # Miscellaneous
-/.angular/cache
+/.angular
 /connect.lock

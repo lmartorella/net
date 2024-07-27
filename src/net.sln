@@ -3,23 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "common", "common\common.csproj", "{3E674CBB-7326-4A1B-80C6-A90B0E1772B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "common", "common\common.csproj", "{3E674CBB-7326-4A1B-80C6-A90B0E1772B4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "garden", "garden\garden.csproj", "{41A83EDB-45B8-44ED-AC35-1D2AC3C36CF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "garden", "garden\garden.csproj", "{41A83EDB-45B8-44ED-AC35-1D2AC3C36CF4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "notification", "notification\notification.csproj", "{2358793C-B352-4F63-A8AC-25574F6D1AC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "notification", "notification\notification.csproj", "{2358793C-B352-4F63-A8AC-25574F6D1AC2}"
 EndProject
-GProject("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Home.Solar", "solar\Home.Solar.csproj", "{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Home.Solar.Tests", "solar.tests\Home.Solar.Tests.csproj", "{E53796B3-819D-4500-979A-23D80EA01733}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Home.Solar.Tests", "solar.tests\Home.Solar.Tests.csproj", "{E53796B3-819D-4500-979A-23D80EA01733}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Home.Solar", "solar\Home.Solar.csproj", "{8B9D7775-805F-4D62-87DE-597825BED748}"
 EndProject
-lobal
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sofar-modbus-mqtt-bridge", "sofar-modbus-mqtt-bridge\sofar-modbus-mqtt-bridge.csproj", "{822D5576-CB56-4F18-91D0-6BB3DC6108C2}"
+EndProject
+Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3E674CBB-7326-4A1B-80C6-A90B0E1772B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -34,9 +33,18 @@ lobal
 		{2358793C-B352-4F63-A8AC-25574F6D1AC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2358793C-B352-4F63-A8AC-25574F6D1AC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2358793C-B352-4F63-A8AC-25574F6D1AC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56D68DDD-EAFB-4498-A4E8-46EEA18880F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E53796B3-819D-4500-979A-23D80EA01733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E53796B3-819D-4500-979A-23D80EA01733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B9D7775-805F-4D62-87DE-597825BED748}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B9D7775-805F-4D62-87DE-597825BED748}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B9D7775-805F-4D62-87DE-597825BED748}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B9D7775-805F-4D62-87DE-597825BED748}.Release|Any CPU.Build.0 = Release|Any CPU
+		{822D5576-CB56-4F18-91D0-6BB3DC6108C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{822D5576-CB56-4F18-91D0-6BB3DC6108C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{822D5576-CB56-4F18-91D0-6BB3DC6108C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{822D5576-CB56-4F18-91D0-6BB3DC6108C2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

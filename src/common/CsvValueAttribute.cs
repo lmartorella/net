@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Lucky.Db
+namespace Lucky.Home
 {
     /// <summary>
     /// Describe how enum values should serialize/deserialize from a csv file

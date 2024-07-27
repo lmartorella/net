@@ -1,10 +1,9 @@
 {
-  "name": "shelly3-mock",
+  "name": "solar-mqtt-mock",
   "scripts": {},
   "type": "module",
   "private": true,
   "dependencies": {
-    "express": "^4.19.2",
     "mqtt": "5.5.4"
   }
 }

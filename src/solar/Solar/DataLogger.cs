@@ -1,5 +1,5 @@
 ﻿using Lucky.Db;
-using Lucky.Home.Device.Sofar;
+using Lucky.Home.Solar;
 using Lucky.Home.Services;
 using System;
 

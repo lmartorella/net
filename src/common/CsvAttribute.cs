@@ -1,7 +1,6 @@
-﻿using Lucky.Home;
-using System;
+﻿using System;
 
-namespace Lucky.Db
+namespace Lucky.Home
 {
     /// <summary>
     /// Describe field to serialize/deserialize from a csv file

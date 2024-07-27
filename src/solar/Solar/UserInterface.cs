@@ -1,5 +1,5 @@
-﻿using Lucky.Home.Device.Sofar;
-using Lucky.Home.Services;
+﻿using Lucky.Home.Services;
+using Lucky.Home.Solar;
 
 namespace Lucky.Home.Solar
 {

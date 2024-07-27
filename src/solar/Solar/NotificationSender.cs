@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Lucky.Db;
-using Lucky.Home.Device.Sofar;
 using Lucky.Home.Services;
 
 namespace Lucky.Home.Solar

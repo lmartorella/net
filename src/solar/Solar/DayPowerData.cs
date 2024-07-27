@@ -1,4 +1,5 @@
 ﻿using Lucky.Db;
+using Lucky.Home.Solar;
 using System;
 using System.Collections.Generic;
 using System.Linq;

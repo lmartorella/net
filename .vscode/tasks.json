@@ -24,6 +24,17 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "Build: Sofar Modbus Bridge",
+            "command": "dotnet",
+            "group": "build",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/sofar-modbus-mqtt-bridge/sofar-modbus-mqtt-bridge.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "type": "npm",
             "script": "buildWeb",
             "group": "build",
