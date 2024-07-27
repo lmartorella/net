@@ -1,4 +1,5 @@
 using Lucky.Home.Services;
+using Lucky.Home.Solar;
 
 namespace Lucky.Home;
 
@@ -12,6 +13,7 @@ class Program
         manager.AddSingleton<Configuration>();
         manager.AddSingleton<SerializerFactory>();
         manager.AddSingleton<ModbusClientFactory>();
+        manager.AddHostedService<ModbusCurrentSensor>();
         return manager.Start();
     }
 }

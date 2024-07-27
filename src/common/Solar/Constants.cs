@@ -13,9 +13,14 @@ public static class Constants
     public const string SolarStateTopicId = "solar/state";
 
     /// <summary>
-    /// Double value as string published by the current sensor, in A
+    /// Double value as string published by the current sensor, in Ampere RMS, home usage
     /// </summary>
-    public const string CurrentSensorDataTopicId = "currentSensor/data";
+    public const string CurrentSensorHomeDataTopicId = "currentSensor/home";
+
+    /// <summary>
+    /// Double value as string published by the current sensor, in Ampere RMS, exported to grid
+    /// </summary>
+    public const string CurrentSensorExportDataTopicId = "currentSensor/export";
 
     /// <summary>
     /// String enum published by the inverter, <see cref="DeviceState"/>

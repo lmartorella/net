@@ -9,7 +9,7 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
     /// This will never resets, and keep track of the last sampled grid voltage. Used even during night by home ammeter
     /// </summary>s
     private double _lastPanelVoltageV = -1.0;
-    private double? _lastAmmeterValue = null;
+    private double? _lastHomeCurrentValue = null;
 
     public const string Topic = "ui/solar";
     public const string WillPayload = "null";
@@ -18,7 +18,7 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
     {
         inverterDevice.NewData += (o, e) => HandleNewInverterData(e);
         inverterDevice.DeviceStateChanged += (o, e) => UpdateInverterState();
-        currentSensorDevice.DataChanged += (o, e) => UpdateCurrentValue(currentSensorDevice.LastData);
+        currentSensorDevice.HomeDataChanged += (o, e) => UpdateHomeCurrentValue(currentSensorDevice.LastHomeData);
         UpdateInverterState();
     }
 
@@ -27,9 +27,9 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
         PublishUpdate();
     }
 
-    private void UpdateCurrentValue(double? data)
+    private void UpdateHomeCurrentValue(double? data)
     {
-        _lastAmmeterValue = data;
+        _lastHomeCurrentValue = data;
         PublishUpdate();
     }
 
@@ -86,7 +86,7 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
         {
             // APPROX: Use last panel voltage with up-to-date home power usage
             packet.GridV = _lastPanelVoltageV;
-            packet.UsageA = _lastAmmeterValue ?? -1.0;
+            packet.UsageA = _lastHomeCurrentValue ?? -1.0;
         }
         else
         {
