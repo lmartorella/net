@@ -9,11 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "garden", "garden\garden.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "notification", "notification\notification.csproj", "{2358793C-B352-4F63-A8AC-25574F6D1AC2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Home.Solar.Tests", "solar.tests\Home.Solar.Tests.csproj", "{E53796B3-819D-4500-979A-23D80EA01733}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "solar.tests", "solar.tests\solar.tests.csproj", "{E53796B3-819D-4500-979A-23D80EA01733}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "solar", "solar\solar.csproj", "{8B9D7775-805F-4D62-87DE-597825BED748}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sofar-modbus-mqtt-bridge", "sofar-modbus-mqtt-bridge\sofar-modbus-mqtt-bridge.csproj", "{822D5576-CB56-4F18-91D0-6BB3DC6108C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sofar.bridge", "sofar.bridge\sofar.bridge.csproj", "{822D5576-CB56-4F18-91D0-6BB3DC6108C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

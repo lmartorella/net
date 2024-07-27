@@ -1,4 +1,4 @@
-﻿using Lucky.Db;
+﻿using Lucky.Home.Db;
 
 namespace Lucky.Home.Solar;
 

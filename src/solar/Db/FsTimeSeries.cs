@@ -1,5 +1,4 @@
-﻿using Lucky.Db;
-using Lucky.Home.Services;
+﻿using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -12,7 +11,7 @@ namespace Lucky.Home.Db;
 /// </summary>
 public class FsTimeSeries<T, Taggr> : BackgroundService where T : TimeSample, new() where Taggr : DayTimeSample<T>, new()
 {
-    internal const string FILENAME_FORMAT = "yyyy-MM-dd";
+    public const string FILENAME_FORMAT = "yyyy-MM-dd";
 
     private DirectoryInfo _folder;
     private FileInfo _dayFile;

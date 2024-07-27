@@ -30,7 +30,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/sofar-modbus-mqtt-bridge/sofar-modbus-mqtt-bridge.csproj"
+                "${workspaceFolder}/src/sofar.bridge/sofar.bridge.csproj"
             ],
             "problemMatcher": "$msCompile"
         },

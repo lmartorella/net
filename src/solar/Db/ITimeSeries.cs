@@ -1,6 +1,4 @@
-﻿using Lucky.Home;
-
-namespace Lucky.Db;
+﻿namespace Lucky.Home.Db;
 
 /// <summary>
 /// Csv for a day of samples, that supports custom aggregation

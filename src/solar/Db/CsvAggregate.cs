@@ -1,4 +1,4 @@
-﻿namespace Lucky.Db;
+﻿namespace Lucky.Home.Db;
 
 /// <summary>
 /// Aggregate data in a csv file

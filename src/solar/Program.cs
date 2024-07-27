@@ -1,14 +1,11 @@
 ﻿using Lucky.Home.Db;
 using Lucky.Home.Services;
 using Lucky.Home.Solar;
-using Microsoft.Extensions.Logging;
 
 namespace Home.Solar;
 
 class Program
 {
-    private const string DeviceHostName = "localhost";
-
     static void Main(string[] args)
     {
         var manager = new Manager(args, "SolarConfiguration.json");

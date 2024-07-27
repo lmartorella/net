@@ -1,8 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
-using Lucky.Home;
 
-namespace Lucky.Db;
+namespace Lucky.Home.Db;
 
 /// <summary>
 /// Serialize/deserialize from a csv file to C# objects.
