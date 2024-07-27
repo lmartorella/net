@@ -5,7 +5,7 @@ namespace Lucky.Home;
 
 class Program
 {
-    static void Main(string[] args)
+    static int Main(string[] args)
     {
         var manager = new Manager(args, "SolarConfiguration.json");
         manager.AddSingleton<MqttService>();
@@ -15,6 +15,6 @@ class Program
         manager.AddSingleton<ModbusClientFactory>();
         manager.AddHostedService<PollStrategyManager>();
         manager.AddHostedService<Zcs6000TlmV3>();
-        manager.Start();
+        return manager.Start();
     }
 }

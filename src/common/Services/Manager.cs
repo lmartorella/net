@@ -49,12 +49,12 @@ public class Manager
         hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configurationBuilder.Build());
     }
 
-    public void Start() 
+    public int Start() 
     {
         var host = hostAppBuilder!.Build();
+        var logger = host.Services.GetService<ILogger<Manager>>()!;
         AppDomain.CurrentDomain.UnhandledException += (o, e) => 
         {
-            var logger = host.Services.GetService<ILogger<Manager>>()!;
             if (e.IsTerminating)
             {
                 logger.LogCritical(e.ExceptionObject as Exception, "UnhandledException");
@@ -64,7 +64,20 @@ public class Manager
                 logger.LogError(e.ExceptionObject as Exception, "UnhandledException");
             }
         };
-        host.Run();
+        try
+        {
+            host.Run();
+        }
+        catch (Exception err)
+        {
+            try
+            {
+                logger.LogCritical(err, "UnhandledException");
+            }
+            catch { }
+            return 1;
+        }
+        return 0;
     }
 
     public void AddSingleton<TC, TI>() where TI : class 

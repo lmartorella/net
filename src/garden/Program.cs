@@ -5,7 +5,7 @@ namespace Lucky.Garden;
 
 class Program
 {
-    static void Main(string[] args)
+    static int Main(string[] args)
     {
         var manager = new Manager(args, "gardenConfiguration.json");
         manager.AddSingleton<ResourceService>();
@@ -21,6 +21,6 @@ class Program
         manager.AddHostedService<StatusService>();
         manager.AddHostedService<ConfigService>();
         manager.AddHostedService<ActivityNotifier>();
-        manager.Start();
+        return manager.Start();
     }
 }

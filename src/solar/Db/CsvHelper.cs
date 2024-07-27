@@ -183,25 +183,33 @@ public static class CsvHelper<T> where T : class, new()
             using (var reader = new StreamReader(stream))
             {
                 // Read header
-                var headerStr = reader.ReadLine();
-                var header = ParseHeader(headerStr);
-                // Read data
-                string line;
-                List<T> data = new List<T>();
-                while ((line = reader.ReadLine()) != null)
+                string headerStr;
+                int[] header = null;
+                do
                 {
-                    if (line == headerStr)
+                    headerStr = reader.ReadLine();
+                    header = ParseHeader(headerStr);
+                } while (headerStr != null && header == null);
+
+                List<T> data = new List<T>();
+                if (header != null)
+                {
+                    // Read data
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        // Duplicated header after a restart, skip
-                        continue;
-                    }
-                    var l = ParseLine(line, header);
-                    if (l != null)
-                    {
-                        data.Add(l);
+                        if (line == headerStr)
+                        {
+                            // Duplicated header after a restart, skip
+                            continue;
+                        }
+                        var l = ParseLine(line, header);
+                        if (l != null)
+                        {
+                            data.Add(l);
+                        }
                     }
                 }
-
                 return data;
             }
         }

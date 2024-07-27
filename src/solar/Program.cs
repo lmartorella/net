@@ -6,7 +6,7 @@ namespace Home.Solar;
 
 class Program
 {
-    static void Main(string[] args)
+    static int Main(string[] args)
     {
         var manager = new Manager(args);
         manager.AddSingleton<ResourceService>();
@@ -19,6 +19,6 @@ class Program
         manager.AddHostedService<NotificationService>();
         manager.AddHostedService<DataLogger>();
         manager.AddHostedService<UserInterface>();
-        manager.Start();
+        return manager.Start();
     }
 }
