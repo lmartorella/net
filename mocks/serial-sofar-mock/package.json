@@ -4,7 +4,7 @@
         "start": "node server.js"
     },
     "dependencies": {
-        "crc": "^4.3.2",
-        "serialport": "^11.0.1"
+        "crc": "4.3.2",
+        "serialport": "11.0.1"
     }
 }
