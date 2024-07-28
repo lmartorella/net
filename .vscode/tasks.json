@@ -2,6 +2,17 @@
 	"version": "2.0.0",
 	"tasks": [
         {
+            "label": "Build: Common lib",
+            "command": "dotnet",
+            "group": "build",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/common/common.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "Build: Garden C# server",
             "command": "dotnet",
             "group": "build",

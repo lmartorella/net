@@ -2,9 +2,9 @@
   "name": "home.web",
   "scripts": {
     "buildNet": "dotnet clean src/net.sln && dotnet restore src/net.sln && dotnet build src/net.sln --configuration Release",
-    "buildNetDebug": "dotnet clean src/net.sln && dotnet restore src/net.sln && dotnet build src/net.sln --configuration Debug",
+    "buildNetDebug": "dotnet build src/net.sln --configuration Debug",
     "buildWeb": "cd src/ui && npx ng cache clean && npx ng build --configuration production",
-    "buildWebDebug": "cd src/ui && npx ng cache clean && npx ng build --configuration development",
+    "buildWebDebug": "cd src/ui && npx ng build --configuration development",
     "buildWebServer": "cd src/web && npx ncc build index.mjs -o ../../target/bin/web",
     "build": "npm run buildNet && npm run buildWeb && npm run buildWebServer",
     "dev": "npm run buildNetDebug && npm run buildWebDebug",

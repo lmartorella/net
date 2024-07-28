@@ -1,7 +1,7 @@
 ﻿using Lucky.Garden.Device;
 using Lucky.Home.Services;
 
-namespace Lucky.Garden;
+namespace Lucky.Home.Garden;
 
 class Program
 {

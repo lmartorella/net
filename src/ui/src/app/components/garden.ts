@@ -10,15 +10,15 @@ interface IConfig {
     zones?: string[];
 }
 
-interface IGardenResponse {
-    error?: string;
+interface IGardenStatusResponse {
+    status: number;
 }
 
-interface IGardenStatusResponse extends IGardenResponse {
-    config: IConfig;
-    status: number;
-    isRunning: boolean;
-}
+// interface IGardenConfigResponse {
+//     error?: string;
+//     config: IConfig;
+//     isRunning: boolean;
+// }
 
 @Component({
     selector: 'app-garden',
@@ -29,10 +29,9 @@ export class GardenComponent implements OnInit {
     public loaded!: boolean;
     public message!: string;
     public error!: string;
-    public config!: IConfig;
+    //public config!: IConfig;
     public status1!: string;
     public status2!: string;
-    public isRunning!: boolean;
 
     public readonly res: { [key: string]: string };
     public readonly format: (str: string, args?: any) => string;
@@ -56,10 +55,9 @@ export class GardenComponent implements OnInit {
                 case 2: this.status1 = res["Device_StatusOffline"]; break;
                 case 3: this.status1 = res["Device_StatusPartiallyOnline"]; break;
             }
-            this.status2 = (!resp.config && res["Garden_MissingConf"]) || "";
-            this.isRunning = resp.isRunning;
+            //this.status2 = (!resp.config && res["Garden_MissingConf"]) || "";
 
-            this.config = resp.config || { };
+            //this.config = resp.config || { };
         }, err => {
             this.error = format("Garden_ErrorConf", err.message);
         }).finally(() => {

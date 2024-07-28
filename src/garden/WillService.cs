@@ -1,10 +1,10 @@
 using Lucky.Home.Services;
 
-namespace Lucky.Garden;
+namespace Lucky.Home.Garden;
 
 public class WillService(SerializerFactory serializerFactory) : IMqttWillProvider
 {
-    public string WillTopic => "garden/status";
+    public string WillTopic => "ui/garden/state";
 
     public byte[] WillPayload
     {
@@ -12,11 +12,7 @@ public class WillService(SerializerFactory serializerFactory) : IMqttWillProvide
         {
             return serializerFactory.Create<StatusType>().Serialize(new StatusType
             {
-                StatusCode = StatusCode.Offline,
-                Config = new ProgramConfig
-                {
-                    ProgramCycles = []
-                }
+                OnlineStatus = OnlineStatus.Offline
             });
         }
     }

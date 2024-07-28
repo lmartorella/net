@@ -1,4 +1,4 @@
-﻿namespace Lucky.Home.Solar;
+﻿namespace Lucky.Home;
 
 public enum DeviceState
 {

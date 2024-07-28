@@ -4,7 +4,7 @@ using Lucky.Garden.Device;
 using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
 
-namespace Lucky.Garden;
+namespace Lucky.Home.Garden;
 
 [DataContract]
 public class ProgramConfig

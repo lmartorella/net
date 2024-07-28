@@ -5,7 +5,7 @@ using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Lucky.Garden;
+namespace Lucky.Home.Garden;
 
 /// <summary>
 /// Send notifications when the garden does a cycle
