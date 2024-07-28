@@ -1,26 +1,30 @@
 using Lucky.Home.Services;
 using Microsoft.Extensions.Hosting;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Lucky.Home.Solar;
 
+[DataContract]
+public class CurrentSensorData
+{
+    [DataMember(Name = "home")]
+    public double Home;
+
+    [DataMember(Name = "export")]
+    public double Export;
+}
+
 class CurrentSensorDevice(MqttService mqttService) : BackgroundService
 {
-    private double? lastHomeData;
+    private CurrentSensorData? lastData;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // The ammeter uses will to send zero byte packet when disconnected
-        await mqttService.SubscribeRawTopic(Constants.CurrentSensorHomeDataTopicId, async data =>
+        await mqttService.SubscribeJsonTopic<CurrentSensorData>(Constants.CurrentSensorDataTopicId, async data =>
         {
-            if (data == null || data.Length == 0)
-            {
-                LastHomeData = null;
-            }
-            else
-            {
-                LastHomeData = double.Parse(Encoding.UTF8.GetString(data));
-            }
+            LastData = data;
         });
         await mqttService.SubscribeRawTopic(Constants.CurrentSensorStateTopicId, async data => 
         {
@@ -34,20 +38,20 @@ class CurrentSensorDevice(MqttService mqttService) : BackgroundService
     /// <summary>
     /// Event raised when new home usage data comes from the inverter
     /// </summary>
-    public event EventHandler HomeDataChanged;
+    public event EventHandler DataChanged;
 
     /// <summary>
     /// Last sample of home usage. Null means offline
     /// </summary>
-    public double? LastHomeData
+    public CurrentSensorData? LastData
     {
-        get => lastHomeData;
+        get => lastData;
         set
         {
-            if (lastHomeData != value)
+            if (!Equals(lastData, value))
             {
-                lastHomeData = value;
-                HomeDataChanged?.Invoke(this, EventArgs.Empty);
+                lastData = value;
+                DataChanged?.Invoke(this, EventArgs.Empty);
             }
         }
     }

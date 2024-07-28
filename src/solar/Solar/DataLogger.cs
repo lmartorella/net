@@ -11,13 +11,13 @@ namespace Lucky.Home.Solar;
 class DataLogger(InverterDevice inverterDevice, NotificationService notificationService, NotificationSender notificationSender, FsTimeSeries<PowerData, DayPowerData> database, ResourceService resourceService, CurrentSensorDevice currentSensorDevice) : BackgroundService
 {
     private string _lastFault = null;
-    private double? _lastHomeUsageCurrentA;
+    private CurrentSensorData? _lastCurrentSensorData;
     private DateTime? _lastFaultMessageTimeStamp;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         inverterDevice.NewData += (o, e) => HandleNewData(e);
-        currentSensorDevice.HomeDataChanged += (o, e) => UpdateHomeUsage(currentSensorDevice.LastHomeData);
+        currentSensorDevice.DataChanged += (o, e) => { _lastCurrentSensorData = currentSensorDevice.LastData; };
     }
 
     private void HandleNewData(PowerData data)
@@ -27,11 +27,10 @@ class DataLogger(InverterDevice inverterDevice, NotificationService notification
         {
             return;
         }
-        // Use the current grid voltage to calculate Net Energy Metering
-        if (data.GridVoltageV > 0)
-        {
-            data.HomeUsageCurrentA = _lastHomeUsageCurrentA ?? -1;
-        }
+
+        data.HomeUsageCurrentA = _lastCurrentSensorData?.Home ?? -1;
+        data.GridCurrentA2 = _lastCurrentSensorData?.Export ?? -1;
+
         database.AddNewSample(data);
         if (data.PowerW > 0)
         {
@@ -40,11 +39,6 @@ class DataLogger(InverterDevice inverterDevice, NotificationService notification
         }
 
         CheckFault(data.InverterState);
-    }
-
-    private void UpdateHomeUsage(double? data)
-    {
-        _lastHomeUsageCurrentA = data;
     }
 
     public PowerData ImmediateData { get; private set; }

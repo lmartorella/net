@@ -4,8 +4,19 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using ModbusClient = Lucky.Home.Services.ModbusClient;
 using FluentModbus;
+using System.Runtime.Serialization;
 
 namespace Lucky.Home.Solar;
+
+[DataContract]
+public class CurrentSensorData
+{
+    [DataMember(Name = "home")]
+    public double Home;
+
+    [DataMember(Name = "export")]
+    public double Export;
+}
 
 class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttService, ModbusClientFactory modbusClientFactory, Configuration configuration) : BackgroundService
 {
@@ -16,12 +27,12 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        modbusNodeId = configuration.AmmeterStationId;
-        if (configuration.AmmeterHostName != "")
+        modbusNodeId = configuration.CurrentSensorStationId;
+        if (configuration.CurrentSensorHostName != "")
         {
-            modbusClient = modbusClientFactory.Get(configuration.AmmeterHostName, ModbusEndianness.LittleEndian);
+            modbusClient = modbusClientFactory.Get(configuration.CurrentSensorHostName, ModbusEndianness.LittleEndian);
         }
-        logger.LogInformation("Start: host {0}:{1}", configuration.AmmeterHostName, modbusNodeId);
+        logger.LogInformation("Start: host {0}:{1}", configuration.CurrentSensorHostName, modbusNodeId);
 
         // Start wait loop
         while (true)
@@ -46,7 +57,7 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
     /// </summary>
     private async Task<float[]> GetData()
     {
-        // PIC ammeter specs, little endian fixed point 16+16
+        // PIC current sensor specs, little endian fixed point 16+16
         var buffer = await modbusClient.ReadHoldingRegistries<ushort>(modbusNodeId, 0x200, 4);
         if (buffer == null)
         {
@@ -70,14 +81,16 @@ class ModbusCurrentSensor(ILogger<ModbusCurrentSensor> logger, MqttService mqttS
         }
         if (data != null)
         {
-            await mqttService.RawPublish(Constants.CurrentSensorHomeDataTopicId, Encoding.UTF8.GetBytes(data[0].ToString()));
-            await mqttService.RawPublish(Constants.CurrentSensorExportDataTopicId, Encoding.UTF8.GetBytes(data[1].ToString()));
+            await mqttService.JsonPublish(Constants.CurrentSensorDataTopicId, new CurrentSensorData
+            {
+                Home = data[0],
+                Export = data[1]
+            });
             State = DeviceState.Online;
         }
         else
         {
-            await mqttService.RawPublish(Constants.CurrentSensorHomeDataTopicId, new byte[0]);
-            await mqttService.RawPublish(Constants.CurrentSensorExportDataTopicId, new byte[0]);
+            await mqttService.RawPublish(Constants.CurrentSensorDataTopicId, new byte[0]);
             State = DeviceState.Offline;
         }
     }

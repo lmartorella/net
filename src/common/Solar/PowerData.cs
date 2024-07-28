@@ -44,6 +44,9 @@ public class PowerData : TimeSample
     // Home usage current, to calculate Net Energy Metering
     [Csv("0.00")]
     public double HomeUsageCurrentA { get; set; }
+    // Measured Inverted produced current at the meter, to calibrate HomeUsageCurrentA
+    [Csv("0.00")]
+    public double GridCurrentA2 { get; set; }
 
     /// <summary>
     /// For old CSV formats

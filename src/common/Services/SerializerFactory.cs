@@ -35,7 +35,7 @@ public class SerializerFactory
 
         public T? Deserialize(byte[]? msg)
         {
-            if (msg != null && msg.Length> 0)
+            if (msg != null && msg.Length > 0)
             {
                 return (T?)serializer.ReadObject(new MemoryStream(msg));
             }
@@ -47,7 +47,7 @@ public class SerializerFactory
 
         public T? Deserialize(string? msg)
         {
-            if (msg != null && msg.Length> 0)
+            if (msg != null && msg.Length > 0)
             {
                 return Deserialize(Encoding.UTF8.GetBytes(msg));
             }

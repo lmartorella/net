@@ -4,7 +4,7 @@ namespace Lucky.Home.Services;
 
 public class Configuration(IConfiguration configuration)
 {
-    public string AmmeterHostName
+    public string CurrentSensorHostName
     {
         get
         {
@@ -12,7 +12,7 @@ public class Configuration(IConfiguration configuration)
         }
     }
 
-    public int AmmeterStationId
+    public int CurrentSensorStationId
     {
         get
         {

@@ -6,7 +6,8 @@ namespace Lucky.Home.Solar;
 class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevice inverterDevice, CurrentSensorDevice currentSensorDevice) : BackgroundService
 {
     /// <summary>
-    /// This will never resets, and keep track of the last sampled grid voltage. Used even during night by home ammeter
+    /// This will never resets, and keep track of the last sampled grid voltage. Used even during night by home current sensor for
+    /// a rough estimation of power
     /// </summary>s
     private double _lastPanelVoltageV = -1.0;
     private double? _lastHomeCurrentValue = null;
@@ -18,7 +19,7 @@ class UserInterface(MqttService mqttService, DataLogger dataLogger, InverterDevi
     {
         inverterDevice.NewData += (o, e) => HandleNewInverterData(e);
         inverterDevice.DeviceStateChanged += (o, e) => UpdateInverterState();
-        currentSensorDevice.HomeDataChanged += (o, e) => UpdateHomeCurrentValue(currentSensorDevice.LastHomeData);
+        currentSensorDevice.DataChanged += (o, e) => UpdateHomeCurrentValue(currentSensorDevice.LastData.Home);
         UpdateInverterState();
     }
 
