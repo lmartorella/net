@@ -9,6 +9,22 @@ export function register(app, privileged) {
         jsonRestRemoteCall(res, "garden/getStatus");
     });
     
+    // app.post('/svc/gardenStart', privileged(), async (req, res) => {
+    //     let immediate = req.body;
+    //     if (typeof immediate !== "object" || immediate.time <= 0) {
+    //         // Do nothing
+    //         res.status(500);
+    //         res.send("Request incompatible");
+    //         logger("r/gardenStart: incompatible request: " + JSON.stringify(req.body));
+    //         return;
+    //     }
+    //     jsonRestRemoteCall(res, "garden/setImmediate", { immediate });
+    // });
+    
+    // app.post('/svc/gardenStop', privileged(), async (_req, res) => {
+    //     jsonRestRemoteCall(res, "garden/stop");
+    // });
+    
     app.get('/svc/gardenCfg', privileged(), (_req, res) => {
         jsonRestRemoteCall(res, "garden/getConfiguration", { });
     });

@@ -62,13 +62,21 @@ public class ProgramCycle
     public int Minutes;
 }
 
-class ConfigService(MqttService mqttService, ShellyScripts shellyScripts, SerializerFactory serializerFactory) : BackgroundService
+class ConfigService : BackgroundService
 {
-    private SerializerFactory.TypeSerializer<ProgramConfig> programConfigSerializer;
+    private readonly MqttService mqttService;
+    private readonly ShellyScripts shellyScripts;
+    private readonly SerializerFactory.TypeSerializer<ProgramConfig> programConfigSerializer;
+
+    public ConfigService(MqttService mqttService, ShellyScripts shellyScripts, SerializerFactory serializerFactory)
+    {
+        this.mqttService = mqttService;
+        this.shellyScripts = shellyScripts;
+        programConfigSerializer = serializerFactory.Create<ProgramConfig>(true);
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        programConfigSerializer = serializerFactory.Create<ProgramConfig>(true);
         await mqttService.SubscribeJsonRpc<RpcVoid, ProgramConfig>("garden/getConfiguration", (_) => GetConfig());
         await mqttService.SubscribeJsonRpc<ProgramConfig, RpcVoid>("garden/setConfiguration", SetConfig);
     }
