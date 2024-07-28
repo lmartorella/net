@@ -13,7 +13,13 @@ export const config: IModuleConfig = {
 export const checkXhr = <T>(observable: Observable<T>): Promise<T> => {
     return new Promise((resolve, reject) => {
         observable.pipe(catchError((err: HttpErrorResponse) => {
-            reject(new Error(err.statusText || err.error || err.message));
+            const header = err.statusText;
+            const body = err.error;
+            if (header !== body) {
+                reject(new Error(`${header || ''}: ${body || ''}`))
+            } else {
+                reject(new Error(header || body));
+            }
             return of({ } as T);
         })).subscribe(data => {
             if ((data as T & { error?: string })?.error) {
