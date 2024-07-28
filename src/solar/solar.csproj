@@ -15,4 +15,13 @@
     <ProjectReference Include="..\common\common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+      <EmbeddedResource Include="Strings.restext">
+        <LogicalName>Strings.resources</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="Strings.it-IT.restext">
+        <LogicalName>Strings.it-IT.resources</LogicalName>
+      </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

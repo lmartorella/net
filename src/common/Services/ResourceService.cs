@@ -6,11 +6,12 @@ namespace Lucky.Home.Services;
 
 public class ResourceService
 {
+    private readonly CultureInfo culture;
     private Dictionary<Assembly, ResourceManager> resourceManagers = new Dictionary<Assembly, ResourceManager>();
 
     public ResourceService()
     {
-        var culture = CultureInfo.GetCultureInfo("it-IT");
+        culture = CultureInfo.GetCultureInfo("it-IT");
         Thread.CurrentThread.CurrentCulture = culture;
         Thread.CurrentThread.CurrentUICulture = culture;
     }
@@ -33,6 +34,6 @@ public class ResourceService
             resourceManager = new ResourceManager("Strings", assembly);
             resourceManagers[assembly] = resourceManager;
         }
-        return resourceManager.GetString(key)!;
+        return resourceManager.GetString(key, culture)!;
     }
 }
