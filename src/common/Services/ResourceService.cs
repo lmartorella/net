@@ -20,6 +20,11 @@ public class ResourceService
         return GetString(type.Assembly, key);
     }
 
+    public string GetString<T>(string key)
+    {
+        return GetString(typeof(T).Assembly, key);
+    }
+
     public string GetString(Assembly assembly, string key)
     {
         ResourceManager resourceManager;

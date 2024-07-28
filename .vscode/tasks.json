@@ -24,6 +24,28 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "Build: Sofar Modbus Bridge",
+            "command": "dotnet",
+            "group": "build",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/sofar.bridge/sofar.bridge.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Build: Solar Server",
+            "command": "dotnet",
+            "group": "build",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/solar/solar.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "type": "npm",
             "script": "buildWeb",
             "group": "build",

@@ -1,0 +1,69 @@
+{
+    "registries": {
+        // https://github.com/chmorant/Loxone-Sofar-Solar-3GKTLM-G3-Template
+        "!0x418": "Core temperature",
+        "!0x41a": "Radiator temperature",
+        
+        "!0x426": "Today generation time (minutes). They move in sync",
+        // https://github.com/chmorant/Loxone-Sofar-Solar-3GKTLM-G3-Template
+        // Probably 0x427 is high word
+        "!0x428": "Monthly? Weekly? generation time (minutes). They move in sync",
+        "!0x42a": "Total? generation time (minutes). They move in sync",
+
+        "!0x42c": "year",
+        "!0x42d": "month",
+        "!0x42e": "day",
+        "!0x42f": "hour",
+        "!0x430": "minutes",
+        "!0x431": "seconds",
+
+        "!0x484": "grid frequency * 100",
+        "!0x485": "Power /10",
+        "!0x487": "Current in grid *100",
+        "!0x488": "Power /10 again?",
+
+        "!0x48d": "Grid voltage, V*10",
+        "!0x48e": "Grid current, A*10",
+        "!0x493": "Power again",
+
+        "0x4bd": "? ~10040",
+
+        "!0x584": "PV1 voltage V * 10",
+        "!0x585": "PV1 current A * 100",
+        "!0x586": "PV1 power W / 10",
+        "!0x587": "PV2 voltage V * 10",
+        "!0x588": "PV2 current A * 100",
+        "!0x589": "PV2 power W / 10",
+
+        "!0x5c4": "? seconds?",
+
+        // https://github.com/pawsuch/Sofar_G3_LSW3/blob/main/InverterHWData.py
+        // https://github.com/tomek10861/Sofar_G3_LSW3
+        // Here it seems that 0x685 and 0x687 should have daily production and total production in G3-LSW3
+        // The other registers more or less matches
+
+        // https://github.com/chmorant/Loxone-Sofar-Solar-3GKTLM-G3-Template
+        // says 0x684 is daily production and 0x686 is total
+
+        "!0x684": "Daily production in W /10, high word",
+        "!0x685": "Daily production in W /10, low word",
+        "!0x686": "Total production in W /100, high word",
+        "!0x687": "Total production in W /100, low word",
+
+        "!0x6c4": "? 2-3? operational flags?",
+        "!0x6c6": "? flags",
+
+        "!0x6cc": "?? ~3764",
+        "!0x6cd": "~3764, same of 0x6cc",
+
+        "!0x704": "PV1 voltage again",
+        "!0x707": "Grid voltage",
+        
+        "!0x744": "PV1 voltage again?, but very unstable to read",
+        "!0x747": "Grid voltage again?, but very unstable to read",
+
+        "!0x1007": "hour",
+        "!0x1008": "minutes",
+        "!0x1009": "seconds"
+    }
+}

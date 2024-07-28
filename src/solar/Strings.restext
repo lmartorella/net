@@ -1,0 +1,7 @@
+﻿solar_daily_summary=Total Energy: {PowerKWh} kWh\nPeak of {PeakPowerW}W at {PeakPowerTimestamp}.\n\nDaylight time: {SunTime}\n\nPeak of grid voltage of {PeakVoltageV}V at {PeakVoltageTimestamp}.
+solar_daily_summary_title=Solar Power Today: {0:0.0} kWh
+solar_daylight_format=h' hours and 'mm' minutes'
+solar_error_mail_error=Error: {0}
+solar_error_mail_error_solved=, solved after {0} seconds.
+solar_error_mail_normal=Normal
+solar_error_mail_title=Inverter Errors

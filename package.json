@@ -1,27 +1,17 @@
 {
   "name": "home.web",
   "scripts": {
-    "buildNet": "msbuild src\\net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src\\net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
-    "buildNetDebug": "msbuild src\\net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src\\net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
-    "buildWeb": "cd samples/web/app && npx ng cache clean && npx ng build --configuration production",
-    "buildWebDebug": "cd samples/web/app && npx ng cache clean && npx ng build --configuration development",
-    "build": "npm run buildNet && npm run buildWeb",
+    "buildNet": "msbuild src/net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
+    "buildNetDebug": "msbuild src/net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
+    "buildWeb": "cd src/ui && npx ng cache clean && npx ng build --configuration production",
+    "buildWebDebug": "cd src/ui && npx ng cache clean && npx ng build --configuration development",
+    "buildWebServer": "cd src/web && npx ncc build index.mjs -o ../../target/bin/web",
+    "build": "npm run buildNet && npm run buildWeb && npm run buildWebServer",
     "dev": "npm run buildNetDebug && npm run buildWebDebug",
-    "start": "node src/web/server.mjs"
+    "start": "node src/web/index.mjs"
   },
   "repository": {
     "url": "https://github.com/lmartorella/net"
   },
-  "license": "GPL-3.0-or-later",
-  "devDependencies": {
-    "body-parser": "1.20.2",
-    "compression": "1.7.4",
-    "cookie-parser": "1.4.6",
-    "express": "4.18.2",
-    "express-session": "1.17.3",
-    "moment": "2.29.4",
-    "mqtt": "4.3.7",
-    "passport": "0.6.0",
-    "passport-local": "1.0.0"
-  }
+  "license": "GPL-3.0-or-later"
 }

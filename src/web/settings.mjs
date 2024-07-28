@@ -2,10 +2,20 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
-export const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
+const parentDir = path.dirname(__dirname);
 
-export const binDir = path.join(__dirname, '../../target/bin');
-export const etcDir = path.join(__dirname, '../../target/etc');
+let targetBinDir;
+if (path.basename(parentDir) === "src") {
+    targetBinDir = path.join(parentDir, '../target/bin');
+} else if (path.basename(parentDir) === "bin") {
+    targetBinDir = parentDir;
+} else {
+    throw new Error("Unknown release folder schema");
+}
+
+export const binDir = targetBinDir;
+export const etcDir = path.join(binDir, '../etc');
 
 export const webLogsFile = path.join(etcDir, 'webServer.log');
 let webServerCfgFile = path.join(etcDir, 'server/webCfg.json');
@@ -27,17 +37,29 @@ export const logger = (msg) => {
 export const processesMd = {
     server: {
         processName: "Home.Notification",
-        killTopic: "server/kill",
-        frameworkDir: 'net8.0'
+        //killTopic: "server/kill",
+        frameworkDir: 'net8.0',
+        debug: true
     },
     garden: {
         processName: "Home.Garden",
-        killTopic: "garden/kill",
-        frameworkDir: 'net8.0'
+        //killTopic: "garden/kill",
+        frameworkDir: 'net8.0',
+        debug: true
     },
     solar: {
         processName: "Home.Solar",
-        killTopic: "solar/kill",
-        frameworkDir: 'net7.0'
+        //killTopic: "solar/kill",
+        frameworkDir: 'net8.0'
+    },
+    sofarBridge: {
+        processName: "Home.Sofar.Bridge",
+        //killTopic: "sofar-bridge/kill",
+        frameworkDir: 'net8.0'
+    },
+    currentBridge: {
+        processName: "Home.Current.Bridge",
+        //killTopic: "current-bridge/kill",
+        frameworkDir: 'net8.0'
     },
 };

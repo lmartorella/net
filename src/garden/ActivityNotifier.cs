@@ -102,19 +102,19 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
 
         if (builder.Length > 0)
         {
-            logger.LogInformation("SendNotification: {0} at {1}", builder.ToString(), DateTime.Now);
+            logger.LogInformation("SendingNotification: {0} at {1}", builder.ToString(), DateTime.Now);
             await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload
                 {
                     Title = resourceService.GetString(GetType(), "gardenMailTitle"),
                     Body = builder.ToString(),
                     IsAdminReport = false
-                },
-                true  // Don't wait for response
+                }
             );
+            logger.LogInformation("Sent");
         }
         else
         {
-            logger.LogInformation("SendNotification, zero events");
+            logger.LogInformation("No Send, zero events");
         }
     }
 }

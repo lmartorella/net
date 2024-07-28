@@ -12,41 +12,76 @@ public class Manager
 {
     private readonly HostApplicationBuilder hostAppBuilder;
 
-    public Manager(string[] args, string jsonFileName)
+    public Manager(string[] args, string jsonFileName = null)
     {
         hostAppBuilder = Host.CreateApplicationBuilder(args);
+
+        var debug = hostAppBuilder.Configuration["debug"];
+
         hostAppBuilder.Services.AddLogging(options =>
         {
             options.AddConsole(c =>
             {
                 c.TimestampFormat = "[yyyy-MM-dd HH:mm:ss] ";
-                c.LogToStandardErrorThreshold = LogLevel.Error;
+                c.LogToStandardErrorThreshold = LogLevel.Critical;
             });
+            options.SetMinimumLevel(debug != null ? LogLevel.Debug : LogLevel.Information);
         });
 
-        var wrkPath = hostAppBuilder.Configuration["wrk"];
-        if (wrkPath != null) 
-        {
-            Environment.CurrentDirectory = wrkPath;
-        }
         hostAppBuilder.Configuration.SetBasePath(Environment.CurrentDirectory);
-        
-        var configuration = hostAppBuilder.Configuration.AddJsonFile(@"server/" + jsonFileName, optional: false).Build();
-        hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configuration);
+        PrepareConfig(jsonFileName != null ? ("server/" + jsonFileName) : null);
     }
 
-    public void Start() 
+    private void PrepareConfig(string? jsonPath)
+    {
+        var values = new Dictionary<string, string?>();
+        var mqttHost = hostAppBuilder.Configuration["mqttHost"];
+        if (mqttHost != null)
+        {
+            values["mqttHost"] = mqttHost;
+        }
+        var configurationBuilder = hostAppBuilder.Configuration.AddInMemoryCollection(values);
+
+        if (jsonPath != null)
+        {
+            configurationBuilder.AddJsonFile(jsonPath, optional: false);
+        }
+        hostAppBuilder.Services.AddScoped<IConfiguration>(_ => configurationBuilder.Build());
+    }
+
+    public int Start() 
     {
         var host = hostAppBuilder!.Build();
+        var logger = host.Services.GetService<ILogger<Manager>>()!;
         AppDomain.CurrentDomain.UnhandledException += (o, e) => 
         {
-            host.Services.GetService<ILogger<Manager>>()!.LogError(e.ExceptionObject as Exception, "UnhandledException");
+            if (e.IsTerminating)
+            {
+                logger.LogCritical(e.ExceptionObject as Exception, "UnhandledException");
+            }
+            else
+            {
+                logger.LogError(e.ExceptionObject as Exception, "UnhandledException");
+            }
         };
-        host.Run();
+        try
+        {
+            host.Run();
+        }
+        catch (Exception err)
+        {
+            try
+            {
+                logger.LogCritical(err, "UnhandledException");
+            }
+            catch { }
+            return 1;
+        }
+        return 0;
     }
 
     public void AddSingleton<TC, TI>() where TI : class 
-                                            where TC : class, TI
+                                       where TC : class, TI
     {
         hostAppBuilder.Services.AddSingleton<TI, TC>();
     }

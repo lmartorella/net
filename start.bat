@@ -1,1 +1,1 @@
-npm run start
+node target/bin/web/index.mjs
