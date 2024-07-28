@@ -15,6 +15,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
     private MqttService.RpcOriginator rpcCaller = null!;
+    private bool masterOnReceived = false;
 
     protected async override Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -39,6 +40,7 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
             {
                 // Reset cycle
                 events.Clear();
+                masterOnReceived = true;
             }
         }
         else
@@ -61,6 +63,11 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
 
     private async Task SendNotification()
     {
+        if (!masterOnReceived) {
+            return;
+        }
+        masterOnReceived = false;
+
         StringBuilder builder = new StringBuilder();
         var config = await configService.GetConfig();
 

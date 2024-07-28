@@ -12,7 +12,12 @@ class Configuration(IConfiguration configuration)
         get
         {
             // Mandatory
-            return configuration["deviceId"]!;
+            var deviceId = configuration["deviceId"];
+            if (deviceId == null)
+            {
+                throw new InvalidOperationException("Configuration error, missing deviceId");
+            }
+            return deviceId;
         }
     }
 
@@ -24,7 +29,12 @@ class Configuration(IConfiguration configuration)
         get
         {
             // Mandatory
-            return configuration["deviceRest"]!;
+            var deviceUrl = configuration["deviceRest"]!;
+            if (deviceUrl == null)
+            {
+                throw new InvalidOperationException("Configuration error, missing deviceUrl");
+            }
+            return deviceUrl;
         }
     }
 }
