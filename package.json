@@ -1,14 +1,15 @@
 {
   "name": "home.web",
   "scripts": {
-    "buildNet": "msbuild src/net.sln /property:Configuration=Release -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Release -t:rebuild -p:RestorePackagesConfig=true",
-    "buildNetDebug": "msbuild src/net.sln /property:Configuration=Debug -t:restore -p:RestorePackagesConfig=true && msbuild src/net.sln /property:Configuration=Debug -t:rebuild -p:RestorePackagesConfig=true",
+    "buildNet": "dotnet clean src/net.sln && dotnet restore src/net.sln && dotnet build src/net.sln --configuration Release",
+    "buildNetDebug": "dotnet clean src/net.sln && dotnet restore src/net.sln && dotnet build src/net.sln --configuration Debug",
     "buildWeb": "cd src/ui && npx ng cache clean && npx ng build --configuration production",
     "buildWebDebug": "cd src/ui && npx ng cache clean && npx ng build --configuration development",
     "buildWebServer": "cd src/web && npx ncc build index.mjs -o ../../target/bin/web",
     "build": "npm run buildNet && npm run buildWeb && npm run buildWebServer",
     "dev": "npm run buildNetDebug && npm run buildWebDebug",
-    "start": "node src/web/index.mjs"
+    "startAll": "node src/web/index.mjs",
+    "serve": "node src/web/index.mjs --no-proc-man"
   },
   "repository": {
     "url": "https://github.com/lmartorella/net"
