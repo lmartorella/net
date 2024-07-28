@@ -1,3 +1,4 @@
 ﻿gardenMailBody=  {0}: {1:0.0} minutes
 gardenMailHeader=Performed cycles:
 gardenMailTitle=Irrigated garden
+gardenMailSuspendedTitle=Not irrigated garden (reminder)

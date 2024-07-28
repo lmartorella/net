@@ -10,7 +10,7 @@ namespace Lucky.Garden;
 /// <summary>
 /// Send notifications when the garden does a cycle
 /// </summary>
-class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEvents, MqttService mqttService, /* ConfigService configService, */ ResourceService resourceService) : BackgroundService
+class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEvents, MqttService mqttService, ConfigService configService, ResourceService resourceService) : BackgroundService
 {
     private bool masterOutput = false;
     private Dictionary<int, List<Tuple<bool, DateTime>>> events = new Dictionary<int, List<Tuple<bool, DateTime>>>();
@@ -62,17 +62,17 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
     private async Task SendNotification()
     {
         StringBuilder builder = new StringBuilder();
-        //var config = await configService.GetConfig();
+        var config = await configService.GetConfig();
 
         // Generates the list of the areas run
         foreach (var entry in events)
         {
             int id = entry.Key - 1;
             string zoneName = $"{entry.Key}";
-            // if (id >= 0 && id < config.ZoneNames.Length)
-            // {
-            //     zoneName = config.ZoneNames[id];
-            // }
+            if (id >= 0 && id < config.ZoneNames.Length)
+            {
+                zoneName = config.ZoneNames[id];
+            }
 
             bool lastState = false;
             DateTime lastTimeStamp = DateTime.MinValue;
@@ -100,21 +100,19 @@ class ActivityNotifier(ILogger<ActivityNotifier> logger, ShellyEvents shellyEven
         }
         events.Clear();
 
-        if (builder.Length > 0)
+        if (builder.Length == 0)
         {
-            logger.LogInformation("SendingNotification: {0} at {1}", builder.ToString(), DateTime.Now);
-            await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload
-                {
-                    Title = resourceService.GetString(GetType(), "gardenMailTitle"),
-                    Body = builder.ToString(),
-                    IsAdminReport = false
-                }
-            );
-            logger.LogInformation("Sent");
+            // Cycles was suspended, send a reminder e-mail
+            builder.Append(resourceService.GetString(GetType(), "gardenMailSuspendedTitle"));
         }
-        else
-        {
-            logger.LogInformation("No Send, zero events");
-        }
+
+        logger.LogInformation("SendingNotification: {0} at {1}", builder.ToString(), DateTime.Now);
+        await rpcCaller.JsonRemoteCall<SendMailRequestMqttPayload, RpcVoid>(new SendMailRequestMqttPayload
+            {
+                Title = resourceService.GetString(GetType(), "gardenMailTitle"),
+                Body = builder.ToString(),
+                IsAdminReport = false
+            }
+        );
     }
 }
