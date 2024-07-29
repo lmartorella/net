@@ -2,7 +2,7 @@
   <span class="message"> {{status}} </span>
   <div [hidden]="!loaded">
     <p><span class="header" [ngClass]="firstLineClass"> {{ firstLine }} </span> 
-      <a (click)="drawDays({ deltaDayCount: 1 })" href="javascript:void(0)">{{ res["Solar_ChartToday"] }}</a>
+      <a (click)="drawDays({ deltaDayCount: 1, withHomeData: true })" href="javascript:void(0)">{{ res["Solar_ChartToday"] }}</a>
       &nbsp;
       <a (click)="drawDays({ deltaDayCount: 4 })" href="javascript:void(0)">{{ res["Solar_Chart4days"] }}</a>
       &nbsp;

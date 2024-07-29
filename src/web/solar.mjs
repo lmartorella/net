@@ -122,9 +122,10 @@ function last(arr, handler) {
 /**
  * @param day can be a string in the yyyy-mm-dd format
  * @param deltaDay is a negative number to apply to today. E.g. -1 means yesterday data, etc...
+ * @param homeData if true, return home usage data
  * If not passed, it means today
  */
-const getPvChart = ({ day, deltaDay }) => {
+const getPvChart = ({ day, deltaDay, homeData }) => {
     const csv = getCsvName({ day, deltaDay });
     if (!csv) {
         return [];
@@ -132,10 +133,11 @@ const getPvChart = ({ day, deltaDay }) => {
     const data = parseCsv(path.join(csvFolder, csv));
     const tsIdx = data.colKeys["TimeStamp"];
     const powIdx = data.colKeys["PowerW"];
+    const homeUsageIdx = data.colKeys["HomeUsageCurrentA"];
     const voltageIdx = data.colKeys["GridVoltageV"];
 
     const ret = averageToMinute(data.rows.map(row => {
-        return { ts: row[tsIdx], power: row[powIdx], voltage: row[voltageIdx] };
+        return { ts: row[tsIdx], power: homeData ? (row[homeUsageIdx] * row[voltageIdx]) : row[powIdx], voltage: row[voltageIdx] };
     }), ["power", "voltage"]);
 
     // Trim initial and final zeroes
@@ -165,14 +167,15 @@ export function register(app, _csvFolder) {
         }
     });
 
-    app.get("/solar/solarPowToday", (req, res) => {
+    app.get("/solar/solarPowPlot", (req, res) => {
         // Avoid DDOS
         setTimeout(() => {
             const args = {
                 // if passed, day is a string in yyyy-mm-dd format
                 day: req.query?.day,
                 // deltaDay is a negative number to apply to today. E.g. -1 means yesterday data, etc...
-                deltaDay: Number(req.query?.deltaDay)
+                deltaDay: Number(req.query?.deltaDay),
+                homeData: req.query?.homeData === "true"
             };
             // If nothing is passed, it means today
             res.send(getPvChart(args));

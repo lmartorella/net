@@ -107,10 +107,11 @@ export class SolarComponent implements OnInit {
     /**
      * @param opts.day can be a string in the yyyy-mm-dd format
      * @param opts.deltaDay is a negative number to apply to today. E.g. -1 means yesterday data, etc...
+     * @param opts.homeData if true, retrieve home power usage data rather than solar production data
      */
-    private async getDayDataSeries(opts: { deltaDay?: number, day?: string }, seriesName: string): Promise<Partial<Plotly.PlotData> | null> {
+    private async getDayDataSeries(opts: { deltaDay?: number, day?: string, homeData?: boolean }, seriesName: string): Promise<Partial<Plotly.PlotData> | null> {
         const urlArgs = Object.keys(opts).map(key => `${key}=${encodeURIComponent((opts as any)[key])}`).join("&");
-        const data = await this.xhr.check(this.http.get<IPvChartPoint[]>(`${this.xhr.baseUrl}/solar/solarPowToday?${urlArgs}`));
+        const data = await this.xhr.check(this.http.get<IPvChartPoint[]>(`${this.xhr.baseUrl}/solar/solarPowPlot?${urlArgs}`));
         if (!Array.isArray(data)) {
             throw new Error("Unexpected data format");
         }
@@ -135,6 +136,10 @@ export class SolarComponent implements OnInit {
         }
         return (await Promise.all(promises)).filter(r => !!r) as Partial<Plotly.PlotData>[];
     }
+ 
+    private async getHomeDataSeries(): Promise<Partial<Plotly.PlotData>> {
+        return await this.getDayDataSeries({ homeData: true }, `H`) as Partial<Plotly.PlotData>;
+    }
 
     private async getHistoricalSeries(count: number): Promise<Partial<Plotly.PlotData>[]> {
         // Fetch the last 4 days
@@ -152,7 +157,7 @@ export class SolarComponent implements OnInit {
         return (await Promise.all(promises)).filter(r => !!r) as Partial<Plotly.PlotData>[];
     }
 
-    public async drawDays(opts: { deltaDayCount?: number, historicalCount?: number }) {
+    public async drawDays(opts: { deltaDayCount?: number, historicalCount?: number, withHomeData?: boolean }) {
         this.clearChartDom();
 
         this.chartLoading = true;
@@ -162,6 +167,9 @@ export class SolarComponent implements OnInit {
                 series = await this.getHistoricalSeries(opts.historicalCount);
             } else {
                 series = await this.getDaySpanSeries(opts.deltaDayCount || 1);
+                if (opts.withHomeData && (opts.deltaDayCount || 1) === 1) {
+                    series.push(await this.getHomeDataSeries());
+                }
             }
 
             // Sort 'x' categories in alphabetical order
